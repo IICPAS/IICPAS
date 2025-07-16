@@ -1,5 +1,6 @@
-// src/app/course/[slug]/page.tsx
 /* eslint-disable @next/next/no-img-element */
+"use client";
+
 import Header from "@/app/components/Header";
 import { notFound } from "next/navigation";
 
@@ -28,10 +29,11 @@ const courses = [
   },
 ];
 
-export default function CourseDetail() {
+export default function CourseDetail({ params }) {
   const course = courses.find(
     (c) => c.slug === decodeURIComponent(params.slug)
   );
+
   if (!course) return notFound();
 
   const discountedPrice = course.price - (course.price * course.discount) / 100;
@@ -45,27 +47,32 @@ export default function CourseDetail() {
           <p className="text-sm text-green-600 mb-6">Home // {course.title}</p>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {/* Tabs Left Side */}
+            {/* Left Tabs */}
             <div className="md:col-span-2">
               <div className="flex flex-wrap gap-4 mb-6">
-                <button className="bg-green-500 text-white px-4 py-2 rounded-full font-medium shadow">
-                  Case Study
-                </button>
-                <button className="border px-4 py-2 rounded-full text-[#0b1224] font-medium">
-                  Curriculum
-                </button>
-                <button className="border px-4 py-2 rounded-full text-[#0b1224] font-medium">
-                  Exam & Certification
-                </button>
-                <button className="border px-4 py-2 rounded-full text-[#0b1224] font-medium">
-                  Simulation & Experiments
-                </button>
+                {[
+                  "Case Study",
+                  "Curriculum",
+                  "Exam & Certification",
+                  "Simulation & Experiments",
+                ].map((label) => (
+                  <button
+                    key={label}
+                    className={`${
+                      label === "Case Study"
+                        ? "bg-green-500 text-white"
+                        : "border text-[#0b1224]"
+                    } px-4 py-2 rounded-full font-medium shadow`}
+                  >
+                    {label}
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Course Box Right Side */}
+            {/* Course Card */}
             <div className="bg-white border rounded-2xl shadow p-6">
-              {/* Image */}
+              {/* Course Image */}
               <div className="relative w-full h-48 bg-gray-200 rounded-lg mb-4 overflow-hidden group">
                 <img
                   src={course.image}
@@ -90,7 +97,7 @@ export default function CourseDetail() {
                 </div>
               </div>
 
-              {/* Pricing */}
+              {/* Price */}
               <p className="text-green-600 text-xl font-bold mb-1">
                 ₹{discountedPrice.toLocaleString()}
               </p>
@@ -105,7 +112,7 @@ export default function CourseDetail() {
               </button>
 
               <h4 className="font-semibold text-lg mb-2">
-                This Course Included
+                This Course Includes
               </h4>
               <ul className="text-sm space-y-1">
                 <li>📘 Chapters: {course.includes.chapters}</li>
