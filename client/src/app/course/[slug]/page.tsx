@@ -1,3 +1,5 @@
+// src/app/course/[slug]/page.tsx
+/* eslint-disable @next/next/no-img-element */
 import Header from "@/app/components/Header";
 import { notFound } from "next/navigation";
 
@@ -24,12 +26,12 @@ const courses = [
       topics: 25,
     },
   },
-  // Add more courses here
 ];
 
 export default function CourseDetail({ params }: { params: { slug: string } }) {
-  const course = courses.find((c) => c.slug === params.slug);
-
+  const course = courses.find(
+    (c) => c.slug === decodeURIComponent(params.slug)
+  );
   if (!course) return notFound();
 
   const discountedPrice = course.price - (course.price * course.discount) / 100;
@@ -63,15 +65,13 @@ export default function CourseDetail({ params }: { params: { slug: string } }) {
 
             {/* Course Box Right Side */}
             <div className="bg-white border rounded-2xl shadow p-6">
-              {/* Course Image with Animated Play Icon */}
+              {/* Image */}
               <div className="relative w-full h-48 bg-gray-200 rounded-lg mb-4 overflow-hidden group">
                 <img
                   src={course.image}
                   alt={course.title}
                   className="object-cover w-full h-full transition duration-300 group-hover:scale-105"
                 />
-
-                {/* Animated Play Icon */}
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="relative w-14 h-14">
                     <div className="absolute inset-0 rounded-full bg-white opacity-30 animate-ping" />
@@ -90,7 +90,7 @@ export default function CourseDetail({ params }: { params: { slug: string } }) {
                 </div>
               </div>
 
-              {/* Pricing Section */}
+              {/* Pricing */}
               <p className="text-green-600 text-xl font-bold mb-1">
                 ₹{discountedPrice.toLocaleString()}
               </p>
