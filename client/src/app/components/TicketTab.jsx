@@ -8,9 +8,9 @@ export default function TicketTab() {
   return (
     <div className="p-6 w-full text-white">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold">Support</h2>
+        <h2 className="text-2xl font-bold text-black">Support</h2>
         <div className="flex gap-2">
-          <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
+          <button className="bg-blue-500 hover:bg-blue-600 text-black px-4 py-2 rounded">
             Create New Ticket
           </button>
           <button

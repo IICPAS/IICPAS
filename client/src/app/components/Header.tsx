@@ -91,7 +91,7 @@ export default function Header() {
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center gap-6 text-sm text-gray-800 font-medium relative">
+          <nav className="hidden lg:flex items-center gap-8 text-sm text-gray-800 font-medium relative">
             {navLinks.map((item) =>
               item.children ? (
                 <div key={item.name} className="relative group">
