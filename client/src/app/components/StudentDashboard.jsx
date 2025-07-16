@@ -1,8 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Drawer from "react-modern-drawer";
 import "react-modern-drawer/dist/index.css";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+
 import {
   FaBook,
   FaVideo,
@@ -43,6 +46,39 @@ export default function StudentDashboard() {
   const [darkMode, setDarkMode] = useState(false);
   const [activeTab, setActiveTab] = useState("courses");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [student, setStudent] = useState({ name: "", email: "" });
+  const [checkingAuth, setCheckingAuth] = useState(true);
+  const router = useRouter();
+
+  // Auth check on page load
+  useEffect(() => {
+    const fetchStudent = async () => {
+      try {
+        const res = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_BASE}/student/protected`,
+          { withCredentials: true }
+        );
+        setStudent(res.data.user); // Should contain name, email
+        setCheckingAuth(false);
+      } catch (err) {
+        console.error("Unauthorized", err);
+        router.push("/student-login");
+      }
+    };
+    fetchStudent();
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/student/logout`, {
+        withCredentials: true,
+      });
+      window.location.href = "/student-login";
+    } catch (err) {
+      console.error("Logout failed", err);
+      alert("Failed to logout");
+    }
+  };
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -70,8 +106,8 @@ export default function StudentDashboard() {
       <div>
         <h2 className="text-2xl font-bold text-blue-600 mb-6">Fincurious</h2>
         <div className="mb-6">
-          <p className="font-semibold">Gupta Enterprises</p>
-          <p className="text-sm text-gray-600">guptab1356@gmail.com</p>
+          <p className="font-semibold">{student?.name}</p>
+          <p className="text-sm text-gray-600">{student?.email}</p>
         </div>
         <nav className="space-y-4">
           {tabs.map((tab) => (
@@ -90,6 +126,7 @@ export default function StudentDashboard() {
           ))}
         </nav>
       </div>
+
       <div className="flex items-center justify-between mt-10">
         <button
           onClick={() => setDarkMode(!darkMode)}
@@ -97,12 +134,23 @@ export default function StudentDashboard() {
         >
           <FaMoon />
         </button>
-        <button className="text-red-600 flex items-center gap-1">
+        <button
+          onClick={handleLogout}
+          className="text-red-600 flex items-center gap-1"
+        >
           <FaSignOutAlt /> Exit
         </button>
       </div>
     </div>
   );
+
+  if (checkingAuth) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-gray-500 text-lg">Checking authentication...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex overflow-hidden font-sans">
@@ -111,7 +159,7 @@ export default function StudentDashboard() {
         <SidebarContent />
       </aside>
 
-      {/* Mobile Drawer Toggle */}
+      {/* Mobile Drawer */}
       <Drawer
         open={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
@@ -121,11 +169,10 @@ export default function StudentDashboard() {
         <SidebarContent />
       </Drawer>
 
-      {/* Main */}
+      {/* Main Content */}
       <main className="flex-1 bg-[#f5f6fa] p-4 md:p-6 overflow-y-auto min-h-screen">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          {/* Hamburger for mobile */}
           <button
             className="lg:hidden p-2 bg-gray-100 rounded"
             onClick={() => setIsDrawerOpen(true)}

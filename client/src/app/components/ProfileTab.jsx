@@ -1,8 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { useRouter } from "next/navigation";
 
 export default function ProfileTab() {
+  const router = useRouter();
+
   const tabs = [
     "Basic Profile",
     "Job Profile",
@@ -12,6 +16,56 @@ export default function ProfileTab() {
   ];
 
   const [activeTab, setActiveTab] = useState("Basic Profile");
+  const [loading, setLoading] = useState(true);
+  const [student, setStudent] = useState({
+    name: "",
+    email: "",
+    phone: "",
+  });
+
+  // Fetch student data on mount
+  useEffect(() => {
+    const fetchStudent = async () => {
+      try {
+        const res = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_BASE}/student/isuser`,
+          { withCredentials: true }
+        );
+        setStudent({
+          name: res.data.name,
+          email: res.data.email,
+          phone: res.data.phone || "",
+        });
+      } catch (err) {
+        console.error("Auth check failed:", err);
+        router.push("/student-login");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStudent();
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/student/logout`, {
+        withCredentials: true,
+      });
+      router.push("/student-login");
+    } catch (err) {
+      console.error("Logout error", err);
+      alert("Logout failed");
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p className="text-gray-500 text-lg">Loading profile...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen lg:flex-row gap-6 px-6 pt-20 pb-10 font-sans">
@@ -22,16 +76,19 @@ export default function ProfileTab() {
             📷
           </div>
           <div>
-            <h2 className="text-xl font-bold text-blue-700">
-              Gupta Enterprises
-            </h2>
-            <p className="text-sm text-gray-700">guptaab1356@gmail.com</p>
-            <p className="text-sm text-gray-800 font-semibold">8920406657</p>
+            <h2 className="text-xl font-bold text-blue-700">{student.name}</h2>
+            <p className="text-sm text-gray-700">{student.email}</p>
+            <p className="text-sm text-gray-800 font-semibold">
+              {student.phone}
+            </p>
           </div>
           <div className="text-orange-600 text-sm font-medium flex items-center justify-center gap-1">
             <span>Notifications</span> <span>🔔</span>
           </div>
-          <button className="text-red-600 mt-4 border px-4 py-2 rounded-lg hover:bg-red-50">
+          <button
+            onClick={handleLogout}
+            className="text-red-600 mt-4 border px-4 py-2 rounded-lg hover:bg-red-50"
+          >
             Log Out
           </button>
         </div>
@@ -58,7 +115,7 @@ export default function ProfileTab() {
 
         {/* Tab Content */}
         <div className="p-6">
-          {activeTab === "Basic Profile" && (
+          {activeTab === "Basic Profile" ? (
             <form className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-600">
@@ -66,7 +123,10 @@ export default function ProfileTab() {
                 </label>
                 <input
                   type="text"
-                  defaultValue="Gupta Enterprises"
+                  value={student.name}
+                  onChange={(e) =>
+                    setStudent((prev) => ({ ...prev, name: e.target.value }))
+                  }
                   className="w-full mt-1 p-2 border rounded"
                 />
               </div>
@@ -76,8 +136,9 @@ export default function ProfileTab() {
                 </label>
                 <input
                   type="email"
-                  defaultValue="guptaab1356@gmail.com"
-                  className="w-full mt-1 p-2 border rounded"
+                  value={student.email}
+                  disabled
+                  className="w-full mt-1 p-2 border rounded bg-gray-100 cursor-not-allowed"
                 />
               </div>
               <div>
@@ -86,65 +147,14 @@ export default function ProfileTab() {
                 </label>
                 <input
                   type="text"
-                  defaultValue="8920406657"
+                  value={student.phone}
+                  onChange={(e) =>
+                    setStudent((prev) => ({ ...prev, phone: e.target.value }))
+                  }
                   className="w-full mt-1 p-2 border rounded"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-600">
-                  Date of Birth
-                </label>
-                <input
-                  type="date"
-                  defaultValue="1963-10-08"
-                  className="w-full mt-1 p-2 border rounded"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-600">
-                  Select your State
-                </label>
-                <select className="w-full mt-1 p-2 border rounded">
-                  <option>Uttar Pradesh</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-600">
-                  Select your District
-                </label>
-                <select className="w-full mt-1 p-2 border rounded">
-                  <option>Agra</option>
-                </select>
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-semibold text-gray-600">
-                  Area/Locality
-                </label>
-                <input
-                  type="text"
-                  defaultValue="Gautam Buddha Nagar"
-                  className="w-full mt-1 p-2 border rounded"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-semibold text-gray-600 mb-2">
-                  Gender
-                </label>
-                <div className="flex gap-6">
-                  <label className="flex items-center gap-2">
-                    <input type="radio" name="gender" defaultChecked />
-                    Male
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input type="radio" name="gender" />
-                    Female
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input type="radio" name="gender" />
-                    Other
-                  </label>
-                </div>
-              </div>
+
               <div className="md:col-span-2 flex justify-end mt-4">
                 <button
                   type="submit"
@@ -154,10 +164,7 @@ export default function ProfileTab() {
                 </button>
               </div>
             </form>
-          )}
-
-          {/* Placeholder for other tabs */}
-          {activeTab !== "Basic Profile" && (
+          ) : (
             <div className="text-gray-600 italic">
               {activeTab} content coming soon...
             </div>

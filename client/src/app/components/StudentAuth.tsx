@@ -1,9 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import axios from "axios";
+import { useRouter } from "next/navigation";
 
 export default function StudentAuth() {
+  const router = useRouter();
   const [mode, setMode] = useState<"login" | "signup" | "forgot">("login");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -19,24 +23,55 @@ export default function StudentAuth() {
 
   const togglePassword = () => setShowPassword(!showPassword);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
+    if (!email || !password) return alert("Please fill all fields");
     setLoading(true);
-    setTimeout(() => {
-      alert("Login Successful");
+    try {
+      const res = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_BASE}/student/login`,
+        { email, password },
+        { withCredentials: true }
+      );
+      router.push("/student-dashboard");
+      console.log(res.data);
+    } catch (err: any) {
+      alert(err?.response?.data?.message || "Login failed");
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
-  const handleSignup = () => {
-    if (password !== confirmPassword) {
-      alert("Passwords do not match!");
-      return;
+  const handleSignup = async () => {
+    if (!name || !phone || !email || !password || !confirmPassword) {
+      return alert("Please fill all fields");
     }
+    if (password !== confirmPassword) {
+      return alert("Passwords do not match!");
+    }
+
     setLoading(true);
-    setTimeout(() => {
-      alert("Account Created");
+    try {
+      const res = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_BASE}/student/register`,
+        {
+          name,
+          email,
+          phone,
+          password,
+          location: "Default Location",
+          course: "Default Course",
+          teacher: "Default Teacher",
+        },
+        { withCredentials: true }
+      );
+      alert("Account created!");
+      console.log(res.data);
+      setMode("login");
+    } catch (err: any) {
+      alert(err?.response?.data?.message || "Signup failed");
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   const handleSendOtp = () => {
@@ -73,84 +108,37 @@ export default function StudentAuth() {
           onSubmit={(e) => e.preventDefault()}
           className="flex flex-col gap-5"
         >
-          {/* Common Fields */}
           {(mode === "login" || mode === "signup" || mode === "forgot") && (
             <>
               {mode === "signup" && (
                 <>
-                  <div>
-                    <label className="text-sm font-semibold text-gray-700 mb-1 block">
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Your name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white/70 focus:ring-2 focus:ring-green-400 outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-semibold text-gray-700 mb-1 block">
-                      Phone
-                    </label>
-                    <input
-                      type="tel"
-                      placeholder="9876543210"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white/70 focus:ring-2 focus:ring-green-400 outline-none"
-                    />
-                  </div>
+                  <Input label="Full Name" value={name} onChange={setName} />
+                  <Input
+                    label="Phone"
+                    type="tel"
+                    value={phone}
+                    onChange={setPhone}
+                  />
                 </>
               )}
 
-              <div>
-                <label className="text-sm font-semibold text-gray-700 mb-1 block">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white/70 focus:ring-2 focus:ring-green-400 outline-none"
-                />
-              </div>
+              <Input
+                label="Email"
+                type="email"
+                value={email}
+                onChange={setEmail}
+              />
             </>
           )}
 
-          {/* Login */}
           {mode === "login" && (
             <>
-              <div className="relative">
-                <label className="text-sm font-semibold text-gray-700 mb-1 block">
-                  Password
-                </label>
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white/70 focus:ring-2 focus:ring-green-400 outline-none"
-                />
-                <button
-                  type="button"
-                  onClick={togglePassword}
-                  className="absolute right-3 top-9 text-gray-500"
-                >
-                  {showPassword ? <FaEyeSlash /> : <FaEye />}
-                </button>
-              </div>
-
-              <button
-                onClick={handleLogin}
-                className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-md shadow-md transition"
-              >
-                {loading ? "Logging in..." : "Login"}
-              </button>
-
+              <PasswordInput
+                label="Password"
+                value={password}
+                onChange={setPassword}
+              />
+              <Button onClick={handleLogin} loading={loading} text="Login" />
               <div className="text-right text-sm">
                 <button
                   onClick={() => {
@@ -165,104 +153,50 @@ export default function StudentAuth() {
             </>
           )}
 
-          {/* Signup */}
           {mode === "signup" && (
             <>
-              <div className="relative">
-                <label className="text-sm font-semibold text-gray-700 mb-1 block">
-                  Password
-                </label>
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Create password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white/70 focus:ring-2 focus:ring-green-400 outline-none"
-                />
-                <button
-                  type="button"
-                  onClick={togglePassword}
-                  className="absolute right-3 top-9 text-gray-500"
-                >
-                  {showPassword ? <FaEyeSlash /> : <FaEye />}
-                </button>
-              </div>
-
-              <div>
-                <label className="text-sm font-semibold text-gray-700 mb-1 block">
-                  Confirm Password
-                </label>
-                <input
-                  type="password"
-                  placeholder="Repeat password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white/70 focus:ring-2 focus:ring-green-400 outline-none"
-                />
-              </div>
-
-              <button
+              <PasswordInput
+                label="Password"
+                value={password}
+                onChange={setPassword}
+              />
+              <Input
+                label="Confirm Password"
+                type="password"
+                value={confirmPassword}
+                onChange={setConfirmPassword}
+              />
+              <Button
                 onClick={handleSignup}
-                className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-md shadow-md transition"
-              >
-                {loading ? "Signing up..." : "Create Account"}
-              </button>
+                loading={loading}
+                text="Create Account"
+              />
             </>
           )}
 
-          {/* Forgot Password */}
           {mode === "forgot" && !otpSent && (
-            <button
+            <Button
               onClick={handleSendOtp}
+              loading={loading}
+              text="Send OTP"
               disabled={!email}
-              className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-md shadow-md transition"
-            >
-              {loading ? "Sending OTP..." : "Send OTP"}
-            </button>
+            />
           )}
 
           {mode === "forgot" && otpSent && (
             <>
-              <div>
-                <label className="text-sm font-semibold text-gray-700 mb-1 block">
-                  Enter OTP
-                </label>
-                <input
-                  type="text"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
-                  placeholder="6-digit OTP"
-                  className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white/70 focus:ring-2 focus:ring-green-400 outline-none"
-                />
-              </div>
-
-              <div className="relative">
-                <label className="text-sm font-semibold text-gray-700 mb-1 block">
-                  New Password
-                </label>
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="New password"
-                  className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white/70 focus:ring-2 focus:ring-green-400 outline-none"
-                />
-                <button
-                  type="button"
-                  onClick={togglePassword}
-                  className="absolute right-3 top-9 text-gray-500"
-                >
-                  {showPassword ? <FaEyeSlash /> : <FaEye />}
-                </button>
-              </div>
-
-              <button
+              <Input label="Enter OTP" value={otp} onChange={setOtp} />
+              <PasswordInput
+                label="New Password"
+                value={newPassword}
+                onChange={setNewPassword}
+              />
+              <Button
                 onClick={handleResetPassword}
+                loading={loading}
+                text="Reset Password"
                 disabled={!otp || !newPassword}
-                className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-md shadow-md transition"
-              >
-                {loading ? "Resetting..." : "Reset Password"}
-              </button>
+              />
             </>
           )}
         </form>
@@ -302,5 +236,60 @@ export default function StudentAuth() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Helper components
+function Input({ label, value, onChange, type = "text" }: any) {
+  return (
+    <div>
+      <label className="text-sm font-semibold text-gray-700 mb-1 block">
+        {label}
+      </label>
+      <input
+        type={type}
+        placeholder={label}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white/70 focus:ring-2 focus:ring-green-400 outline-none"
+      />
+    </div>
+  );
+}
+
+function PasswordInput({ label, value, onChange }: any) {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="relative">
+      <label className="text-sm font-semibold text-gray-700 mb-1 block">
+        {label}
+      </label>
+      <input
+        type={show ? "text" : "password"}
+        placeholder="••••••••"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white/70 focus:ring-2 focus:ring-green-400 outline-none"
+      />
+      <button
+        type="button"
+        onClick={() => setShow(!show)}
+        className="absolute right-3 top-9 text-gray-500"
+      >
+        {show ? <FaEyeSlash /> : <FaEye />}
+      </button>
+    </div>
+  );
+}
+
+function Button({ onClick, loading, text, disabled = false }: any) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={loading || disabled}
+      className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-md shadow-md transition"
+    >
+      {loading ? `${text}...` : text}
+    </button>
   );
 }
