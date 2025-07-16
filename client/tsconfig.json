@@ -28,7 +28,10 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "src/app/course/[slug]/page.jsx",
-    "src/app/components/StudentDashboard.jsx"
+    "src/app/components/StudentDashboard.jsx",
+    "src/app/components/TicketTab.jsx",
+    "src/app/components/ProfileTab.jsx",
+    "src/app/components/CertificateTab.jsx"
   ],
   "exclude": ["node_modules"]
 }

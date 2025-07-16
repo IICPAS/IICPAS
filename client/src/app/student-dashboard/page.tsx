@@ -5,7 +5,6 @@ import StudentDashboard from "../components/StudentDashboard";
 const page = () => {
   return (
     <div>
-      <Header />
       <StudentDashboard />
     </div>
   );
