@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import EnquiriesTab from "./EnquiriesTab";
 import Drawer from "react-modern-drawer";
 import axios from "axios";
 import { useRouter } from "next/navigation";
@@ -222,6 +223,8 @@ export default function AdminDashboard() {
         <div className="bg-white p-6 rounded-lg shadow">
           {activeTab === "live-session" ? (
             renderLiveSessions()
+          ) : activeTab === "enquiries" ? (
+            <EnquiriesTab />
           ) : (
             <p>{activeTab} content here...</p>
           )}

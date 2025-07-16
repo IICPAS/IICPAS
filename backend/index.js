@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import contactRoutes from "./routes/contactRoutes.js";
 import connectDB from "./config/db.js";
 import studentRoutes from "./routes/studentRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
@@ -26,6 +27,7 @@ app.use(cookieParser());
 // Routes
 app.use("/api/student", studentRoutes);
 app.use("/api/admin", authRoutes);
+app.use("/api/contact", contactRoutes);
 
 // Server
 const PORT = process.env.PORT || 5000;

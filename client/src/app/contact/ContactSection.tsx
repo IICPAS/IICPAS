@@ -1,14 +1,17 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
 import Image from "next/image";
 import { FaPaperPlane } from "react-icons/fa";
+import axios from "axios";
+import { toast } from "react-hot-toast";
 
 export default function ContactSection() {
   const [form, setForm] = useState({
     name: "",
     email: "",
-    subject: "",
+    phone: "",
     message: "",
   });
 
@@ -18,10 +21,19 @@ export default function ContactSection() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submitted:", form);
-    // 🔁 TODO: Submit to backend or Google Sheets
+
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE;
+    console.log(API_BASE_URL);
+
+    try {
+      await axios.post(`${API_BASE_URL}/contact`, form);
+      toast.success("Message sent successfully!");
+      setForm({ name: "", email: "", phone: "", message: "" });
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Submission failed");
+    }
   };
 
   return (
@@ -30,7 +42,7 @@ export default function ContactSection() {
         {/* Left Image */}
         <div className="w-full h-full">
           <Image
-            src="/images/contact-section.jpg" // Replace with actual path
+            src="/images/contact-section.jpg"
             alt="Contact Support"
             width={600}
             height={600}
@@ -70,18 +82,19 @@ export default function ContactSection() {
             </div>
 
             <input
-              type="text"
-              name="subject"
+              type="tel"
+              name="phone"
               required
-              value={form.subject}
+              value={form.phone}
               onChange={handleChange}
-              placeholder="Write about your enquiry"
+              placeholder="Write about your phone"
               className="w-full px-4 py-3 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
 
             <textarea
               name="message"
               rows={5}
+              required
               value={form.message}
               onChange={handleChange}
               placeholder="Write Your Message"
