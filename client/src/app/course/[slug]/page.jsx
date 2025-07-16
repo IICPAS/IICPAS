@@ -28,7 +28,7 @@ const courses = [
   },
 ];
 
-export default function CourseDetail({ params }: { params: { slug: string } }) {
+export default function CourseDetail() {
   const course = courses.find(
     (c) => c.slug === decodeURIComponent(params.slug)
   );
