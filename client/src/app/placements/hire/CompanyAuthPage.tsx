@@ -5,10 +5,10 @@ import { useState } from "react";
 import Image from "next/image";
 import { FaEnvelope, FaLock, FaUser, FaPhone } from "react-icons/fa";
 
-export default function CollegeAuthPage() {
+export default function CompanyAuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [showForgot, setShowForgot] = useState(false);
-  const [step, setStep] = useState(1); // Step 1 = Enter email, Step 2 = OTP + new password
+  const [step, setStep] = useState(1);
 
   const [form, setForm] = useState({
     name: "",
@@ -39,24 +39,19 @@ export default function CollegeAuthPage() {
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
-    console.log(isLogin ? "Logging in with:" : "Registering with:", form);
+    console.log(isLogin ? "Login" : "Signup", form);
   };
 
   const handleSendOtp = (e: any) => {
     e.preventDefault();
-    if (!form.email) return alert("Please enter your email first");
+    if (!form.email) return alert("Enter a valid email");
     console.log("OTP sent to:", form.email);
     setStep(2);
   };
 
   const handleResetPassword = (e: any) => {
     e.preventDefault();
-    console.log(
-      "Resetting password with OTP:",
-      otp.join(""),
-      "New password:",
-      newPassword
-    );
+    console.log("OTP:", otp.join(""), "New Password:", newPassword);
     setShowForgot(false);
     setStep(1);
   };
@@ -64,23 +59,23 @@ export default function CollegeAuthPage() {
   return (
     <div className="min-h-screen pt-20 bg-gray-100 flex items-center justify-center px-4">
       <div className="bg-white rounded-2xl shadow-xl overflow-hidden w-full max-w-5xl grid md:grid-cols-2">
-        {/* Left Image Section */}
+        {/* Left Panel (Hidden on Mobile) */}
         <div className="hidden md:flex bg-green-100 items-center justify-center p-8">
           <Image
-            src="/images/bk1.png"
-            alt="College Auth"
+            src="/images/suitcase.png"
+            alt="Company Auth"
             width={300}
             height={300}
             className="object-contain"
           />
         </div>
 
-        {/* Right Form Section */}
+        {/* Right Panel - Form */}
         <div className="p-8 sm:p-12 relative">
           {!showForgot ? (
             <>
               <h2 className="text-3xl font-bold text-center text-green-700 mb-6">
-                {isLogin ? "College Login" : "College Signup"}
+                {isLogin ? "Company Login" : "Company Signup"}
               </h2>
 
               {/* Switcher */}
@@ -231,7 +226,6 @@ export default function CollegeAuthPage() {
                   required
                   className="w-full border px-4 py-2 rounded-md outline-none"
                 />
-
                 {step === 2 && (
                   <>
                     <div className="flex justify-between gap-2">
@@ -251,12 +245,11 @@ export default function CollegeAuthPage() {
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="Enter new password"
-                      required
                       className="w-full border px-4 py-2 rounded-md outline-none"
+                      required
                     />
                   </>
                 )}
-
                 <div className="flex justify-between items-center">
                   <button
                     type="button"

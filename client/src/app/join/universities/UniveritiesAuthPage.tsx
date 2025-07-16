@@ -8,7 +8,7 @@ import { FaEnvelope, FaLock, FaUser, FaPhone } from "react-icons/fa";
 export default function UniversitiesAuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [showForgot, setShowForgot] = useState(false);
-  const [step, setStep] = useState(1); // 1 = email, 2 = OTP + new password
+  const [step, setStep] = useState(1);
 
   const [form, setForm] = useState({
     name: "",
@@ -59,18 +59,18 @@ export default function UniversitiesAuthPage() {
   return (
     <div className="min-h-screen pt-20 bg-gray-100 flex items-center justify-center px-4">
       <div className="bg-white rounded-2xl shadow-xl overflow-hidden w-full max-w-5xl grid md:grid-cols-2">
-        {/* Left */}
-        <div className="bg-green-100 flex items-center justify-center p-8">
+        {/* Left - Hidden on mobile */}
+        <div className="hidden md:flex bg-green-100 items-center justify-center p-8">
           <Image
             src="/images/university.png"
-            alt="College Auth"
+            alt="University Auth"
             width={400}
             height={400}
             className="object-contain"
           />
         </div>
 
-        {/* Right */}
+        {/* Right - Auth Form */}
         <div className="p-8 sm:p-12 relative">
           {!showForgot ? (
             <>
