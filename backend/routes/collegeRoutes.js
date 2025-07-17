@@ -1,0 +1,56 @@
+import express from "express";
+import {
+  collegeSignup,
+  collegeLogin,
+  collegeLogout,
+  isCollegeLoggedIn,
+  sendCollegeOTP,
+  resetCollegePassword,
+} from "../controllers/collegeAuthControllers.js";
+
+import { uploadCollegeDoc } from "../middleware/upload.js";
+import { approveCollege } from "../controllers/collegeAuthControllers.js";
+import { getAllColleges } from "../controllers/collegeAuthControllers.js";
+
+const router = express.Router();
+
+router.get("/", getAllColleges); // GET all colleges
+router.patch("/approve-college/:id", approveCollege);
+
+/**
+ * @route   POST /api/college/signup
+ * @desc    Signup college (with file upload)
+ */
+router.post("/signup", uploadCollegeDoc.single("document"), collegeSignup);
+
+/**
+ * @route   POST /api/college/login
+ * @desc    Login college
+ */
+router.post("/login", collegeLogin);
+
+/**
+ * @route   GET /api/college/logout
+ * @desc    Logout college
+ */
+router.get("/logout", collegeLogout);
+
+/**
+ * @route   GET /api/college/isCollege
+ * @desc    Check if college is logged in
+ */
+router.get("/isCollege", isCollegeLoggedIn);
+
+/**
+ * @route   POST /api/college/send-otp
+ * @desc    Send OTP to email for password reset
+ */
+router.post("/send-otp", sendCollegeOTP);
+
+/**
+ * @route   POST /api/college/reset-password
+ * @desc    Reset password using OTP
+ */
+router.post("/reset-password", resetCollegePassword);
+
+export default router;

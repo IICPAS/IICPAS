@@ -3,9 +3,16 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { FaEnvelope, FaLock, FaUser, FaPhone } from "react-icons/fa";
+import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
+import toast from "react-hot-toast";
+import axios from "axios";
+
+const API = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
 
 export default function CompanyAuthPage() {
+  const router = useRouter();
   const [isLogin, setIsLogin] = useState(true);
   const [showForgot, setShowForgot] = useState(false);
   const [step, setStep] = useState(1);
@@ -16,10 +23,12 @@ export default function CompanyAuthPage() {
     phone: "",
     password: "",
     confirmPassword: "",
-    document: null,
+    document: null as File | null,
   });
 
-  const [otp, setOtp] = useState(["", "", "", ""]);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [newPassword, setNewPassword] = useState("");
 
   const handleChange = (e: any) => {
@@ -37,29 +46,83 @@ export default function CompanyAuthPage() {
     setOtp(newOtp);
   };
 
-  const handleSubmit = (e: any) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
-    console.log(isLogin ? "Login" : "Signup", form);
+    try {
+      if (isLogin) {
+        const res = await axios.post(
+          `${API}/api/companies/login`,
+          {
+            email: form.email,
+            password: form.password,
+          },
+          { withCredentials: true }
+        );
+        toast.success("Login successful");
+        router.push("/company-dashboard");
+      } else {
+        if (form.password !== form.confirmPassword)
+          return toast.error("Passwords do not match");
+
+        const data = new FormData();
+        data.append("fullName", form.name);
+        data.append("email", form.email);
+        data.append("phone", form.phone);
+        data.append("password", form.password);
+        if (form.document) data.append("document", form.document);
+
+        await axios.post(`${API}/api/companies/register`, data, {
+          withCredentials: true,
+        });
+        toast.success("Signup successful. Await admin approval.");
+        setIsLogin(true);
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.response?.data?.message || "Error occurred");
+    }
   };
 
-  const handleSendOtp = (e: any) => {
+  const handleSendOtp = async (e: any) => {
     e.preventDefault();
-    if (!form.email) return alert("Enter a valid email");
-    console.log("OTP sent to:", form.email);
-    setStep(2);
+    try {
+      await axios.post(
+        `${API}/api/companies/forgot-password`,
+        { email: form.email },
+        { withCredentials: true }
+      );
+      toast.success("OTP sent to email");
+      setStep(2);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to send OTP");
+    }
   };
 
-  const handleResetPassword = (e: any) => {
+  const handleResetPassword = async (e: any) => {
     e.preventDefault();
-    console.log("OTP:", otp.join(""), "New Password:", newPassword);
-    setShowForgot(false);
-    setStep(1);
+    try {
+      const code = otp.join("");
+      await axios.post(
+        `${API}/api/companies/reset-password`,
+        {
+          email: form.email,
+          otp: code,
+          newPassword,
+        },
+        { withCredentials: true }
+      );
+      toast.success("Password reset successful");
+      setShowForgot(false);
+      setStep(1);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "OTP verification failed");
+    }
   };
 
   return (
     <div className="min-h-screen pt-20 bg-gray-100 flex items-center justify-center px-4">
       <div className="bg-white rounded-2xl shadow-xl overflow-hidden w-full max-w-5xl grid md:grid-cols-2">
-        {/* Left Panel (Hidden on Mobile) */}
+        {/* Left Panel */}
         <div className="hidden md:flex bg-green-100 items-center justify-center p-8">
           <Image
             src="/images/suitcase.png"
@@ -70,7 +133,7 @@ export default function CompanyAuthPage() {
           />
         </div>
 
-        {/* Right Panel - Form */}
+        {/* Right Panel */}
         <div className="p-8 sm:p-12 relative">
           {!showForgot ? (
             <>
@@ -78,7 +141,6 @@ export default function CompanyAuthPage() {
                 {isLogin ? "Company Login" : "Company Signup"}
               </h2>
 
-              {/* Switcher */}
               <div className="flex justify-center gap-4 mb-6">
                 <button
                   onClick={() => setIsLogin(true)}
@@ -148,7 +210,7 @@ export default function CompanyAuthPage() {
                 <div className="flex items-center border px-4 py-2 rounded-md bg-white">
                   <FaLock className="text-gray-400 mr-2" />
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     name="password"
                     value={form.password}
                     onChange={handleChange}
@@ -156,6 +218,13 @@ export default function CompanyAuthPage() {
                     required
                     className="w-full bg-transparent outline-none"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="ml-2 text-gray-500"
+                  >
+                    {showPassword ? <AiFillEyeInvisible /> : <AiFillEye />}
+                  </button>
                 </div>
 
                 {!isLogin && (
@@ -163,7 +232,7 @@ export default function CompanyAuthPage() {
                     <div className="flex items-center border px-4 py-2 rounded-md bg-white">
                       <FaLock className="text-gray-400 mr-2" />
                       <input
-                        type="password"
+                        type={showConfirmPassword ? "text" : "password"}
                         name="confirmPassword"
                         value={form.confirmPassword}
                         onChange={handleChange}
@@ -171,7 +240,21 @@ export default function CompanyAuthPage() {
                         required
                         className="w-full bg-transparent outline-none"
                       />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
+                        className="ml-2 text-gray-500"
+                      >
+                        {showConfirmPassword ? (
+                          <AiFillEyeInvisible />
+                        ) : (
+                          <AiFillEye />
+                        )}
+                      </button>
                     </div>
+
                     <div className="text-sm">
                       <label className="block font-medium text-gray-600 mb-1">
                         Upload Verification Document
