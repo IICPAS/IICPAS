@@ -3,12 +3,26 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { FaEnvelope, FaLock, FaUser, FaPhone } from "react-icons/fa";
+import { useRouter } from "next/navigation";
+import axios from "axios";
+import toast from "react-hot-toast";
+import {
+  FaEnvelope,
+  FaLock,
+  FaUser,
+  FaPhone,
+  FaEye,
+  FaEyeSlash,
+} from "react-icons/fa";
+
+const API = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
 
 export default function CollegeAuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [showForgot, setShowForgot] = useState(false);
-  const [step, setStep] = useState(1); // Step 1 = Enter email, Step 2 = OTP + new password
+  const [step, setStep] = useState(1);
+
+  const router = useRouter();
 
   const [form, setForm] = useState({
     name: "",
@@ -16,11 +30,14 @@ export default function CollegeAuthPage() {
     phone: "",
     password: "",
     confirmPassword: "",
-    document: null,
+    document: null as File | null,
   });
 
-  const [otp, setOtp] = useState(["", "", "", ""]);
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [newPassword, setNewPassword] = useState("");
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleChange = (e: any) => {
     const { name, value, files } = e.target;
@@ -37,34 +54,82 @@ export default function CollegeAuthPage() {
     setOtp(newOtp);
   };
 
-  const handleSubmit = (e: any) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
-    console.log(isLogin ? "Logging in with:" : "Registering with:", form);
+    try {
+      if (isLogin) {
+        const res = await axios.post(
+          `${API}/api/college/login`,
+          {
+            email: form.email,
+            password: form.password,
+          },
+          { withCredentials: true }
+        );
+
+        const college = res.data?.college || res.data?.user;
+        if (college?.status === "not approved") {
+          toast.error("Your account is pending admin approval.");
+        } else {
+          toast.success("Login successful");
+          router.push("/college-dashboard");
+        }
+      } else {
+        const formData = new FormData();
+        formData.append("name", form.name);
+        formData.append("email", form.email);
+        formData.append("phone", form.phone);
+        formData.append("password", form.password);
+        formData.append("confirmPassword", form.confirmPassword);
+        if (form.document) formData.append("document", form.document);
+
+        await axios.post(`${API}/api/college/signup`, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+          withCredentials: true,
+        });
+
+        toast.success("Signup successful! Waiting for admin approval.");
+        setIsLogin(true);
+      }
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Something went wrong");
+    }
   };
 
-  const handleSendOtp = (e: any) => {
+  const handleSendOtp = async (e: any) => {
     e.preventDefault();
-    if (!form.email) return alert("Please enter your email first");
-    console.log("OTP sent to:", form.email);
-    setStep(2);
+    if (!form.email) return toast.error("Please enter your email");
+    try {
+      await axios.post(`${API}/api/college/send-otp`, {
+        email: form.email,
+      });
+      toast.success("OTP sent to your email");
+      setStep(2);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Failed to send OTP");
+    }
   };
 
-  const handleResetPassword = (e: any) => {
+  const handleResetPassword = async (e: any) => {
     e.preventDefault();
-    console.log(
-      "Resetting password with OTP:",
-      otp.join(""),
-      "New password:",
-      newPassword
-    );
-    setShowForgot(false);
-    setStep(1);
+    try {
+      await axios.post(`${API}/api/college/reset-password`, {
+        email: form.email,
+        otp: otp.join(""),
+        newPassword,
+      });
+      toast.success("Password updated. Please login.");
+      setShowForgot(false);
+      setStep(1);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Failed to reset password");
+    }
   };
 
   return (
     <div className="min-h-screen pt-20 bg-gray-100 flex items-center justify-center px-4">
       <div className="bg-white rounded-2xl shadow-xl overflow-hidden w-full max-w-5xl grid md:grid-cols-2">
-        {/* Left Image Section */}
+        {/* Left Image */}
         <div className="hidden md:flex bg-green-100 items-center justify-center p-8">
           <Image
             src="/images/bk1.png"
@@ -75,7 +140,7 @@ export default function CollegeAuthPage() {
           />
         </div>
 
-        {/* Right Form Section */}
+        {/* Right Form */}
         <div className="p-8 sm:p-12 relative">
           {!showForgot ? (
             <>
@@ -83,7 +148,6 @@ export default function CollegeAuthPage() {
                 {isLogin ? "College Login" : "College Signup"}
               </h2>
 
-              {/* Switcher */}
               <div className="flex justify-center gap-4 mb-6">
                 <button
                   onClick={() => setIsLogin(true)}
@@ -150,10 +214,11 @@ export default function CollegeAuthPage() {
                   />
                 </div>
 
+                {/* Password Field */}
                 <div className="flex items-center border px-4 py-2 rounded-md bg-white">
                   <FaLock className="text-gray-400 mr-2" />
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     name="password"
                     value={form.password}
                     onChange={handleChange}
@@ -161,14 +226,22 @@ export default function CollegeAuthPage() {
                     required
                     className="w-full bg-transparent outline-none"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="ml-2 text-gray-400"
+                  >
+                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
                 </div>
 
                 {!isLogin && (
                   <>
+                    {/* Confirm Password Field */}
                     <div className="flex items-center border px-4 py-2 rounded-md bg-white">
                       <FaLock className="text-gray-400 mr-2" />
                       <input
-                        type="password"
+                        type={showConfirmPassword ? "text" : "password"}
                         name="confirmPassword"
                         value={form.confirmPassword}
                         onChange={handleChange}
@@ -176,6 +249,15 @@ export default function CollegeAuthPage() {
                         required
                         className="w-full bg-transparent outline-none"
                       />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
+                        className="ml-2 text-gray-400"
+                      >
+                        {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                      </button>
                     </div>
                     <div className="text-sm">
                       <label className="block font-medium text-gray-600 mb-1">

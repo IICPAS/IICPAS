@@ -8,7 +8,7 @@ import {
   resetCollegePassword,
 } from "../controllers/collegeAuthControllers.js";
 
-import { uploadCollegeDoc } from "../middlewares/upload.js";
+import { uploadCollegeDoc } from "../middleware/upload.js";
 import { approveCollege } from "../controllers/collegeAuthControllers.js";
 import { getAllColleges } from "../controllers/collegeAuthControllers.js";
 

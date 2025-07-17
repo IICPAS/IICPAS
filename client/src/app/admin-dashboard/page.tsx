@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import EnquiriesTab from "./EnquiriesTab";
 import Drawer from "react-modern-drawer";
 import axios from "axios";
+import CollegeTab from "./CollegeTab";
 import { useRouter } from "next/navigation";
 import "react-modern-drawer/dist/index.css";
 
@@ -25,6 +26,7 @@ import {
   FaBlog,
   FaQuoteRight,
   FaTags,
+  FaUniversity,
   FaStarOfDavid,
 } from "react-icons/fa";
 import CompanyTab from "./CompanyTab";
@@ -51,6 +53,8 @@ const tabs = [
   { id: "about", label: "About Us", icon: <FaBook /> },
   { id: "meta", label: "Manage Metatags", icon: <FaTags /> },
   { id: "companies", label: "Companies", icon: <FaStarOfDavid /> },
+  { id: "colleges", label: "Colleges", icon: <FaUniversity /> },
+
   { id: "support", label: "Support Requests", icon: <FaEnvelope /> },
 ];
 
@@ -230,6 +234,8 @@ export default function AdminDashboard() {
             <EnquiriesTab />
           ) : activeTab === "companies" ? (
             <CompanyTab />
+          ) : activeTab === "colleges" ? (
+            <CollegeTab />
           ) : null}
         </div>
       </main>

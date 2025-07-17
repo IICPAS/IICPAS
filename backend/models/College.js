@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 const collegeSchema = new mongoose.Schema({
   name: { type: String, required: true },
   phone: { type: String, required: true },
@@ -12,3 +14,5 @@ const collegeSchema = new mongoose.Schema({
   otp: String,
   otpExpiry: Date,
 });
+
+export const College = mongoose.model("colleges", collegeSchema);
