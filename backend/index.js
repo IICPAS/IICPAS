@@ -1,6 +1,10 @@
 import express from "express";
+import path from "path";
+
 import dotenv from "dotenv";
+import collegeRoutes from "./routes/collegeRoutes.js";
 import cookieParser from "cookie-parser";
+import companyRoutes from "./routes/CompanyRoutes.js";
 import cors from "cors";
 import contactRoutes from "./routes/contactRoutes.js";
 import connectDB from "./config/db.js";
@@ -21,13 +25,16 @@ app.use(
 );
 
 // Middleware
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 app.use(express.json());
 app.use(cookieParser());
 
 // Routes
+app.use("/api/college", collegeRoutes);
 app.use("/api/student", studentRoutes);
 app.use("/api/admin", authRoutes);
 app.use("/api/contact", contactRoutes);
+app.use("/api/companies", companyRoutes);
 
 // Server
 const PORT = process.env.PORT || 5000;

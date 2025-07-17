@@ -41,7 +41,6 @@ const navLinks = [
     children: [
       { name: "Centre", href: "/join/centre" },
       { name: "College", href: "/join/college" },
-      { name: "Universities", href: "/join/universities" },
     ],
   },
   { name: "Live Session", href: "/live-session" },
