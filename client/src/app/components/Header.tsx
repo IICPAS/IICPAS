@@ -33,7 +33,7 @@ const navLinks = [
     name: "Placements",
     children: [
       { name: "HIRE FROM US", href: "/placements/hire" },
-      { name: "APPLY FOR JOB", href: "/placements/apply" },
+      { name: "APPLY FOR JOB", href: "/jobs" },
     ],
   },
   {
@@ -41,7 +41,7 @@ const navLinks = [
     children: [
       { name: "Centre", href: "/join/centre" },
       { name: "College", href: "/join/college" },
-      { name: "International Organisations", href: "/join/international" },
+      { name: "Universities", href: "/join/universities" },
     ],
   },
   { name: "Live Session", href: "/live-session" },
@@ -87,11 +87,11 @@ export default function Header() {
         <div className="max-w-7xl mx-auto px-6 md:px-10 py-3 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="text-xl font-bold text-[#003057]">
-            <img src="/images/logo.png" alt="IICPA Logo" className="h-10" />
+            <img src="/images/logo.png" alt="IICPA Logo" className="h-12" />
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center gap-6 text-sm text-gray-800 font-medium relative">
+          <nav className="hidden lg:flex items-center gap-8 text-[1.85vmin] text-gray-800 font-medium relative">
             {navLinks.map((item) =>
               item.children ? (
                 <div key={item.name} className="relative group">

@@ -19,7 +19,7 @@ export default function AboutUsSection() {
           />
 
           {/* Testimonial */}
-          <div className="absolute top-4 left-4 bg-white p-4 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 max-w-[250px]">
+          <div className="mt-10 lg:mt-0 absolute -top-20 lg:top-4 left-4 bg-white p-4 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 max-w-[250px]">
             <p className="text-sm italic text-gray-600">
               “It is a long established fact that a reader will be distracted by
               the readable content of a page when looking at its layout.”
@@ -40,7 +40,7 @@ export default function AboutUsSection() {
           </div>
 
           {/* Class Day Box */}
-          <div className="absolute -bottom-16 right-0 bg-blue-900 text-white rounded-xl p-4 w-[220px] shadow-lg">
+          <div className="absolute -bottom-35 lg:-bottom-16 right-0 bg-blue-900 text-white rounded-xl p-4 w-[220px] shadow-lg">
             <h3 className="text-lg font-semibold mb-2">Our Class Day</h3>
             <ul className="text-sm space-y-1">
               {["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday"].map(
@@ -59,7 +59,7 @@ export default function AboutUsSection() {
         </div>
 
         {/* Right Side */}
-        <div className="w-full md:w-[50%]">
+        <div className="w-full md:w-[50%] mt-20">
           <p className="text-green-600 font-semibold mb-2">📘 About Us</p>
           <h2 className="text-3xl md:text-4xl font-extrabold mb-4 leading-snug">
             Behind The Scenes: Discover The People <br /> & Passion Behind
