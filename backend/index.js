@@ -10,6 +10,7 @@ import contactRoutes from "./routes/contactRoutes.js";
 import connectDB from "./config/db.js";
 import studentRoutes from "./routes/studentRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import blogRoutes from "./routes/blogRoutes.js";
 
 dotenv.config();
 connectDB();
@@ -35,6 +36,7 @@ app.use("/api/student", studentRoutes);
 app.use("/api/admin", authRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/companies", companyRoutes);
+app.use("/api/blogs", blogRoutes);
 
 // Server
 const PORT = process.env.PORT || 5000;
