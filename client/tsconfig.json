@@ -32,7 +32,9 @@
     "src/app/components/TicketTab.jsx",
     "src/app/components/ProfileTab.jsx",
     "src/app/components/CertificateTab.jsx",
-    "src/app/college-dashboard/TrainingNotifications.jsx"
+    "src/app/college-dashboard/TrainingNotifications.jsx",
+    "src/app/blogs/page.jsx",
+    "src/app/courses/page.jsx"
   ],
   "exclude": ["node_modules"]
 }
