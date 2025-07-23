@@ -25,10 +25,13 @@ export default function ContactSection() {
     e.preventDefault();
 
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE;
-    console.log(API_BASE_URL);
 
     try {
-      await axios.post(`${API_BASE_URL}/contact`, form);
+      await axios.post(`${API_BASE_URL}/leads`, {
+        ...form,
+        type: "enquiries", // ✅ fixed type field
+      });
+
       toast.success("Message sent successfully!");
       setForm({ name: "", email: "", phone: "", message: "" });
     } catch (error: any) {

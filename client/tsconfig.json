@@ -34,7 +34,8 @@
     "src/app/components/CertificateTab.jsx",
     "src/app/college-dashboard/TrainingNotifications.jsx",
     "src/app/blogs/page.jsx",
-    "src/app/courses/page.jsx"
+    "src/app/courses/page.jsx",
+    "src/app/admin-dashboard/LeadsTab.jsx"
   ],
   "exclude": ["node_modules"]
 }

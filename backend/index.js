@@ -11,7 +11,10 @@ import connectDB from "./config/db.js";
 import studentRoutes from "./routes/studentRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import blogRoutes from "./routes/blogRoutes.js";
-
+import alertRoutes from "./routes/alertRoutes.js";
+import newsRoutes from "./routes/newsRoutes.js";
+import leadRoutes from "./routes/leadRoutes.js";
+//App Configuration
 dotenv.config();
 connectDB();
 
@@ -41,6 +44,9 @@ app.use("/api/admin", authRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/companies", companyRoutes);
 app.use("/api/blogs", blogRoutes);
+app.use("/api", alertRoutes);
+app.use("/api/news", newsRoutes);
+app.use("/api", leadRoutes);
 
 // Server
 const PORT = process.env.PORT || 5000;
