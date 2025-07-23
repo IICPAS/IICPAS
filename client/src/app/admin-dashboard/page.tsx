@@ -1,10 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import StaffManagementTab from "./StaffManagementTab";
 import EnquiriesTab from "./EnquiriesTab";
+import RoleManager from "./RoleManager";
 import Drawer from "react-modern-drawer";
 import axios from "axios";
+import BlogComponent from "./BlogComponent";
 import CollegeTab from "./CollegeTab";
+import StudentsTab from "./StudentsTab";
 import { useRouter } from "next/navigation";
 import "react-modern-drawer/dist/index.css";
 
@@ -28,6 +32,7 @@ import {
   FaTags,
   FaUniversity,
   FaStarOfDavid,
+  FaBlogger,
 } from "react-icons/fa";
 import CompanyTab from "./CompanyTab";
 
@@ -54,6 +59,7 @@ const tabs = [
   { id: "meta", label: "Manage Metatags", icon: <FaTags /> },
   { id: "companies", label: "Companies", icon: <FaStarOfDavid /> },
   { id: "colleges", label: "Colleges", icon: <FaUniversity /> },
+  { id: "Blogs", label: "Blogs", icon: <FaBlogger /> },
 
   { id: "support", label: "Support Requests", icon: <FaEnvelope /> },
 ];
@@ -236,6 +242,14 @@ export default function AdminDashboard() {
             <CompanyTab />
           ) : activeTab === "colleges" ? (
             <CollegeTab />
+          ) : activeTab === "roles" ? (
+            <RoleManager />
+          ) : activeTab === "Blogs" ? (
+            <BlogComponent />
+          ) : activeTab === "students" ? (
+            <StudentsTab />
+          ) : activeTab === "staff" ? ( // or "staff" if that's the tab key you want
+            <StaffManagementTab />
           ) : null}
         </div>
       </main>
