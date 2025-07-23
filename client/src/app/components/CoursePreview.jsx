@@ -104,7 +104,7 @@ export default function CoursePreview() {
                                     topic.contents?.map((html, idx) => (
                                       <div
                                         key={idx}
-                                        className="mt-3 prose prose-sm max-w-none bg-green-200 pl-2"
+                                        className="mt-3 prose prose-sm max-w-none bg-yellow-400 pl-2"
                                         dangerouslySetInnerHTML={{
                                           __html: html,
                                         }}
