@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import StaffManagementTab from "./StaffManagementTab";
 import EnquiriesTab from "./EnquiriesTab";
 import RoleManager from "./RoleManager";
 import Drawer from "react-modern-drawer";
 import axios from "axios";
 import BlogComponent from "./BlogComponent";
 import CollegeTab from "./CollegeTab";
+import StudentsTab from "./StudentsTab";
 import { useRouter } from "next/navigation";
 import "react-modern-drawer/dist/index.css";
 
@@ -244,6 +246,10 @@ export default function AdminDashboard() {
             <RoleManager />
           ) : activeTab === "Blogs" ? (
             <BlogComponent />
+          ) : activeTab === "students" ? (
+            <StudentsTab />
+          ) : activeTab === "staff" ? ( // or "staff" if that's the tab key you want
+            <StaffManagementTab />
           ) : null}
         </div>
       </main>
