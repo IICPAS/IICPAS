@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import AlertsTab from "./AlertsTab";
+import CourseBuilder from "./CourseBuilder";
+import NewsTab from "./NewsTab";
 import StaffManagementTab from "./StaffManagementTab";
-import EnquiriesTab from "./EnquiriesTab";
+import EnquiriesTab from "./LeadsTab";
 import RoleManager from "./RoleManager";
 import Drawer from "react-modern-drawer";
 import axios from "axios";
@@ -33,6 +36,7 @@ import {
   FaUniversity,
   FaStarOfDavid,
   FaBlogger,
+  FaNewspaper,
 } from "react-icons/fa";
 import CompanyTab from "./CompanyTab";
 
@@ -60,7 +64,8 @@ const tabs = [
   { id: "companies", label: "Companies", icon: <FaStarOfDavid /> },
   { id: "colleges", label: "Colleges", icon: <FaUniversity /> },
   { id: "Blogs", label: "Blogs", icon: <FaBlogger /> },
-
+  { id: "Alert", label: "Alert", icon: <FaBell /> },
+  { id: "news", label: "News", icon: <FaNewspaper /> },
   { id: "support", label: "Support Requests", icon: <FaEnvelope /> },
 ];
 
@@ -248,8 +253,14 @@ export default function AdminDashboard() {
             <BlogComponent />
           ) : activeTab === "students" ? (
             <StudentsTab />
-          ) : activeTab === "staff" ? ( // or "staff" if that's the tab key you want
+          ) : activeTab === "staff" ? (
             <StaffManagementTab />
+          ) : activeTab === "Alert" ? (
+            <AlertsTab />
+          ) : activeTab === "news" ? ( // ✅ News tab condition
+            <NewsTab />
+          ) : activeTab === "course" ? ( // ✅ News tab condition
+            <CourseBuilder />
           ) : null}
         </div>
       </main>
