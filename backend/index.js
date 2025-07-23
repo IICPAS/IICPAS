@@ -25,6 +25,10 @@ app.use(
   })
 );
 
+app.get("/", (req, res) => {
+  res.json({ message: "OK", status: 200 });
+});
+
 // Middleware
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 app.use(express.json());
