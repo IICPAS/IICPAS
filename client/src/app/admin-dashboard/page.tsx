@@ -60,7 +60,7 @@ const tabs = [
   { id: "companies", label: "Companies", icon: <FaStarOfDavid /> },
   { id: "colleges", label: "Colleges", icon: <FaUniversity /> },
   { id: "Blogs", label: "Blogs", icon: <FaBlogger /> },
-
+  { id: "Alert", label: "Alert", icon: <FaBell /> },
   { id: "support", label: "Support Requests", icon: <FaEnvelope /> },
 ];
 
