@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import AlertsTab from "./AlertsTab";
+import CourseBuilder from "./CourseBuilder";
 import NewsTab from "./NewsTab";
 import StaffManagementTab from "./StaffManagementTab";
 import EnquiriesTab from "./LeadsTab";
@@ -258,6 +259,8 @@ export default function AdminDashboard() {
             <AlertsTab />
           ) : activeTab === "news" ? ( // ✅ News tab condition
             <NewsTab />
+          ) : activeTab === "course" ? ( // ✅ News tab condition
+            <CourseBuilder />
           ) : null}
         </div>
       </main>

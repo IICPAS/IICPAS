@@ -15,6 +15,7 @@ import JobAdminRoutes from "./routes/JobAdminRoutes.js";
 import JobApplyRoutes from "./routes/JobApplyRoutes.js";
 import alertRoutes from "./routes/alertRoutes.js";
 import newsRoutes from "./routes/newsRoutes.js";
+import courseRoutes from "./routes/courseRoutes.js";
 import leadRoutes from "./routes/leadRoutes.js";
 //App Configuration
 dotenv.config();
@@ -23,6 +24,7 @@ connectDB();
 const app = express();
 
 // CORS configuration
+
 app.use(
   cors({
     origin: process.env.CLIENT_URL || "http://localhost:3000", // your frontend URL
@@ -35,11 +37,13 @@ app.get("/", (req, res) => {
 });
 
 // Middleware
-app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+app.use("/uploads", express.static("uploads")); // Make uploaded images accessible
+
 app.use(express.json());
 app.use(cookieParser());
 
 // Routes
+app.use("/api/courses", courseRoutes);
 app.use("/api/college", collegeRoutes);
 app.use("/api/student", studentRoutes);
 app.use("/api/admin", authRoutes);
