@@ -11,6 +11,8 @@ import connectDB from "./config/db.js";
 import studentRoutes from "./routes/studentRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import blogRoutes from "./routes/blogRoutes.js";
+import JobAdminRoutes from "./routes/JobAdminRoutes.js";
+import JobApplyRoutes from "./routes/JobApplyRoutes.js";
 import alertRoutes from "./routes/alertRoutes.js";
 import newsRoutes from "./routes/newsRoutes.js";
 import leadRoutes from "./routes/leadRoutes.js";
@@ -47,7 +49,8 @@ app.use("/api/blogs", blogRoutes);
 app.use("/api", alertRoutes);
 app.use("/api/news", newsRoutes);
 app.use("/api", leadRoutes);
-
+app.use("/", JobAdminRoutes);
+app.use("/", JobApplyRoutes);
 // Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () =>
