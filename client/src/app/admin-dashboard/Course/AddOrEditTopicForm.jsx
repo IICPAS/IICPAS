@@ -2,11 +2,13 @@
 import React, { useState, useEffect } from "react";
 import { Box, Button, TextField, Typography, Stack } from "@mui/material";
 import * as XLSX from "xlsx";
-import ReactQuill from "react-quill-new";
+
 import "react-quill-new/dist/quill.snow.css";
 import axios from "axios";
 import Swal from "sweetalert2";
 
+import dynamic from "next/dynamic";
+const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 
 const quillModules = {

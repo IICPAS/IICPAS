@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from "react";
 import CourseList from "./Course/CourseList";
 import ChapterList from "./Course/ChapterList";
