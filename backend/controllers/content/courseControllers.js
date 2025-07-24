@@ -13,27 +13,32 @@ export const getCourse = async (req, res) => {
 
 export const createCourse = async (req, res) => {
   try {
+    // Use req.body to get fields, and req.file for image
     const {
       category,
       title,
       price,
+      slug,
       level,
       discount,
       status,
       description,
-      chapters,
+      chapters, // typically not set on create, but can be empty
     } = req.body;
 
+    // Handle uploaded image (if present)
     let imageUrl = "";
     if (req.file) {
       imageUrl = `/uploads/${req.file.filename}`;
     }
 
+    // Create course document
     const course = new Course({
       category,
       title,
+      slug,
       price,
-      image: imageUrl, // Store file path/url
+      image: imageUrl,
       level,
       discount,
       status,

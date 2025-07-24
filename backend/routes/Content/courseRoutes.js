@@ -6,7 +6,7 @@ const router = Router();
 router.get("/", courseController.getAllCourses);
 router.post("/", upload.single("image"), courseController.createCourse);
 router.get("/:id", courseController.getCourse);
-router.put("/:id", courseController.updateCourse);
+router.put("/:id", upload.single("image"), courseController.updateCourse);
 router.delete("/:id", courseController.deleteCourse);
 
 export default router;

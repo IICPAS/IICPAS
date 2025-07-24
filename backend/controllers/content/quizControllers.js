@@ -3,6 +3,7 @@ import Topic from "../../models/Content/Topic.js";
 
 // Create Quiz (assumes body includes topic and questions)
 export const createQuiz = async (req, res) => {
+  console.log(req.body);
   const quiz = new Quiz(req.body);
   await quiz.save();
   // Link quiz to topic
