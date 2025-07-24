@@ -1,5 +1,7 @@
+"use client";
 import dynamic from "next/dynamic";
+import "react-quill-new/dist/quill.snow.css";
 
-// Dynamically import Quill only on the client (no SSR crash)
-const QuillNoSSR = dynamic(() => import("react-quill-new"), { ssr: false });
-export default QuillNoSSR;
+const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
+
+export default ReactQuill;
