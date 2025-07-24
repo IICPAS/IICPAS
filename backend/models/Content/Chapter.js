@@ -1,9 +1,12 @@
 import mongoose from "mongoose";
+const { Schema, model } = mongoose;
 
-const chapterSchema = new mongoose.Schema({
+const ChapterSchema = new Schema({
   title: { type: String, required: true },
-  subchapters: [{ type: mongoose.Schema.Types.ObjectId, ref: "Subchapter" }],
+  topics: [{ type: Schema.Types.ObjectId, ref: "Topic" }],
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
 });
 
-const Chapter = mongoose.model("Chapter", chapterSchema);
+const Chapter = model("Chapter", ChapterSchema);
 export default Chapter;

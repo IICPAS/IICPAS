@@ -15,8 +15,14 @@ import JobAdminRoutes from "./routes/JobAdminRoutes.js";
 import JobApplyRoutes from "./routes/JobApplyRoutes.js";
 import alertRoutes from "./routes/alertRoutes.js";
 import newsRoutes from "./routes/newsRoutes.js";
-import courseRoutes from "./routes/courseRoutes.js";
 import leadRoutes from "./routes/leadRoutes.js";
+
+//Import Routes For Content
+import courseRoutes from "./routes/Content/courseRoutes.js";
+import chapterRoutes from "./routes/Content/chapterRoutes.js";
+import topicRoutes from "./routes/Content/topicRoutes.js";
+import quizRoutes from "./routes/Content/quizRoutes.js";
+
 //App Configuration
 dotenv.config();
 connectDB();
@@ -43,7 +49,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Routes
-app.use("/api/courses", courseRoutes);
+
 app.use("/api/college", collegeRoutes);
 app.use("/api/student", studentRoutes);
 app.use("/api/admin", authRoutes);
@@ -55,6 +61,13 @@ app.use("/api/news", newsRoutes);
 app.use("/api", leadRoutes);
 app.use("/", JobAdminRoutes);
 app.use("/", JobApplyRoutes);
+
+//Content Routes
+app.use("/api/courses", courseRoutes);
+app.use("/api/chapters", chapterRoutes);
+app.use("/api/topics", topicRoutes);
+app.use("/api/quizzes", quizRoutes);
+
 // Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () =>

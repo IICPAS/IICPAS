@@ -39,20 +39,18 @@ import {
   FaNewspaper,
 } from "react-icons/fa";
 import CompanyTab from "./CompanyTab";
+import CourseTabs from "./CourseBuilder";
+import CourseArea from "./CourseBuilder";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 
 const tabs = [
-  { id: "dashboard", label: "Dashboard", icon: <FaClipboardList /> },
   { id: "course-category", label: "Course Category", icon: <FaBook /> },
   { id: "course", label: "Course", icon: <FaLayerGroup /> },
   { id: "live-session", label: "Live Session", icon: <FaCalendarAlt /> },
   { id: "center", label: "Center", icon: <FaHome /> },
-  { id: "teachers", label: "Teachers", icon: <FaChalkboardTeacher /> },
   { id: "students", label: "Students", icon: <FaUserGraduate /> },
-  { id: "roles", label: "Manage Roles", icon: <FaUserShield /> },
   { id: "staff", label: "Staff Management", icon: <FaUsers /> },
-  { id: "orders", label: "Orders", icon: <FaBriefcase /> },
   { id: "enquiries", label: "Enquiries", icon: <FaEnvelope /> },
   { id: "jobs", label: "Jobs", icon: <FaBriefcase /> },
   { id: "calendar", label: "Calendar", icon: <FaCalendarAlt /> },
@@ -260,7 +258,7 @@ export default function AdminDashboard() {
           ) : activeTab === "news" ? ( // ✅ News tab condition
             <NewsTab />
           ) : activeTab === "course" ? ( // ✅ News tab condition
-            <CourseBuilder />
+            <CourseArea />
           ) : null}
         </div>
       </main>
