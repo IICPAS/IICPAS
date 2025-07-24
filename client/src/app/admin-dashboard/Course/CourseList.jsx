@@ -29,12 +29,14 @@ const statusColors = {
 export default function CourseList({
   onAddCourse,
   onEditCourse,
-  onAddChapter, // passed from parent
+  onAddChapter,
   onToggleStatus,
+  onDeleteCourse,
 }) {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // Fetch courses from the API
   const fetchCourses = useCallback(() => {
     setLoading(true);
     axios
@@ -47,7 +49,26 @@ export default function CourseList({
     fetchCourses();
   }, [fetchCourses]);
 
-  // Delete confirmation omitted for brevity, add your existing handleDelete here
+  // Handler for delete (calls parent, then refreshes)
+  const handleDelete = async (course) => {
+    const result = await MySwal.fire({
+      title: `Delete course "${course.title}"?`,
+      text: "This cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, delete it!",
+    });
+    if (result.isConfirmed) {
+      await onDeleteCourse(course);
+      fetchCourses();
+    }
+  };
+
+  // Handler for status toggle (calls parent, then refreshes)
+  const handleToggleStatus = async (course) => {
+    await onToggleStatus(course);
+    fetchCourses();
+  };
 
   const columns = [
     { field: "category", headerName: "Category", flex: 1, minWidth: 120 },
@@ -87,7 +108,6 @@ export default function CourseList({
             >
               Chapters
             </Button>
-
             <Tooltip title="Edit Course">
               <IconButton
                 color="info"
@@ -97,19 +117,21 @@ export default function CourseList({
                 <EditIcon />
               </IconButton>
             </Tooltip>
-
             <Tooltip title="Toggle Status">
               <IconButton
                 color="success"
                 size="small"
-                onClick={() => onToggleStatus(course)}
+                onClick={() => handleToggleStatus(course)}
               >
                 <CheckCircleIcon />
               </IconButton>
             </Tooltip>
-
             <Tooltip title="Delete Course">
-              <IconButton color="error" size="small">
+              <IconButton
+                color="error"
+                size="small"
+                onClick={() => handleDelete(course)}
+              >
                 <DeleteIcon />
               </IconButton>
             </Tooltip>
@@ -120,7 +142,7 @@ export default function CourseList({
   ];
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{}}>
       <Stack
         direction="row"
         alignItems="center"
@@ -139,8 +161,7 @@ export default function CourseList({
           Add Course
         </Button>
       </Stack>
-
-      <Box sx={{ bgcolor: "white", borderRadius: 3, boxShadow: 2, p: 2 }}>
+      <Box sx={{ bgcolor: "white", borderRadius: 3, boxShadow: 2, p: 1 }}>
         <DataGrid
           autoHeight
           rows={courses.map((c) => ({ ...c, id: c._id }))}
@@ -152,12 +173,14 @@ export default function CourseList({
           sx={{
             border: "none",
             fontSize: 15,
+            width: "72vw",
             "& .MuiDataGrid-cell": {
               borderBottom: "1px solid #e0e0e0",
             },
             "& .MuiDataGrid-columnHeaders": {
               background: "#f6f8fa",
               fontWeight: 700,
+              width: "72vw",
               fontSize: 15,
             },
           }}

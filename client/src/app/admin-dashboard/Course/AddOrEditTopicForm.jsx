@@ -63,7 +63,7 @@ const quillFormats = [
 export default function AddOrEditTopicForm({
   chapterId,
   chapterName,
-  topic, // If set, we are in EDIT mode
+  topic,
   onCancel,
   onSaved,
 }) {
@@ -72,16 +72,13 @@ export default function AddOrEditTopicForm({
   const [quizFile, setQuizFile] = useState(null);
   const [quizData, setQuizData] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
-
   const [saving, setSaving] = useState(false);
 
-  // Re-populate fields when editing a different topic
   useEffect(() => {
     setTitle(topic?.title || "");
     setContent(topic?.content || "");
   }, [topic]);
 
-  // Excel parsing
   const handleQuizUpload = (e) => {
     const file = e.target.files[0];
     setQuizFile(file);
@@ -109,7 +106,6 @@ export default function AddOrEditTopicForm({
     reader.readAsArrayBuffer(file);
   };
 
-  // Form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title.trim() || !content.trim()) {
@@ -124,7 +120,6 @@ export default function AddOrEditTopicForm({
           title: title.trim(),
           content,
         });
-        // Optionally: allow quiz edit here as well
       } else {
         // ADD
         const topicRes = await axios.post(
@@ -163,21 +158,28 @@ export default function AddOrEditTopicForm({
   return (
     <Box
       sx={{
-        p: { xs: 1, md: 4 },
-        maxWidth: 750,
+        // --- MAIN CHANGE HERE ---
+        p: 0, // no outer padding
+        width: "80vw",
+        maxWidth: "76vw",
         mx: "auto",
-        mt: 6,
+        mt: 3, // or 0 for no margin
         bgcolor: "white",
-        borderRadius: 3,
-        boxShadow: 3,
+        borderRadius: 2,
       }}
     >
-      <Typography variant="h5" fontWeight={700} gutterBottom align="center">
-        {topic ? `Edit Topic` : `Add Topic`} for "{chapterName}"
-      </Typography>
-
       <form onSubmit={handleSubmit}>
-        <Stack spacing={3}>
+        <Stack spacing={3} sx={{ p: { xs: 2, md: 5 } }}>
+          <Typography
+            variant="h5"
+            fontWeight={700}
+            gutterBottom
+            align="center"
+            sx={{ mb: 2, fontSize: 28 }}
+          >
+            {topic ? `Edit Topic` : `Add Topic`} for "{chapterName}"
+          </Typography>
+
           <TextField
             label="Topic Title *"
             value={title}
@@ -186,6 +188,7 @@ export default function AddOrEditTopicForm({
             required
             inputProps={{ style: { fontSize: 18, fontWeight: 500 } }}
           />
+
           <Box>
             <Typography
               fontWeight={600}
@@ -247,7 +250,7 @@ export default function AddOrEditTopicForm({
               disabled={saving}
               sx={{ minWidth: 120 }}
             >
-              Cancel
+              Back
             </Button>
             <Button
               variant="contained"

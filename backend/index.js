@@ -22,7 +22,7 @@ import courseRoutes from "./routes/Content/courseRoutes.js";
 import chapterRoutes from "./routes/Content/chapterRoutes.js";
 import topicRoutes from "./routes/Content/topicRoutes.js";
 import quizRoutes from "./routes/Content/quizRoutes.js";
-
+import categoryRoutes from "./routes/Content/categoryRoutes.js";
 //App Configuration
 dotenv.config();
 connectDB();
@@ -67,6 +67,7 @@ app.use("/api/courses", courseRoutes);
 app.use("/api/chapters", chapterRoutes);
 app.use("/api/topics", topicRoutes);
 app.use("/api/quizzes", quizRoutes);
+app.use("/api/categories", categoryRoutes);
 
 // Server
 const PORT = process.env.PORT || 5000;

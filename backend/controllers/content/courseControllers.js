@@ -13,7 +13,7 @@ export const getCourse = async (req, res) => {
 
 export const createCourse = async (req, res) => {
   try {
-    // Use req.body to get fields, and req.file for image
+    // Destructure all expected fields from req.body
     const {
       category,
       title,
@@ -23,7 +23,13 @@ export const createCourse = async (req, res) => {
       discount,
       status,
       description,
-      chapters, // typically not set on create, but can be empty
+      examCert,
+      caseStudy,
+      video,
+      seoTitle,
+      seoKeywords,
+      seoDescription,
+      chapters, // optional
     } = req.body;
 
     // Handle uploaded image (if present)
@@ -43,6 +49,12 @@ export const createCourse = async (req, res) => {
       discount,
       status,
       description,
+      examCert,
+      caseStudy,
+      video,
+      seoTitle,
+      seoKeywords,
+      seoDescription,
       chapters,
     });
 

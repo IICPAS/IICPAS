@@ -39,8 +39,10 @@ import {
   FaNewspaper,
 } from "react-icons/fa";
 import CompanyTab from "./CompanyTab";
-import CourseTabs from "./CourseBuilder";
+
 import CourseArea from "./CourseBuilder";
+import CourseCategory from "./Course/CourseCategory";
+import LiveSessionAdmin from "./Course/LiveSesionAdmin";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 
@@ -54,7 +56,7 @@ const tabs = [
   { id: "enquiries", label: "Enquiries", icon: <FaEnvelope /> },
   { id: "jobs", label: "Jobs", icon: <FaBriefcase /> },
   { id: "calendar", label: "Calendar", icon: <FaCalendarAlt /> },
-  { id: "blogs", label: "Blogs", icon: <FaBlog /> },
+
   { id: "team", label: "Our Team", icon: <FaUsers /> },
   { id: "testimonials", label: "Testimonials", icon: <FaQuoteRight /> },
   { id: "about", label: "About Us", icon: <FaBook /> },
@@ -238,7 +240,7 @@ export default function AdminDashboard() {
       <main className="flex-1 bg-gray-100 min-h-screen p-6 pt-20">
         <div className="bg-white p-6 rounded-lg shadow">
           {activeTab === "live-session" ? (
-            renderLiveSessions()
+            <LiveSessionAdmin />
           ) : activeTab === "enquiries" ? (
             <EnquiriesTab />
           ) : activeTab === "companies" ? (
@@ -249,6 +251,8 @@ export default function AdminDashboard() {
             <RoleManager />
           ) : activeTab === "Blogs" ? (
             <BlogComponent />
+          ) : activeTab === "course-category" ? (
+            <CourseCategory />
           ) : activeTab === "students" ? (
             <StudentsTab />
           ) : activeTab === "staff" ? (

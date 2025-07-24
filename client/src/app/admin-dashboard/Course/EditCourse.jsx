@@ -24,7 +24,10 @@ const LEVEL_OPTIONS = [
 ];
 
 export default function EditCourse({ courseId, onBack }) {
+  console.log(courseId);
+
   const [form, setForm] = useState(null);
+
   const [loading, setLoading] = useState(false);
 
   // Fix hydration issues by only rendering after mount (for image URL, etc)
