@@ -1,13 +1,19 @@
 import mongoose from "mongoose";
-const courseSchema = new mongoose.Schema(
-  {
-    title: { type: String, required: true },
-    subjects: [{ type: mongoose.Schema.Types.ObjectId, ref: "Subject" }],
-    previewImage: { type: String }, // Stores filename or URL
-    price: { type: Number, required: true }, // 💰 Add course price
-  },
-  { timestamps: true }
-);
+const { Schema, model } = mongoose;
 
-const Course = mongoose.model("Course", courseSchema);
+const CourseSchema = new Schema({
+  category: { type: String, required: true }, // e.g., "Mathematics"
+  title: { type: String, required: true },
+  price: { type: Number, required: true },
+  image: { type: String }, // Store image URL or path
+  level: { type: String }, // e.g., "Beginner", "Intermediate", "Advanced"
+  discount: { type: Number, default: 0 }, // Discount amount or percent
+  status: { type: String, default: "active" }, // e.g., "active" or "inactive"
+  description: { type: String }, // Plain text
+  chapters: [{ type: Schema.Types.ObjectId, ref: "Chapter" }],
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+});
+
+const Course = model("Course", CourseSchema);
 export default Course;

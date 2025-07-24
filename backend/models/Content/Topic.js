@@ -1,10 +1,13 @@
 import mongoose from "mongoose";
+const { Schema, model } = mongoose;
 
-const topicSchema = new mongoose.Schema({
+const TopicSchema = new Schema({
   title: { type: String, required: true },
-  contents: [{ type: String }], // base64 encoded content
-  quiz: { type: mongoose.Schema.Types.ObjectId, ref: "Quiz" },
+  content: { type: String, required: true }, // Markdown content
+  quiz: { type: Schema.Types.ObjectId, ref: "Quiz" }, // Reference to quiz
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
 });
 
-const Topic = mongoose.model("Topic", topicSchema);
+const Topic = model("Topic", TopicSchema);
 export default Topic;
