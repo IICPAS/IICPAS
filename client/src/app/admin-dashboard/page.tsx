@@ -47,6 +47,7 @@ import CompanyTab from "./CompanyTab";
 import CourseArea from "./CourseBuilder";
 import CourseCategory from "./Course/CourseCategory";
 import LiveSessionAdmin from "./Course/LiveSesionAdmin";
+import TicketTab from "../components/TicketTab";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 
@@ -251,6 +252,8 @@ export default function AdminDashboard() {
             <LiveSessionAdmin />
           ) : activeTab === "enquiries" ? (
             <EnquiriesTab />
+          ) : activeTab === "support" ? (
+            <TicketTab />
           ) : activeTab === "companies" ? (
             <CompanyTab />
           ) : activeTab === "meta" ? (
