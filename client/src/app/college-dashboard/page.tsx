@@ -59,7 +59,7 @@ const CollegeDashboard = () => {
   useEffect(() => {
     const fetchCollege = async () => {
       try {
-        const res = await axios.get(`${API}/api/college/isCollege`, {
+        const res = await axios.get(`${API}/college/isCollege`, {
           withCredentials: true,
         });
         setCollege(res.data.college);
@@ -73,7 +73,7 @@ const CollegeDashboard = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.get(`${API}/api/college/logout`, {
+      await axios.get(`${API}/college/logout`, {
         withCredentials: true,
       });
       toast.success("Logged out");

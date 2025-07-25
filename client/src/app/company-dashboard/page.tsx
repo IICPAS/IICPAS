@@ -34,7 +34,7 @@ const CompanyDashboardPage = () => {
   useEffect(() => {
     const verifyCompany = async () => {
       try {
-        const res = await axios.get(`${API}/api/companies/iscompany`, {
+        const res = await axios.get(`${API}/companies/iscompany`, {
           withCredentials: true,
         });
         setCompany(res.data.company);
@@ -51,7 +51,7 @@ const CompanyDashboardPage = () => {
   const handleLogout = async () => {
     try {
       await axios.post(
-        `${API}/api/companies/logout`,
+        `${API}/companies/logout`,
         {},
         { withCredentials: true }
       );
