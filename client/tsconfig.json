@@ -36,7 +36,8 @@
     "src/app/blogs/page.jsx",
     "src/app/courses/page.jsx",
     "src/app/admin-dashboard/LeadsTab.jsx",
-    "src/app/components/TestimonialSection.jsx"
+    "src/app/components/TestimonialSection.jsx",
+    "src/app/jobs/LoginPage.jsx"
   ],
   "exclude": ["node_modules"]
 }

@@ -60,22 +60,28 @@ export default function JobsAdminPanel() {
     setEditId(null);
   };
 
-  const handleDelete = async (id) => {
+  const handleDeleteApplication = async (applicant) => {
     const confirm = await Swal.fire({
-      title: "Delete this job?",
+      title: `Delete application for ${applicant.name}?`,
       text: "This action cannot be undone!",
       icon: "warning",
       showCancelButton: true,
+      confirmButtonText: "Yes, delete it!",
       confirmButtonColor: "#d33",
       cancelButtonColor: "#3085d6",
-      confirmButtonText: "Yes, delete it!",
     });
 
     if (confirm.isConfirmed) {
-      await axios.delete(`${api}/jobs-internal/${id}`);
-      fetchJobs();
-      Swal.fire("Deleted!", "The job has been removed.", "success");
+      await axios.delete(`${api}/jobs-internal/applications/${applicant._id}`);
+      fetchApplications(selectedJob);
+      Swal.fire("Deleted!", "The application has been removed.", "success");
     }
+  };
+
+  // Utility to refresh applications
+  const fetchApplications = async (job) => {
+    const res = await axios.get(`${api}/jobs-internal/${job._id}/applications`);
+    setApplications(res.data);
   };
 
   const handleEdit = (job) => {
@@ -92,8 +98,24 @@ export default function JobsAdminPanel() {
   };
 
   const handleShortlist = async (applicant) => {
-    await axios.post(`${api}/applications/${applicant._id}/shortlist`);
-    alert("Shortlist email sent!");
+    const confirm = await Swal.fire({
+      title: `Shortlist ${applicant.name}?`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Yes, shortlist",
+    });
+
+    if (confirm.isConfirmed) {
+      await axios.post(
+        `${api}/jobs-internal/applications/${applicant._id}/shortlist`
+      );
+      fetchApplications(selectedJob); // Refresh the list
+      Swal.fire(
+        "Shortlisted!",
+        `${applicant.name} has been shortlisted.`,
+        "success"
+      );
+    }
   };
 
   const exportToExcel = () => {
@@ -232,7 +254,7 @@ export default function JobsAdminPanel() {
                 <TableCell>Name</TableCell>
                 <TableCell>Email</TableCell>
                 <TableCell>Phone</TableCell>
-                <TableCell>Status</TableCell>
+                <TableCell>Shortlisted</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
@@ -256,9 +278,7 @@ export default function JobsAdminPanel() {
                     )}
                     <IconButton
                       color="error"
-                      onClick={() =>
-                        alert("Rejected (demo only, email not implemented).")
-                      }
+                      onClick={() => handleDeleteApplication(applicant)}
                     >
                       <CloseIcon />
                     </IconButton>
