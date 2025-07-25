@@ -1,315 +1,419 @@
-"use client";
-
-import React, { useEffect, useState, useCallback } from "react";
-import {
-  Box,
-  Button,
-  TextField,
-  Typography,
-  Stack,
-  Chip,
-  IconButton,
-  Tooltip,
-} from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
+import React, { useState } from "react";
+import Select from "react-select";
+import { useEffect } from "react";
 import axios from "axios";
-import Swal from "sweetalert2";
-import withReactContent from "sweetalert2-react-content";
+import { FaArrowLeft, FaPlus } from "react-icons/fa";
+import dynamic from "next/dynamic";
+import "react-quill-new/dist/quill.snow.css";
 
-const MySwal = withReactContent(Swal);
+const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
+
+const modules = {
+  toolbar: [
+    [{ font: [] }, { size: [] }],
+    [{ header: [1, 2, 3, false] }],
+    ["bold", "italic", "underline", "strike"],
+    [{ color: [] }, { background: [] }],
+    [{ list: "ordered" }, { list: "bullet" }],
+    [{ align: [] }],
+    ["link", "image", "video"],
+    ["clean"],
+  ],
+};
+const formats = [
+  "header",
+  "font",
+  "size",
+  "bold",
+  "italic",
+  "underline",
+  "strike",
+  "color",
+  "background",
+  "list",
+  "bullet",
+  "align",
+  "link",
+  "image",
+  "video",
+];
+
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
-
-const statusColors = {
-  Active: "success",
-  Inactive: "default",
+// const CATEGORY_OPTIONS = [
+//   { value: "Accounting", label: "Accounting" },
+//   { value: "Taxation", label: "Taxation" },
+//   { value: "HR", label: "HR" },
+//   { value: "Finance", label: "Finance" },
+//   { value: "US CMA", label: "US CMA" },
+// ];
+const LEVEL_OPTIONS = [
+  { value: "Foundation", label: "Foundation" },
+  { value: "Core", label: "Core" },
+  { value: "Expert", label: "Expert" },
+];
+const initialForm = {
+  category: null,
+  title: "",
+  slug: "",
+  price: "",
+  level: null,
+  discount: "",
+  status: "Active",
+  video: "",
+  description: "",
+  examCert: "",
+  caseStudy: "",
+  seoTitle: "",
+  seoKeywords: "",
+  seoDescription: "",
+  image: null,
 };
 
-export default function ChapterList({
-  courseId,
-  courseName,
-  onViewCourse,
-  onViewTopics,
-  onEditChapter,
-}) {
-  const [chapters, setChapters] = useState([]);
+export default function CourseAddTab({ onBack }) {
+  const [categoryOptions, setCategoryOptions] = useState([]);
+
+  const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(false);
-  const [search, setSearch] = useState("");
-  const [addingChapter, setAddingChapter] = useState(false);
-  const [newTitle, setNewTitle] = useState("");
-  const [newStatus, setNewStatus] = useState("Active");
-  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
-  // Fetch chapters by courseId from API
-  const fetchChapters = useCallback(() => {
-    setLoading(true);
-    axios
-      .get(`${API_BASE}/chapters/by-course/${courseId}`)
-      .then((res) => setChapters(res.data))
-      .finally(() => setLoading(false));
-  }, [courseId]);
-
-  // Only fetch chapters on client side when courseId changes
   useEffect(() => {
-    if (typeof window !== "undefined" && courseId) {
-      fetchChapters();
-    }
-  }, [courseId, fetchChapters]);
+    // Fetch available categories for select dropdown
+    axios
+      .get(`${API_BASE}/categories`)
+      .then((res) => {
+        // If your API returns array of objects with a "category" field:
+        setCategoryOptions(
+          res.data.map((c) => ({
+            value: c.category,
+            label: c.category,
+          }))
+        );
+      })
+      .catch(() => setCategoryOptions([]));
+  }, []);
 
-  // Handle delete chapter with confirmation
-  const handleDelete = async (id) => {
-    const result = await MySwal.fire({
-      title: "Are you sure?",
-      text: "You will not be able to recover this chapter!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, delete it!",
-    });
-    if (result.isConfirmed) {
-      try {
-        await axios.delete(`${API_BASE}/chapters/${id}`);
-        fetchChapters();
-        MySwal.fire("Deleted!", "Chapter has been deleted.", "success");
-      } catch {
-        MySwal.fire("Error!", "Failed to delete chapter", "error");
-      }
-    }
+  const handleCategoryChange = (option) =>
+    setForm((f) => ({ ...f, category: option }));
+  const handleLevelChange = (option) =>
+    setForm((f) => ({ ...f, level: option }));
+
+  const handleInputChange = (e) => {
+    const { name, value, files } = e.target;
+    setForm((f) => ({
+      ...f,
+      [name]: files ? files[0] : value,
+    }));
   };
 
-  // Filter chapters by search term (case-insensitive)
-  const filteredChapters = chapters.filter((ch) =>
-    ch.title.toLowerCase().includes(search.toLowerCase())
-  );
+  // This function updates each quill field by key
+  const handleQuillChange = (field) => (value) => {
+    setForm((f) => ({ ...f, [field]: value }));
+  };
 
-  // DataGrid columns definition
-  const columns = [
-    {
-      field: "srNo",
-      headerName: "Sr. No.",
-      width: 80,
-      valueGetter: (params) => {
-        if (!params || !params.row) return null;
-        return (
-          filteredChapters.findIndex((ch) => ch._id === params.row._id) + 1
-        );
-      },
-      sortable: false,
-      filterable: false,
-    },
-    {
-      field: "courseName",
-      headerName: "Course Name",
-      flex: 1,
-      valueGetter: () => courseName,
-    },
-    { field: "title", headerName: "Chapter Name", flex: 1 },
-    {
-      field: "status",
-      headerName: "Status",
-      width: 110,
-      renderCell: (params) => (
-        <Chip
-          label={params.value}
-          color={statusColors[params.value] || "default"}
-          variant="outlined"
-          size="small"
-        />
-      ),
-    },
-    {
-      field: "actions",
-      headerName: "Action",
-      width: 220,
-      sortable: false,
-      filterable: false,
-      renderCell: (params) => (
-        <Stack direction="row" spacing={1}>
-          <Button
-            variant="contained"
-            color="primary"
-            size="small"
-            onClick={() => onViewTopics(params.row)}
-          >
-            Topics
-          </Button>
+  const getFinalPrice = () => {
+    const price = parseFloat(form.price) || 0;
+    const discount = parseFloat(form.discount) || 0;
+    return price && discount
+      ? Math.max(0, price - (price * discount) / 100)
+      : price || "";
+  };
 
-          <Tooltip title="Edit Chapter">
-            <IconButton
-              color="info"
-              size="small"
-              onClick={() => onEditChapter(params.row)}
-            >
-              <EditIcon />
-            </IconButton>
-          </Tooltip>
-
-          <Tooltip title="Delete Chapter">
-            <IconButton
-              color="error"
-              size="small"
-              onClick={() => handleDelete(params.row._id)}
-            >
-              <DeleteIcon />
-            </IconButton>
-          </Tooltip>
-        </Stack>
-      ),
-    },
-  ];
-
-  // Handle adding a new chapter submission
-  const handleAddChapter = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!newTitle.trim()) return;
+    setLoading(true);
+    setError("");
 
-    setSaving(true);
     try {
-      await axios.post(`${API_BASE}/chapters/by-course/${courseId}`, {
-        courseId,
-        title: newTitle.trim(),
-        status: newStatus,
+      const fd = new FormData();
+
+      // Add category and level from select inputs
+      fd.append("category", form.category?.value || "");
+      fd.append("level", form.level?.value || "");
+
+      // Add the rest of the fields
+      Object.entries(form).forEach(([k, v]) => {
+        if (["category", "level"].includes(k)) return;
+        if (v === null || v === undefined) return;
+
+        // Handle File input
+        if (v instanceof File) {
+          fd.append(k, v);
+        }
+        // Handle FileList (e.g., multiple files)
+        else if (v instanceof FileList) {
+          Array.from(v).forEach((file) => fd.append(k, file));
+        }
+        // Handle Array (could be text, numbers, etc.)
+        else if (Array.isArray(v)) {
+          v.forEach((item, idx) =>
+            fd.append(
+              `${k}[${idx}]`,
+              typeof item === "object" ? JSON.stringify(item) : item
+            )
+          );
+        }
+        // Handle Object (not File)
+        else if (typeof v === "object") {
+          fd.append(k, JSON.stringify(v));
+        }
+        // Handle primitive values
+        else {
+          fd.append(k, v);
+        }
       });
-      setNewTitle("");
-      setNewStatus("Active");
-      setAddingChapter(false);
-      fetchChapters();
-      MySwal.fire("Success!", "Chapter added successfully", "success");
-    } catch (error) {
-      MySwal.fire("Error!", "Failed to add chapter", "error");
+
+      // Send the request WITHOUT setting Content-Type
+      await axios.post(`${API_BASE}/courses`, fd);
+
+      setForm(initialForm);
+      if (onBack) onBack();
+    } catch (err) {
+      setError(err?.response?.data?.message || "Error adding course");
+    } finally {
+      setLoading(false);
     }
-    setSaving(false);
   };
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Stack
-        direction="row"
-        alignItems="center"
-        justifyContent="space-between"
-        mb={2}
-      >
-        <Typography variant="h5" fontWeight={700}>
-          Chapters for "{courseName}"
-        </Typography>
-
-        <Stack direction="row" spacing={2} alignItems="center">
-          <TextField
-            placeholder="Search..."
-            variant="outlined"
-            size="small"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-
-          {!addingChapter && (
-            <Button
-              variant="contained"
-              sx={{
-                bgcolor: "#1a237e",
-                textTransform: "none",
-                fontWeight: 600,
-                fontSize: 14,
-                px: 3,
-                py: 1.2,
-                borderRadius: 1.5,
-                "&:hover": { bgcolor: "#283593" },
-              }}
-              onClick={() => setAddingChapter(true)}
-            >
-              + Add Chapter
-            </Button>
-          )}
-
-          <Button variant="outlined" onClick={onViewCourse}>
-            View Course
-          </Button>
-        </Stack>
-      </Stack>
-
-      {/* Add Chapter Form */}
-      {addingChapter && (
-        <Box
-          component="form"
-          onSubmit={handleAddChapter}
-          sx={{
-            bgcolor: "white",
-            p: 3,
-            borderRadius: 2,
-            boxShadow: 3,
-            maxWidth: 480,
-            mb: 3,
-          }}
+    <div className="w-full max-w-[2400px] mx-auto bg-white rounded-2xl p-8 min-h-screen">
+      <div className="flex justify-between items-center mb-8">
+        <h3 className="text-2xl font-bold">Create Course</h3>
+        <button
+          type="button"
+          onClick={onBack}
+          className="bg-blue-700 text-white px-5 py-2 rounded flex items-center gap-2"
         >
-          <Stack spacing={2}>
-            <TextField
-              label="Chapter Title"
-              required
-              fullWidth
-              value={newTitle}
-              onChange={(e) => setNewTitle(e.target.value)}
-            />
-
-            {/* Optionally add a status select here */}
-            {/* <FormControl fullWidth>
-              <InputLabel>Status</InputLabel>
+          <FaArrowLeft /> View Courses
+        </button>
+      </div>
+      <form onSubmit={handleSubmit} className="space-y-10">
+        {/* Top Fields */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="space-y-5">
+            <div>
+              <label className="block mb-1 font-semibold">
+                Select Category
+              </label>
               <Select
-                value={newStatus}
-                label="Status"
-                onChange={(e) => setNewStatus(e.target.value)}
+                options={categoryOptions}
+                value={form.category}
+                onChange={handleCategoryChange}
+                placeholder="Select Category"
+                required
+                styles={{ control: (base) => ({ ...base, minHeight: "40px" }) }}
+              />
+            </div>
+            <div>
+              <label className="block mb-1 font-semibold">Course Name</label>
+              <input
+                name="title"
+                placeholder="Enter course name"
+                className="w-full border p-2 rounded"
+                value={form.title}
+                onChange={handleInputChange}
+                required
+                autoComplete="off"
+              />
+            </div>
+            <div>
+              <label className="block mb-1 font-semibold">Course Image</label>
+              <input
+                type="file"
+                name="image"
+                accept="image/*"
+                onChange={handleInputChange}
+                className="w-full"
+              />
+            </div>
+            <div>
+              <label className="block mb-1 font-semibold">Discount (%)</label>
+              <input
+                name="discount"
+                placeholder="Enter the Discount"
+                type="number"
+                className="w-full border p-2 rounded"
+                value={form.discount}
+                onChange={handleInputChange}
+                min="0"
+                max="100"
+              />
+            </div>
+            <div>
+              <label className="block mb-1 font-semibold">
+                Course Video Link
+              </label>
+              <input
+                name="video"
+                placeholder="Enter the course video link"
+                className="w-full border p-2 rounded"
+                value={form.video}
+                onChange={handleInputChange}
+              />
+            </div>
+          </div>
+          <div className="space-y-5">
+            <div>
+              <label className="block mb-1 font-semibold">
+                Select course level
+              </label>
+              <Select
+                options={LEVEL_OPTIONS}
+                value={form.level}
+                onChange={handleLevelChange}
+                placeholder="Select course level"
+                required
+                styles={{ control: (base) => ({ ...base, minHeight: "40px" }) }}
+              />
+            </div>
+            <div>
+              <label className="block mb-1 font-semibold">Course Slug</label>
+              <input
+                name="slug"
+                placeholder="Enter course slug"
+                className="w-full border p-2 rounded"
+                value={form.slug || ""}
+                onChange={handleInputChange}
+                autoComplete="off"
+              />
+            </div>
+            <div>
+              <label className="block mb-1 font-semibold">Actual Price</label>
+              <input
+                name="price"
+                placeholder="Enter actual price"
+                type="number"
+                className="w-full border p-2 rounded"
+                value={form.price}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div>
+              <label className="block mb-1 font-semibold">
+                Price After Discount
+              </label>
+              <input
+                name="finalPrice"
+                placeholder="Final Price"
+                type="number"
+                className="w-full border p-2 rounded bg-gray-100"
+                value={getFinalPrice()}
+                readOnly
+              />
+            </div>
+            <div>
+              <label className="block mb-1 font-semibold">Status</label>
+              <select
+                name="status"
+                className="w-full border p-2 rounded"
+                value={form.status}
+                onChange={handleInputChange}
               >
-                <MenuItem value="Active">Active</MenuItem>
-                <MenuItem value="Inactive">Inactive</MenuItem>
-              </Select>
-            </FormControl> */}
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+        </div>
 
-            <Stack direction="row" spacing={2} justifyContent="flex-end">
-              <Button
-                variant="outlined"
-                onClick={() => {
-                  setAddingChapter(false);
-                  setNewTitle("");
-                  setNewStatus("Active");
-                }}
-                disabled={saving}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" variant="contained" disabled={saving}>
-                {saving ? "Adding..." : "Add Chapter"}
-              </Button>
-            </Stack>
-          </Stack>
-        </Box>
-      )}
+        {/* Quill Editors */}
+        <div>
+          <label className="block mb-1 font-semibold text-lg">
+            Course Description
+          </label>
+          <ReactQuill
+            value={form.description}
+            onChange={handleQuillChange("description")}
+            modules={modules}
+            formats={formats}
+            theme="snow"
+            placeholder="Start typing..."
+            style={{ minHeight: 180, marginBottom: 16 }}
+          />
+        </div>
 
-      {/* Chapters DataGrid */}
-      <Box sx={{ bgcolor: "white", borderRadius: 3, boxShadow: 2, p: 2 }}>
-        <DataGrid
-          key={courseId} // Force remount on course change to avoid hydration issues
-          autoHeight
-          rows={filteredChapters.map((ch) => ({ ...ch, id: ch._id }))}
-          columns={columns}
-          pageSize={10}
-          rowsPerPageOptions={[10, 20, 50]}
-          loading={loading}
-          disableRowSelectionOnClick
-          sx={{
-            border: "none",
-            fontSize: 15,
-            "& .MuiDataGrid-cell": {
-              borderBottom: "1px solid #e0e0e0",
-            },
-            "& .MuiDataGrid-columnHeaders": {
-              background: "#f6f8fa",
-              fontWeight: 700,
-              fontSize: 15,
-            },
-          }}
-        />
-      </Box>
-    </Box>
+        <div>
+          <h2 className="text-xl font-semibold border-b mb-3 pb-1">
+            Exam and Certification
+          </h2>
+          <label className="block mb-1 font-semibold">Description</label>
+          <ReactQuill
+            value={form.examCert}
+            onChange={handleQuillChange("examCert")}
+            modules={modules}
+            formats={formats}
+            theme="snow"
+            placeholder="Start typing..."
+            style={{ minHeight: 150, marginBottom: 16 }}
+          />
+        </div>
+
+        <div>
+          <h2 className="text-xl font-semibold border-b mb-3 pb-1">
+            Case Study
+          </h2>
+          <label className="block mb-1 font-semibold">Description</label>
+          <ReactQuill
+            value={form.caseStudy}
+            onChange={handleQuillChange("caseStudy")}
+            modules={modules}
+            formats={formats}
+            theme="snow"
+            placeholder="Start typing..."
+            style={{ minHeight: 150, marginBottom: 16 }}
+          />
+        </div>
+
+        {/* SEO Section */}
+        <div className="border-t pt-8 mt-8">
+          <h2 className="text-xl font-semibold mb-3">SEO Section</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+            <div>
+              <label className="block mb-1 font-semibold">Title</label>
+              <input
+                name="seoTitle"
+                placeholder="Enter title"
+                className="w-full border p-2 rounded"
+                value={form.seoTitle}
+                onChange={handleInputChange}
+              />
+            </div>
+            <div>
+              <label className="block mb-1 font-semibold">Description</label>
+              <ReactQuill
+                value={form.seoDescription}
+                onChange={handleQuillChange("seoDescription")}
+                modules={modules}
+                formats={formats}
+                theme="snow"
+                placeholder="Enter SEO description"
+                style={{ minHeight: 100, marginBottom: 16 }}
+              />
+            </div>
+          </div>
+          <div className="mt-5">
+            <label className="block mb-1 font-semibold">Keywords</label>
+            <textarea
+              name="seoKeywords"
+              placeholder="Enter keywords"
+              className="w-full border p-2 rounded min-h-[48px]"
+              value={form.seoKeywords}
+              onChange={handleInputChange}
+            />
+          </div>
+        </div>
+
+        {error && <div className="text-red-600 mt-4">{error}</div>}
+        <div className="flex justify-end mt-10">
+          <button
+            type="submit"
+            className="bg-blue-600 text-white px-7 py-2 rounded flex items-center gap-2 text-lg"
+            disabled={loading}
+          >
+            <FaPlus /> {loading ? "Saving..." : "Add Course"}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }

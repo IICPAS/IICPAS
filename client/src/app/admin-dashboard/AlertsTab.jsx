@@ -53,7 +53,7 @@ export default function AlertsTab() {
   }, []);
 
   return (
-    <div className="p-1 max-w-7xl mx-auto font-[Inter]">
+    <div className="p-1 max-w-7xl mx-auto ">
       <h2 className="text-3xl font-bold mb-6 text-gray-800">📊 Alerts</h2>
 
       {/* Form */}
@@ -89,7 +89,7 @@ export default function AlertsTab() {
           type="submit"
           className="bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md px-4 py-2 transition-all"
         >
-          ➕ Add Alert
+          Add Alert
         </button>
       </form>
 

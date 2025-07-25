@@ -35,7 +35,8 @@
     "src/app/college-dashboard/TrainingNotifications.jsx",
     "src/app/blogs/page.jsx",
     "src/app/courses/page.jsx",
-    "src/app/admin-dashboard/LeadsTab.jsx"
+    "src/app/admin-dashboard/LeadsTab.jsx",
+    "src/app/components/TestimonialSection.jsx"
   ],
   "exclude": ["node_modules"]
 }

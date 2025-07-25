@@ -2,15 +2,19 @@
 
 import { useEffect, useState } from "react";
 import AlertsTab from "./AlertsTab";
+import JobsAdminPanel from "./JobsAdminPanel";
 import CourseBuilder from "./CourseBuilder";
+import TestimonialAdmin from "./Course/TestimonialAdmin";
 import NewsTab from "./NewsTab";
 import StaffManagementTab from "./StaffManagementTab";
 import EnquiriesTab from "./LeadsTab";
 import RoleManager from "./RoleManager";
 import Drawer from "react-modern-drawer";
 import axios from "axios";
+import ManageMetaTags from "./Course/ManageMetaTags";
 import BlogComponent from "./BlogComponent";
 import CollegeTab from "./CollegeTab";
+import AboutTab from "./AboutTab";
 import StudentsTab from "./StudentsTab";
 import { useRouter } from "next/navigation";
 import "react-modern-drawer/dist/index.css";
@@ -39,8 +43,10 @@ import {
   FaNewspaper,
 } from "react-icons/fa";
 import CompanyTab from "./CompanyTab";
-import CourseTabs from "./CourseBuilder";
+
 import CourseArea from "./CourseBuilder";
+import CourseCategory from "./Course/CourseCategory";
+import LiveSessionAdmin from "./Course/LiveSesionAdmin";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 
@@ -48,22 +54,26 @@ const tabs = [
   { id: "course-category", label: "Course Category", icon: <FaBook /> },
   { id: "course", label: "Course", icon: <FaLayerGroup /> },
   { id: "live-session", label: "Live Session", icon: <FaCalendarAlt /> },
-  { id: "center", label: "Center", icon: <FaHome /> },
-  { id: "students", label: "Students", icon: <FaUserGraduate /> },
-  { id: "staff", label: "Staff Management", icon: <FaUsers /> },
   { id: "enquiries", label: "Enquiries", icon: <FaEnvelope /> },
+
   { id: "jobs", label: "Jobs", icon: <FaBriefcase /> },
-  { id: "calendar", label: "Calendar", icon: <FaCalendarAlt /> },
-  { id: "blogs", label: "Blogs", icon: <FaBlog /> },
-  { id: "team", label: "Our Team", icon: <FaUsers /> },
   { id: "testimonials", label: "Testimonials", icon: <FaQuoteRight /> },
   { id: "about", label: "About Us", icon: <FaBook /> },
   { id: "meta", label: "Manage Metatags", icon: <FaTags /> },
-  { id: "companies", label: "Companies", icon: <FaStarOfDavid /> },
-  { id: "colleges", label: "Colleges", icon: <FaUniversity /> },
+
   { id: "Blogs", label: "Blogs", icon: <FaBlogger /> },
   { id: "Alert", label: "Alert", icon: <FaBell /> },
   { id: "news", label: "News", icon: <FaNewspaper /> },
+
+  { id: "center", label: "Center", icon: <FaHome /> },
+  { id: "students", label: "Students", icon: <FaUserGraduate /> },
+  { id: "staff", label: "Staff Management", icon: <FaUsers /> },
+
+  { id: "companies", label: "Companies", icon: <FaStarOfDavid /> },
+  { id: "colleges", label: "Colleges", icon: <FaUniversity /> },
+
+  { id: "calendar", label: "Calendar", icon: <FaCalendarAlt /> },
+  { id: "team", label: "Our Team", icon: <FaUsers /> },
   { id: "support", label: "Support Requests", icon: <FaEnvelope /> },
 ];
 
@@ -238,25 +248,35 @@ export default function AdminDashboard() {
       <main className="flex-1 bg-gray-100 min-h-screen p-6 pt-20">
         <div className="bg-white p-6 rounded-lg shadow">
           {activeTab === "live-session" ? (
-            renderLiveSessions()
+            <LiveSessionAdmin />
           ) : activeTab === "enquiries" ? (
             <EnquiriesTab />
           ) : activeTab === "companies" ? (
             <CompanyTab />
+          ) : activeTab === "meta" ? (
+            <ManageMetaTags />
+          ) : activeTab === "about" ? (
+            <AboutTab />
           ) : activeTab === "colleges" ? (
             <CollegeTab />
           ) : activeTab === "roles" ? (
             <RoleManager />
           ) : activeTab === "Blogs" ? (
             <BlogComponent />
+          ) : activeTab === "course-category" ? (
+            <CourseCategory />
           ) : activeTab === "students" ? (
             <StudentsTab />
+          ) : activeTab === "jobs" ? (
+            <JobsAdminPanel />
           ) : activeTab === "staff" ? (
             <StaffManagementTab />
           ) : activeTab === "Alert" ? (
             <AlertsTab />
           ) : activeTab === "news" ? ( // ✅ News tab condition
             <NewsTab />
+          ) : activeTab === "testimonials" ? ( // ✅ News tab condition
+            <TestimonialAdmin />
           ) : activeTab === "course" ? ( // ✅ News tab condition
             <CourseArea />
           ) : null}

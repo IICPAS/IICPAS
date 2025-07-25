@@ -42,14 +42,6 @@ export default function Footer() {
               <FaInstagram />
             </a>
           </div>
-
-          <div className="mt-4">
-            <p className="font-semibold mb-2">Download Apps</p>
-            <div className="flex gap-3">
-              <img src="/googleplay.png" alt="Google Play" className="w-28" />
-              <img src="/appstore.png" alt="App Store" className="w-28" />
-            </div>
-          </div>
         </div>
 
         {/* Column 2: Quick Links */}
