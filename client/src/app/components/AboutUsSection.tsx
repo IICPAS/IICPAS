@@ -1,15 +1,34 @@
 "use client";
 
-import { BookOpen, Users, BarChart3 } from "lucide-react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
+import axios from "axios";
 
 export default function AboutUsSection() {
+  const [aboutContent, setAboutContent] = useState("");
+
+  useEffect(() => {
+    const fetchAbout = async () => {
+      try {
+        const res = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/about`
+        );
+        if (res.data.length > 0) {
+          setAboutContent(res.data[0].content); // assume single entry
+        }
+      } catch (error) {
+        console.error("Failed to fetch About Us content", error);
+      }
+    };
+
+    fetchAbout();
+  }, []);
+
   return (
     <section className="bg-white py-16 px-6 md:px-20 text-gray-800">
       <div className="flex flex-col md:flex-row items-center justify-between gap-10">
         {/* Left Side */}
         <div className="relative w-full md:w-[45%]">
-          {/* Image */}
           <Image
             src="/images/about.jpeg"
             alt="Student"
@@ -60,57 +79,17 @@ export default function AboutUsSection() {
 
         {/* Right Side */}
         <div className="w-full md:w-[50%] mt-20">
-          <p className="text-green-600 font-semibold mb-2">📘 About Us</p>
-          <h2 className="text-3xl md:text-4xl font-extrabold mb-4 leading-snug">
-            Behind The Scenes: Discover The People <br /> & Passion Behind
-          </h2>
-          <p className="text-gray-600 mb-6">
-            Meet the talented individuals who bring our vision to life every
-            day. With a shared passion and commitment, our team works tirelessly
-            to deliver exceptional quality and innovation.
+          <p className="text-green-600 font-semibold mb-2 text-2xl mb-8">
+            📘 About Us
           </p>
-
-          {/* Features */}
-          <div className="space-y-5">
-            <div className="flex items-start gap-4 hover:bg-gray-50 p-3 rounded-xl transition">
-              <BookOpen className="text-green-500 mt-1" size={24} />
-              <div>
-                <h4 className="font-bold text-lg">
-                  It provides tools for course creation
-                </h4>
-                <p className="text-gray-600 text-sm">
-                  Enrollment management and tracking learner progress, ensuring
-                  an enhanced learning experience.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4 hover:bg-gray-50 p-3 rounded-xl transition">
-              <BarChart3 className="text-green-500 mt-1" size={24} />
-              <div>
-                <h4 className="font-bold text-lg">
-                  An effective LMS offers robust analytics
-                </h4>
-                <p className="text-gray-600 text-sm">
-                  Reporting features enable businesses to track learner
-                  performance, completion rates, and engagement levels.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4 hover:bg-gray-50 p-3 rounded-xl transition">
-              <Users className="text-green-500 mt-1" size={24} />
-              <div>
-                <h4 className="font-bold text-lg">
-                  Many LMS platforms include collaborative tools
-                </h4>
-                <p className="text-gray-600 text-sm">
-                  Collaborative features such as discussion forums, messaging,
-                  and group projects, which facilitate peer interaction.
-                </p>
-              </div>
-            </div>
-          </div>
+          {aboutContent ? (
+            <div
+              className="prose max-w-none text-gray-700"
+              dangerouslySetInnerHTML={{ __html: aboutContent }}
+            />
+          ) : (
+            <p className="text-gray-500">Loading content...</p>
+          )}
         </div>
       </div>
     </section>

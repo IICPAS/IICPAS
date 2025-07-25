@@ -14,6 +14,7 @@ import axios from "axios";
 import ManageMetaTags from "./Course/ManageMetaTags";
 import BlogComponent from "./BlogComponent";
 import CollegeTab from "./CollegeTab";
+import AboutTab from "./AboutTab";
 import StudentsTab from "./StudentsTab";
 import { useRouter } from "next/navigation";
 import "react-modern-drawer/dist/index.css";
@@ -254,6 +255,8 @@ export default function AdminDashboard() {
             <CompanyTab />
           ) : activeTab === "meta" ? (
             <ManageMetaTags />
+          ) : activeTab === "about" ? (
+            <AboutTab />
           ) : activeTab === "colleges" ? (
             <CollegeTab />
           ) : activeTab === "roles" ? (

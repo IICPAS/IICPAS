@@ -29,6 +29,7 @@ import LiveSessionRoutes from "./routes/LiveSessionRoutes/LiveSessionRoutes.js";
 //Extra Routes
 import metaTagRoutes from "./routes/metatagsRoute.js";
 import jobRoutes from "./routes/jobRoutes.js";
+import aboutRoutes from "./routes/WebsiteRoutes/aboutRoutes.js";
 //App Configuration
 dotenv.config();
 connectDB();
@@ -55,7 +56,6 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Routes
-
 app.use("/api/college", collegeRoutes);
 app.use("/api/student", studentRoutes);
 app.use("/api/admin", authRoutes);
@@ -71,6 +71,7 @@ app.use("/", JobApplyRoutes);
 
 //Content Routes
 app.use("/testimonials", testimonialRoutes);
+app.use("/api/testimonials", testimonialRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/chapters", chapterRoutes);
 app.use("/api/topics", topicRoutes);
@@ -78,7 +79,11 @@ app.use("/api/quizzes", quizRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/metatags", metaTagRoutes);
 
+// Internal Jobs
 app.use("/jobs-internal", jobRoutes);
+
+//About Routes
+app.use("/api/about", aboutRoutes);
 
 // Server
 const PORT = process.env.PORT || 5000;
