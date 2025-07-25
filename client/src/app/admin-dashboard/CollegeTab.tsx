@@ -22,7 +22,7 @@ export default function CollegeTab() {
 
   const fetchColleges = async () => {
     try {
-      const res = await axios.get(`${API}/api/college`);
+      const res = await axios.get(`${API}/college`);
       setColleges(res.data.colleges);
     } catch (err) {
       toast.error("Failed to load colleges");
@@ -33,7 +33,7 @@ export default function CollegeTab() {
 
   const handleApprove = async (id: string) => {
     try {
-      await axios.patch(`${API}/api/college/approve-college/${id}`);
+      await axios.patch(`${API}/college/approve-college/${id}`);
       toast.success("College approved");
       fetchColleges();
     } catch {
