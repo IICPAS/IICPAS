@@ -255,6 +255,7 @@ export default function JobsAdminPanel() {
                 <TableCell>Email</TableCell>
                 <TableCell>Phone</TableCell>
                 <TableCell>Shortlisted</TableCell>
+                <TableCell>Resume</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
@@ -264,6 +265,11 @@ export default function JobsAdminPanel() {
                   <TableCell>{applicant.name}</TableCell>
                   <TableCell>{applicant.email}</TableCell>
                   <TableCell>{applicant.phone}</TableCell>
+                  <TableCell>
+                    <a href={applicant.resumeLink} target="_blank">
+                      View Resume
+                    </a>
+                  </TableCell>
                   <TableCell>
                     {applicant.shortlisted ? "Shortlisted" : "Pending"}
                   </TableCell>

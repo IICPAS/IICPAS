@@ -30,6 +30,10 @@ import LiveSessionRoutes from "./routes/LiveSessionRoutes/LiveSessionRoutes.js";
 import metaTagRoutes from "./routes/metatagsRoute.js";
 import jobRoutes from "./routes/jobRoutes.js";
 import aboutRoutes from "./routes/WebsiteRoutes/aboutRoutes.js";
+
+//TicketRoutes
+import ticketRoutes from "./routes/TicketRoutes.js";
+
 //App Configuration
 dotenv.config();
 connectDB();
@@ -78,12 +82,16 @@ app.use("/api/topics", topicRoutes);
 app.use("/api/quizzes", quizRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/metatags", metaTagRoutes);
+app.use("/api/tickets", ticketRoutes);
 
 // Internal Jobs
 app.use("/jobs-internal", jobRoutes);
 
 //About Routes
 app.use("/api/about", aboutRoutes);
+
+//Ticket Routes
+app.use("/api/tickets", ticketRoutes);
 
 // Server
 const PORT = process.env.PORT || 5000;
