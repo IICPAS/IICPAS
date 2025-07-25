@@ -104,7 +104,7 @@ export default function AdminDashboard() {
     try {
       await axios.post(`${API_BASE}/logout`, {}, { withCredentials: true });
     } finally {
-      router.push("/login");
+      router.push("/admin");
     }
   };
 
