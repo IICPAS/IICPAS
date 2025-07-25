@@ -12,7 +12,7 @@ import RoleManager from "./RoleManager";
 import Drawer from "react-modern-drawer";
 import axios from "axios";
 import ManageMetaTags from "./Course/ManageMetaTags";
-import BlogComponent from "./BlogComponent";
+import BlogComponent from "./BlogComponent.jsx";
 import CollegeTab from "./CollegeTab";
 import AboutTab from "./AboutTab";
 import StudentsTab from "./StudentsTab";
@@ -72,8 +72,8 @@ const tabs = [
 
   { id: "companies", label: "Companies", icon: <FaStarOfDavid /> },
   { id: "colleges", label: "Colleges", icon: <FaUniversity /> },
-
   { id: "calendar", label: "Calendar", icon: <FaCalendarAlt /> },
+
   { id: "team", label: "Our Team", icon: <FaUsers /> },
   { id: "support", label: "Support Requests", icon: <FaEnvelope /> },
 ];

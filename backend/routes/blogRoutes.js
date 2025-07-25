@@ -6,6 +6,7 @@ import {
   getBlog,
   updateBlog,
   deleteBlog,
+  toggleBlogStatus, // Add this controller!
 } from "../controllers/blogControllers.js";
 
 const router = express.Router();
@@ -27,5 +28,8 @@ router.get("/", getBlogs);
 router.get("/:id", getBlog);
 router.put("/:id", upload.single("image"), updateBlog);
 router.delete("/:id", deleteBlog);
+
+// Toggle status route
+router.patch("/:id/toggle-status", toggleBlogStatus);
 
 export default router;

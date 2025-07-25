@@ -6,6 +6,11 @@ const BlogSchema = new mongoose.Schema(
     author: { type: String, required: true },
     content: { type: String, required: true },
     imageUrl: { type: String }, // file path
+    status: {
+      type: String,
+      enum: ["active", "inactive"],
+      default: "active",
+    },
   },
   { timestamps: true }
 );
