@@ -39,7 +39,8 @@
     "src/app/components/TestimonialSection.jsx",
     "src/app/jobs/LoginPage.jsx",
     "src/app/admin-dashboard/BlogComponent.jsx",
-    "src/app/components/BlogsSection.jsx"
+    "src/app/components/BlogsSection.jsx",
+    "src/app/admin-dashboard/CollegeTab.jsx"
   ],
   "exclude": ["node_modules"]
 }

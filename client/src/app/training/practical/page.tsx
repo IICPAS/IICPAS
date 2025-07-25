@@ -1,14 +1,13 @@
 import Header from "@/app/components/Header";
 import React from "react";
-import IndividualTrainingPanel from "./IndividualTrainingPanel";
-import PracticalHero from "./PracticalHero";
+import IndividualAuth from "./IndividualAuth";
 
 const page = () => {
   return (
     <div>
       <Header />
-      <PracticalHero />
-      <IndividualTrainingPanel />
+
+      <IndividualAuth />
     </div>
   );
 };
