@@ -51,7 +51,7 @@ export default function CompanyAuthPage() {
     try {
       if (isLogin) {
         const res = await axios.post(
-          `${API}/api/companies/login`,
+          `${API}/companies/login`,
           {
             email: form.email,
             password: form.password,
@@ -71,7 +71,7 @@ export default function CompanyAuthPage() {
         data.append("password", form.password);
         if (form.document) data.append("document", form.document);
 
-        await axios.post(`${API}/api/companies/register`, data, {
+        await axios.post(`${API}/companies/register`, data, {
           withCredentials: true,
         });
         toast.success("Signup successful. Await admin approval.");
@@ -87,7 +87,7 @@ export default function CompanyAuthPage() {
     e.preventDefault();
     try {
       await axios.post(
-        `${API}/api/companies/forgot-password`,
+        `${API}/companies/forgot-password`,
         { email: form.email },
         { withCredentials: true }
       );
@@ -103,7 +103,7 @@ export default function CompanyAuthPage() {
     try {
       const code = otp.join("");
       await axios.post(
-        `${API}/api/companies/reset-password`,
+        `${API}/companies/reset-password`,
         {
           email: form.email,
           otp: code,
