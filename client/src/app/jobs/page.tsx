@@ -1,12 +1,18 @@
 import React from "react";
 import Header from "../components/Header";
-import LoginPage from "./LoginPage";
+import CourseJobs from "./CourseJobs";
+import ApplyJobsWithModalApply from "./ AllJobsWithModalApply";
+import BlogSection from "../components/BlogsSection";
+import ContactSection from "../components/ContactSection";
 
 const page = () => {
   return (
     <div>
       <Header />
-      <LoginPage />
+      <CourseJobs />
+      <ApplyJobsWithModalApply />
+      <BlogSection />
+      <ContactSection />
     </div>
   );
 };

@@ -2,8 +2,35 @@ import express from "express";
 import Job from "../models/Job.js";
 import Application from "../models/Application.js";
 import nodemailer from "nodemailer";
-
+import dotenv from "dotenv";
 const router = express.Router();
+
+// DELETE application
+router.delete("/applications/:id", async (req, res) => {
+  try {
+    await Application.findByIdAndDelete(req.params.id);
+    res.json({ message: "Application deleted successfully." });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Create a new Application for a Job
+router.post("/:id/applications", async (req, res) => {
+  try {
+    const { name, email, phone, resumeLink } = req.body;
+    const application = await Application.create({
+      jobId: req.params.id,
+      name,
+      email,
+      phone,
+      resumeLink,
+    });
+    res.status(201).json(application);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // Create Job
 router.post("/", async (req, res) => {
@@ -81,26 +108,53 @@ router.put("/applications/:id/shortlist", async (req, res) => {
   }
 });
 
-// Send Shortlist Email
-router.post("/applications/:id/send-email", async (req, res) => {
+router.post("/applications/:id/shortlist", async (req, res) => {
   try {
     const app = await Application.findById(req.params.id);
+    if (!app) return res.status(404).json({ error: "Application not found" });
+
+    // ✅ If already shortlisted
+    if (app.shortlisted) {
+      return res.status(200).json({ message: "Already shortlisted." });
+    }
+
+    // Send Email
     const transporter = nodemailer.createTransport({
       service: "Gmail",
       auth: {
-        user: "your@gmail.com",
-        pass: "your_app_password",
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
       },
     });
 
     await transporter.sendMail({
-      from: "your@gmail.com",
+      from: process.env.EMAIL_USER,
       to: app.email,
       subject: "Shortlisted for Job",
-      html: `<p>Dear ${app.name},</p><p>Congratulations! You’ve been shortlisted.</p>`,
+      html: `
+        <p>Dear ${app.name},</p>
+        <p>Congratulations! 🎉</p>
+        <p>You’ve been <strong>shortlisted</strong> for the job you applied to at IICPA Institute.</p>
+        <p>Our team will be in touch with the next steps soon.</p>
+        <br/>
+        <p>Regards,<br/>IICPA HR Team</p>
+      `,
     });
 
-    res.json({ message: "Email sent" });
+    // ✅ Update shortlisted status
+    app.shortlisted = true;
+    await app.save();
+
+    res.json({ message: "Shortlist email sent and application updated." });
+  } catch (err) {
+    console.error("Shortlist error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Send Shortlist Email
+router.post("/applications/:id/shortlist", async (req, res) => {
+  try {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
