@@ -1,310 +1,309 @@
 "use client";
-import { useState } from "react";
-import { Button, IconButton, Tooltip } from "@mui/material";
+import { useState, useEffect } from "react";
+import Swal from "sweetalert2";
+import {
+  Button,
+  IconButton,
+  Tooltip,
+  CircularProgress,
+  Switch,
+} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
-// --- MOCK DATA ---
-const mockSessions = [
-  {
-    _id: "1",
-    title: "Basic Accounting & Tally Foundation",
-    date: "20 July 2025",
-    time: "10:00 AM - 05:00 PM",
-    color: "blue",
-    ended: true,
-  },
-  {
-    _id: "2",
-    title: "Basic Accounting & Tally Foundation",
-    date: "11 July 2025",
-    time: "01:23 PM - 03:23 PM",
-    color: "pink",
-    ended: true,
-  },
-  {
-    _id: "3",
-    title: "Basic Accounting & Tally Foundation",
-    date: "28 June 2025",
-    time: "11:43 AM - 03:43 PM",
-    color: "orange",
-    ended: true,
-  },
-];
-
-const COLORS = {
-  blue: {
-    border: "border-l-4 border-blue-400",
-    bg: "bg-blue-50",
-    text: "text-blue-600",
-    time: "bg-blue-100 text-blue-600",
-    icon: "text-blue-400",
-  },
-  pink: {
-    border: "border-l-4 border-pink-400",
-    bg: "bg-pink-50",
-    text: "text-pink-600",
-    time: "bg-pink-100 text-pink-600",
-    icon: "text-pink-400",
-  },
-  orange: {
-    border: "border-l-4 border-orange-400",
-    bg: "bg-orange-50",
-    text: "text-orange-600",
-    time: "bg-orange-100 text-orange-600",
-    icon: "text-orange-400",
-  },
-};
+const API = process.env.NEXT_PUBLIC_API_URL;
 
 export default function LiveSessionAdmin() {
-  const [tab, setTab] = useState("list"); // "list" or "create"
+  const [tab, setTab] = useState("list");
+  const [sessions, setSessions] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [editId, setEditId] = useState(null);
   const [form, setForm] = useState({
-    course: "",
-    content: "",
+    title: "",
     startTime: "",
     endTime: "",
     date: "",
     link: "",
     price: "",
-    image: null,
   });
 
-  // --- UI Start ---
-  return (
-    <div className="w-[78vw] mx-auto py-10">
-      {tab === "list" && (
-        <>
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold">Live Sessions</h1>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              sx={{
-                bgcolor: "#0f265c",
-                "&:hover": { bgcolor: "#233772" },
-                borderRadius: 2,
-                fontWeight: 600,
-                px: 3,
-                textTransform: "none",
-              }}
-              onClick={() => setTab("create")}
-            >
-              Add Live Session
-            </Button>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {mockSessions.map((session) => {
-              const c = COLORS[session.color] || COLORS.blue;
-              return (
-                <div
-                  key={session._id}
-                  className={`relative ${c.bg} ${c.border} rounded-2xl shadow-sm px-5 py-6 flex flex-col`}
-                >
-                  <IconButton
-                    size="small"
-                    sx={{
-                      position: "absolute",
-                      top: 14,
-                      right: 14,
-                      bgcolor: "#fff",
-                      borderRadius: "8px",
-                      boxShadow: "0 1px 3px 0 #00000010",
-                    }}
-                  >
-                    <OpenInNewIcon className={`${c.icon}`} />
-                  </IconButton>
-                  <div className="font-semibold text-lg mb-1">
-                    {session.title || "Unknown"}
-                  </div>
-                  <div className="text-gray-500 text-sm mb-2">
-                    {session.date}
-                  </div>
-                  <div
-                    className={`inline-block px-3 py-1 rounded-xl mb-4 font-semibold ${c.time}`}
-                  >
-                    {session.time}
-                  </div>
-                  <div className="flex gap-2 items-center mb-3">
-                    <Tooltip title="Mark as Ended">
-                      <IconButton color="success" size="small" disabled>
-                        <CheckCircleIcon />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Edit">
-                      <IconButton color="primary" size="small">
-                        <EditIcon />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Delete">
-                      <IconButton color="error" size="small">
-                        <DeleteIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </div>
-                  {session.ended && (
-                    <span className="inline-block px-3 py-1 rounded-md bg-pink-500 text-white text-xs font-medium w-max">
-                      Session Ended
-                    </span>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </>
-      )}
+  useEffect(() => {
+    fetchSessions();
+  }, []);
 
-      {/* CREATE FORM */}
-      {tab === "create" && (
-        <div className="bg-white  mx-auto">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl font-bold">Create Live Session</h2>
-            <Button
-              variant="contained"
-              sx={{
-                bgcolor: "#0f265c",
-                "&:hover": { bgcolor: "#233772" },
-                borderRadius: 2,
-                fontWeight: 600,
-                px: 3,
-                textTransform: "none",
-              }}
-              onClick={() => setTab("list")}
-            >
-              View Live Sessions
-            </Button>
-          </div>
-          <form
-            className="grid grid-cols-1 md:grid-cols-2 gap-8"
-            autoComplete="off"
-            onSubmit={(e) => {
-              e.preventDefault();
-              // ...API call here
-              setTab("list");
+  const fetchSessions = async () => {
+    try {
+      const res = await fetch(`${API}/api/live-sessions`);
+      const data = await res.json();
+      setSessions(data);
+    } catch (err) {
+      console.error("Fetch error:", err);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    const payload = {
+      title: form.title,
+      time: `${form.startTime} - ${form.endTime}`,
+      date: form.date,
+      link: form.link,
+      price: Number(form.price),
+    };
+
+    const res = await fetch(
+      `${API}/api/live-sessions${editId ? `/${editId}` : ""}`,
+      {
+        method: editId ? "PATCH" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    if (res.ok) {
+      await fetchSessions();
+      resetForm();
+      setTab("list");
+    } else {
+      Swal.fire("Error", "Failed to save session", "error");
+    }
+    setLoading(false);
+  };
+
+  const formatTimeRange = (timeRange) => {
+    if (!timeRange) return "";
+    const [start, end] = timeRange.split(" - ");
+    return `${formatTime(start)} – ${formatTime(end)}`;
+  };
+
+  const formatTime = (timeStr) => {
+    const [hour, minute] = timeStr.split(":").map(Number);
+    const date = new Date();
+    date.setHours(hour);
+    date.setMinutes(minute);
+    return date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
+  const handleEdit = (id) => {
+    const session = sessions.find((s) => s._id === id);
+    if (session) {
+      const [startTime, endTime] = session.time.split(" - ");
+      setForm({
+        title: session.title,
+        startTime,
+        endTime,
+        date: session.date.split("T")[0],
+        link: session.link,
+        price: session.price,
+      });
+      setEditId(id);
+      setTab("create");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    const confirm = await Swal.fire({
+      title: "Delete this session?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Delete",
+    });
+    if (confirm.isConfirmed) {
+      const res = await fetch(`${API}/api/live-sessions/${id}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        fetchSessions();
+        Swal.fire("Deleted!", "Session deleted.", "success");
+      }
+    }
+  };
+
+  const toggleStatus = async (id) => {
+    const res = await fetch(`${API}/api/live-sessions/toggle/${id}`, {
+      method: "PATCH",
+    });
+    if (res.ok) fetchSessions();
+  };
+
+  const resetForm = () => {
+    setForm({
+      title: "",
+      startTime: "",
+      endTime: "",
+      date: "",
+      link: "",
+      price: "",
+    });
+    setEditId(null);
+  };
+
+  return (
+    <div className="w-[75vw] mx-auto py-10">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-xl lg:text-3xl font-bold">Live Sessions</h1>
+        {tab === "list" ? (
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            sx={{ bgcolor: "#0f265c", borderRadius: 2, fontWeight: 600, px: 3 }}
+            onClick={() => {
+              setTab("create");
+              resetForm();
             }}
           >
-            <div>
-              <label className="block font-semibold mb-2">Select course</label>
-              <select
-                className="w-full border px-4 py-3 rounded-lg focus:ring-2 ring-blue-200 outline-none bg-gray-50"
-                value={form.course}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, course: e.target.value }))
-                }
-              >
-                <option value="">Select Course</option>
-                <option value="Course1">
-                  Basic Accounting & Tally Foundation
-                </option>
-                {/* Add dynamic options */}
-              </select>
-            </div>
-            <div>
-              <label className="block font-semibold mb-2">Image</label>
-              <input
-                type="file"
-                className="w-full border px-4 py-2 rounded-lg bg-gray-50"
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, image: e.target.files[0] }))
-                }
-              />
-            </div>
-            <div>
-              <label className="block font-semibold mb-2">Content</label>
-              <input
-                type="text"
-                className="w-full border px-4 py-3 rounded-lg bg-gray-50"
-                placeholder="Enter the content"
-                value={form.content}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, content: e.target.value }))
-                }
-              />
-            </div>
-            <div>
-              <label className="block font-semibold mb-2">Date</label>
-              <input
-                type="date"
-                className="w-full border px-4 py-3 rounded-lg bg-gray-50"
-                value={form.date}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, date: e.target.value }))
-                }
-              />
-            </div>
-            <div>
-              <label className="block font-semibold mb-2">Start Time</label>
-              <input
-                type="time"
-                className="w-full border px-4 py-3 rounded-lg bg-gray-50"
-                value={form.startTime}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, startTime: e.target.value }))
-                }
-              />
-            </div>
-            <div>
-              <label className="block font-semibold mb-2">End Time</label>
-              <input
-                type="time"
-                className="w-full border px-4 py-3 rounded-lg bg-gray-50"
-                value={form.endTime}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, endTime: e.target.value }))
-                }
-              />
-            </div>
-            <div>
-              <label className="block font-semibold mb-2">Link</label>
-              <input
-                type="text"
-                className="w-full border px-4 py-3 rounded-lg bg-gray-50"
-                placeholder="Enter the link"
-                value={form.link}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, link: e.target.value }))
-                }
-              />
-            </div>
-            <div>
-              <label className="block font-semibold mb-2">
-                Price (In Rupees)
-              </label>
-              <input
-                type="number"
-                className="w-full border px-4 py-3 rounded-lg bg-gray-50"
-                placeholder="Enter the price"
-                value={form.price}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, price: e.target.value }))
-                }
-              />
-            </div>
-            <div className="md:col-span-2 mt-8">
-              <Button
-                type="submit"
-                variant="contained"
+            Add Live Session
+          </Button>
+        ) : (
+          <Button
+            variant="contained"
+            sx={{ bgcolor: "#0f265c", borderRadius: 2, fontWeight: 600, px: 3 }}
+            onClick={() => {
+              setTab("list");
+              resetForm();
+            }}
+          >
+            ← Back to Sessions
+          </Button>
+        )}
+      </div>
+
+      {tab === "list" && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {sessions.map((s) => (
+            <div
+              key={s._id}
+              className="bg-white p-5 rounded-xl shadow border-l-4 border-blue-400 relative"
+            >
+              <IconButton
+                size="small"
                 sx={{
-                  bgcolor: "#0f265c",
-                  "&:hover": { bgcolor: "#233772" },
-                  borderRadius: 2,
-                  fontWeight: 600,
-                  px: 5,
-                  py: 1.8,
-                  fontSize: 18,
-                  boxShadow: "none",
-                  textTransform: "none",
-                  letterSpacing: 0,
+                  position: "absolute",
+                  top: 12,
+                  right: 12,
+                  bgcolor: "#f4f4f4",
                 }}
-                fullWidth
+                component="a"
+                href={s.link.startsWith("http") ? s.link : `https://${s.link}`}
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                Create
-              </Button>
+                <OpenInNewIcon fontSize="small" />
+              </IconButton>
+
+              <div className="text-lg font-semibold mb-1">{s.title}</div>
+              <div className="text-sm text-gray-500">
+                {new Date(s.date).toDateString()}, {formatTimeRange(s.time)}
+              </div>
+              {/* <div className="text-sm text-blue-600 my-2">{s.time}</div> */}
+              <div className="text-sm mb-3">Link: {s.link}</div>
+              <div className="text-sm mb-3">Price: ₹{s.price}</div>
+              <div className="flex justify-between items-center">
+                <div className="flex gap-2">
+                  <Tooltip title="Edit">
+                    <IconButton onClick={() => handleEdit(s._id)}>
+                      <EditIcon />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Delete">
+                    <IconButton onClick={() => handleDelete(s._id)}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </Tooltip>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Switch
+                    checked={s.status === "active"}
+                    onChange={() => toggleStatus(s._id)}
+                    color="success"
+                  />
+                  <span className="text-xs font-medium">
+                    {s.status === "active" ? "Active" : "Inactive"}
+                  </span>
+                </div>
+              </div>
             </div>
-          </form>
+          ))}
         </div>
+      )}
+
+      {tab === "create" && (
+        <form
+          className="grid grid-cols-1 md:grid-cols-2 gap-8"
+          autoComplete="off"
+          onSubmit={handleSubmit}
+        >
+          {["title", "date", "startTime", "endTime", "link", "price"].map(
+            (name) => {
+              const label =
+                name === "title"
+                  ? "Title"
+                  : name === "date"
+                  ? "Date"
+                  : name === "startTime"
+                  ? "Start Time"
+                  : name === "endTime"
+                  ? "End Time"
+                  : name === "link"
+                  ? "Link"
+                  : "Price (In Rupees)";
+              const type =
+                name === "date" || name.includes("Time")
+                  ? name.includes("Time")
+                    ? "time"
+                    : "date"
+                  : name === "price"
+                  ? "number"
+                  : "text";
+              return (
+                <div key={name}>
+                  <label className="block font-semibold mb-2">{label}</label>
+                  <input
+                    type={type}
+                    className="w-full border px-4 py-3 rounded-lg bg-gray-50"
+                    placeholder={label}
+                    value={form[name]}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, [name]: e.target.value }))
+                    }
+                  />
+                </div>
+              );
+            }
+          )}
+
+          <div className="md:col-span-2 mt-8">
+            <Button
+              type="submit"
+              variant="contained"
+              sx={{
+                bgcolor: "#0f265c",
+                borderRadius: 2,
+                fontWeight: 600,
+                px: 5,
+                py: 1.8,
+                fontSize: 18,
+              }}
+              fullWidth
+              disabled={loading}
+            >
+              {loading ? (
+                <CircularProgress size={24} />
+              ) : editId ? (
+                "Update"
+              ) : (
+                "Create"
+              )}
+            </Button>
+          </div>
+        </form>
       )}
     </div>
   );
