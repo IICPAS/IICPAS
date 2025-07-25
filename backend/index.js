@@ -30,7 +30,7 @@ import LiveSessionRoutes from "./routes/LiveSessionRoutes/LiveSessionRoutes.js";
 import metaTagRoutes from "./routes/metatagsRoute.js";
 import jobRoutes from "./routes/jobRoutes.js";
 import aboutRoutes from "./routes/WebsiteRoutes/aboutRoutes.js";
-
+import bookingRoutes from "./routes/bookingRoutes.js";
 //TicketRoutes
 import ticketRoutes from "./routes/TicketRoutes.js";
 
@@ -92,6 +92,7 @@ app.use("/api/about", aboutRoutes);
 
 //Ticket Routes
 app.use("/api/tickets", ticketRoutes);
+app.use("/api/bookings", bookingRoutes);
 
 // Server
 const PORT = process.env.PORT || 5000;

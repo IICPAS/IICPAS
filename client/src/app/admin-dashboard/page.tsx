@@ -14,6 +14,7 @@ import axios from "axios";
 import ManageMetaTags from "./Course/ManageMetaTags";
 import BlogComponent from "./BlogComponent.jsx";
 import CollegeTab from "./CollegeTab";
+import CalendarTab from "./CalendarTab";
 import AboutTab from "./AboutTab";
 import StudentsTab from "./StudentsTab";
 import { useRouter } from "next/navigation";
@@ -254,6 +255,8 @@ export default function AdminDashboard() {
             <EnquiriesTab />
           ) : activeTab === "support" ? (
             <TicketTab />
+          ) : activeTab === "calendar" ? (
+            <CalendarTab />
           ) : activeTab === "companies" ? (
             <CompanyTab />
           ) : activeTab === "meta" ? (

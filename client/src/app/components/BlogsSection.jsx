@@ -15,7 +15,11 @@ export default function BlogSection() {
     async function fetchBlogs() {
       try {
         const res = await axios.get(`${API_BASE}/blogs`);
-        setBlogs(res.data || []);
+        // Filter only blogs that have status === "active"
+        const activeBlogs = (res.data || []).filter(
+          (blog) => blog.status === "active"
+        );
+        setBlogs(activeBlogs);
       } catch {
         setBlogs([]);
       }
@@ -49,7 +53,6 @@ export default function BlogSection() {
               />
               <div className="absolute top-4 left-4 bg-[#3cd664] text-white text-xs font-medium px-3 py-1 rounded-full flex items-center gap-1">
                 <Calendar size={14} />
-                {/* Show createdAt as date if available, fallback */}
                 {blog.createdAt
                   ? new Date(blog.createdAt).toLocaleDateString("en-GB", {
                       day: "2-digit",

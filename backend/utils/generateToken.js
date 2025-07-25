@@ -5,6 +5,7 @@ export const generateToken = (college) => {
     {
       id: college._id,
       role: "college",
+      name: college.name,
       email: college.email,
       status: college.status,
     },

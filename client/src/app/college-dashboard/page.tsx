@@ -5,19 +5,20 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import Drawer from "react-modern-drawer";
+import BookingTab from "./BookingTab";
 import "react-modern-drawer/dist/index.css";
 import { Menu, LogOut, Bell, FilePlus } from "lucide-react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 
-const API = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
+const API = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080/api";
 
 type TabType = "dashboard" | "certifications" | "notifications";
 
 const CollegeDashboard = () => {
   const [college, setCollege] = useState<any>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [tab, setTab] = useState<TabType>("dashboard");
+  const [tab, setTab] = useState<TabType>("notifications");
 
   // Certification state
   const [certificationRequests, setCertificationRequests] = useState<
@@ -226,84 +227,7 @@ const CollegeDashboard = () => {
         );
 
       case "notifications":
-        return (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-            {/* Calendar and Form */}
-            <div className="lg:col-span-2 space-y-4">
-              <h2 className="text-2xl font-semibold text-gray-800">
-                Training Calendar
-              </h2>
-              <Calendar
-                className="w-full rounded border shadow"
-                onChange={(value) => {
-                  if (value instanceof Date) {
-                    setSelectedDate(value);
-                  } else if (Array.isArray(value) && value[0] instanceof Date) {
-                    setSelectedDate(value[0]);
-                  }
-                }}
-                value={selectedDate}
-              />
-              <p className="text-gray-600 text-sm">
-                Selected:{" "}
-                <span className="font-medium">
-                  {selectedDate.toDateString()}
-                </span>
-              </p>
-              <input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Enter training title"
-                className="border border-gray-300 rounded px-3 py-2 w-full"
-              />
-              <button
-                onClick={() => {
-                  if (title.trim()) {
-                    setPinnedEvents([
-                      ...pinnedEvents,
-                      { date: selectedDate, title },
-                    ]);
-                    setTitle("");
-                    toast.success("Training pinned to calendar");
-                  }
-                }}
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-              >
-                Pin Training
-              </button>
-            </div>
-
-            {/* Pinned Trainings */}
-            <div className="space-y-6">
-              <div className="border rounded p-4 bg-white shadow">
-                <h3 className="text-lg font-semibold text-blue-800 mb-2">
-                  📌 Pinned Trainings
-                </h3>
-                {pinnedEvents.length === 0 ? (
-                  <p className="text-sm text-gray-500">
-                    No trainings scheduled yet.
-                  </p>
-                ) : (
-                  <ul className="space-y-3">
-                    {pinnedEvents.map((event, index) => (
-                      <li
-                        key={index}
-                        className="bg-gray-50 px-3 py-2 border-l-4 border-blue-500 rounded"
-                      >
-                        <div className="font-medium text-gray-800">
-                          {event.title}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {event.date.toDateString()}
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            </div>
-          </div>
-        );
+        return <BookingTab />;
 
       default:
         return (

@@ -15,7 +15,7 @@ import {
   FaEyeSlash,
 } from "react-icons/fa";
 
-const API = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
+const API = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080/api";
 
 export default function CollegeAuthPage() {
   const [isLogin, setIsLogin] = useState(true);

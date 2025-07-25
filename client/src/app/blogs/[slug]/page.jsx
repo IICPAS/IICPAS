@@ -1,6 +1,6 @@
 // app/blogs/[slug]/page.js
 
-import BlogHero from "@/app/blog/BlogHero";
+import BlogHero from "./BlogHero";
 import Header from "../../components/Header";
 import axios from "axios";
 
@@ -12,9 +12,7 @@ export default async function BlogDetail({ params }) {
   let blog = null;
 
   try {
-    // Fetch all blogs (better: create an endpoint for get-by-slug for scale)
     const res = await axios.get(`${API_BASE}/blogs`);
-    // Slugify to match URL (e.g., erp-development)
     blog = res.data.find(
       (b) =>
         b.title &&
@@ -24,10 +22,13 @@ export default async function BlogDetail({ params }) {
     blog = null;
   }
 
-  if (!blog) {
+  // Show 'not found' if blog does not exist or is not active
+  if (!blog || blog.status !== "active") {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <h1 className="text-2xl font-bold text-red-600">Blog not found</h1>
+        <h1 className="text-2xl font-bold text-red-600">
+          Blog not found or inactive
+        </h1>
       </div>
     );
   }
