@@ -31,8 +31,13 @@ import metaTagRoutes from "./routes/metatagsRoute.js";
 import jobRoutes from "./routes/jobRoutes.js";
 import aboutRoutes from "./routes/WebsiteRoutes/aboutRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
+
 //TicketRoutes
 import ticketRoutes from "./routes/TicketRoutes.js";
+import certificationRoutes from "./routes/certificationRoutes.js";
+
+//Individual Routes
+import individualRoutes from "./routes/individualRoutes.js";
 
 //App Configuration
 dotenv.config();
@@ -93,6 +98,10 @@ app.use("/api/about", aboutRoutes);
 //Ticket Routes
 app.use("/api/tickets", ticketRoutes);
 app.use("/api/bookings", bookingRoutes);
+
+//Certification Requests
+app.use("/api/certification-requests", certificationRoutes);
+app.use("/api/individual", individualRoutes);
 
 // Server
 const PORT = process.env.PORT || 5000;

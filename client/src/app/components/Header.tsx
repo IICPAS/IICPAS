@@ -25,8 +25,8 @@ const navLinks = [
     name: "Training on site",
     children: [
       { name: "Practical Training", href: "/training/practical" },
-      { name: "College on site training", href: "/training/college" },
-      { name: "Corporate on site training", href: "/training/corporate" },
+      { name: "College on site training", href: "/join/college" },
+      { name: "Corporate on site training", href: "/placements/hire" },
     ],
   },
   {

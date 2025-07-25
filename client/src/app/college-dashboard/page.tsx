@@ -9,6 +9,7 @@ import BookingTab from "./BookingTab";
 import "react-modern-drawer/dist/index.css";
 import { Menu, LogOut, Bell, FilePlus } from "lucide-react";
 import Calendar from "react-calendar";
+import CertificationRequests from "./CertificationRequest";
 import "react-calendar/dist/Calendar.css";
 
 const API = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080/api";
@@ -150,80 +151,9 @@ const CollegeDashboard = () => {
     switch (tab) {
       case "certifications":
         return (
-          <div className="space-y-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">
-              Partner Certification Requests
-            </h2>
-
-            {/* Request Form */}
-            <div className="bg-white p-6 rounded shadow space-y-4">
-              <h3 className="text-lg font-medium text-gray-700">
-                Request New Certification
-              </h3>
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <input
-                  type="text"
-                  placeholder="College Name"
-                  className="border border-gray-300 rounded px-3 py-2"
-                  value={collegeName}
-                  onChange={(e) => setCollegeName(e.target.value)}
-                />
-                <input
-                  type="text"
-                  placeholder="Specialization..."
-                  className="border border-gray-300 rounded px-3 py-2"
-                  value={partnerName}
-                  onChange={(e) => setPartnerName(e.target.value)}
-                />
-                <input
-                  type="text"
-                  placeholder="Certification Topic"
-                  className="border border-gray-300 rounded px-3 py-2"
-                  value={certTopic}
-                  onChange={(e) => setCertTopic(e.target.value)}
-                />
-                <input
-                  type="number"
-                  placeholder="Hours"
-                  className="border border-gray-300 rounded px-3 py-2"
-                  value={hours}
-                  onChange={(e) => setHours(Number(e.target.value))}
-                />
-              </div>
-              <button
-                onClick={handleAddCertification}
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-              >
-                Add Request
-              </button>
-            </div>
-
-            {/* Existing Requests */}
-            <div className="space-y-4">
-              {certificationRequests.map((req, index) => (
-                <div
-                  key={index}
-                  className="bg-white p-4 rounded shadow flex flex-col"
-                >
-                  <span className="font-medium text-gray-800">
-                    College: {req.college}
-                  </span>
-                  <span className="font-medium text-gray-800">
-                    Partner: {req.partner}
-                  </span>
-                  <span className="text-sm text-gray-600">
-                    Topic: {req.topic}
-                  </span>
-                  <span className="text-sm text-gray-600">
-                    Hours: {req.hours}
-                  </span>
-                  <span className="text-sm text-gray-500">
-                    Status: {req.status}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
+          <>
+            <CertificationRequests />
+          </>
         );
 
       case "notifications":
