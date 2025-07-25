@@ -77,7 +77,7 @@ const CollegeDashboard = () => {
         withCredentials: true,
       });
       toast.success("Logged out");
-      window.location.href = "/college-login";
+      window.location.href = "/join/college";
     } catch (err) {
       toast.error("Failed to logout");
     }
