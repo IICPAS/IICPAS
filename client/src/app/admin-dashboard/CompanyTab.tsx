@@ -16,7 +16,7 @@ const CompanyTab = () => {
 
   const fetchCompanies = async () => {
     try {
-      const res = await axios.get(`${API}/api/companies`);
+      const res = await axios.get(`${API}/companies`);
       setCompanies(res.data);
     } catch {
       toast.error("Failed to fetch companies");
@@ -25,7 +25,7 @@ const CompanyTab = () => {
 
   const handleApprove = async (id: string) => {
     try {
-      await axios.put(`${API}/api/companies/approve/${id}`);
+      await axios.put(`${API}/companies/approve/${id}`);
       toast.success("Company approved");
       fetchCompanies();
     } catch {
