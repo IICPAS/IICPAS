@@ -1,5 +1,33 @@
 @import "tailwindcss";
 
+/* Make React Calendar big, modern, and centered */
+.big-modern-calendar {
+  width: 100% !important;
+  max-width: 700px;
+  margin: 0 auto;
+  font-size: 1.2rem;
+  box-shadow: 0 6px 32px 0 rgba(80, 120, 230, 0.1);
+  border-radius: 18px;
+  padding: 1.5rem 1rem;
+  background: #fff;
+  border: 1.5px solid #d1e0fa;
+}
+
+/* Optional: Make the day tiles bigger and more spaced */
+.big-modern-calendar .react-calendar__tile {
+  height: 48px !important;
+  font-size: 1.08em;
+  border-radius: 12px !important;
+}
+.big-modern-calendar .react-calendar__tile--now {
+  background: #f0f7ff !important;
+  border-radius: 12px !important;
+}
+.big-modern-calendar .react-calendar__tile--active {
+  background: #387ff7 !important;
+  color: #fff !important;
+}
+
 @keyframes float {
   0% {
     transform: translateY(0px);
