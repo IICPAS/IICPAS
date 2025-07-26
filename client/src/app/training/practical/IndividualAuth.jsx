@@ -63,7 +63,7 @@ export default function IndividualAuthPanel() {
 
     setLoading(true);
     try {
-      await axios.post(`${API}/individual/signup`, signupForm, {
+      await axios.post(`${API}/v1/individual/signup`, signupForm, {
         withCredentials: true,
       });
       toast.success("Signup successful!");
@@ -78,7 +78,7 @@ export default function IndividualAuthPanel() {
     e.preventDefault();
     setLoading(true);
     try {
-      await axios.post(`${API}/individual/forgot-password`, {
+      await axios.post(`${API}/v1/individual/forgot-password`, {
         email: resetForm.email,
       });
       toast.success("Token sent to your email");
@@ -96,7 +96,7 @@ export default function IndividualAuthPanel() {
 
     setLoading(true);
     try {
-      await axios.post(`${API}/individual/reset-password`, resetForm, {
+      await axios.post(`${API}/v1/individual/reset-password`, resetForm, {
         withCredentials: true,
       });
       toast.success("Password reset successful!");
