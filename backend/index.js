@@ -39,6 +39,10 @@ import certificationRoutes from "./routes/certificationRoutes.js";
 //Individual Routes
 import individualRoutes from "./routes/individualRoutes.js";
 
+//Jobs Controllers
+import JobsCompanyRoutes from "./routes/jobCompanyRoutes.js";
+import JobApplicationRoute from "./routes/jobApplicationRoutes.js";
+
 //App Configuration
 dotenv.config();
 connectDB();
@@ -102,6 +106,10 @@ app.use("/api/bookings", bookingRoutes);
 //Certification Requests
 app.use("/api/certification-requests", certificationRoutes);
 app.use("/api/v1/individual", individualRoutes);
+
+//Jobs External
+app.use("/api/jobs-external", JobsCompanyRoutes);
+app.use("/api/apply/jobs-external", JobApplicationRoute);
 
 // Server
 const PORT = process.env.PORT || 5000;
