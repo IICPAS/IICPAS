@@ -108,8 +108,8 @@ app.use("/api/certification-requests", certificationRoutes);
 app.use("/api/v1/individual", individualRoutes);
 
 //Jobs External
-app.use("/api/v1/jobs-external", JobApplyRoutes);
-app.use("/api/v1/apply/job-external", JobApplicationRoute);
+app.use("/api/jobs-external", JobsCompanyRoutes);
+app.use("/api/apply/jobs-external", JobApplicationRoute);
 
 // Server
 const PORT = process.env.PORT || 5000;

@@ -11,4 +11,4 @@ const JobsCompanySchema = new mongoose.Schema(
 );
 
 const jobsCompany = mongoose.model("JobsCompany", JobsCompanySchema);
-export default JobsCompanySchema;
+export default jobsCompany;

@@ -3,6 +3,7 @@ import JobsCompany from "../models/jobsCompany.js";
 // CREATE job
 export const createJob = async (req, res) => {
   try {
+    console.log(req.body);
     const job = await JobsCompany.create(req.body);
     res.json(job);
   } catch (err) {
