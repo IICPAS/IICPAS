@@ -31,7 +31,7 @@ const CompanyDashboardPage = () => {
   const [loading, setLoading] = useState(true);
   const [company, setCompany] = useState<any>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("post-job");
+  const [activeTab, setActiveTab] = useState("schedule-booking");
 
   useEffect(() => {
     const verifyCompany = async () => {
