@@ -54,9 +54,18 @@ export const loginCompany = async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
 
     console.log(JWT_SECRET);
-    const token = jwt.sign({ id: company._id, role: "company" }, JWT_SECRET, {
-      expiresIn: "7d",
-    });
+    const token = jwt.sign(
+      {
+        id: company._id,
+        role: "company",
+        name: company.fullName,
+        email: company.email,
+      },
+      JWT_SECRET,
+      {
+        expiresIn: "7d",
+      }
+    );
 
     // Set token in HttpOnly cookie
     res.cookie("token", token, {

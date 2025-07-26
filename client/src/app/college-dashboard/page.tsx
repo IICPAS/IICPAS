@@ -6,15 +6,17 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import Drawer from "react-modern-drawer";
 import BookingTab from "./BookingTab";
+import CollegeTicketRaise from "./CollegeTicketRaise";
 import "react-modern-drawer/dist/index.css";
 import { Menu, LogOut, Bell, FilePlus } from "lucide-react";
 import Calendar from "react-calendar";
 import CertificationRequests from "./CertificationRequest";
 import "react-calendar/dist/Calendar.css";
+import CollegeTicketRaiseAndList from "./CollegeTicketRaise";
 
 const API = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080/api";
 
-type TabType = "dashboard" | "certifications" | "notifications";
+type TabType = "Tickets" | "dashboard" | "certifications" | "notifications";
 
 const CollegeDashboard = () => {
   const [college, setCollege] = useState<any>(null);
@@ -134,6 +136,16 @@ const CollegeDashboard = () => {
           <Bell size={18} />
           Training Notifications
         </button>
+
+        <button
+          onClick={() => setTab("Tickets")}
+          className={`flex items-center gap-2 hover:text-blue-600 ${
+            tab === "notifications" ? "text-blue-600 font-semibold" : ""
+          }`}
+        >
+          <FilePlus size={18} />
+          Tickets
+        </button>
       </nav>
       <div className="mt-auto">
         <button
@@ -158,6 +170,9 @@ const CollegeDashboard = () => {
 
       case "notifications":
         return <BookingTab />;
+
+      case "Tickets":
+        return <CollegeTicketRaiseAndList />;
 
       default:
         return (

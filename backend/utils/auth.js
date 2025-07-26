@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 
-export const signJwt = (userId) =>
-  jwt.sign({ id: userId }, process.env.JWT_SECRET, {
+export const signJwt = (userId, email, name) =>
+  jwt.sign({ id: userId, email: email, name: name }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN || "3d",
   });
 

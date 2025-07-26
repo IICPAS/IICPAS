@@ -101,7 +101,7 @@ app.use("/api/bookings", bookingRoutes);
 
 //Certification Requests
 app.use("/api/certification-requests", certificationRoutes);
-app.use("/api/individual", individualRoutes);
+app.use("/api/v1/individual", individualRoutes);
 
 // Server
 const PORT = process.env.PORT || 5000;

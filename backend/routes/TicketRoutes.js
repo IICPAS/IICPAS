@@ -17,7 +17,12 @@ router.post("/", async (req, res) => {
 // READ ALL
 router.get("/", async (req, res) => {
   try {
-    const tickets = await Ticket.find();
+    const { email } = req.query;
+
+    const tickets = await Ticket.find(email ? { email } : {}).sort({
+      createdAt: -1,
+    });
+
     res.json(tickets);
   } catch (err) {
     res.status(500).json({ error: err.message });

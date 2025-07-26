@@ -40,7 +40,9 @@
     "src/app/jobs/LoginPage.jsx",
     "src/app/admin-dashboard/BlogComponent.jsx",
     "src/app/components/BlogsSection.jsx",
-    "src/app/admin-dashboard/CollegeTab.jsx"
+    "src/app/admin-dashboard/CollegeTab.jsx",
+    "src/app/personal-dashboard/page.jsx",
+    "src/app/company-dashboard/RaiseTicketTab.jsx"
   ],
   "exclude": ["node_modules"]
 }
