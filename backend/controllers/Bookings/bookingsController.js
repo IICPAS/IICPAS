@@ -29,8 +29,11 @@ export const rejectBooking = async (req, res) => {
 export const createBooking = async (req, res) => {
   try {
     const { by, title, hrs, type } = req.body;
+
+    console.log(by, title, hrs, type);
     if (!by || !title || !hrs)
       return res.status(400).json({ error: "All fields required" });
+
     const booking = new Booking({ by, title, hrs, type, status: "pending" });
     await booking.save();
     res.status(201).json(booking);

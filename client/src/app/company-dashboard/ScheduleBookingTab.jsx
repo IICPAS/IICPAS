@@ -1,94 +1,97 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
-import { X } from "lucide-react";
-import Swal from "sweetalert2";
-import withReactContent from "sweetalert2-react-content";
+import { Plus, Check } from "lucide-react";
 
 const API = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080/api";
-const MySwal = withReactContent(Swal);
 
-const CalendarTab = () => {
+export default function CompanyBookingsMainArea() {
+  const [email, setEmail] = useState(null);
+  const [name, setName] = useState(null);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [form, setForm] = useState({ title: "", hrs: 1 });
+  const [showForm, setShowForm] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
 
-  // Fetch all bookings (admin)
   useEffect(() => {
-    fetchBookings();
-    // eslint-disable-next-line
+    const fetchCompany = async () => {
+      try {
+        const res = await axios.get(`${API}/companies/iscompany`, {
+          withCredentials: true,
+        });
+        setEmail(res.data.company.email);
+        setName(res.data.company.name);
+      } catch {
+        toast.error("Unauthorized. Please login.");
+        window.location.href = "/placements/hire";
+      }
+    };
+    fetchCompany();
   }, []);
+
+  useEffect(() => {
+    if (email) fetchBookings();
+  }, [email]);
 
   const fetchBookings = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API}/bookings`);
+      const res = await axios.get(`${API}/bookings?by=${email}`);
       setBookings(res.data || []);
-    } catch (err) {
+    } catch {
       setBookings([]);
-      toast.error("Failed to fetch bookings.");
     }
     setLoading(false);
   };
 
-  // Admin schedule/approve
-  const handleSchedule = async (id) => {
+  const handleAddBooking = async (e) => {
+    e.preventDefault();
+    if (!form.title || !form.hrs) {
+      toast.error("Please fill all fields");
+      return;
+    }
     try {
-      await axios.patch(
-        `${API}/bookings/${id}/approve`,
-        {},
-        { withCredentials: true }
-      );
-      toast.success("Scheduled!");
+      await axios.post(`${API}/bookings`, {
+        by: email,
+        type: "company",
+        title: form.title,
+        hrs: form.hrs,
+      });
+      toast.success("Booking request sent!");
+      setForm({ title: "", hrs: 1 });
+      setShowForm(false);
       fetchBookings();
     } catch (err) {
-      toast.error("Failed to schedule");
+      toast.error(err?.response?.data?.error || "Booking failed");
     }
   };
 
-  // Admin reject/cancel with SweetAlert2 confirmation
-  const handleCancel = async (id) => {
-    const result = await MySwal.fire({
-      title: "Cancel this booking?",
-      text: "This cannot be undone.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Yes, cancel it",
-      cancelButtonText: "No",
-      confirmButtonColor: "#d33",
-      reverseButtons: true,
-    });
-    if (!result.isConfirmed) return;
-    try {
-      await axios.patch(
-        `${API}/bookings/${id}/reject`,
-        {},
-        { withCredentials: true }
-      );
-      toast.success("Booking cancelled!");
-      fetchBookings();
-    } catch (err) {
-      toast.error("Failed to cancel booking");
-    }
-  };
-
-  // Calendar logic
   const bookedEvents = bookings.filter((b) => b.status === "booked");
   const calendarTileContent = ({ date }) => {
     const found = bookedEvents.find(
       (b) => b.date && new Date(b.date).toDateString() === date.toDateString()
     );
-    return found ? (
-      <span
-        className="block text-center mt-1"
-        style={{ fontSize: "1.3em", lineHeight: "1em", color: "#232323" }}
-        title={found.title}
-      >
-        📌
-      </span>
-    ) : null;
+    if (found)
+      return (
+        <span
+          className="block text-center mt-1"
+          style={{
+            fontSize: "1.3em",
+            lineHeight: "1em",
+            color: "#111",
+            userSelect: "none",
+          }}
+          title={found.title}
+        >
+          📌
+        </span>
+      );
+    return null;
   };
 
   const eventsForSelected = bookedEvents.filter(
@@ -97,31 +100,86 @@ const CalendarTab = () => {
   );
 
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-12 pb-8">
-      {/* All Bookings Table */}
-      <div className="bg-white rounded-xl  p-6">
-        <h2 className="text-2xl font-bold text-blue-700 mb-6">
-          All Bookings (Admin)
-        </h2>
+    <div className="w-full max-w-6xl mx-auto space-y-10 pb-8">
+      <div className="bg-white rounded-xl shadow-lg p-5">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-bold text-blue-700">
+            Bookings for {name}
+          </h2>
+          <button
+            onClick={() => setShowForm((v) => !v)}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded shadow"
+          >
+            <Plus size={18} /> {showForm ? "Close" : "Add Booking"}
+          </button>
+        </div>
+
+        {showForm && (
+          <form
+            onSubmit={handleAddBooking}
+            className="flex flex-wrap gap-4 bg-blue-50 p-4 rounded-lg mb-6 border items-end"
+          >
+            <div className="flex flex-col flex-1 min-w-[180px]">
+              <label className="mb-1 font-medium text-blue-900">Topic</label>
+              <input
+                className="border rounded px-3 py-2"
+                placeholder="Enter topic"
+                value={form.title}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, title: e.target.value }))
+                }
+                required
+              />
+            </div>
+            <div className="flex flex-col w-28">
+              <label className="mb-1 font-medium text-blue-900">Hours</label>
+              <input
+                className="border rounded px-3 py-2"
+                type="number"
+                min={1}
+                max={8}
+                placeholder="Hours"
+                value={form.hrs}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, hrs: Number(e.target.value) }))
+                }
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              className="bg-blue-600 text-white px-5 py-2 rounded font-semibold hover:bg-blue-700 mt-4"
+              disabled={loading}
+              style={{ height: 44 }}
+            >
+              {loading ? (
+                "Booking..."
+              ) : (
+                <>
+                  <Check className="inline" size={18} /> Book
+                </>
+              )}
+            </button>
+          </form>
+        )}
+
         <div className="overflow-x-auto">
           <table className="min-w-full border border-gray-200 rounded-xl shadow-sm">
             <thead>
               <tr className="bg-blue-100 text-blue-900 text-sm">
                 <th className="px-4 py-2">Title</th>
                 <th className="px-4 py-2">Type</th>
-                <th className="px-4 py-2">By</th>
                 <th className="px-4 py-2">Hours</th>
                 <th className="px-4 py-2">Status</th>
                 <th className="px-4 py-2">Date</th>
                 <th className="px-4 py-2">Start</th>
                 <th className="px-4 py-2">End</th>
-                <th className="px-4 py-2 text-center">Action</th>
               </tr>
             </thead>
             <tbody>
               {bookings.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="text-center text-gray-400 py-8">
+                  <td colSpan={7} className="text-center text-gray-400 py-8">
                     No bookings found.
                   </td>
                 </tr>
@@ -130,18 +188,17 @@ const CalendarTab = () => {
                 <tr key={b._id} className="border-t hover:bg-blue-50 text-sm">
                   <td className="px-4 py-2">{b.title}</td>
                   <td className="px-4 py-2">{b.type}</td>
-                  <td className="px-4 py-2">{b.by}</td>
                   <td className="px-4 py-2">{b.hrs}</td>
                   <td className="px-4 py-2">
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-bold
-                        ${
-                          b.status === "booked"
-                            ? "bg-green-100 text-green-700"
-                            : b.status === "pending"
-                            ? "bg-yellow-100 text-yellow-700"
-                            : "bg-gray-100 text-gray-500"
-                        }`}
+                      ${
+                        b.status === "booked"
+                          ? "bg-green-100 text-green-700"
+                          : b.status === "pending"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : "bg-gray-100 text-gray-500"
+                      }`}
                     >
                       {b.status}
                     </span>
@@ -165,25 +222,6 @@ const CalendarTab = () => {
                         })
                       : "-"}
                   </td>
-                  <td className="px-4 py-2 text-center flex gap-2 justify-center">
-                    {b.status === "pending" && (
-                      <button
-                        onClick={() => handleSchedule(b._id)}
-                        className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 font-semibold"
-                      >
-                        Admin Schedule
-                      </button>
-                    )}
-                    {(b.status === "pending" || b.status === "booked") && (
-                      <button
-                        onClick={() => handleCancel(b._id)}
-                        className="px-2 py-1 bg-red-50 text-red-600 rounded hover:bg-red-100 flex items-center justify-center"
-                        title="Cancel booking"
-                      >
-                        <X size={18} />
-                      </button>
-                    )}
-                  </td>
                 </tr>
               ))}
             </tbody>
@@ -191,10 +229,9 @@ const CalendarTab = () => {
         </div>
       </div>
 
-      {/* Bookings Calendar */}
       <div
         className="bg-white rounded-xl shadow p-8 mx-auto"
-        style={{ width: "80vw", maxWidth: 950, minWidth: 340 }}
+        style={{ width: "80vw", maxWidth: 900, minWidth: 340 }}
       >
         <h2 className="text-2xl font-bold text-blue-700 mb-6 flex items-center gap-2">
           <span style={{ fontSize: "1.5em" }}>📌</span> Bookings Calendar
@@ -255,7 +292,7 @@ const CalendarTab = () => {
         </div>
       </div>
 
-      {/* Modern calendar grid styles */}
+      {/* Calendar Styles */}
       <style jsx global>{`
         .big-modern-calendar {
           width: 100% !important;
@@ -276,7 +313,6 @@ const CalendarTab = () => {
           transition: box-shadow 0.15s;
           position: relative;
           background: #fcfcff;
-          color: #232323;
         }
         .big-modern-calendar .react-calendar__tile:enabled:hover,
         .big-modern-calendar .react-calendar__tile--active {
@@ -287,7 +323,7 @@ const CalendarTab = () => {
         }
         .big-modern-calendar .react-calendar__tile.has-pin {
           font-weight: 600;
-          color: #232323 !important;
+          color: #1a3b6b;
           background: #eaf2ff !important;
           border: 2px solid #387ff7 !important;
           box-shadow: 0 1px 6px #387ff718;
@@ -296,7 +332,6 @@ const CalendarTab = () => {
           .react-calendar__month-view__days__day--neighboringMonth {
           opacity: 0.33;
         }
-        /* Responsive grid columns for big calendar */
         .calendar-grid .react-calendar__month-view__days {
           display: grid !important;
           grid-template-columns: repeat(7, 1fr);
@@ -305,6 +340,4 @@ const CalendarTab = () => {
       `}</style>
     </div>
   );
-};
-
-export default CalendarTab;
+}

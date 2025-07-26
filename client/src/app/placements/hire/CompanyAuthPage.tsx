@@ -9,7 +9,7 @@ import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import toast from "react-hot-toast";
 import axios from "axios";
 
-const API = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
+const API = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080/api";
 
 export default function CompanyAuthPage() {
   const router = useRouter();

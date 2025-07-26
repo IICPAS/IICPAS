@@ -15,7 +15,7 @@ import {
   FaEyeSlash,
 } from "react-icons/fa";
 
-const API = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080/api";
+const API = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
 
 export default function CollegeAuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -59,7 +59,7 @@ export default function CollegeAuthPage() {
     try {
       if (isLogin) {
         const res = await axios.post(
-          `${API}/college/login`,
+          `${API}/api/college/login`,
           {
             email: form.email,
             password: form.password,
@@ -83,7 +83,7 @@ export default function CollegeAuthPage() {
         formData.append("confirmPassword", form.confirmPassword);
         if (form.document) formData.append("document", form.document);
 
-        await axios.post(`${API}/college/signup`, formData, {
+        await axios.post(`${API}/api/college/signup`, formData, {
           headers: { "Content-Type": "multipart/form-data" },
           withCredentials: true,
         });
