@@ -70,7 +70,6 @@ app.use(cookieParser());
 
 // Routes
 app.use("/api/college", collegeRoutes);
-app.use("/api/student", studentRoutes);
 app.use("/api/admin", authRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/companies", companyRoutes);
@@ -110,6 +109,9 @@ app.use("/api/v1/individual", individualRoutes);
 //Jobs External
 app.use("/api/jobs-external", JobsCompanyRoutes);
 app.use("/api/apply/jobs-external", JobApplicationRoute);
+
+//Student Routes
+app.use("/api/v1/students", studentRoutes);
 
 // Server
 const PORT = process.env.PORT || 5000;
