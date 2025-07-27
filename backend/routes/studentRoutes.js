@@ -1,15 +1,14 @@
 import Student from "../models/Students.js";
 import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
-import { verify } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 
 //FOR PDF Import
 import PDFDocument from "pdfkit";
 import Course from "../models/Content/Course.js";
 import fs from "fs-extra";
 import nodemailer from "nodemailer";
-import fs from "fs-extra";
-import nodemailer from "nodemailer";
+import express from "express";
 
 dotenv.config();
 
@@ -19,8 +18,10 @@ const createToken = (student) => {
   });
 };
 
+const router = express.Router();
+
 //Register Student
-app.post("/register", async (req, res) => {
+router.post("/register", async (req, res) => {
   const { name, email, phone, password, mode, location, center } = req.body;
 
   try {
@@ -47,7 +48,7 @@ app.post("/register", async (req, res) => {
 });
 
 //Login
-app.post("/login", async (req, res) => {
+router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
   try {
@@ -70,7 +71,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.get("/logout", (req, res) => {
+router.get("/logout", (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -81,7 +82,7 @@ app.get("/logout", (req, res) => {
 });
 
 // isStudent
-app.get("/isstudent", async (req, res) => {
+router.get("/isstudent", async (req, res) => {
   const token = req.cookies.token;
   if (!token) return res.status(401).json({ student: null });
 
@@ -97,7 +98,7 @@ app.get("/isstudent", async (req, res) => {
 });
 
 /*---- Course buy Routes ----- */
-const generateReceipt = async (student, course, receiptId) => {
+const generateReceiptPDF = async (student, course, receiptId) => {
   const doc = new PDFDocument();
   const filePath = `./receipts/${receiptId}.pdf`;
   await fs.ensureDir("./receipts");
@@ -135,7 +136,7 @@ const sendReceiptEmail = async (email, pdfPath) => {
 };
 
 // === POST /course-buy/:studentId ===
-app.post("/course-buy/:id", async (req, res) => {
+router.post("/course-buy/:id", async (req, res) => {
   const token = req.cookies.token;
   if (!token) return res.status(401).json({ message: "Unauthorized" });
 
@@ -174,7 +175,7 @@ app.post("/course-buy/:id", async (req, res) => {
       { request: base64Payload },
       {
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "routerlication/json",
           "X-VERIFY": xVerify,
           "X-MERCHANT-ID": process.env.PHONEPE_MERCHANT_ID,
         },
@@ -190,7 +191,7 @@ app.post("/course-buy/:id", async (req, res) => {
 });
 
 // === POST /verify-buy/:studentId ===
-app.post("/verify-buy/:id", async (req, res) => {
+router.post("/verify-buy/:id", async (req, res) => {
   const courseId = req.query.courseId;
   const { merchantUserId, code } = req.body.data;
 
@@ -228,7 +229,7 @@ app.post("/verify-buy/:id", async (req, res) => {
 });
 
 // --- GET /list-receipts/:studentId ---
-app.get("/list-receipts/:id", async (req, res) => {
+router.get("/list-receipts/:id", async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
     if (!student) return res.status(404).json({ message: "Student not found" });
@@ -242,7 +243,7 @@ app.get("/list-receipts/:id", async (req, res) => {
 });
 
 // --- Serve/download receipt file ---
-app.get("/download-receipt/:receiptId", async (req, res) => {
+router.get("/download-receipt/:receiptId", async (req, res) => {
   try {
     const { receiptId } = req.params;
     const filePath = path.resolve(`./receipts/${receiptId}.pdf`);
@@ -259,7 +260,7 @@ app.get("/download-receipt/:receiptId", async (req, res) => {
   }
 });
 
-app.post("/session-buy/:id", async (req, res) => {
+router.post("/session-buy/:id", async (req, res) => {
   const token = req.cookies.token;
   if (!token) return res.status(401).json({ message: "Unauthorized" });
 
@@ -297,7 +298,7 @@ app.post("/session-buy/:id", async (req, res) => {
         headers: {
           "X-VERIFY": xVerify,
           "X-MERCHANT-ID": process.env.PHONEPE_MERCHANT_ID,
-          "Content-Type": "application/json",
+          "Content-Type": "routerlication/json",
         },
       }
     );
@@ -312,7 +313,7 @@ app.post("/session-buy/:id", async (req, res) => {
 
 //Verufy session buy
 
-app.post("/verify-session-buy/:id", async (req, res) => {
+router.post("/verify-session-buy/:id", async (req, res) => {
   const { code, merchantUserId } = req.body.data;
   const sessionId = req.query.sessionId;
 
@@ -348,7 +349,7 @@ app.post("/verify-session-buy/:id", async (req, res) => {
   }
 });
 
-app.get("/get-cart/:id", async (req, res) => {
+router.get("/get-cart/:id", async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
     if (!student) return res.status(404).json({ message: "Student not found" });
@@ -361,7 +362,7 @@ app.get("/get-cart/:id", async (req, res) => {
 
 //Ticket By Id
 
-app.post("/api/v1/ticket/:id", async (req, res) => {
+router.post("/api/v1/ticket/:id", async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
     if (!student) return res.status(404).json({ message: "Student not found" });
@@ -387,7 +388,7 @@ app.post("/api/v1/ticket/:id", async (req, res) => {
   }
 });
 
-app.patch("/api/v1/student/profile/:id", async (req, res) => {
+router.patch("/api/v1/student/profile/:id", async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
     if (!student) return res.status(404).json({ message: "Student not found" });
@@ -412,7 +413,7 @@ app.patch("/api/v1/student/profile/:id", async (req, res) => {
   }
 });
 
-app.post("/api/v1/add-cart/:id", async (req, res) => {
+router.post("/api/v1/add-cart/:id", async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
     if (!student) return res.status(404).json({ message: "Student not found" });
@@ -436,7 +437,7 @@ app.post("/api/v1/add-cart/:id", async (req, res) => {
   }
 });
 
-app.delete("/api/v1/remove-cart/:id", async (req, res) => {
+router.delete("/api/v1/remove-cart/:id", async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
     if (!student) return res.status(404).json({ message: "Student not found" });
@@ -460,7 +461,7 @@ app.delete("/api/v1/remove-cart/:id", async (req, res) => {
   }
 });
 
-app.delete("/api/v1/clear-cart/:id", async (req, res) => {
+router.delete("/api/v1/clear-cart/:id", async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
     if (!student) return res.status(404).json({ message: "Student not found" });
@@ -476,7 +477,7 @@ app.delete("/api/v1/clear-cart/:id", async (req, res) => {
   }
 });
 
-app.get("/api/v1/student/:id/courses", async (req, res) => {
+router.get("/api/v1/student/:id/courses", async (req, res) => {
   try {
     const student = await Student.findById(req.params.id).populate("course");
 
@@ -492,7 +493,7 @@ app.get("/api/v1/student/:id/courses", async (req, res) => {
   }
 });
 
-app.get("/api/v1/list-courses/:id", async (req, res) => {
+router.get("/api/v1/list-courses/:id", async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
     if (!student) {
@@ -514,3 +515,5 @@ app.get("/api/v1/list-courses/:id", async (req, res) => {
       .json({ message: "Failed to fetch courses", error: err.message });
   }
 });
+
+export default router;

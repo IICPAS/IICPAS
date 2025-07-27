@@ -3,11 +3,11 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
+import axios from "axios";
+import { Menu, X, LogOut, ShoppingCart, ChevronDown } from "lucide-react";
 import Drawer from "react-modern-drawer";
 import "react-modern-drawer/dist/index.css";
 
-// Nav structure with dropdowns
 const navLinks = [
   { name: "Home", href: "/" },
   { name: "Course", href: "/course" },
@@ -50,13 +50,19 @@ const navLinks = [
 ];
 
 export default function Header() {
-  const [showHeader, setShowHeader] = useState(true);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [lastScrollY, setLastScrollY] = useState(0);
-  const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
   const pathname = usePathname();
+  const [showHeader, setShowHeader] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [cartDrawer, setCartDrawer] = useState(false);
+  const [expandedMenus, setExpandedMenus] = useState([]);
+  const [userDropdown, setUserDropdown] = useState(false);
+  const [student, setStudent] = useState(null);
+  const [cart, setCart] = useState([]);
 
-  const toggleMenu = (name: string) => {
+  const API = process.env.NEXT_PUBLIC_API_URL;
+
+  const toggleMenu = (name) => {
     setExpandedMenus((prev) =>
       prev.includes(name) ? prev.filter((m) => m !== name) : [...prev, name]
     );
@@ -71,10 +77,28 @@ export default function Header() {
       }
       setLastScrollY(window.scrollY);
     };
-
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
+
+  useEffect(() => {
+    const fetchStudent = async () => {
+      try {
+        const res = await axios.get(`${API}/api/v1/student/isstudent`, {
+          withCredentials: true,
+        });
+        setStudent(res.data.student);
+        const cartRes = await axios.get(
+          `${API}/api/v1/get-cart/${res.data.student._id}`,
+          { withCredentials: true }
+        );
+        setCart(cartRes.data.cart || []);
+      } catch {
+        setStudent(null);
+      }
+    };
+    fetchStudent();
+  }, []);
 
   return (
     <>
@@ -84,7 +108,6 @@ export default function Header() {
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 md:px-10 py-3 flex items-center justify-between">
-          {/* Logo */}
           <Link href="/" className="text-xl font-bold text-[#003057]">
             <img src="/images/logo.png" alt="IICPA Logo" className="h-12" />
           </Link>
@@ -136,17 +159,57 @@ export default function Header() {
             )}
           </nav>
 
-          {/* CTA - Student Login */}
-          <div className="hidden lg:flex items-center space-x-6">
-            <Link
-              href="/student-login"
-              className="bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-2 rounded-md transition"
-            >
-              Student Login
-            </Link>
+          {/* CTA / User Panel */}
+          <div className="hidden lg:flex items-center space-x-6 relative">
+            {student ? (
+              <>
+                <button
+                  onClick={() => setCartDrawer(true)}
+                  className="relative"
+                >
+                  <ShoppingCart size={22} />
+                  {cart.length > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-green-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                      {cart.length}
+                    </span>
+                  )}
+                </button>
+                <div className="relative">
+                  <button
+                    className="flex items-center gap-1 text-sm font-medium"
+                    onClick={() => setUserDropdown(!userDropdown)}
+                  >
+                    {student.name} <ChevronDown size={16} />
+                  </button>
+                  {userDropdown && (
+                    <div className="absolute right-0 mt-2 w-32 bg-white border shadow rounded z-50">
+                      <button
+                        onClick={async () => {
+                          await axios.get(`${API}/api/v1/student/logout`, {
+                            withCredentials: true,
+                          });
+                          setStudent(null);
+                          location.reload();
+                        }}
+                        className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm flex items-center gap-2"
+                      >
+                        <LogOut size={16} /> Logout
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              <Link
+                href="/student-login"
+                className="bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-2 rounded-md transition"
+              >
+                Student Login
+              </Link>
+            )}
           </div>
 
-          {/* Mobile Hamburger */}
+          {/* Mobile Menu */}
           <button
             className="lg:hidden text-gray-800"
             onClick={() => setDrawerOpen(true)}
@@ -156,7 +219,7 @@ export default function Header() {
         </div>
       </header>
 
-      {/* Mobile Drawer */}
+      {/* Mobile Drawer Menu */}
       <Drawer
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
@@ -169,7 +232,6 @@ export default function Header() {
             <X size={24} />
           </button>
         </div>
-
         <nav className="flex flex-col gap-2 text-sm font-medium">
           {navLinks.map((item) => {
             const hasChildren = !!item.children;
@@ -215,7 +277,6 @@ export default function Header() {
               </div>
             );
           })}
-
           <Link
             href="/student-login"
             onClick={() => setDrawerOpen(false)}
@@ -224,6 +285,34 @@ export default function Header() {
             Student Login
           </Link>
         </nav>
+      </Drawer>
+
+      {/* Cart Drawer */}
+      <Drawer
+        open={cartDrawer}
+        onClose={() => setCartDrawer(false)}
+        direction="right"
+        className="p-6 bg-white"
+      >
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-base font-bold text-[#003057]">My Cart</h2>
+          <button onClick={() => setCartDrawer(false)}>
+            <X size={24} />
+          </button>
+        </div>
+
+        {cart.length === 0 ? (
+          <p className="text-sm text-gray-500">Your cart is empty.</p>
+        ) : (
+          <div className="space-y-4">
+            {cart.map((c) => (
+              <div key={c._id} className="border p-3 rounded-md">
+                <p className="font-semibold">{c.title}</p>
+                <p className="text-sm text-gray-500">₹{c.price}</p>
+              </div>
+            ))}
+          </div>
+        )}
       </Drawer>
     </>
   );
