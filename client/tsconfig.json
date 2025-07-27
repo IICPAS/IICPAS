@@ -43,8 +43,7 @@
     "src/app/admin-dashboard/CollegeTab.jsx",
     "src/app/personal-dashboard/page.jsx",
     "src/app/company-dashboard/RaiseTicketTab.jsx",
-    "src/app/admin-dashboard/page.tsx",
-    "src/app/components/Header.jsx"
+    "src/app/admin-dashboard/page.tsx"
   ],
   "exclude": ["node_modules"]
 }
