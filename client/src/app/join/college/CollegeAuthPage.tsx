@@ -15,7 +15,7 @@ import {
   FaEyeSlash,
 } from "react-icons/fa";
 
-const API = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 export default function CollegeAuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -100,7 +100,7 @@ export default function CollegeAuthPage() {
     e.preventDefault();
     if (!form.email) return toast.error("Please enter your email");
     try {
-      await axios.post(`${API}/college/send-otp`, {
+      await axios.post(`${API}/api/college/send-otp`, {
         email: form.email,
       });
       toast.success("OTP sent to your email");
@@ -113,7 +113,7 @@ export default function CollegeAuthPage() {
   const handleResetPassword = async (e: any) => {
     e.preventDefault();
     try {
-      await axios.post(`${API}/college/reset-password`, {
+      await axios.post(`${API}/api/college/reset-password`, {
         email: form.email,
         otp: otp.join(""),
         newPassword,

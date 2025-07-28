@@ -195,3 +195,21 @@ body {
 .scrollbar-hide::-webkit-scrollbar {
   display: none; /* Chrome/Safari/Webkit */
 }
+
+/* In CourseArea.module.css or global.css */
+/* global.css or CourseArea.module.css */
+.hide-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+  overflow: auto; /* Must be scrollable */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  width: 0 !important; /* Chrome, Safari, Opera */
+  height: 0 !important;
+  background: transparent;
+}
+
+body {
+  overflow-x: hidden;
+}

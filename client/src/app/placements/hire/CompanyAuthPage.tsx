@@ -51,7 +51,7 @@ export default function CompanyAuthPage() {
     try {
       if (isLogin) {
         const res = await axios.post(
-          `${API}/companies/login`,
+          `${API}/api/companies/login`,
           {
             email: form.email,
             password: form.password,

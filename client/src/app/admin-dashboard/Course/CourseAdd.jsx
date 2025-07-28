@@ -1,56 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Select from "react-select";
-import { useEffect } from "react";
 import axios from "axios";
 import { FaArrowLeft, FaPlus } from "react-icons/fa";
 import dynamic from "next/dynamic";
-import "react-quill-new/dist/quill.snow.css";
 
-const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
-
-const modules = {
-  toolbar: [
-    [{ font: [] }, { size: [] }],
-    [{ header: [1, 2, 3, false] }],
-    ["bold", "italic", "underline", "strike"],
-    [{ color: [] }, { background: [] }],
-    [{ list: "ordered" }, { list: "bullet" }],
-    [{ align: [] }],
-    ["link", "image", "video"],
-    ["clean"],
-  ],
-};
-const formats = [
-  "header",
-  "font",
-  "size",
-  "bold",
-  "italic",
-  "underline",
-  "strike",
-  "color",
-  "background",
-  "list",
-  "bullet",
-  "align",
-  "link",
-  "image",
-  "video",
-];
+const JoditEditor = dynamic(() => import("jodit-react"), { ssr: false });
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
-// const CATEGORY_OPTIONS = [
-//   { value: "Accounting", label: "Accounting" },
-//   { value: "Taxation", label: "Taxation" },
-//   { value: "HR", label: "HR" },
-//   { value: "Finance", label: "Finance" },
-//   { value: "US CMA", label: "US CMA" },
-// ];
+
 const LEVEL_OPTIONS = [
   { value: "Foundation", label: "Foundation" },
   { value: "Core", label: "Core" },
   { value: "Expert", label: "Expert" },
 ];
+
 const initialForm = {
   category: null,
   title: "",
@@ -71,17 +34,24 @@ const initialForm = {
 
 export default function CourseAddTab({ onBack }) {
   const [categoryOptions, setCategoryOptions] = useState([]);
-
   const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const joditConfig = {
+    readonly: false,
+    height: 200,
+    uploader: { insertImageAsBase64URI: true },
+    toolbarAdaptive: false,
+    showCharsCounter: false,
+    showWordsCounter: false,
+    spellcheck: true,
+  };
+
   useEffect(() => {
-    // Fetch available categories for select dropdown
     axios
       .get(`${API_BASE}/categories`)
       .then((res) => {
-        // If your API returns array of objects with a "category" field:
         setCategoryOptions(
           res.data.map((c) => ({
             value: c.category,
@@ -105,8 +75,7 @@ export default function CourseAddTab({ onBack }) {
     }));
   };
 
-  // This function updates each quill field by key
-  const handleQuillChange = (field) => (value) => {
+  const handleJoditChange = (field) => (value) => {
     setForm((f) => ({ ...f, [field]: value }));
   };
 
@@ -126,43 +95,31 @@ export default function CourseAddTab({ onBack }) {
     try {
       const fd = new FormData();
 
-      // Add category and level from select inputs
       fd.append("category", form.category?.value || "");
       fd.append("level", form.level?.value || "");
 
-      // Add the rest of the fields
       Object.entries(form).forEach(([k, v]) => {
         if (["category", "level"].includes(k)) return;
         if (v === null || v === undefined) return;
 
-        // Handle File input
         if (v instanceof File) {
           fd.append(k, v);
-        }
-        // Handle FileList (e.g., multiple files)
-        else if (v instanceof FileList) {
+        } else if (v instanceof FileList) {
           Array.from(v).forEach((file) => fd.append(k, file));
-        }
-        // Handle Array (could be text, numbers, etc.)
-        else if (Array.isArray(v)) {
+        } else if (Array.isArray(v)) {
           v.forEach((item, idx) =>
             fd.append(
               `${k}[${idx}]`,
               typeof item === "object" ? JSON.stringify(item) : item
             )
           );
-        }
-        // Handle Object (not File)
-        else if (typeof v === "object") {
+        } else if (typeof v === "object") {
           fd.append(k, JSON.stringify(v));
-        }
-        // Handle primitive values
-        else {
+        } else {
           fd.append(k, v);
         }
       });
 
-      // Send the request WITHOUT setting Content-Type
       await axios.post(`${API_BASE}/courses`, fd);
 
       setForm(initialForm);
@@ -186,6 +143,7 @@ export default function CourseAddTab({ onBack }) {
           <FaArrowLeft /> View Courses
         </button>
       </div>
+
       <form onSubmit={handleSubmit} className="space-y-10">
         {/* Top Fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -229,7 +187,6 @@ export default function CourseAddTab({ onBack }) {
               <label className="block mb-1 font-semibold">Discount (%)</label>
               <input
                 name="discount"
-                placeholder="Enter the Discount"
                 type="number"
                 className="w-full border p-2 rounded"
                 value={form.discount}
@@ -316,19 +273,16 @@ export default function CourseAddTab({ onBack }) {
           </div>
         </div>
 
-        {/* Quill Editors */}
+        {/* Jodit Editors */}
         <div>
           <label className="block mb-1 font-semibold text-lg">
             Course Description
           </label>
-          <ReactQuill
+          <JoditEditor
             value={form.description}
-            onChange={handleQuillChange("description")}
-            modules={modules}
-            formats={formats}
-            theme="snow"
-            placeholder="Start typing..."
-            style={{ minHeight: 180, marginBottom: 16 }}
+            config={joditConfig}
+            onBlur={handleJoditChange("description")}
+            onChange={() => {}}
           />
         </div>
 
@@ -337,14 +291,11 @@ export default function CourseAddTab({ onBack }) {
             Exam and Certification
           </h2>
           <label className="block mb-1 font-semibold">Description</label>
-          <ReactQuill
+          <JoditEditor
             value={form.examCert}
-            onChange={handleQuillChange("examCert")}
-            modules={modules}
-            formats={formats}
-            theme="snow"
-            placeholder="Start typing..."
-            style={{ minHeight: 150, marginBottom: 16 }}
+            config={joditConfig}
+            onBlur={handleJoditChange("examCert")}
+            onChange={() => {}}
           />
         </div>
 
@@ -353,14 +304,11 @@ export default function CourseAddTab({ onBack }) {
             Case Study
           </h2>
           <label className="block mb-1 font-semibold">Description</label>
-          <ReactQuill
+          <JoditEditor
             value={form.caseStudy}
-            onChange={handleQuillChange("caseStudy")}
-            modules={modules}
-            formats={formats}
-            theme="snow"
-            placeholder="Start typing..."
-            style={{ minHeight: 150, marginBottom: 16 }}
+            config={joditConfig}
+            onBlur={handleJoditChange("caseStudy")}
+            onChange={() => {}}
           />
         </div>
 
@@ -380,14 +328,11 @@ export default function CourseAddTab({ onBack }) {
             </div>
             <div>
               <label className="block mb-1 font-semibold">Description</label>
-              <ReactQuill
+              <JoditEditor
                 value={form.seoDescription}
-                onChange={handleQuillChange("seoDescription")}
-                modules={modules}
-                formats={formats}
-                theme="snow"
-                placeholder="Enter SEO description"
-                style={{ minHeight: 100, marginBottom: 16 }}
+                config={{ ...joditConfig, height: 120 }}
+                onBlur={handleJoditChange("seoDescription")}
+                onChange={() => {}}
               />
             </div>
           </div>
