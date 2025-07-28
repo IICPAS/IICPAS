@@ -77,7 +77,7 @@ const CollegeDashboard = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.get(`${API}/college/logout`, {
+      await axios.get(`${API}/api/college/logout`, {
         withCredentials: true,
       });
       toast.success("Logged out");
