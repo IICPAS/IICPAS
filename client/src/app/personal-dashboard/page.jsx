@@ -27,7 +27,7 @@ const IndividualDashboardPage = () => {
   useEffect(() => {
     const verifyIndividual = async () => {
       try {
-        const res = await axios.get(`${API}/api/v1/individual/profile-valid`, {
+        const res = await axios.get(`${API}/v1/individual/profile-valid`, {
           withCredentials: true,
         });
         setUser(res.data.user || res.data.individual);
@@ -44,7 +44,7 @@ const IndividualDashboardPage = () => {
   const handleLogout = async () => {
     try {
       await axios.post(
-        `${API}/api/v1/individual/logout`,
+        `${API}/v1/individual/logout`,
         {},
         { withCredentials: true }
       );
