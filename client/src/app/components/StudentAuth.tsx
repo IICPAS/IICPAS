@@ -28,7 +28,7 @@ export default function StudentAuth() {
     setLoading(true);
     try {
       const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_BASE}/student/login`,
+        `${process.env.NEXT_PUBLIC_API_BASE}/v1/student/login`,
         { email, password },
         { withCredentials: true }
       );
