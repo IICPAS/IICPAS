@@ -32,7 +32,8 @@ export default function CourseTab() {
     fetchStudentAndCourses();
   }, []);
 
-  if (loading) return <div className="p-6">Loading...</div>;
+  if (loading)
+    return <div className="p-6 text-center text-gray-500">Loading...</div>;
 
   return (
     <div className="p-4 sm:p-6 md:p-10 bg-gray-50 min-h-screen">
@@ -44,45 +45,53 @@ export default function CourseTab() {
         courses.map((course) => (
           <div
             key={course._id}
-            className="mb-10 p-6 bg-white shadow-md rounded-md border"
+            className="mb-10 p-6 bg-white shadow-md rounded-md border border-gray-200"
           >
-            <div className="flex justify-between items-center mb-2">
-              <h2 className="text-xl font-bold text-blue-700">
+            <div className="flex justify-between items-center mb-3">
+              <h2 className="text-xl sm:text-2xl font-bold text-blue-700">
                 {course.title}
               </h2>
-              <span className="text-blue-600 font-semibold border border-blue-600 px-3 py-1 rounded-full">
-                100%
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="w-10 h-10 rounded-full border-4 border-blue-600 flex items-center justify-center text-sm font-bold text-blue-600">
+                  100%
+                </span>
+              </div>
             </div>
 
             <p className="text-sm text-red-600 font-semibold mb-4">
               Not Certified. Finish test within lid Date
             </p>
 
-            <div className="space-y-4">
-              {course.chapters.map((chapter, idx) => (
-                <div
-                  key={chapter._id}
-                  className="flex items-center justify-between p-3 bg-gray-100 rounded-md"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="bg-blue-100 text-blue-700 font-bold w-6 h-6 rounded-full flex items-center justify-center">
-                      {idx + 1}
+            {course.chapters?.length > 0 ? (
+              <div className="space-y-3">
+                {course.chapters.map((chapter, idx) => (
+                  <div
+                    key={chapter._id}
+                    className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 bg-gray-100 rounded-md"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="bg-blue-100 text-blue-700 font-bold w-6 h-6 rounded-full flex items-center justify-center">
+                        {idx + 1}
+                      </div>
+                      <span className="font-medium">{chapter.title}</span>
                     </div>
-                    <span className="font-medium">{chapter.title}</span>
-                  </div>
 
-                  <div className="flex items-center gap-4">
-                    <div className="w-24 bg-white rounded-full h-2.5 border border-blue-300">
-                      <div className="bg-blue-600 h-2.5 w-full rounded-full" />
+                    <div className="flex items-center gap-4 mt-2 sm:mt-0">
+                      <div className="w-24 bg-white rounded-full h-2.5 border border-blue-300">
+                        <div className="bg-blue-600 h-2.5 w-full rounded-full" />
+                      </div>
+                      <span className="text-green-600 text-sm font-semibold">
+                        Completed
+                      </span>
                     </div>
-                    <span className="text-green-600 text-sm font-semibold">
-                      Completed
-                    </span>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500 italic">
+                No chapters added to this course yet.
+              </p>
+            )}
           </div>
         ))
       )}

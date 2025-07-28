@@ -1,24 +1,110 @@
+// CourseDetailPage.tsx
 "use client";
 
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import Select from "react-select";
 import Header from "../../components/Header";
 
 export default function CourseDetailPage() {
   const { slug } = useParams();
+  const API = process.env.NEXT_PUBLIC_API_URL;
+
   const [course, setCourse] = useState(null);
   const [activeTab, setActiveTab] = useState("syllabus");
+  const [student, setStudent] = useState(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [authMode, setAuthMode] = useState("login");
 
+  const locationOptions = [{ label: "Greater Noida", value: "Greater Noida" }];
+  const modeOptions = [
+    { label: "Online", value: "Online" },
+    { label: "Offline", value: "Offline" },
+  ];
+  const centerOptions = [{ label: "Greater Noida", value: "Greater Noida" }];
+
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    password: "",
+    confirmPassword: "",
+    mode: "Online",
+    location: "Greater Noida",
+    center: "Greater Noida",
+  });
+
+  // Fetch course
   useEffect(() => {
     const title = slug.replace(/_/g, " ");
-    axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/courses`).then((res) => {
+    axios.get(`${API}/api/courses`).then((res) => {
       const courses = res.data.courses || res.data;
       const match = courses.find((c) => c.title === title);
       setCourse(match);
     });
   }, [slug]);
+
+  // Check student login
+  useEffect(() => {
+    axios
+      .get(`${API}/api/v1/students/isstudent`, { withCredentials: true })
+      .then((res) => setStudent(res.data.student))
+      .catch(() => setStudent(null));
+  }, []);
+
+  // Add to cart
+  const handleAddToCart = async () => {
+    if (!student) {
+      setShowLoginModal(true);
+      return;
+    }
+    try {
+      await axios.post(
+        `${API}/api/v1/students/add-to-cart/${student._id}`,
+        { courseId: course._id },
+        { withCredentials: true }
+      );
+      alert("Course added to cart!");
+    } catch (err) {
+      alert("Something went wrong. Try again.");
+    }
+  };
+
+  const handleLogin = async () => {
+    try {
+      const res = await axios.post(
+        `${API}/api/v1/students/login`,
+        {
+          email: formData.email,
+          password: formData.password,
+        },
+        { withCredentials: true }
+      );
+      setStudent(res.data.student);
+      setShowLoginModal(false);
+    } catch {
+      alert("Login failed. Check credentials.");
+    }
+  };
+
+  const handleSignup = async () => {
+    if (formData.password !== formData.confirmPassword) {
+      return alert("Passwords do not match");
+    }
+    try {
+      const res = await axios.post(
+        `${API}/api/v1/students/register`,
+        formData,
+        { withCredentials: true }
+      );
+      setStudent(res.data.student);
+      setShowLoginModal(false);
+    } catch {
+      alert("Signup failed. Try again.");
+    }
+  };
 
   if (!course) return <div className="p-10 text-center">Loading...</div>;
 
@@ -40,7 +126,6 @@ export default function CourseDetailPage() {
               {course.seoDescription?.replace(/<[^>]+>/g, "")}
             </p>
 
-            {/* Tabs */}
             <div className="border-b border-gray-200 flex space-x-8 text-lg font-medium">
               {["syllabus", "caseStudy", "examCert", "live"].map((tab) => (
                 <button
@@ -64,7 +149,6 @@ export default function CourseDetailPage() {
               ))}
             </div>
 
-            {/* Tab Content */}
             <div className="mt-6 prose max-w-none">
               {activeTab === "syllabus" && (
                 <div dangerouslySetInnerHTML={{ __html: course.description }} />
@@ -83,38 +167,170 @@ export default function CourseDetailPage() {
           <div className="space-y-6">
             <div className="aspect-video rounded-xl overflow-hidden shadow-md">
               <Image
-                className="w-full h-full"
-                src={process.env.NEXT_PUBLIC_API_URL + course.image}
+                className="w-full h-full object-cover"
+                src={API + course.image}
                 height={80}
                 width={80}
-                title="Course Video"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
+                alt="Course Thumbnail"
               />
             </div>
-
-            <div className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600">
               Get access to this course in <strong>Lab+</strong> &{" "}
               <strong>Lab+ Live</strong>
-            </div>
-
-            <div className="space-y-4">
-              {/* Live */}
-              <div className="border border-orange-600 rounded-lg p-4">
-                <h3 className="text-orange-700 font-bold text-lg mb-1">
-                  Price:
-                </h3>
-                <p className="text-xl font-semibold text-orange-900 mb-2">
-                  ₹{course.price}
-                </p>
-                <button className="w-full bg-orange-600 text-white py-2 rounded-md hover:bg-orange-700 transition">
-                  Pay Now
-                </button>
-              </div>
+            </p>
+            <div className="border border-orange-600 rounded-lg p-4">
+              <h3 className="text-orange-700 font-bold text-lg mb-1">Price:</h3>
+              <p className="text-xl font-semibold text-orange-900 mb-2">
+                ₹{discountedPrice.toLocaleString()}
+              </p>
+              <button
+                onClick={handleAddToCart}
+                className="w-full bg-orange-600 text-white py-2 rounded-md hover:bg-orange-700"
+              >
+                Add To Cart
+              </button>
             </div>
           </div>
         </div>
       </section>
+
+      {/* Modal */}
+      {showLoginModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg w-[90%] max-w-md">
+            <h2 className="text-xl font-bold mb-4">
+              {authMode === "login" ? "Student Login" : "Student Signup"}
+            </h2>
+
+            {authMode === "signup" && (
+              <>
+                <input
+                  type="text"
+                  placeholder="Full Name"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  className="w-full border px-3 py-2 mb-2 rounded"
+                />
+                <input
+                  type="text"
+                  placeholder="Phone"
+                  value={formData.phone}
+                  onChange={(e) =>
+                    setFormData({ ...formData, phone: e.target.value })
+                  }
+                  className="w-full border px-3 py-2 mb-2 rounded"
+                />
+
+                <div className="mb-2">
+                  <Select
+                    options={modeOptions}
+                    placeholder="Mode"
+                    defaultValue={modeOptions[0]}
+                    onChange={(selected) =>
+                      setFormData({ ...formData, mode: selected.value })
+                    }
+                  />
+                </div>
+
+                <div className="mb-2">
+                  <Select
+                    options={locationOptions}
+                    placeholder="Location"
+                    defaultValue={locationOptions[0]}
+                    onChange={(selected) =>
+                      setFormData({ ...formData, location: selected.value })
+                    }
+                  />
+                </div>
+
+                <div className="mb-2">
+                  <Select
+                    options={centerOptions}
+                    placeholder="Center"
+                    defaultValue={centerOptions[0]}
+                    onChange={(selected) =>
+                      setFormData({ ...formData, center: selected.value })
+                    }
+                  />
+                </div>
+              </>
+            )}
+
+            <input
+              type="email"
+              placeholder="Email"
+              value={formData.email}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
+              className="w-full border px-3 py-2 mb-2 rounded"
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={formData.password}
+              onChange={(e) =>
+                setFormData({ ...formData, password: e.target.value })
+              }
+              className="w-full border px-3 py-2 mb-2 rounded"
+            />
+            {authMode === "signup" && (
+              <input
+                type="password"
+                placeholder="Confirm Password"
+                value={formData.confirmPassword}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    confirmPassword: e.target.value,
+                  })
+                }
+                className="w-full border px-3 py-2 mb-2 rounded"
+              />
+            )}
+
+            <button
+              onClick={authMode === "login" ? handleLogin : handleSignup}
+              className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
+            >
+              {authMode === "login" ? "Login" : "Register"}
+            </button>
+
+            <div className="text-sm text-center mt-4">
+              {authMode === "login" ? (
+                <>
+                  Don’t have an account?{" "}
+                  <button
+                    onClick={() => setAuthMode("signup")}
+                    className="text-blue-600"
+                  >
+                    Register
+                  </button>
+                </>
+              ) : (
+                <>
+                  Already have an account?{" "}
+                  <button
+                    onClick={() => setAuthMode("login")}
+                    className="text-blue-600"
+                  >
+                    Login
+                  </button>
+                </>
+              )}
+            </div>
+
+            <button
+              onClick={() => setShowLoginModal(false)}
+              className="mt-4 text-gray-500 underline text-sm block mx-auto"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import axios from "axios";
-import { Menu, X, LogOut, ShoppingCart } from "lucide-react";
+import { Menu, X, LogOut, ShoppingCart, Trash2 } from "lucide-react";
 import Drawer from "react-modern-drawer";
 import "react-modern-drawer/dist/index.css";
 
@@ -56,7 +56,8 @@ export default function Header() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [cartDrawer, setCartDrawer] = useState(false);
   const [student, setStudent] = useState(null);
-  const [cart, setCart] = useState([]);
+  const [cartCourses, setCartCourses] = useState([]);
+
   const API = process.env.NEXT_PUBLIC_API_URL;
 
   useEffect(() => {
@@ -72,26 +73,33 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
 
-  useEffect(() => {
-    const fetchStudent = async () => {
-      try {
-        const res = await axios.get(`${API}/api/v1/students/isstudent`, {
-          withCredentials: true,
-        });
-        const studentData = res.data.student;
-        setStudent(studentData);
+  const fetchStudentAndCart = async () => {
+    try {
+      const res = await axios.get(`${API}/api/v1/students/isstudent`, {
+        withCredentials: true,
+      });
+      const studentData = res.data.student;
+      setStudent(studentData);
 
-        const cartRes = await axios.get(
-          `${API}/api/v1/students/get-cart/${studentData._id}`,
-          { withCredentials: true }
-        );
-        setCart(cartRes.data.cart || []);
-      } catch {
-        setStudent(null);
-        setCart([]);
-      }
-    };
-    fetchStudent();
+      const cartRes = await axios.get(
+        `${API}/api/v1/students/get-cart/${studentData._id}`,
+        { withCredentials: true }
+      );
+      const cartIDs = cartRes.data.cart || [];
+
+      const allCourses = await axios.get(`${API}/api/courses`);
+      const courseList = allCourses.data.courses || allCourses.data;
+
+      const filteredCourses = courseList.filter((c) => cartIDs.includes(c._id));
+      setCartCourses(filteredCourses);
+    } catch {
+      setStudent(null);
+      setCartCourses([]);
+    }
+  };
+
+  useEffect(() => {
+    fetchStudentAndCart();
   }, []);
 
   const handleLogout = async () => {
@@ -99,7 +107,34 @@ export default function Header() {
       withCredentials: true,
     });
     setStudent(null);
+    setCartCourses([]);
     location.reload();
+  };
+
+  const handleRemoveFromCart = async (courseId) => {
+    try {
+      await axios.post(
+        `${API}/api/v1/students/remove-from-cart/${student._id}`,
+        { courseId },
+        { withCredentials: true }
+      );
+      fetchStudentAndCart();
+    } catch {
+      alert("Failed to remove item.");
+    }
+  };
+
+  const handleClearCart = async () => {
+    try {
+      await axios.post(
+        `${API}/api/v1/students/clear-cart/${student._id}`,
+        {},
+        { withCredentials: true }
+      );
+      fetchStudentAndCart();
+    } catch {
+      alert("Failed to clear cart.");
+    }
   };
 
   return (
@@ -114,16 +149,15 @@ export default function Header() {
             <img src="/images/logo.png" alt="IICPA Logo" className="h-12" />
           </Link>
 
-          {/* Desktop Nav */}
           {!student && (
-            <nav className="hidden lg:flex items-center gap-8 text-[1.85vmin] text-gray-800 font-medium relative">
+            <nav className="hidden lg:flex items-center gap-8 text-[1.85vmin] text-gray-800 font-medium">
               {navLinks.map((item) =>
                 item.children ? (
                   <div key={item.name} className="relative group">
                     <button className="flex items-center gap-1 hover:text-green-600 transition">
                       {item.name}
                     </button>
-                    <div className="absolute left-0 mt-2 w-48 bg-white shadow-xl rounded-md opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transform -translate-y-2 transition-all duration-200 z-50">
+                    <div className="absolute left-0 mt-2 w-48 bg-white shadow-xl rounded-md opacity-0 group-hover:opacity-100 transform -translate-y-2 group-hover:translate-y-0 transition-all duration-200 z-50">
                       {item.children.map((child) => (
                         <Link
                           key={child.name}
@@ -150,7 +184,7 @@ export default function Header() {
             </nav>
           )}
 
-          {/* CTA / User Panel */}
+          {/* CTA / User */}
           <div className="hidden lg:flex items-center space-x-6">
             {student ? (
               <>
@@ -159,9 +193,9 @@ export default function Header() {
                   className="relative"
                 >
                   <ShoppingCart size={22} />
-                  {cart.length > 0 && (
+                  {cartCourses.length > 0 && (
                     <span className="absolute -top-2 -right-2 bg-green-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                      {cart.length}
+                      {cartCourses.length}
                     </span>
                   )}
                 </button>
@@ -182,7 +216,7 @@ export default function Header() {
             )}
           </div>
 
-          {/* Mobile Menu (hidden when logged in) */}
+          {/* Mobile menu button */}
           {!student && (
             <button
               className="lg:hidden text-gray-800"
@@ -203,22 +237,49 @@ export default function Header() {
       >
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-base font-bold text-[#003057]">My Cart</h2>
-          <button onClick={() => setCartDrawer(false)}>
-            <X size={24} />
-          </button>
+          <div className="flex items-center gap-3">
+            {/* {cartCourses.length > 0 && (
+              <button onClick={handleClearCart}>
+                <X size={20} className="text-red-500" />
+              </button>
+            )} */}
+            <button onClick={() => setCartDrawer(false)}>
+              <X size={24} />
+            </button>
+          </div>
         </div>
 
-        {cart.length === 0 ? (
+        {cartCourses.length === 0 ? (
           <p className="text-sm text-gray-500">Your cart is empty.</p>
         ) : (
           <div className="space-y-4 max-h-[75vh] overflow-y-auto pr-2">
-            {cart.map((c) => (
+            {cartCourses.map((c) => (
               <div
                 key={c._id}
-                className="border p-3 rounded-md shadow-sm bg-gray-50"
+                className="border-[0.5px] p-3 rounded-md shadow-sm bg-gray-50 flex flex-col items-center gap-4"
               >
-                <p className="font-semibold">{c.title}</p>
-                <p className="text-sm text-gray-500">₹{c.price}</p>
+                <button onClick={() => handleRemoveFromCart(c._id)}>
+                  <Trash2 size={18} className="text-red-600" />
+                </button>
+                <img
+                  src={API + c.image}
+                  alt={c.title}
+                  className="h-28 w-32 object-cover rounded"
+                />
+                <div className="flex-1">
+                  <p className="font-semibold text-lg">{c.title}</p>
+                  <p className="text-xs text-gray-500 text-center">
+                    ₹{c.price}
+                  </p>
+                </div>
+                <div className="flex flex-col items-end gap-2">
+                  <button
+                    onClick={() => handleBuyNow(c._id)}
+                    className="text-xs bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded"
+                  >
+                    Buy Now
+                  </button>
+                </div>
               </div>
             ))}
           </div>

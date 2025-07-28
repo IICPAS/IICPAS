@@ -401,6 +401,8 @@ router.post("/verify-session-buy/:id", async (req, res) => {
 router.get("/get-cart/:id", async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
+
+    console.log(student);
     if (!student) return res.status(404).json({ message: "Student not found" });
 
     res.json({ cart: student.cart || [] });
@@ -462,7 +464,7 @@ router.patch("/student/profile/:id", async (req, res) => {
   }
 });
 
-router.post("/add-cart/:id", async (req, res) => {
+router.post("/add-to-cart/:id", async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
     if (!student) return res.status(404).json({ message: "Student not found" });
@@ -542,6 +544,7 @@ router.get("/student/:id/courses", async (req, res) => {
   }
 });
 
+// GET /api/v1/students/list-courses/:id
 router.get("/list-courses/:id", async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
@@ -550,19 +553,24 @@ router.get("/list-courses/:id", async (req, res) => {
       return res.status(404).json({ message: "Student not found" });
     }
 
-    const allCourses = await Course.find({ status: "Active" });
+    const enrolledCourses = await Course.find({
+      _id: { $in: student.courses },
+    }).populate({
+      path: "chapters",
+      populate: {
+        path: "topics",
+        populate: {
+          path: "quiz",
+        },
+      },
+    });
 
-    // Tag each course with whether the student has purchased it
-    const courseList = allCourses.map((course) => ({
-      ...course.toObject(),
-      isEnrolled: student.course.includes(course._id),
-    }));
-
-    res.json({ courses: courseList });
+    res.json({ courses: enrolledCourses });
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Failed to fetch courses", error: err.message });
+    res.status(500).json({
+      message: "Failed to fetch enrolled courses",
+      error: err.message,
+    });
   }
 });
 
