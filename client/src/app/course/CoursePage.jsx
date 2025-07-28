@@ -1,52 +1,59 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaSearch } from "react-icons/fa";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 
-const categories = ["Accounting", "Taxation", "HR", "Finance", "US CMA"];
-const skills = ["Foundation", "Core", "Expert"];
-
-const courses = [
-  {
-    title: "Basic Accounting & Tally Foundation",
-    category: "Accounting",
-    price: 5000,
-    discount: 5,
-    image: "/images/accounting.webp",
-  },
-  {
-    title: "Microsoft Excel",
-    category: "Taxation",
-    price: 5000,
-    discount: 0,
-    image: "/images/excel.jpg",
-  },
-  {
-    title: "Advanced Diploma in Computer Application",
-    category: "Finance",
-    price: 10000,
-    discount: 5,
-    image: "/images/adca.jpg",
-  },
-  {
-    title: "HR Management",
-    category: "HR",
-    price: 8000,
-    discount: 2,
-    image: "/images/hr.jpg",
-  },
-];
+const skillLevels = ["Foundation", "Core", "Expert"];
 
 export default function CoursePage() {
   const router = useRouter();
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [allCourses, setAllCourses] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [search, setSearch] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [selectedLevels, setSelectedLevels] = useState([]);
 
-  const filteredCourses = selectedCategory
-    ? courses.filter((course) => course.category === selectedCategory)
-    : courses;
+  // Fetch data
+  useEffect(() => {
+    axios
+      .get(`${process.env.NEXT_PUBLIC_API_URL}/api/courses`)
+      .then((res) => setAllCourses(res.data.courses || res.data));
+    axios
+      .get(`${process.env.NEXT_PUBLIC_API_URL}/api/categories`)
+      .then((res) => {
+        console.log("Fetched categories:", res.data.categories || res.data);
+        setCategories(res.data.categories || res.data);
+      });
+  }, []);
+
+  // Filtering
+  const filteredCourses = allCourses.filter((course) => {
+    const matchesSearch =
+      !search || course.title.toLowerCase().includes(search.toLowerCase());
+    const matchesCategory =
+      selectedCategories.length === 0 ||
+      selectedCategories.includes(course.category);
+    const matchesLevel =
+      selectedLevels.length === 0 || selectedLevels.includes(course.level);
+    return matchesSearch && matchesCategory && matchesLevel;
+  });
+
+  // Handlers
+  const toggleCategory = (categoryName) =>
+    setSelectedCategories((prev) =>
+      prev.includes(categoryName)
+        ? prev.filter((c) => c !== categoryName)
+        : [...prev, categoryName]
+    );
+
+  const toggleLevel = (lvl) =>
+    setSelectedLevels((prev) =>
+      prev.includes(lvl) ? prev.filter((l) => l !== lvl) : [...prev, lvl]
+    );
 
   return (
     <section className="bg-gradient-to-br from-[#f5fcfa] via-white to-[#eef7fc] min-h-screen text-[#0b1224]">
@@ -59,6 +66,8 @@ export default function CoursePage() {
               <input
                 type="text"
                 placeholder="Search courses..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
                 className="w-full border rounded-lg px-4 py-2 focus:outline-none shadow"
               />
               <FaSearch className="absolute right-3 top-3 text-gray-400" />
@@ -67,32 +76,38 @@ export default function CoursePage() {
 
           <div className="mb-6">
             <h3 className="text-xl font-semibold mb-3">Categories</h3>
+            {categories.length === 0 && (
+              <div className="text-gray-400 text-sm">No categories</div>
+            )}
             {categories.map((cat) => (
               <label
-                key={cat}
+                key={cat._id}
                 className="flex items-center space-x-2 text-sm mb-2"
               >
                 <input
                   type="checkbox"
-                  checked={selectedCategory === cat}
-                  onChange={() =>
-                    setSelectedCategory(selectedCategory === cat ? null : cat)
-                  }
+                  checked={selectedCategories.includes(cat.category)}
+                  onChange={() => toggleCategory(cat.category)}
                   className="accent-green-600"
                 />
-                <span>{cat}</span>
+                <span>{cat.category}</span>
               </label>
             ))}
           </div>
 
           <div>
             <h3 className="text-xl font-semibold mb-3">Skills Level</h3>
-            {skills.map((level) => (
+            {skillLevels.map((level) => (
               <label
                 key={level}
                 className="flex items-center space-x-2 text-sm mb-2"
               >
-                <input type="checkbox" className="accent-green-600" />
+                <input
+                  type="checkbox"
+                  checked={selectedLevels.includes(level)}
+                  onChange={() => toggleLevel(level)}
+                  className="accent-green-600"
+                />
                 <span>{level}</span>
               </label>
             ))}
@@ -101,25 +116,37 @@ export default function CoursePage() {
 
         {/* Course Cards */}
         <main className="w-full md:w-3/4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredCourses.length === 0 && (
+            <div className="col-span-3 text-gray-500 text-center py-12">
+              No courses found.
+            </div>
+          )}
           {filteredCourses.map((course, index) => {
             const discountedPrice =
-              course.price - (course.price * course.discount) / 100;
+              course.price - (course.price * (course.discount || 0)) / 100;
 
             return (
               <motion.div
-                key={index}
+                key={course._id || index}
                 whileHover={{ scale: 1.03 }}
                 className="bg-white rounded-2xl shadow-xl border border-gray-200 hover:shadow-2xl transition duration-300 ease-in-out group"
               >
                 {/* Image with overlay */}
                 <div className="relative h-44 w-full overflow-hidden rounded-t-2xl">
-                  <Image
-                    src={course.image}
-                    alt={course.title}
-                    fill
-                    className="object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
-                  />
-                  {/* Overlay tint on hover */}
+                  {course.image ? (
+                    <Image
+                      src={"http://localhost:8080" + course.image}
+                      alt={course.title}
+                      fill
+                      className="object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                      priority={index < 2}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-400">
+                      No image
+                    </div>
+                  )}
                   <div className="absolute inset-0 bg-black/10 group-hover:bg-[#0b1224]/40 transition duration-300 z-10 rounded-t-2xl" />
                   {course.discount > 0 && (
                     <span className="absolute top-3 right-3 z-20 bg-green-600 text-white text-xs px-2 py-1 rounded-full shadow-md">
@@ -138,7 +165,6 @@ export default function CoursePage() {
                       {course.title}
                     </h3>
                   </div>
-
                   <div className="mt-4 flex items-end justify-between">
                     <div>
                       <p className="text-green-600 font-bold text-xl">
@@ -153,9 +179,7 @@ export default function CoursePage() {
                     <button
                       onClick={() =>
                         router.push(
-                          `/course/${course.title
-                            .toLowerCase()
-                            .replace(/\s+/g, "-")}`
+                          `/course/${course.title.replace(/\s+/g, "_")}`
                         )
                       }
                       className="bg-[#0b1224] text-white px-4 py-2 rounded-full text-sm hover:bg-green-600 transition"

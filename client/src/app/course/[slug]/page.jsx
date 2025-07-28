@@ -1,127 +1,336 @@
-/* eslint-disable @next/next/no-img-element */
+// CourseDetailPage.tsx
 "use client";
 
-import Header from "@/app/components/Header";
-import { notFound } from "next/navigation";
+import { useParams } from "next/navigation";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import Select from "react-select";
+import Header from "../../components/Header";
 
-const courses = [
-  {
-    slug: "basic-accounting-&-tally-foundation",
-    title: "Basic Accounting & Tally Foundation",
-    price: 5000,
-    discount: 5,
-    image: "/images/accounting.webp",
-    includes: {
-      chapters: 12,
-      topics: 38,
-    },
-  },
-  {
-    slug: "microsoft-excel",
-    title: "Microsoft Excel",
-    price: 5000,
-    discount: 0,
-    image: "/images/excel.jpg",
-    includes: {
-      chapters: 10,
-      topics: 25,
-    },
-  },
-];
+export default function CourseDetailPage() {
+  const { slug } = useParams();
+  const API = process.env.NEXT_PUBLIC_API_URL;
 
-export default function CourseDetail({ params }) {
-  const course = courses.find(
-    (c) => c.slug === decodeURIComponent(params.slug)
-  );
+  const [course, setCourse] = useState(null);
+  const [activeTab, setActiveTab] = useState("syllabus");
+  const [student, setStudent] = useState(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [authMode, setAuthMode] = useState("login");
 
-  if (!course) return notFound();
+  const locationOptions = [{ label: "Greater Noida", value: "Greater Noida" }];
+  const modeOptions = [
+    { label: "Online", value: "Online" },
+    { label: "Offline", value: "Offline" },
+  ];
+  const centerOptions = [{ label: "Greater Noida", value: "Greater Noida" }];
 
-  const discountedPrice = course.price - (course.price * course.discount) / 100;
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    password: "",
+    confirmPassword: "",
+    mode: "Online",
+    location: "Greater Noida",
+    center: "Greater Noida",
+  });
+
+  // Fetch course
+  useEffect(() => {
+    const title = slug.replace(/_/g, " ");
+    axios.get(`${API}/api/courses`).then((res) => {
+      const courses = res.data.courses || res.data;
+      const match = courses.find((c) => c.title === title);
+      setCourse(match);
+    });
+  }, [slug]);
+
+  // Check student login
+  useEffect(() => {
+    axios
+      .get(`${API}/api/v1/students/isstudent`, { withCredentials: true })
+      .then((res) => setStudent(res.data.student))
+      .catch(() => setStudent(null));
+  }, []);
+
+  // Add to cart
+  const handleAddToCart = async () => {
+    if (!student) {
+      setShowLoginModal(true);
+      return;
+    }
+    try {
+      await axios.post(
+        `${API}/api/v1/students/add-to-cart/${student._id}`,
+        { courseId: course._id },
+        { withCredentials: true }
+      );
+      alert("Course added to cart!");
+    } catch (err) {
+      alert("Something went wrong. Try again.");
+    }
+  };
+
+  const handleLogin = async () => {
+    try {
+      const res = await axios.post(
+        `${API}/api/v1/students/login`,
+        {
+          email: formData.email,
+          password: formData.password,
+        },
+        { withCredentials: true }
+      );
+      setStudent(res.data.student);
+      setShowLoginModal(false);
+    } catch {
+      alert("Login failed. Check credentials.");
+    }
+  };
+
+  const handleSignup = async () => {
+    if (formData.password !== formData.confirmPassword) {
+      return alert("Passwords do not match");
+    }
+    try {
+      const res = await axios.post(
+        `${API}/api/v1/students/register`,
+        formData,
+        { withCredentials: true }
+      );
+      setStudent(res.data.student);
+      setShowLoginModal(false);
+    } catch {
+      alert("Signup failed. Try again.");
+    }
+  };
+
+  if (!course) return <div className="p-10 text-center">Loading...</div>;
+
+  const discountedPrice =
+    course.price - (course.price * (course.discount || 0)) / 100;
 
   return (
     <>
       <Header />
-      <div className="bg-gradient-to-br mt-20 from-[#f5fcfa] via-white to-[#eef7fc] min-h-screen text-[#0b1224]">
-        <div className="max-w-7xl mx-auto px-4 py-16">
-          <h1 className="text-4xl font-bold mb-4">{course.title}</h1>
-          <p className="text-sm text-green-600 mb-6">Home // {course.title}</p>
+      <section className="bg-white mt-20 text-[#0b1224]">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-10 px-6 py-12">
+          {/* Left Content */}
+          <div className="lg:col-span-2">
+            <p className="text-sm bg-blue-100 text-blue-700 inline-block px-3 py-1 rounded-full mb-4">
+              Individual Course
+            </p>
+            <h1 className="text-4xl font-bold mb-4">{course.title}</h1>
+            <p className="text-gray-600 text-lg mb-8">
+              {course.seoDescription?.replace(/<[^>]+>/g, "")}
+            </p>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Left Tabs */}
-            <div className="md:col-span-2">
-              <div className="flex flex-wrap gap-4 mb-6">
-                {[
-                  "Case Study",
-                  "Curriculum",
-                  "Exam & Certification",
-                  "Simulation & Experiments",
-                ].map((label) => (
-                  <button
-                    key={label}
-                    className={`${
-                      label === "Case Study"
-                        ? "bg-green-500 text-white"
-                        : "border text-[#0b1224]"
-                    } px-4 py-2 rounded-full font-medium shadow`}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
+            <div className="border-b border-gray-200 flex space-x-8 text-lg font-medium">
+              {["syllabus", "caseStudy", "examCert", "live"].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`pb-2 ${
+                    activeTab === tab
+                      ? "border-b-2 border-blue-600 text-blue-600"
+                      : "text-gray-500"
+                  }`}
+                >
+                  {
+                    {
+                      syllabus: "Syllabus",
+                      caseStudy: "Case Studies",
+                      examCert: "Exam & Certification",
+                      live: "Live Schedule +",
+                    }[tab]
+                  }
+                </button>
+              ))}
             </div>
 
-            {/* Course Card */}
-            <div className="bg-white border rounded-2xl shadow p-6">
-              {/* Course Image */}
-              <div className="relative w-full h-48 bg-gray-200 rounded-lg mb-4 overflow-hidden group">
-                <img
-                  src={course.image}
-                  alt={course.title}
-                  className="object-cover w-full h-full transition duration-300 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="relative w-14 h-14">
-                    <div className="absolute inset-0 rounded-full bg-white opacity-30 animate-ping" />
-                    <div className="absolute inset-0 rounded-full bg-white opacity-50 animate-pulse" />
-                    <div className="z-10 flex items-center justify-center w-full h-full rounded-full bg-white text-[#0b1224]">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="w-6 h-6 ml-1"
-                        fill="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M8 5v14l11-7z" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <div className="mt-6 prose max-w-none">
+              {activeTab === "syllabus" && (
+                <div dangerouslySetInnerHTML={{ __html: course.description }} />
+              )}
+              {activeTab === "caseStudy" && (
+                <div dangerouslySetInnerHTML={{ __html: course.caseStudy }} />
+              )}
+              {activeTab === "examCert" && (
+                <div dangerouslySetInnerHTML={{ __html: course.examCert }} />
+              )}
+              {activeTab === "live" && <p>Live schedule coming soon.</p>}
+            </div>
+          </div>
 
-              {/* Price */}
-              <p className="text-green-600 text-xl font-bold mb-1">
+          {/* Right Sidebar */}
+          <div className="space-y-6">
+            <div className="aspect-video rounded-xl overflow-hidden shadow-md">
+              <Image
+                className="w-full h-full object-cover"
+                src={API + course.image}
+                height={80}
+                width={80}
+                alt="Course Thumbnail"
+              />
+            </div>
+            <p className="text-sm text-gray-600">
+              Get access to this course in <strong>Lab+</strong> &{" "}
+              <strong>Lab+ Live</strong>
+            </p>
+            <div className="border border-orange-600 rounded-lg p-4">
+              <h3 className="text-orange-700 font-bold text-lg mb-1">Price:</h3>
+              <p className="text-xl font-semibold text-orange-900 mb-2">
                 ₹{discountedPrice.toLocaleString()}
               </p>
-              {course.discount > 0 && (
-                <p className="text-sm text-gray-500 line-through mb-4">
-                  ₹{course.price.toLocaleString()}
-                </p>
-              )}
-
-              <button className="bg-[#0b1224] text-white px-4 py-2 w-full rounded-full hover:bg-green-600 transition mb-6">
-                Add to Cart
+              <button
+                onClick={handleAddToCart}
+                className="w-full bg-orange-600 text-white py-2 rounded-md hover:bg-orange-700"
+              >
+                Add To Cart
               </button>
-
-              <h4 className="font-semibold text-lg mb-2">
-                This Course Includes
-              </h4>
-              <ul className="text-sm space-y-1">
-                <li>📘 Chapters: {course.includes.chapters}</li>
-                <li>📑 Topics: {course.includes.topics}</li>
-              </ul>
             </div>
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* Modal */}
+      {showLoginModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg w-[90%] max-w-md">
+            <h2 className="text-xl font-bold mb-4">
+              {authMode === "login" ? "Student Login" : "Student Signup"}
+            </h2>
+
+            {authMode === "signup" && (
+              <>
+                <input
+                  type="text"
+                  placeholder="Full Name"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  className="w-full border px-3 py-2 mb-2 rounded"
+                />
+                <input
+                  type="text"
+                  placeholder="Phone"
+                  value={formData.phone}
+                  onChange={(e) =>
+                    setFormData({ ...formData, phone: e.target.value })
+                  }
+                  className="w-full border px-3 py-2 mb-2 rounded"
+                />
+
+                <div className="mb-2">
+                  <Select
+                    options={modeOptions}
+                    placeholder="Mode"
+                    defaultValue={modeOptions[0]}
+                    onChange={(selected) =>
+                      setFormData({ ...formData, mode: selected.value })
+                    }
+                  />
+                </div>
+
+                <div className="mb-2">
+                  <Select
+                    options={locationOptions}
+                    placeholder="Location"
+                    defaultValue={locationOptions[0]}
+                    onChange={(selected) =>
+                      setFormData({ ...formData, location: selected.value })
+                    }
+                  />
+                </div>
+
+                <div className="mb-2">
+                  <Select
+                    options={centerOptions}
+                    placeholder="Center"
+                    defaultValue={centerOptions[0]}
+                    onChange={(selected) =>
+                      setFormData({ ...formData, center: selected.value })
+                    }
+                  />
+                </div>
+              </>
+            )}
+
+            <input
+              type="email"
+              placeholder="Email"
+              value={formData.email}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
+              className="w-full border px-3 py-2 mb-2 rounded"
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={formData.password}
+              onChange={(e) =>
+                setFormData({ ...formData, password: e.target.value })
+              }
+              className="w-full border px-3 py-2 mb-2 rounded"
+            />
+            {authMode === "signup" && (
+              <input
+                type="password"
+                placeholder="Confirm Password"
+                value={formData.confirmPassword}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    confirmPassword: e.target.value,
+                  })
+                }
+                className="w-full border px-3 py-2 mb-2 rounded"
+              />
+            )}
+
+            <button
+              onClick={authMode === "login" ? handleLogin : handleSignup}
+              className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
+            >
+              {authMode === "login" ? "Login" : "Register"}
+            </button>
+
+            <div className="text-sm text-center mt-4">
+              {authMode === "login" ? (
+                <>
+                  Don’t have an account?{" "}
+                  <button
+                    onClick={() => setAuthMode("signup")}
+                    className="text-blue-600"
+                  >
+                    Register
+                  </button>
+                </>
+              ) : (
+                <>
+                  Already have an account?{" "}
+                  <button
+                    onClick={() => setAuthMode("login")}
+                    className="text-blue-600"
+                  >
+                    Login
+                  </button>
+                </>
+              )}
+            </div>
+
+            <button
+              onClick={() => setShowLoginModal(false)}
+              className="mt-4 text-gray-500 underline text-sm block mx-auto"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }

@@ -28,13 +28,15 @@ export default function ProfileTab() {
     const fetchStudent = async () => {
       try {
         const res = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_BASE}/student/isuser`,
+          `${process.env.NEXT_PUBLIC_API_BASE}/v1/students/isstudent`,
           { withCredentials: true }
         );
+
+        console.log(res);
         setStudent({
-          name: res.data.name,
-          email: res.data.email,
-          phone: res.data.phone || "",
+          name: res.data.student.name,
+          email: res.data.student.email,
+          phone: res.data.student.phone || "",
         });
       } catch (err) {
         console.error("Auth check failed:", err);

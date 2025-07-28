@@ -136,6 +136,55 @@ const sendReceiptEmail = async (email, pdfPath) => {
 };
 
 // === POST /course-buy/:studentId ===
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER, // Set in .env
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
+router.post("/forgot-password", async (req, res) => {
+  const { email } = req.body;
+  const student = await Student.findOne({ email });
+  if (!student) return res.status(404).json({ message: "Student not found" });
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  student.otp = otp;
+  student.otpExpiry = Date.now() + 10 * 60 * 1000;
+  await student.save();
+
+  try {
+    await transporter.sendMail({
+      from: `"Codemap LMS" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "Your OTP for Password Reset",
+      html: `<p>Hello ${student.name},</p><p>Your OTP is <b>${otp}</b>. It will expire in 10 minutes.</p>`,
+    });
+
+    res.json({ message: "OTP sent to email" });
+  } catch (err) {
+    console.error("Error sending OTP email:", err);
+    res.status(500).json({ message: "Failed to send OTP email" });
+  }
+});
+
+router.post("/verify-otp", async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+  const student = await Student.findOne({ email, otp });
+
+  if (!student || student.otpExpiry < Date.now())
+    return res.status(400).json({ message: "OTP invalid or expired" });
+
+  student.password = newPassword; // hash in production
+  student.otp = undefined;
+  student.otpExpiry = undefined;
+  await student.save();
+
+  res.json({ message: "Password reset successful" });
+});
+
 router.post("/course-buy/:id", async (req, res) => {
   const token = req.cookies.token;
   if (!token) return res.status(401).json({ message: "Unauthorized" });
@@ -352,6 +401,8 @@ router.post("/verify-session-buy/:id", async (req, res) => {
 router.get("/get-cart/:id", async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
+
+    console.log(student);
     if (!student) return res.status(404).json({ message: "Student not found" });
 
     res.json({ cart: student.cart || [] });
@@ -362,7 +413,7 @@ router.get("/get-cart/:id", async (req, res) => {
 
 //Ticket By Id
 
-router.post("/api/v1/ticket/:id", async (req, res) => {
+router.post("/ticket/:id", async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
     if (!student) return res.status(404).json({ message: "Student not found" });
@@ -388,7 +439,7 @@ router.post("/api/v1/ticket/:id", async (req, res) => {
   }
 });
 
-router.patch("/api/v1/student/profile/:id", async (req, res) => {
+router.patch("/student/profile/:id", async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
     if (!student) return res.status(404).json({ message: "Student not found" });
@@ -413,7 +464,7 @@ router.patch("/api/v1/student/profile/:id", async (req, res) => {
   }
 });
 
-router.post("/api/v1/add-cart/:id", async (req, res) => {
+router.post("/add-to-cart/:id", async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
     if (!student) return res.status(404).json({ message: "Student not found" });
@@ -437,7 +488,7 @@ router.post("/api/v1/add-cart/:id", async (req, res) => {
   }
 });
 
-router.delete("/api/v1/remove-cart/:id", async (req, res) => {
+router.delete("/remove-cart/:id", async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
     if (!student) return res.status(404).json({ message: "Student not found" });
@@ -461,7 +512,7 @@ router.delete("/api/v1/remove-cart/:id", async (req, res) => {
   }
 });
 
-router.delete("/api/v1/clear-cart/:id", async (req, res) => {
+router.delete("/clear-cart/:id", async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
     if (!student) return res.status(404).json({ message: "Student not found" });
@@ -477,7 +528,7 @@ router.delete("/api/v1/clear-cart/:id", async (req, res) => {
   }
 });
 
-router.get("/api/v1/student/:id/courses", async (req, res) => {
+router.get("/student/:id/courses", async (req, res) => {
   try {
     const student = await Student.findById(req.params.id).populate("course");
 
@@ -493,26 +544,33 @@ router.get("/api/v1/student/:id/courses", async (req, res) => {
   }
 });
 
-router.get("/api/v1/list-courses/:id", async (req, res) => {
+// GET /api/v1/students/list-courses/:id
+router.get("/list-courses/:id", async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
+
     if (!student) {
       return res.status(404).json({ message: "Student not found" });
     }
 
-    const allCourses = await Course.find({ status: "Active" });
+    const enrolledCourses = await Course.find({
+      _id: { $in: student.courses },
+    }).populate({
+      path: "chapters",
+      populate: {
+        path: "topics",
+        populate: {
+          path: "quiz",
+        },
+      },
+    });
 
-    // Tag each course with whether the student has purchased it
-    const courseList = allCourses.map((course) => ({
-      ...course.toObject(),
-      isEnrolled: student.course.includes(course._id),
-    }));
-
-    res.json({ courses: courseList });
+    res.json({ courses: enrolledCourses });
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Failed to fetch courses", error: err.message });
+    res.status(500).json({
+      message: "Failed to fetch enrolled courses",
+      error: err.message,
+    });
   }
 });
 

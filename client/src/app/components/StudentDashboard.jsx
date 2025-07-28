@@ -5,7 +5,6 @@ import Drawer from "react-modern-drawer";
 import "react-modern-drawer/dist/index.css";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-
 import {
   FaBook,
   FaVideo,
@@ -26,6 +25,7 @@ import NewsTab from "./NewsTab";
 import LiveClassTab from "../components/LiveClassTab";
 import ProfileTab from "../components/ProfileTab";
 
+// Sidebar tabs (as before)
 const tabs = [
   { id: "courses", icon: <FaBook />, label: "Courses" },
   { id: "revision", icon: <FaBook />, label: "Revision" },
@@ -46,40 +46,49 @@ export default function StudentDashboard() {
   const [darkMode, setDarkMode] = useState(false);
   const [activeTab, setActiveTab] = useState("courses");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [student, setStudent] = useState({ name: "", email: "" });
+  const [student, setStudent] = useState(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const router = useRouter();
 
-  // Auth check on page load
+  // Student auth check
   useEffect(() => {
     const fetchStudent = async () => {
       try {
         const res = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_BASE}/student/protected`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/students/isstudent`,
           { withCredentials: true }
         );
-        setStudent(res.data.user); // Should contain name, email
-        setCheckingAuth(false);
+        // Authenticated: set student
+        if (res.data && res.data.student) {
+          setStudent(res.data.student);
+        } else {
+          router.replace("/student-login");
+        }
       } catch (err) {
-        console.error("Unauthorized", err);
-        router.push("/student-login");
+        router.replace("/student-login");
+      } finally {
+        setCheckingAuth(false);
       }
     };
     fetchStudent();
   }, []);
 
+  // Logout handler
   const handleLogout = async () => {
     try {
-      await axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/student/logout`, {
-        withCredentials: true,
-      });
-      window.location.href = "/student-login";
+      await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/students/logout`,
+        {
+          withCredentials: true,
+        }
+      );
+      router.replace("/student-login");
     } catch (err) {
-      console.error("Logout failed", err);
       alert("Failed to logout");
     }
   };
 
+  // Tab rendering
   const renderTabContent = () => {
     switch (activeTab) {
       case "courses":
@@ -102,13 +111,15 @@ export default function StudentDashboard() {
   };
 
   const SidebarContent = () => (
-    <div className="flex flex-col justify-between h-full p-5 w-64">
+    <div className="flex flex-col justify-between h-full p-5 w-64 pt-30">
       <div>
-        <h2 className="text-2xl font-bold text-blue-600 mb-6">Fincurious</h2>
-        <div className="mb-6">
-          <p className="font-semibold">{student?.name}</p>
-          <p className="text-sm text-gray-600">{student?.email}</p>
-        </div>
+        <h2 className="text-2xl font-bold text-blue-600 mb-6">IICPA</h2>
+        {student && (
+          <div className="mb-6">
+            <p className="font-semibold">{student.name}</p>
+            <p className="text-sm text-gray-600">{student.email}</p>
+          </div>
+        )}
         <nav className="space-y-4">
           {tabs.map((tab) => (
             <NavItem
@@ -126,7 +137,6 @@ export default function StudentDashboard() {
           ))}
         </nav>
       </div>
-
       <div className="flex items-center justify-between mt-10">
         <button
           onClick={() => setDarkMode(!darkMode)}
@@ -158,7 +168,6 @@ export default function StudentDashboard() {
       <aside className="hidden lg:block bg-white border-r">
         <SidebarContent />
       </aside>
-
       {/* Mobile Drawer */}
       <Drawer
         open={isDrawerOpen}
@@ -168,10 +177,8 @@ export default function StudentDashboard() {
       >
         <SidebarContent />
       </Drawer>
-
       {/* Main Content */}
       <main className="flex-1 bg-[#f5f6fa] p-4 md:p-6 overflow-y-auto min-h-screen">
-        {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <button
             className="lg:hidden p-2 bg-gray-100 rounded"
@@ -179,7 +186,6 @@ export default function StudentDashboard() {
           >
             <FaBars />
           </button>
-
           <input
             type="text"
             placeholder="Search for a topic"
@@ -197,31 +203,7 @@ export default function StudentDashboard() {
             </div>
           </div>
         </div>
-
-        {/* Viva Alert */}
-        <div className="bg-red-600 text-white p-4 rounded-lg mb-4 flex justify-between items-center">
-          <span>
-            Batches are scheduled for Viva. Please visit dashboard and book your
-            slots!
-          </span>
-          <button className="bg-white text-red-600 px-4 py-1 rounded">
-            Go to Dashboard
-          </button>
-        </div>
-
-        {/* Resume Prompt */}
-        <div className="bg-green-100 p-4 border-l-4 border-green-500 mb-6 rounded">
-          <p className="text-green-700 font-medium">
-            Pick up where you left off!
-          </p>
-          <p className="text-sm mt-1">
-            You had last accessed{" "}
-            <strong>GSTR - 1 Return in GST Return Filing (Online)</strong>.
-            <button className="ml-2 text-green-700 underline">Continue</button>
-          </p>
-        </div>
-
-        {/* Tab Content */}
+        {/* (optional: banners and prompts) */}
         {renderTabContent()}
       </main>
     </div>
