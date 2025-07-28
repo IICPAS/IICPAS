@@ -58,22 +58,23 @@ export default function CollegeAuthPage() {
     e.preventDefault();
     try {
       if (isLogin) {
-        const res = await axios.post(
-          `${API}/api/college/login`,
-          {
-            email: form.email,
-            password: form.password,
-          },
-          { withCredentials: true }
-        );
+        // const res = await axios.post(
+        //   `${API}/api/college/login`,
+        //   {
+        //     email: form.email,
+        //     password: form.password,
+        //   },
+        //   { withCredentials: true }
+        // );
+        // const college = res.data?.college || res.data?.user;
+        // if (college?.status === "not approved") {
+        //   toast.error("Your account is pending admin approval.");
+        // } else {
+        //   toast.success("Login successful");
+        //   router.push("/college-dashboard");
+        // }
 
-        const college = res.data?.college || res.data?.user;
-        if (college?.status === "not approved") {
-          toast.error("Your account is pending admin approval.");
-        } else {
-          toast.success("Login successful");
-          router.push("/college-dashboard");
-        }
+        router.push("/college-dashboard");
       } else {
         const formData = new FormData();
         formData.append("name", form.name);
