@@ -9,7 +9,7 @@ import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import toast from "react-hot-toast";
 import axios from "axios";
 
-const API = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080/api";
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
 
 export default function CompanyAuthPage() {
   const router = useRouter();
@@ -71,7 +71,7 @@ export default function CompanyAuthPage() {
         data.append("password", form.password);
         if (form.document) data.append("document", form.document);
 
-        await axios.post(`${API}/companies/register`, data, {
+        await axios.post(`${API}/api/companies/register`, data, {
           withCredentials: true,
         });
         toast.success("Signup successful. Await admin approval.");
@@ -87,7 +87,7 @@ export default function CompanyAuthPage() {
     e.preventDefault();
     try {
       await axios.post(
-        `${API}/companies/forgot-password`,
+        `${API}/api/companies/forgot-password`,
         { email: form.email },
         { withCredentials: true }
       );
@@ -103,7 +103,7 @@ export default function CompanyAuthPage() {
     try {
       const code = otp.join("");
       await axios.post(
-        `${API}/companies/reset-password`,
+        `${API}/api/companies/reset-password`,
         {
           email: form.email,
           otp: code,
