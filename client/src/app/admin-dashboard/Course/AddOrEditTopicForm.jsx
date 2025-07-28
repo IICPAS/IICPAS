@@ -13,7 +13,6 @@ import * as XLSX from "xlsx";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { Delete } from "@mui/icons-material";
-import JoditEditor from "jodit-react";
 import dynamic from "next/dynamic";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
