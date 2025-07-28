@@ -15,7 +15,6 @@ const CalendarTab = () => {
   const [loading, setLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
 
-  // Fetch all bookings (admin)
   useEffect(() => {
     fetchBookings();
     // eslint-disable-next-line
@@ -33,7 +32,6 @@ const CalendarTab = () => {
     setLoading(false);
   };
 
-  // Admin schedule/approve
   const handleSchedule = async (id) => {
     try {
       await axios.patch(
@@ -48,7 +46,6 @@ const CalendarTab = () => {
     }
   };
 
-  // Admin reject/cancel with SweetAlert2 confirmation
   const handleCancel = async (id) => {
     const result = await MySwal.fire({
       title: "Cancel this booking?",
@@ -74,7 +71,6 @@ const CalendarTab = () => {
     }
   };
 
-  // Calendar logic
   const bookedEvents = bookings.filter((b) => b.status === "booked");
   const calendarTileContent = ({ date }) => {
     const found = bookedEvents.find(
@@ -97,14 +93,14 @@ const CalendarTab = () => {
   );
 
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-12 pb-8">
-      {/* All Bookings Table */}
-      <div className="bg-white rounded-xl  p-6">
+    <div className="w-full mx-auto space-y-12 pb-8">
+      {/* Bookings Table */}
+      <div className="rounded-xl">
         <h2 className="text-2xl font-bold text-blue-700 mb-6">
           All Bookings (Admin)
         </h2>
         <div className="overflow-x-auto">
-          <table className="min-w-full border border-gray-200 rounded-xl shadow-sm">
+          <table className="min-w-full shadow-sm">
             <thead>
               <tr className="bg-blue-100 text-blue-900 text-sm">
                 <th className="px-4 py-2">Title</th>
@@ -134,14 +130,13 @@ const CalendarTab = () => {
                   <td className="px-4 py-2">{b.hrs}</td>
                   <td className="px-4 py-2">
                     <span
-                      className={`px-3 py-1 rounded-full text-xs font-bold
-                        ${
-                          b.status === "booked"
-                            ? "bg-green-100 text-green-700"
-                            : b.status === "pending"
-                            ? "bg-yellow-100 text-yellow-700"
-                            : "bg-gray-100 text-gray-500"
-                        }`}
+                      className={`px-3 py-1 rounded-full text-xs font-bold ${
+                        b.status === "booked"
+                          ? "bg-green-100 text-green-700"
+                          : b.status === "pending"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : "bg-gray-100 text-gray-500"
+                      }`}
                     >
                       {b.status}
                     </span>
@@ -193,8 +188,13 @@ const CalendarTab = () => {
 
       {/* Bookings Calendar */}
       <div
-        className="bg-white rounded-xl shadow p-8 mx-auto"
-        style={{ width: "80vw", maxWidth: 950, minWidth: 340 }}
+        className="rounded-xl shadow p-8 mx-auto"
+        style={{
+          width: "80vw",
+          maxWidth: 950,
+          minWidth: 340,
+          background: "transparent",
+        }}
       >
         <h2 className="text-2xl font-bold text-blue-700 mb-6 flex items-center gap-2">
           <span style={{ fontSize: "1.5em" }}>📌</span> Bookings Calendar
@@ -255,7 +255,6 @@ const CalendarTab = () => {
         </div>
       </div>
 
-      {/* Modern calendar grid styles */}
       <style jsx global>{`
         .big-modern-calendar {
           width: 100% !important;
@@ -296,7 +295,6 @@ const CalendarTab = () => {
           .react-calendar__month-view__days__day--neighboringMonth {
           opacity: 0.33;
         }
-        /* Responsive grid columns for big calendar */
         .calendar-grid .react-calendar__month-view__days {
           display: grid !important;
           grid-template-columns: repeat(7, 1fr);

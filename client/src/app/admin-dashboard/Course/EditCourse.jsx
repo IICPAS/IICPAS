@@ -2,10 +2,12 @@
 import React, { useState, useEffect } from "react";
 import Select from "react-select";
 import axios from "axios";
+import dynamic from "next/dynamic";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import { FaArrowLeft, FaSave } from "react-icons/fa";
 
+const JoditEditor = dynamic(() => import("jodit-react"), { ssr: false });
 const MySwal = withReactContent(Swal);
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 
@@ -24,20 +26,22 @@ const LEVEL_OPTIONS = [
 ];
 
 export default function EditCourse({ courseId, onBack }) {
-  console.log(courseId);
-
   const [form, setForm] = useState(null);
-
   const [loading, setLoading] = useState(false);
-
-  // Fix hydration issues by only rendering after mount (for image URL, etc)
   const [mounted, setMounted] = useState(false);
+
+  const joditConfig = {
+    readonly: false,
+    height: 200,
+    uploader: { insertImageAsBase64URI: true },
+    toolbarAdaptive: false,
+    showCharsCounter: false,
+    showWordsCounter: false,
+    spellcheck: true,
+  };
+
   useEffect(() => {
     setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    // Fetch course data on mount
     axios.get(`${API_BASE}/courses/${courseId}`).then((res) => {
       const c = res.data;
       setForm({
@@ -49,22 +53,38 @@ export default function EditCourse({ courseId, onBack }) {
         level: LEVEL_OPTIONS.find((opt) => opt.value === c.level) || null,
         discount: c.discount || "",
         status: c.status || "Active",
+        video: c.video || "",
         description: c.description || "",
+        examCert: c.examCert || "",
+        caseStudy: c.caseStudy || "",
+        seoTitle: c.seoTitle || "",
+        seoKeywords: c.seoKeywords || "",
+        seoDescription: c.seoDescription || "",
         image: null,
         imageUrl: c.image || "",
       });
     });
   }, [courseId]);
 
-  if (!form || !mounted)
-    return <div className="p-8 text-lg text-gray-500">Loading...</div>;
+  if (!form || !mounted) return <div className="p-8">Loading course...</div>;
 
   const handleInputChange = (e) => {
     const { name, value, files } = e.target;
-    setForm((f) => ({
-      ...f,
-      [name]: files ? files[0] : value,
-    }));
+    const val = files ? files[0] : value;
+
+    if (name === "title") {
+      const slug = value
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)+/g, "");
+      setForm((f) => ({ ...f, title: value, slug }));
+    } else {
+      setForm((f) => ({ ...f, [name]: val }));
+    }
+  };
+
+  const handleJoditChange = (field) => (value) => {
+    setForm((f) => ({ ...f, [field]: value }));
   };
 
   const handleCategoryChange = (option) =>
@@ -96,176 +116,172 @@ export default function EditCourse({ courseId, onBack }) {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      MySwal.fire("Updated!", "Course updated successfully!", "success");
+      MySwal.fire("Success", "Course updated successfully!", "success");
       if (onBack) onBack();
     } catch (err) {
-      MySwal.fire("Error!", "Failed to update course", "error");
+      MySwal.fire("Error", "Failed to update course", "error");
     } finally {
       setLoading(false);
     }
   };
 
-  console.log(courseId);
-
   return (
-    <div className="w-full bg-white shadow rounded-lg p-10">
+    <div className="w-full bg-white rounded-xl shadow p-10">
       <div className="flex justify-between items-center mb-8">
         <h3 className="text-2xl font-bold">Edit Course</h3>
         <button
-          type="button"
           onClick={onBack}
           className="bg-blue-700 text-white px-5 py-2 rounded flex items-center gap-2"
         >
           <FaArrowLeft /> View Courses
         </button>
       </div>
-      <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-2 gap-8 w-full">
-          {/* Left column */}
-          <div className="space-y-5">
-            <div>
-              <label className="block mb-1 font-semibold">
-                Select Category
-              </label>
-              <Select
-                options={CATEGORY_OPTIONS}
-                value={form.category}
-                onChange={handleCategoryChange}
-                placeholder="Select Category"
-                required
-                styles={{
-                  control: (provided) => ({
-                    ...provided,
-                    minHeight: "40px",
-                  }),
-                }}
+
+      <form onSubmit={handleSubmit} className="space-y-10">
+        {/* Basic Info */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="space-y-4">
+            <label>Category</label>
+            <Select
+              options={CATEGORY_OPTIONS}
+              value={form.category}
+              onChange={handleCategoryChange}
+            />
+            <label>Title</label>
+            <input
+              name="title"
+              value={form.title}
+              onChange={handleInputChange}
+              className="w-full border p-2 rounded"
+              required
+            />
+            <label>Slug</label>
+            <input
+              name="slug"
+              value={form.slug}
+              onChange={handleInputChange}
+              className="w-full border p-2 rounded"
+            />
+            <label>Course Image</label>
+            <input
+              type="file"
+              name="image"
+              accept="image/*"
+              onChange={handleInputChange}
+              className="w-full"
+            />
+            {form.imageUrl && (
+              <img
+                src={process.env.NEXT_PUBLIC_API_URL + form.imageUrl}
+                alt="Course"
+                className="h-24 rounded shadow border mt-2"
               />
-            </div>
-            <div>
-              <label className="block mb-1 font-semibold">Course Name</label>
-              <input
-                name="title"
-                placeholder="Enter course name"
-                className="w-full border p-2 rounded"
-                value={form.title}
-                onChange={handleInputChange}
-                required
-                autoComplete="off"
-              />
-            </div>
-            <div>
-              <label className="block mb-1 font-semibold">Course Image</label>
-              <input
-                type="file"
-                name="image"
-                accept="image/*"
-                onChange={handleInputChange}
-                className="w-full"
-              />
-              {form.imageUrl && (
-                <div className="mt-2">
-                  <img
-                    src={process.env.NEXT_PUBLIC_API_URL + form.imageUrl}
-                    alt="Current"
-                    className="h-24 rounded shadow border"
-                  />
-                </div>
-              )}
-            </div>
-            <div>
-              <label className="block mb-1 font-semibold">Discount (%)</label>
-              <input
-                name="discount"
-                placeholder="Enter the Discount"
-                type="number"
-                className="w-full border p-2 rounded"
-                value={form.discount}
-                onChange={handleInputChange}
-                min="0"
-                max="100"
-              />
-            </div>
-            <div>
-              <label className="block mb-1 font-semibold">Description</label>
-              <textarea
-                name="description"
-                placeholder="Enter course description"
-                className="w-full border p-2 rounded min-h-[80px]"
-                value={form.description}
-                onChange={handleInputChange}
-              />
-            </div>
+            )}
+            <label>Video Link</label>
+            <input
+              name="video"
+              value={form.video}
+              onChange={handleInputChange}
+              className="w-full border p-2 rounded"
+            />
           </div>
-          {/* Right column */}
-          <div className="space-y-5">
-            <div>
-              <label className="block mb-1 font-semibold">
-                Select course level
-              </label>
-              <Select
-                options={LEVEL_OPTIONS}
-                value={form.level}
-                onChange={handleLevelChange}
-                placeholder="Select course level"
-                required
-                styles={{
-                  control: (provided) => ({
-                    ...provided,
-                    minHeight: "40px",
-                  }),
-                }}
-              />
-            </div>
-            <div>
-              <label className="block mb-1 font-semibold">Course Slug</label>
-              <input
-                name="slug"
-                placeholder="Enter course slug"
-                className="w-full border p-2 rounded"
-                value={form.slug || ""}
-                onChange={handleInputChange}
-                autoComplete="off"
-              />
-            </div>
-            <div>
-              <label className="block mb-1 font-semibold">Actual Price</label>
-              <input
-                name="price"
-                placeholder="Enter actual price"
-                type="number"
-                className="w-full border p-2 rounded"
-                value={form.price}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-            <div>
-              <label className="block mb-1 font-semibold">
-                Price After Discount
-              </label>
-              <input
-                name="finalPrice"
-                placeholder="Final Price"
-                type="number"
-                className="w-full border p-2 rounded bg-gray-100"
-                value={getFinalPrice()}
-                readOnly
-              />
-            </div>
-            <div>
-              <label className="block mb-1 font-semibold">Status</label>
-              <select
-                name="status"
-                className="w-full border p-2 rounded"
-                value={form.status}
-                onChange={handleInputChange}
-              >
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-              </select>
-            </div>
+
+          <div className="space-y-4">
+            <label>Level</label>
+            <Select
+              options={LEVEL_OPTIONS}
+              value={form.level}
+              onChange={handleLevelChange}
+            />
+            <label>Price</label>
+            <input
+              name="price"
+              type="number"
+              value={form.price}
+              onChange={handleInputChange}
+              className="w-full border p-2 rounded"
+              required
+            />
+            <label>Discount (%)</label>
+            <input
+              name="discount"
+              type="number"
+              value={form.discount}
+              onChange={handleInputChange}
+              className="w-full border p-2 rounded"
+            />
+            <label>Final Price</label>
+            <input
+              value={getFinalPrice()}
+              readOnly
+              className="w-full border p-2 rounded bg-gray-100"
+            />
+            <label>Status</label>
+            <select
+              name="status"
+              value={form.status}
+              onChange={handleInputChange}
+              className="w-full border p-2 rounded"
+            >
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
           </div>
         </div>
+
+        {/* Rich Text Sections */}
+        <div>
+          <label className="block font-semibold mb-1">Course Description</label>
+          <JoditEditor
+            value={form.description}
+            config={joditConfig}
+            onBlur={handleJoditChange("description")}
+          />
+        </div>
+        <div>
+          <label className="block font-semibold mb-1">
+            Exam & Certification
+          </label>
+          <JoditEditor
+            value={form.examCert}
+            config={joditConfig}
+            onBlur={handleJoditChange("examCert")}
+          />
+        </div>
+        <div>
+          <label className="block font-semibold mb-1">Case Study</label>
+          <JoditEditor
+            value={form.caseStudy}
+            config={joditConfig}
+            onBlur={handleJoditChange("caseStudy")}
+          />
+        </div>
+
+        {/* SEO Section */}
+        <div className="pt-8 border-t mt-8">
+          <h2 className="text-xl font-semibold mb-3">SEO Section</h2>
+          <label>SEO Title</label>
+          <input
+            name="seoTitle"
+            value={form.seoTitle}
+            onChange={handleInputChange}
+            className="w-full border p-2 rounded"
+          />
+          <label>SEO Description</label>
+          <JoditEditor
+            value={form.seoDescription}
+            config={joditConfig}
+            onBlur={handleJoditChange("seoDescription")}
+          />
+          <label>SEO Keywords</label>
+          <textarea
+            name="seoKeywords"
+            value={form.seoKeywords}
+            onChange={handleInputChange}
+            className="w-full border p-2 rounded"
+          />
+        </div>
+
         <div className="flex justify-end mt-10">
           <button
             type="submit"

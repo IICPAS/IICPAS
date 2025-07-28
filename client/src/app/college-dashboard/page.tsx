@@ -14,7 +14,7 @@ import CertificationRequests from "./CertificationRequest";
 import "react-calendar/dist/Calendar.css";
 import CollegeTicketRaiseAndList from "./CollegeTicketRaise";
 
-const API = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080/api";
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
 
 type TabType = "Tickets" | "dashboard" | "certifications" | "notifications";
 
@@ -63,7 +63,7 @@ const CollegeDashboard = () => {
   useEffect(() => {
     const fetchCollege = async () => {
       try {
-        const res = await axios.get(`${API}/college/isCollege`, {
+        const res = await axios.get(`${API}/api/college/isCollege`, {
           withCredentials: true,
         });
         setCollege(res.data.college);

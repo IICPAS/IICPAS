@@ -1,64 +1,21 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { Box, Button, TextField, Typography, Stack } from "@mui/material";
+import React, { useState, useEffect, useRef } from "react";
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  Stack,
+  IconButton,
+  Link,
+} from "@mui/material";
 import * as XLSX from "xlsx";
-
-import "react-quill-new/dist/quill.snow.css";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { Delete } from "@mui/icons-material";
+import JoditEditor from "jodit-react";
 
-import dynamic from "next/dynamic";
-const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
-
-const quillModules = {
-  toolbar: [
-    [{ font: [] }, { size: ["small", false, "large", "huge"] }],
-    [{ color: [] }, { background: [] }],
-    ["bold", "italic", "underline", "strike"],
-    [{ align: [] }],
-    [{ list: "ordered" }, { list: "bullet" }],
-    [{ indent: "-1" }, { indent: "+1" }],
-    ["link", "image", "video"],
-    ["clean"],
-  ],
-};
-
-function styleQuillHtml(html) {
-  if (!html) return "";
-  return html
-    .replace(
-      /<img /g,
-      '<img style="display:block;margin:16px auto;max-width:80%;border-radius:12px;" '
-    )
-    .replace(
-      /<iframe /g,
-      '<iframe style="display:block;margin:20px auto;max-width:80%;" '
-    )
-    .replace(
-      /<video /g,
-      '<video style="display:block;margin:20px auto;max-width:80%;" '
-    );
-}
-
-const quillFormats = [
-  "font",
-  "size",
-  "color",
-  "background",
-  "bold",
-  "italic",
-  "underline",
-  "strike",
-  "align",
-  "list",
-  "bullet",
-  "indent",
-  "link",
-  "image",
-  "video",
-  "clean",
-];
 
 export default function AddOrEditTopicForm({
   chapterId,
@@ -67,16 +24,20 @@ export default function AddOrEditTopicForm({
   onCancel,
   onSaved,
 }) {
+  const editor = useRef(null);
   const [title, setTitle] = useState(topic?.title || "");
   const [content, setContent] = useState(topic?.content || "");
   const [quizFile, setQuizFile] = useState(null);
   const [quizData, setQuizData] = useState(null);
-  const [showPreview, setShowPreview] = useState(false);
+  const [videoLinks, setVideoLinks] = useState(topic?.videos || []);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    setTitle(topic?.title || "");
-    setContent(topic?.content || "");
+    if (topic) {
+      setTitle(topic.title || "");
+      setContent(topic.content || "");
+      setVideoLinks(topic.videos || []);
+    }
   }, [topic]);
 
   const handleQuizUpload = (e) => {
@@ -89,7 +50,6 @@ export default function AddOrEditTopicForm({
       const workbook = XLSX.read(data, { type: "array" });
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
-
       const questions = rows.map((row) => ({
         question: row.question || row.Question || "",
         options: [
@@ -106,6 +66,22 @@ export default function AddOrEditTopicForm({
     reader.readAsArrayBuffer(file);
   };
 
+  const handleVideoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append("video", file);
+    try {
+      const res = await axios.post(`${API_BASE}/upload/video`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setVideoLinks((prev) => [...prev, res.data.videoUrl]);
+      Swal.fire("Success", "Video uploaded!", "success");
+    } catch (err) {
+      Swal.fire("Error", "Upload failed", "error");
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title.trim() || !content.trim()) {
@@ -115,34 +91,34 @@ export default function AddOrEditTopicForm({
     setSaving(true);
     try {
       if (topic?._id) {
-        // EDIT
         await axios.put(`${API_BASE}/topics/${topic._id}`, {
-          title: title.trim(),
+          title,
           content,
+          videos: videoLinks,
         });
       } else {
-        // ADD
         const topicRes = await axios.post(
           `${API_BASE}/topics/by-chapter/${chapterId}`,
           {
             chapterId,
-            title: title.trim(),
+            title,
             content,
+            videos: videoLinks,
           }
         );
         const topicId = topicRes.data._id;
-        if (quizData && quizData.length > 0) {
+        if (quizData?.length > 0) {
           await axios.post(`${API_BASE}/quizzes`, {
             topic: topicId,
             questions: quizData,
           });
         }
       }
-
       setTitle("");
       setContent("");
       setQuizFile(null);
       setQuizData(null);
+      setVideoLinks([]);
       onSaved && onSaved();
       Swal.fire(
         "Success!",
@@ -156,28 +132,16 @@ export default function AddOrEditTopicForm({
   };
 
   return (
-    <Box
-      sx={{
-        // --- MAIN CHANGE HERE ---
-        p: 0, // no outer padding
-        width: "80vw",
-        maxWidth: "76vw",
-        mx: "auto",
-        mt: 3, // or 0 for no margin
-        bgcolor: "white",
-        borderRadius: 2,
-      }}
-    >
+    <Box sx={{ width: "75vw", maxWidth: "76vw", mx: "auto", mt: 3 }}>
       <form onSubmit={handleSubmit}>
         <Stack spacing={3} sx={{ p: { xs: 2, md: 5 } }}>
           <Typography
             variant="h5"
             fontWeight={700}
-            gutterBottom
             align="center"
-            sx={{ mb: 2, fontSize: 28 }}
+            sx={{ fontSize: 28 }}
           >
-            {topic ? `Edit Topic` : `Add Topic`} for "{chapterName}"
+            {topic ? "Edit Topic" : "Add Topic"} for "{chapterName}"
           </Typography>
 
           <TextField
@@ -186,9 +150,61 @@ export default function AddOrEditTopicForm({
             onChange={(e) => setTitle(e.target.value)}
             fullWidth
             required
-            inputProps={{ style: { fontSize: 18, fontWeight: 500 } }}
           />
 
+          {/* Upload and show video links */}
+          <Box>
+            <Typography fontWeight={600} fontSize={15}>
+              Upload Videos
+            </Typography>
+            <Button component="label" variant="contained" sx={{ mt: 1 }}>
+              Upload Video
+              <input
+                type="file"
+                accept="video/*"
+                hidden
+                onChange={handleVideoUpload}
+              />
+            </Button>
+
+            <Stack mt={2} spacing={1}>
+              {videoLinks.map((url, i) => (
+                <Box
+                  key={i}
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    background: "#f5f5f5",
+                    p: 1,
+                    borderRadius: 1,
+                  }}
+                >
+                  <Link
+                    href={url}
+                    target="_blank"
+                    rel="noopener"
+                    underline="hover"
+                  >
+                    {url.split("/").pop()}
+                  </Link>
+                  <IconButton
+                    size="small"
+                    color="error"
+                    onClick={() =>
+                      setVideoLinks((prev) =>
+                        prev.filter((_, index) => index !== i)
+                      )
+                    }
+                  >
+                    <Delete />
+                  </IconButton>
+                </Box>
+              ))}
+            </Stack>
+          </Box>
+
+          {/* Jodit Editor */}
           <Box>
             <Typography
               fontWeight={600}
@@ -196,34 +212,21 @@ export default function AddOrEditTopicForm({
               color="text.secondary"
               sx={{ mb: 1 }}
             >
-              Content (Rich text, images, video, color...)
+              Content
             </Typography>
-            <div
-              style={{
-                resize: "vertical",
-                overflow: "auto",
-                minHeight: 180,
-                maxHeight: 800,
-                borderRadius: 10,
-                background: "#fafbfc",
-                border: "1px solid #d1d5db",
-                marginBottom: 20,
+            <JoditEditor
+              ref={editor}
+              value={content}
+              tabIndex={1}
+              onBlur={(newContent) => setContent(newContent)}
+              config={{
+                readonly: false,
+                height: 350,
               }}
-            >
-              <ReactQuill
-                value={content}
-                onChange={setContent}
-                modules={quillModules}
-                formats={quillFormats}
-                style={{
-                  height: "100%",
-                  border: "none",
-                  background: "transparent",
-                }}
-                placeholder="Write content here... you can use images, videos, colors, etc."
-              />
-            </div>
+            />
           </Box>
+
+          {/* Quiz Upload */}
           {!topic && (
             <Box>
               <Button component="label" variant="outlined" sx={{ mr: 2 }}>
@@ -243,13 +246,10 @@ export default function AddOrEditTopicForm({
               )}
             </Box>
           )}
+
+          {/* Action Buttons */}
           <Stack direction="row" spacing={2} justifyContent="center">
-            <Button
-              variant="outlined"
-              onClick={onCancel}
-              disabled={saving}
-              sx={{ minWidth: 120 }}
-            >
+            <Button variant="outlined" onClick={onCancel} disabled={saving}>
               Back
             </Button>
             <Button
@@ -257,7 +257,6 @@ export default function AddOrEditTopicForm({
               type="submit"
               disabled={saving}
               sx={{
-                minWidth: 140,
                 fontWeight: 600,
                 fontSize: 16,
                 bgcolor: "#1976d2",
@@ -272,44 +271,9 @@ export default function AddOrEditTopicForm({
                 ? "Update Topic"
                 : "Add Topic"}
             </Button>
-            {topic && (
-              <Button
-                variant={showPreview ? "outlined" : "contained"}
-                color="secondary"
-                onClick={() => setShowPreview((prev) => !prev)}
-                sx={{
-                  minWidth: 140,
-                  fontWeight: 600,
-                  fontSize: 16,
-                }}
-              >
-                {showPreview ? "Hide Preview" : "Get Preview"}
-              </Button>
-            )}
           </Stack>
         </Stack>
       </form>
-
-      {showPreview && (
-        <Box
-          sx={{
-            mt: 4,
-            p: 3,
-            bgcolor: "#f5f6fa",
-            borderRadius: 2,
-            border: "1px solid #ddd",
-            boxShadow: 1,
-          }}
-        >
-          <Typography variant="h6" fontWeight={700} mb={2}>
-            Content Preview
-          </Typography>
-          <div
-            dangerouslySetInnerHTML={{ __html: styleQuillHtml(content) }}
-            style={{ width: "100%" }}
-          />
-        </Box>
-      )}
     </Box>
   );
 }
