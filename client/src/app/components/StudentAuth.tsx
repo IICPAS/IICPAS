@@ -1,296 +1,426 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-
+import Image from "next/image";
 import { useState } from "react";
+import Select from "react-select";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import axios from "axios";
-import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
-export default function StudentAuth() {
-  const router = useRouter();
-  const [mode, setMode] = useState<"login" | "signup" | "forgot">("login");
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+export default function StudentAuthForm() {
+  // Mode: register | login | forgot
+  const [mode, setMode] = useState<"register" | "login" | "forgot">("register");
+
+  // --- Register form state
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    password: "",
+    confirmPassword: "",
+    mode: "Online",
+    location: "Greater Noida",
+    center: "Greater Noida",
+  });
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
-  const [otpSent, setOtpSent] = useState(false);
+  // --- Login form state
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+
+  // --- Forgot password state
+  const [forgotStep, setForgotStep] = useState<"email" | "otp">("email");
+  const [forgotEmail, setForgotEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const togglePassword = () => setShowPassword(!showPassword);
-
-  const handleLogin = async () => {
-    if (!email || !password) return alert("Please fill all fields");
-    setLoading(true);
-    try {
-      // const res = await axios.post(
-      //   `${process.env.NEXT_PUBLIC_API_BASE}/v1/student/login`,
-      //   { email, password },
-      //   { withCredentials: true }
-      // );
-      if (email === "test@gmail.com") {
-        router.push("/student-dashboard");
-      }
-    } catch (err: any) {
-      alert(err?.response?.data?.message || "Login failed");
-    } finally {
-      setLoading(false);
-    }
+  // --- Register handlers
+  const handleChange = (e: any) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
-
-  const handleSignup = async () => {
-    if (!name || !phone || !email || !password || !confirmPassword) {
-      return alert("Please fill all fields");
-    }
-    if (password !== confirmPassword) {
-      return alert("Passwords do not match!");
-    }
-
-    setLoading(true);
+  const handleCenterChange = (selected: any) => {
+    setForm((prev) => ({ ...prev, center: selected.value }));
+  };
+  const handleRegister = async (e: any) => {
+    e.preventDefault();
+    const {
+      name,
+      email,
+      phone,
+      password,
+      confirmPassword,
+      mode,
+      location,
+      center,
+    } = form;
+    if (!name || !email || !phone || !password || !confirmPassword)
+      return toast.success("All fields required");
+    if (password !== confirmPassword) return toast("Passwords do not match!");
     try {
-      const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_BASE}/student/register`,
-        {
-          name,
-          email,
-          phone,
-          password,
-          location: "Default Location",
-          course: "Default Course",
-          teacher: "Default Teacher",
-        },
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/students/register`,
+        { name, email, phone, password, mode, location, center },
         { withCredentials: true }
       );
-      alert("Account created!");
-      console.log(res.data);
+      toast.success("Registration successful!");
       setMode("login");
     } catch (err: any) {
-      alert(err?.response?.data?.message || "Signup failed");
-    } finally {
-      setLoading(false);
+      toast.success(err?.response?.data?.message || "Registration failed");
     }
   };
 
-  const handleSendOtp = () => {
-    setLoading(true);
-    setTimeout(() => {
-      setOtpSent(true);
-      setLoading(false);
-    }, 1000);
+  // --- Login handlers
+  const handleLogin = async (e: any) => {
+    e.preventDefault();
+    if (!loginEmail || !loginPassword)
+      return toast.error("Email and password required");
+    try {
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/students/login`,
+        { email: loginEmail, password: loginPassword },
+        { withCredentials: true }
+      );
+      toast.success("Login successful");
+      window.location.href = "/student-dashboard";
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Login failed");
+    }
   };
 
-  const handleResetPassword = () => {
+  // --- Forgot password handlers
+  const handleSendOtp = async (e: any) => {
+    e.preventDefault();
+    if (!forgotEmail) return alert("Enter your email");
     setLoading(true);
-    setTimeout(() => {
-      alert("Password Reset Successful");
-      setLoading(false);
+    try {
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/students/forgot-password`,
+        { email: forgotEmail }
+      );
+      toast.success("OTP sent to your email.");
+      setForgotStep("otp");
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Failed to send OTP.");
+    }
+    setLoading(false);
+  };
+  const handleResetPassword = async (e: any) => {
+    e.preventDefault();
+    if (!otp || !newPassword) return toast.error("All fields required");
+    setLoading(true);
+    try {
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/students/reset-password`,
+        { email: forgotEmail, otp, newPassword }
+      );
+      toast.success("Password reset successful");
       setMode("login");
-    }, 1000);
+      setForgotStep("email");
+      setForgotEmail("");
+      setOtp("");
+      setNewPassword("");
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Password reset failed.");
+    }
+    setLoading(false);
   };
 
+  const centerOptions = [{ label: "Greater Noida", value: "Greater Noida" }];
+
+  // --- Render ---
   return (
-    <div className="min-h-screen pt-10 flex items-center justify-center bg-gradient-to-br from-[#d0f4ff] via-white to-[#dbffeb] px-4">
-      <div className="w-full max-w-md bg-white/40 border border-white/60 shadow-[0_10px_60px_rgba(0,0,0,0.1)] backdrop-blur-xl rounded-2xl px-6 py-10 md:px-10 transition-all duration-300">
-        <h2 className="text-2xl md:text-3xl font-bold text-center text-[#003057] mb-8">
-          {mode === "login"
-            ? "Student Login"
-            : mode === "signup"
-            ? "Create Account"
-            : otpSent
-            ? "Reset Password"
-            : "Forgot Password"}
-        </h2>
+    <div className="pt-24 flex justify-center items-center bg-gray-50 p-4">
+      <div className="w-full max-w-lg  bg-white rounded-xl shadow p-5">
+        <div className="flex justify-center items-center">
+          <h2 className="text-2xl font-bold text-center mb-6">
+            <Image
+              src="/images/logo.png"
+              height={100}
+              width={120}
+              alt="LMS Logo"
+            />
+          </h2>
+        </div>
+        {/* REGISTER */}
+        {mode === "register" && (
+          <form
+            onSubmit={handleRegister}
+            className="grid grid-cols-1 md:grid-cols-2 gap-6"
+          >
+            <Input
+              label="Full Name"
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+            />
+            <Input
+              label="Phone"
+              name="phone"
+              value={form.phone}
+              onChange={handleChange}
+            />
+            <SelectDropdown
+              label="Location"
+              name="location"
+              value={form.location}
+              onChange={handleChange}
+              options={["Greater Noida"]}
+            />
+            <SelectDropdown
+              label="Mode"
+              name="mode"
+              value={form.mode}
+              onChange={handleChange}
+              options={["Online", "Offline"]}
+            />
+            <div className="md:col-span-2">
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
+                Center
+              </label>
+              <Select
+                options={centerOptions}
+                value={centerOptions.find((opt) => opt.value === form.center)}
+                onChange={handleCenterChange}
+              />
+            </div>
+            <Input
+              label="Email"
+              name="email"
+              type="email"
+              value={form.email}
+              onChange={handleChange}
+            />
+            <PasswordInput
+              label="Password"
+              name="password"
+              value={form.password}
+              onChange={handleChange}
+              show={showPassword}
+              toggle={() => setShowPassword(!showPassword)}
+            />
+            <div className="md:col-span-2">
+              <PasswordInput
+                label="Confirm Password"
+                name="confirmPassword"
+                value={form.confirmPassword}
+                onChange={handleChange}
+                show={showConfirm}
+                toggle={() => setShowConfirm(!showConfirm)}
+              />
+            </div>
+            <button
+              type="submit"
+              className="md:col-span-2 w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded"
+            >
+              Register
+            </button>
+            <div className="md:col-span-2 text-center mt-2 text-sm text-gray-700">
+              Already have an account?{" "}
+              <button
+                type="button"
+                className="text-green-600 font-semibold hover:underline"
+                onClick={() => setMode("login")}
+              >
+                Login
+              </button>
+            </div>
+          </form>
+        )}
 
-        <form
-          onSubmit={(e) => e.preventDefault()}
-          className="flex flex-col gap-5"
-        >
-          {(mode === "login" || mode === "signup" || mode === "forgot") && (
-            <>
-              {mode === "signup" && (
-                <>
-                  <Input label="Full Name" value={name} onChange={setName} />
-                  <Input
-                    label="Phone"
-                    type="tel"
-                    value={phone}
-                    onChange={setPhone}
-                  />
-                </>
-              )}
+        {/* LOGIN */}
+        {mode === "login" && (
+          <form
+            onSubmit={handleLogin}
+            className="space-y-6 w-[30vw] p-4 mx-auto"
+          >
+            <Input
+              label="Email"
+              name="loginEmail"
+              type="email"
+              value={loginEmail}
+              onChange={(e: any) => setLoginEmail(e.target.value)}
+            />
+            <PasswordInput
+              label="Password"
+              name="loginPassword"
+              value={loginPassword}
+              onChange={(e: any) => setLoginPassword(e.target.value)}
+              show={showLoginPassword}
+              toggle={() => setShowLoginPassword(!showLoginPassword)}
+            />
+            <button
+              type="submit"
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded"
+            >
+              Login
+            </button>
+            <div className="text-center text-sm mt-2">
+              <button
+                type="button"
+                className="text-green-600 hover:underline"
+                onClick={() => setMode("forgot")}
+              >
+                Forgot password?
+              </button>
+            </div>
+            <div className="text-center text-sm mt-2">
+              Don&apos;t have an account?{" "}
+              <button
+                type="button"
+                className="text-green-600 font-semibold hover:underline"
+                onClick={() => setMode("register")}
+              >
+                Register
+              </button>
+            </div>
+          </form>
+        )}
 
+        {/* FORGOT PASSWORD */}
+        {mode === "forgot" && (
+          <form
+            onSubmit={
+              forgotStep === "email" ? handleSendOtp : handleResetPassword
+            }
+            className="space-y-6 max-w-sm mx-auto"
+          >
+            {forgotStep === "email" && (
               <Input
                 label="Email"
                 type="email"
-                value={email}
-                onChange={setEmail}
+                value={forgotEmail}
+                onChange={(e: any) => setForgotEmail(e.target.value)}
               />
-            </>
-          )}
-
-          {mode === "login" && (
-            <>
-              <PasswordInput
-                label="Password"
-                value={password}
-                onChange={setPassword}
-              />
-              <Button onClick={handleLogin} loading={loading} text="Login" />
-              <div className="text-right text-sm">
+            )}
+            {forgotStep === "otp" && (
+              <>
+                <Input
+                  label="Enter OTP"
+                  value={otp}
+                  onChange={(e: any) => setOtp(e.target.value)}
+                />
+                <PasswordInput
+                  label="New Password"
+                  value={newPassword}
+                  onChange={(e: any) => setNewPassword(e.target.value)}
+                  show={showForgotPassword}
+                  toggle={() => setShowForgotPassword(!showForgotPassword)}
+                />
+              </>
+            )}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded"
+            >
+              {loading
+                ? "Processing..."
+                : forgotStep === "email"
+                ? "Send OTP"
+                : "Reset Password"}
+            </button>
+            {forgotStep === "otp" && (
+              <div className="text-sm mt-2">
                 <button
+                  type="button"
                   onClick={() => {
-                    setMode("forgot");
-                    setOtpSent(false);
+                    setForgotStep("email");
+                    setOtp("");
+                    setNewPassword("");
                   }}
                   className="text-green-600 hover:underline"
                 >
-                  Forgot Password?
+                  Back to Email
                 </button>
               </div>
-            </>
-          )}
-
-          {mode === "signup" && (
-            <>
-              <PasswordInput
-                label="Password"
-                value={password}
-                onChange={setPassword}
-              />
-              <Input
-                label="Confirm Password"
-                type="password"
-                value={confirmPassword}
-                onChange={setConfirmPassword}
-              />
-              <Button
-                onClick={handleSignup}
-                loading={loading}
-                text="Create Account"
-              />
-            </>
-          )}
-
-          {mode === "forgot" && !otpSent && (
-            <Button
-              onClick={handleSendOtp}
-              loading={loading}
-              text="Send OTP"
-              disabled={!email}
-            />
-          )}
-
-          {mode === "forgot" && otpSent && (
-            <>
-              <Input label="Enter OTP" value={otp} onChange={setOtp} />
-              <PasswordInput
-                label="New Password"
-                value={newPassword}
-                onChange={setNewPassword}
-              />
-              <Button
-                onClick={handleResetPassword}
-                loading={loading}
-                text="Reset Password"
-                disabled={!otp || !newPassword}
-              />
-            </>
-          )}
-        </form>
-
-        <div className="mt-6 text-center text-sm text-gray-700">
-          {mode === "login" ? (
-            <>
-              Don’t have an account?{" "}
+            )}
+            <div className="text-center text-sm mt-4">
+              Remembered your password?{" "}
               <button
-                onClick={() => setMode("signup")}
+                type="button"
                 className="text-green-600 font-semibold hover:underline"
-              >
-                Sign up
-              </button>
-            </>
-          ) : mode === "signup" ? (
-            <>
-              Already registered?{" "}
-              <button
                 onClick={() => setMode("login")}
-                className="text-green-600 font-semibold hover:underline"
               >
                 Login
               </button>
-            </>
-          ) : (
-            <>
-              Back to{" "}
-              <button
-                onClick={() => setMode("login")}
-                className="text-green-600 font-semibold hover:underline"
-              >
-                Login
-              </button>
-            </>
-          )}
-        </div>
+            </div>
+          </form>
+        )}
       </div>
     </div>
   );
 }
 
-// Helper components
-function Input({ label, value, onChange, type = "text" }: any) {
+// --- Input field ---
+function Input({ label, name, value, onChange, type = "text" }: any) {
   return (
     <div>
-      <label className="text-sm font-semibold text-gray-700 mb-1 block">
+      <label className="block text-sm font-semibold text-gray-700 mb-1">
         {label}
       </label>
       <input
         type={type}
-        placeholder={label}
+        name={name}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white/70 focus:ring-2 focus:ring-green-400 outline-none"
+        onChange={onChange}
+        placeholder={label}
+        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-400 outline-none"
       />
     </div>
   );
 }
 
-function PasswordInput({ label, value, onChange }: any) {
-  const [show, setShow] = useState(false);
+// --- Select Dropdown ---
+function SelectDropdown({ label, name, value, onChange, options }: any) {
+  return (
+    <div>
+      <label className="block text-sm font-semibold text-gray-700 mb-1">
+        {label}
+      </label>
+      <select
+        name={name}
+        value={value}
+        onChange={onChange}
+        className="w-full px-4 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-green-400 outline-none"
+      >
+        {options.map((opt: string) => (
+          <option key={opt} value={opt}>
+            {opt}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
+// --- Password field with eye icon ---
+function PasswordInput({ label, name, value, onChange, show, toggle }: any) {
   return (
     <div className="relative">
-      <label className="text-sm font-semibold text-gray-700 mb-1 block">
+      <label className="block text-sm font-semibold text-gray-700 mb-1">
         {label}
       </label>
       <input
         type={show ? "text" : "password"}
-        placeholder="••••••••"
+        name={name}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white/70 focus:ring-2 focus:ring-green-400 outline-none"
+        onChange={onChange}
+        placeholder={label}
+        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-400 outline-none pr-10"
       />
       <button
         type="button"
-        onClick={() => setShow(!show)}
+        onClick={toggle}
         className="absolute right-3 top-9 text-gray-500"
+        tabIndex={-1}
       >
         {show ? <FaEyeSlash /> : <FaEye />}
       </button>
     </div>
-  );
-}
-
-function Button({ onClick, loading, text, disabled = false }: any) {
-  return (
-    <button
-      onClick={onClick}
-      disabled={loading || disabled}
-      className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-md shadow-md transition"
-    >
-      {loading ? `${text}...` : text}
-    </button>
   );
 }

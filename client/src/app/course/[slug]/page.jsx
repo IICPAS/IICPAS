@@ -1,127 +1,120 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
-import Header from "@/app/components/Header";
-import { notFound } from "next/navigation";
+import { useParams } from "next/navigation";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import Header from "../../components/Header";
 
-const courses = [
-  {
-    slug: "basic-accounting-&-tally-foundation",
-    title: "Basic Accounting & Tally Foundation",
-    price: 5000,
-    discount: 5,
-    image: "/images/accounting.webp",
-    includes: {
-      chapters: 12,
-      topics: 38,
-    },
-  },
-  {
-    slug: "microsoft-excel",
-    title: "Microsoft Excel",
-    price: 5000,
-    discount: 0,
-    image: "/images/excel.jpg",
-    includes: {
-      chapters: 10,
-      topics: 25,
-    },
-  },
-];
+export default function CourseDetailPage() {
+  const { slug } = useParams();
+  const [course, setCourse] = useState(null);
+  const [activeTab, setActiveTab] = useState("syllabus");
 
-export default function CourseDetail({ params }) {
-  const course = courses.find(
-    (c) => c.slug === decodeURIComponent(params.slug)
-  );
+  useEffect(() => {
+    const title = slug.replace(/_/g, " ");
+    axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/courses`).then((res) => {
+      const courses = res.data.courses || res.data;
+      const match = courses.find((c) => c.title === title);
+      setCourse(match);
+    });
+  }, [slug]);
 
-  if (!course) return notFound();
+  if (!course) return <div className="p-10 text-center">Loading...</div>;
 
-  const discountedPrice = course.price - (course.price * course.discount) / 100;
+  const discountedPrice =
+    course.price - (course.price * (course.discount || 0)) / 100;
 
   return (
     <>
       <Header />
-      <div className="bg-gradient-to-br mt-20 from-[#f5fcfa] via-white to-[#eef7fc] min-h-screen text-[#0b1224]">
-        <div className="max-w-7xl mx-auto px-4 py-16">
-          <h1 className="text-4xl font-bold mb-4">{course.title}</h1>
-          <p className="text-sm text-green-600 mb-6">Home // {course.title}</p>
+      <section className="bg-white mt-20 text-[#0b1224]">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-10 px-6 py-12">
+          {/* Left Content */}
+          <div className="lg:col-span-2">
+            <p className="text-sm bg-blue-100 text-blue-700 inline-block px-3 py-1 rounded-full mb-4">
+              Individual Course
+            </p>
+            <h1 className="text-4xl font-bold mb-4">{course.title}</h1>
+            <p className="text-gray-600 text-lg mb-8">
+              {course.seoDescription?.replace(/<[^>]+>/g, "")}
+            </p>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Left Tabs */}
-            <div className="md:col-span-2">
-              <div className="flex flex-wrap gap-4 mb-6">
-                {[
-                  "Case Study",
-                  "Curriculum",
-                  "Exam & Certification",
-                  "Simulation & Experiments",
-                ].map((label) => (
-                  <button
-                    key={label}
-                    className={`${
-                      label === "Case Study"
-                        ? "bg-green-500 text-white"
-                        : "border text-[#0b1224]"
-                    } px-4 py-2 rounded-full font-medium shadow`}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
+            {/* Tabs */}
+            <div className="border-b border-gray-200 flex space-x-8 text-lg font-medium">
+              {["syllabus", "caseStudy", "examCert", "live"].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`pb-2 ${
+                    activeTab === tab
+                      ? "border-b-2 border-blue-600 text-blue-600"
+                      : "text-gray-500"
+                  }`}
+                >
+                  {
+                    {
+                      syllabus: "Syllabus",
+                      caseStudy: "Case Studies",
+                      examCert: "Exam & Certification",
+                      live: "Live Schedule +",
+                    }[tab]
+                  }
+                </button>
+              ))}
             </div>
 
-            {/* Course Card */}
-            <div className="bg-white border rounded-2xl shadow p-6">
-              {/* Course Image */}
-              <div className="relative w-full h-48 bg-gray-200 rounded-lg mb-4 overflow-hidden group">
-                <img
-                  src={course.image}
-                  alt={course.title}
-                  className="object-cover w-full h-full transition duration-300 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="relative w-14 h-14">
-                    <div className="absolute inset-0 rounded-full bg-white opacity-30 animate-ping" />
-                    <div className="absolute inset-0 rounded-full bg-white opacity-50 animate-pulse" />
-                    <div className="z-10 flex items-center justify-center w-full h-full rounded-full bg-white text-[#0b1224]">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="w-6 h-6 ml-1"
-                        fill="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M8 5v14l11-7z" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Price */}
-              <p className="text-green-600 text-xl font-bold mb-1">
-                ₹{discountedPrice.toLocaleString()}
-              </p>
-              {course.discount > 0 && (
-                <p className="text-sm text-gray-500 line-through mb-4">
-                  ₹{course.price.toLocaleString()}
-                </p>
+            {/* Tab Content */}
+            <div className="mt-6 prose max-w-none">
+              {activeTab === "syllabus" && (
+                <div dangerouslySetInnerHTML={{ __html: course.description }} />
               )}
+              {activeTab === "caseStudy" && (
+                <div dangerouslySetInnerHTML={{ __html: course.caseStudy }} />
+              )}
+              {activeTab === "examCert" && (
+                <div dangerouslySetInnerHTML={{ __html: course.examCert }} />
+              )}
+              {activeTab === "live" && <p>Live schedule coming soon.</p>}
+            </div>
+          </div>
 
-              <button className="bg-[#0b1224] text-white px-4 py-2 w-full rounded-full hover:bg-green-600 transition mb-6">
-                Add to Cart
-              </button>
+          {/* Right Sidebar */}
+          <div className="space-y-6">
+            <div className="aspect-video rounded-xl overflow-hidden shadow-md">
+              <Image
+                className="w-full h-full"
+                src={process.env.NEXT_PUBLIC_API_URL + course.image}
+                height={80}
+                width={80}
+                title="Course Video"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
 
-              <h4 className="font-semibold text-lg mb-2">
-                This Course Includes
-              </h4>
-              <ul className="text-sm space-y-1">
-                <li>📘 Chapters: {course.includes.chapters}</li>
-                <li>📑 Topics: {course.includes.topics}</li>
-              </ul>
+            <div className="text-sm text-gray-600">
+              Get access to this course in <strong>Lab+</strong> &{" "}
+              <strong>Lab+ Live</strong>
+            </div>
+
+            <div className="space-y-4">
+              {/* Live */}
+              <div className="border border-orange-600 rounded-lg p-4">
+                <h3 className="text-orange-700 font-bold text-lg mb-1">
+                  Price:
+                </h3>
+                <p className="text-xl font-semibold text-orange-900 mb-2">
+                  ₹{course.price}
+                </p>
+                <button className="w-full bg-orange-600 text-white py-2 rounded-md hover:bg-orange-700 transition">
+                  Pay Now
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </section>
     </>
   );
 }
