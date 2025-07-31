@@ -44,6 +44,9 @@ import JobsCompanyRoutes from "./routes/jobCompanyRoutes.js";
 import JobApplicationRoute from "./routes/jobApplicationRoutes.js";
 import UploadRoutes from "./routes/uploadRoutes.js";
 
+//Payment Routes
+import paymentRoutes from "./routes/paymentRoutes.js";
+
 //App Configuration
 dotenv.config();
 connectDB();
@@ -116,6 +119,9 @@ app.use("/api/v1/students", studentRoutes);
 
 //Video Routes
 app.use("/api/upload", UploadRoutes);
+
+//Payment Routes
+app.use("/api/v1/payment", paymentRoutes);
 
 // Server
 const PORT = process.env.PORT || 5000;
