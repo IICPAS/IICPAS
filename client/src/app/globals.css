@@ -178,6 +178,10 @@ body {
   font-family: "Courier New", Courier, monospace;
 }
 
+body {
+  overflow-x: hidden;
+}
+
 .ql-snow .ql-picker.ql-font .ql-picker-label[data-value="georgia"]::before,
 .ql-snow .ql-picker.ql-font .ql-picker-item[data-value="georgia"]::before {
   content: "Georgia";
