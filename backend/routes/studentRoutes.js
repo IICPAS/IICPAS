@@ -26,6 +26,7 @@ router.post("/register", async (req, res) => {
 
   try {
     const existing = await Student.findOne({ email });
+    console.log(existing);
     if (existing)
       return res.status(400).json({ message: "Email already exists" });
 
@@ -224,7 +225,7 @@ router.post("/course-buy/:id", async (req, res) => {
       { request: base64Payload },
       {
         headers: {
-          "Content-Type": "routerlication/json",
+          "Content-Type": "application/json",
           "X-VERIFY": xVerify,
           "X-MERCHANT-ID": process.env.PHONEPE_MERCHANT_ID,
         },
@@ -347,7 +348,7 @@ router.post("/session-buy/:id", async (req, res) => {
         headers: {
           "X-VERIFY": xVerify,
           "X-MERCHANT-ID": process.env.PHONEPE_MERCHANT_ID,
-          "Content-Type": "routerlication/json",
+          "Content-Type": "application/json",
         },
       }
     );
@@ -466,6 +467,7 @@ router.patch("/student/profile/:id", async (req, res) => {
 
 router.post("/add-to-cart/:id", async (req, res) => {
   try {
+    console.log(req.params.id);
     const student = await Student.findById(req.params.id);
     if (!student) return res.status(404).json({ message: "Student not found" });
 
@@ -488,7 +490,7 @@ router.post("/add-to-cart/:id", async (req, res) => {
   }
 });
 
-router.delete("/remove-cart/:id", async (req, res) => {
+router.post("/remove-cart/:id", async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
     if (!student) return res.status(404).json({ message: "Student not found" });

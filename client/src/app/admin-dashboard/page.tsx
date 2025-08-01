@@ -70,6 +70,7 @@ const tabs = [
   { id: "colleges", label: "Colleges", icon: <FaUniversity /> },
   { id: "calendar", label: "Calendar", icon: <FaCalendarAlt /> },
   { id: "team", label: "Our Team", icon: <FaUsers /> },
+  { id: "Revision", label: "Revision", icon: <FaEnvelope /> },
   { id: "support", label: "Support Requests", icon: <FaEnvelope /> },
 ];
 
