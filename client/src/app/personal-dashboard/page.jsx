@@ -27,9 +27,11 @@ const IndividualDashboardPage = () => {
   useEffect(() => {
     const verifyIndividual = async () => {
       try {
+        console.log("Hi");
         const res = await axios.get(`${API}/v1/individual/profile-valid`, {
           withCredentials: true,
         });
+
         setUser(res.data.user || res.data.individual);
         setLoading(false);
       } catch (err) {

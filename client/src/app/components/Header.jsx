@@ -253,6 +253,18 @@ export default function Header() {
           <div className="hidden lg:flex items-center space-x-6">
             {student ? (
               <>
+                <Link
+                  href="/student-dashboard"
+                  className="text-sm font-medium hover:text-green-600 transition"
+                >
+                  Dashboard
+                </Link>
+                <Link
+                  href="/course"
+                  className="text-sm font-medium hover:text-green-600 transition"
+                >
+                  Courses
+                </Link>
                 <button
                   onClick={() => setCartDrawer(true)}
                   className="relative"
@@ -281,16 +293,118 @@ export default function Header() {
             )}
           </div>
 
-          {!student && (
-            <button
-              className="lg:hidden text-gray-800"
-              onClick={() => setDrawerOpen(true)}
-            >
-              <Menu size={26} />
-            </button>
-          )}
+          <button
+            className="lg:hidden text-gray-800"
+            onClick={() => setDrawerOpen(true)}
+          >
+            <Menu size={26} />
+          </button>
         </div>
       </header>
+
+      {/* Mobile Navigation Drawer */}
+      <Drawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        direction="right"
+        className="p-6 bg-white"
+      >
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-lg font-bold text-[#003057]">Menu</h2>
+          <button onClick={() => setDrawerOpen(false)}>
+            <X size={24} />
+          </button>
+        </div>
+
+        {student ? (
+          <div className="space-y-4">
+            <Link
+              href="/student-dashboard"
+              onClick={() => setDrawerOpen(false)}
+              className="block py-3 px-4 text-lg font-medium hover:bg-green-50 hover:text-green-600 rounded-md transition"
+            >
+              Dashboard
+            </Link>
+            <Link
+              href="/course"
+              onClick={() => setDrawerOpen(false)}
+              className="block py-3 px-4 text-lg font-medium hover:bg-green-50 hover:text-green-600 rounded-md transition"
+            >
+              Courses
+            </Link>
+            <button
+              onClick={() => {
+                setDrawerOpen(false);
+                setCartDrawer(true);
+              }}
+              className="w-full flex items-center justify-between py-3 px-4 text-lg font-medium hover:bg-green-50 hover:text-green-600 rounded-md transition"
+            >
+              <div className="flex items-center gap-2">
+                <ShoppingCart size={20} />
+                <span>Cart</span>
+              </div>
+              {cartCourses.length > 0 && (
+                <span className="bg-green-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                  {cartCourses.length}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => {
+                setDrawerOpen(false);
+                handleLogout();
+              }}
+              className="w-full flex items-center gap-2 py-3 px-4 text-lg font-medium hover:bg-red-50 hover:text-red-600 rounded-md transition"
+            >
+              <LogOut size={20} /> Logout
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {navLinks.map((item) =>
+              item.children ? (
+                <div key={item.name} className="space-y-2">
+                  <div className="py-2 px-4 text-lg font-medium text-gray-700">
+                    {item.name}
+                  </div>
+                  <div className="pl-4 space-y-1">
+                    {item.children.map((child) => (
+                      <Link
+                        key={child.name}
+                        href={child.href}
+                        onClick={() => setDrawerOpen(false)}
+                        className="block py-2 px-4 text-base hover:bg-green-50 hover:text-green-600 rounded-md transition"
+                      >
+                        {child.name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  onClick={() => setDrawerOpen(false)}
+                  className={`block py-3 px-4 text-lg font-medium hover:bg-green-50 hover:text-green-600 rounded-md transition ${
+                    pathname === item.href ? "text-green-600 bg-green-50" : ""
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              )
+            )}
+            <div className="pt-4 border-t">
+              <Link
+                href="/student-login"
+                onClick={() => setDrawerOpen(false)}
+                className="block w-full bg-green-600 hover:bg-green-700 text-white text-center py-3 px-4 rounded-md font-medium transition"
+              >
+                Student Login
+              </Link>
+            </div>
+          </div>
+        )}
+      </Drawer>
 
       {/* Cart Drawer */}
       <Drawer

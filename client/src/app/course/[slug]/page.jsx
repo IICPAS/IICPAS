@@ -7,6 +7,7 @@ import axios from "axios";
 import Select from "react-select";
 import Header from "../../components/Header";
 import toast from "react-hot-toast";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function CourseDetailPage() {
   const { slug } = useParams();
@@ -17,6 +18,8 @@ export default function CourseDetailPage() {
   const [student, setStudent] = useState(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [authMode, setAuthMode] = useState("login");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const locationOptions = [{ label: "Greater Noida", value: "Greater Noida" }];
   const modeOptions = [
@@ -35,6 +38,21 @@ export default function CourseDetailPage() {
     location: "Greater Noida",
     center: "Greater Noida",
   });
+
+  const clearFormData = () => {
+    setFormData({
+      name: "",
+      email: "",
+      phone: "",
+      password: "",
+      confirmPassword: "",
+      mode: "Online",
+      location: "Greater Noida",
+      center: "Greater Noida",
+    });
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+  };
 
   // Fetch course
   useEffect(() => {
@@ -279,28 +297,52 @@ export default function CourseDetailPage() {
               }
               className="w-full border px-3 py-2 mb-2 rounded"
             />
-            <input
-              type="password"
-              placeholder="Password"
-              value={formData.password}
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
-              className="w-full border px-3 py-2 mb-2 rounded"
-            />
-            {authMode === "signup" && (
+
+            <div className="relative mb-2">
               <input
-                type="password"
-                placeholder="Confirm Password"
-                value={formData.confirmPassword}
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                value={formData.password}
                 onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    confirmPassword: e.target.value,
-                  })
+                  setFormData({ ...formData, password: e.target.value })
                 }
-                className="w-full border px-3 py-2 mb-2 rounded"
+                className="w-full border px-3 py-2 pr-10 rounded"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+
+            {authMode === "signup" && (
+              <div className="relative mb-2">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Confirm Password"
+                  value={formData.confirmPassword}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      confirmPassword: e.target.value,
+                    })
+                  }
+                  className="w-full border px-3 py-2 pr-10 rounded"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff size={18} />
+                  ) : (
+                    <Eye size={18} />
+                  )}
+                </button>
+              </div>
             )}
 
             <button
@@ -315,7 +357,10 @@ export default function CourseDetailPage() {
                 <>
                   Don’t have an account?{" "}
                   <button
-                    onClick={() => setAuthMode("signup")}
+                    onClick={() => {
+                      setAuthMode("signup");
+                      clearFormData();
+                    }}
                     className="text-blue-600"
                   >
                     Register
@@ -325,7 +370,10 @@ export default function CourseDetailPage() {
                 <>
                   Already have an account?{" "}
                   <button
-                    onClick={() => setAuthMode("login")}
+                    onClick={() => {
+                      setAuthMode("login");
+                      clearFormData();
+                    }}
                     className="text-blue-600"
                   >
                     Login
