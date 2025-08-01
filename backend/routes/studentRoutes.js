@@ -225,7 +225,7 @@ router.post("/course-buy/:id", async (req, res) => {
       { request: base64Payload },
       {
         headers: {
-          "Content-Type": "routerlication/json",
+          "Content-Type": "application/json",
           "X-VERIFY": xVerify,
           "X-MERCHANT-ID": process.env.PHONEPE_MERCHANT_ID,
         },
@@ -348,7 +348,7 @@ router.post("/session-buy/:id", async (req, res) => {
         headers: {
           "X-VERIFY": xVerify,
           "X-MERCHANT-ID": process.env.PHONEPE_MERCHANT_ID,
-          "Content-Type": "routerlication/json",
+          "Content-Type": "application/json",
         },
       }
     );

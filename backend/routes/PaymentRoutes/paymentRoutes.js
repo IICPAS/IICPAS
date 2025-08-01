@@ -36,7 +36,7 @@ let env, client;
 
 try {
   validateEnvVars();
-  env = Env.SANDBOX; // or Env.PRODUCTION for live
+  env = Env.SANDBOX; // Change to Env.PRODUCTION for live
   client = StandardCheckoutClient.getInstance(
     CLIENT_ID,
     CLIENT_SECRET,
@@ -50,10 +50,9 @@ try {
 
 const router = express.Router();
 
-// ✅ Create payment order
+// Create payment order
 router.post("/create-order", async (req, res) => {
   try {
-    // Check if client is initialized
     if (!client) {
       return res.status(500).json({
         error: "Payment service not initialized. Check environment variables.",
@@ -100,10 +99,9 @@ router.post("/create-order", async (req, res) => {
   }
 });
 
-// ✅ Check payment status
+// Check payment status
 router.get("/check-status", async (req, res) => {
   try {
-    // Check if client is initialized
     if (!client) {
       return res.status(500).json({
         error: "Payment service not initialized. Check environment variables.",
