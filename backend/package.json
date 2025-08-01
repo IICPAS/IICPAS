@@ -26,6 +26,7 @@
     "multer": "^2.0.1",
     "nodemailer": "^7.0.5",
     "pdfkit": "^0.17.1",
+    "pg-sdk-node": "^2.0.2",
     "react-toastify": "^11.0.5"
   }
 }

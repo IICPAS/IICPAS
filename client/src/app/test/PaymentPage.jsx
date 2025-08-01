@@ -5,13 +5,15 @@ const PaymentPage = () => {
   const PayNow = async () => {
     try {
       const response = await axios.post(
-        process.env.NEXT_PUBLIC_API_URL + "/create-order",
+        process.env.NEXT_PUBLIC_API_URL + "/api/v1/payments/create-order",
         {
           value,
         }
       );
 
-      window.location.href = response.data.checkoutPageUrl;
+      window.location.href = response.data.checkOutPageUrl;
+
+      console.log(response.data.checkOutPageUrl);
     } catch (err) {
       console.log("Error in PayNow", err);
     }
@@ -28,7 +30,9 @@ const PaymentPage = () => {
         }}
       />
 
-      <button onClick={PayNow}>Pay Now</button>
+      <button onClick={PayNow} className="bg-red-500 p-2 text-wgite">
+        Pay Now
+      </button>
     </>
   );
 };
