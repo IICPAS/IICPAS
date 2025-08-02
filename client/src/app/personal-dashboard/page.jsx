@@ -29,7 +29,7 @@ const IndividualDashboardPage = () => {
     const verifyIndividual = async () => {
       try {
         console.log("Hi");
-        const res = await axios.get(`${API}/api/v1/individual/profile-valid`, {
+        const res = await axios.get(`${API}/v1/individual/profile-valid`, {
           withCredentials: true,
         });
 
