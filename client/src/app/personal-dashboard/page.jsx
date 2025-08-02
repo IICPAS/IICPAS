@@ -47,7 +47,7 @@ const IndividualDashboardPage = () => {
   const handleLogout = async () => {
     try {
       await axios.post(
-        `${API}/api/v1/individual/logout`,
+        `${API}/v1/individual/logout`,
         {},
         { withCredentials: true }
       );
