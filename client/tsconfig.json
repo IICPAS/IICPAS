@@ -45,7 +45,8 @@
     "src/app/company-dashboard/RaiseTicketTab.jsx",
     "src/app/admin-dashboard/page.tsx",
     "src/app/course/CoursePage.jsx",
-    "src/app/components/CourseTab.jsx"
+    "src/app/components/CourseTab.jsx",
+    "src/app/code/page.jsx"
   ],
   "exclude": ["node_modules"]
 }

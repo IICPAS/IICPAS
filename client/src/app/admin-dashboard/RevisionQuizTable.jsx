@@ -1,0 +1,477 @@
+"use client";
+import React, { useEffect, useState } from "react";
+import {
+  Container,
+  Typography,
+  Box,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  IconButton,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  TextField,
+  Alert,
+  Grid,
+} from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import DeleteIcon from "@mui/icons-material/Delete";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import UploadFileIcon from "@mui/icons-material/UploadFile";
+import * as XLSX from "xlsx";
+
+// MOCK data for demo
+const MOCK_REVISION_QUIZZES = [
+  {
+    id: 1,
+    course: { id: 11, title: "Taxation and HR" },
+    name: "John Doe",
+    email: "john@example.com",
+    level: "Core",
+  },
+];
+
+export default function RevisionQuizTable() {
+  const [revisions, setRevisions] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Add Revision UI state
+  const [showAddRevision, setShowAddRevision] = useState(false);
+  const [form, setForm] = useState({
+    courseId: "",
+    name: "",
+    email: "",
+    level: "",
+    questions: [],
+    excelFileName: "",
+  });
+  const [excelError, setExcelError] = useState("");
+
+  useEffect(() => {
+    setTimeout(() => {
+      setRevisions(MOCK_REVISION_QUIZZES);
+      setCourses([
+        { id: 11, title: "Taxation and HR" },
+        { id: 12, title: "Corporate Accounting" },
+      ]);
+      setLoading(false);
+    }, 500);
+  }, []);
+
+  const handleFormChange = (e) => {
+    setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+  };
+
+  const handleExcelUpload = (e) => {
+    setExcelError("");
+    const file = e.target.files[0];
+    if (!file) return;
+    setForm((f) => ({ ...f, excelFileName: file.name }));
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const data = new Uint8Array(evt.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const json = XLSX.utils.sheet_to_json(worksheet);
+        setForm((f) => ({ ...f, questions: json }));
+      } catch (err) {
+        setExcelError("Invalid Excel file.");
+        setForm((f) => ({ ...f, questions: [], excelFileName: "" }));
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
+  const handleAddRevisionSubmit = async (e) => {
+    e.preventDefault();
+    if (
+      !form.courseId ||
+      !form.name ||
+      !form.email ||
+      !form.level ||
+      form.questions.length === 0
+    ) {
+      setExcelError("All fields and a valid Excel file are required.");
+      return;
+    }
+    setRevisions((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        course: courses.find((c) => String(c.id) === String(form.courseId)),
+        name: form.name,
+        email: form.email,
+        level: form.level,
+      },
+    ]);
+    setShowAddRevision(false);
+    setForm({
+      courseId: "",
+      name: "",
+      email: "",
+      level: "",
+      questions: [],
+      excelFileName: "",
+    });
+    setExcelError("");
+  };
+
+  // --- ADD REVISION FORM (WIDE ROW, all inputs in one row) ---
+  if (showAddRevision) {
+    return (
+      <Box
+        sx={{
+          background: "#fafbfc",
+          minHeight: "100vh",
+          pt: 5,
+          pl: { xs: 0, md: 28 },
+        }}
+      >
+        <Box
+          component={Paper}
+          elevation={4}
+          sx={{
+            width: "100%",
+            maxWidth: "1550px", // Make even wider if you want!
+            margin: "0 auto",
+            borderRadius: 4,
+            mb: 5,
+            p: 3,
+            boxShadow: "0 4px 24px rgba(60,72,99,0.11)",
+          }}
+        >
+          <Box display="flex" alignItems="center" mb={2}>
+            <IconButton
+              onClick={() => {
+                setShowAddRevision(false);
+                setExcelError("");
+                setForm({
+                  courseId: "",
+                  name: "",
+                  email: "",
+                  level: "",
+                  questions: [],
+                  excelFileName: "",
+                });
+              }}
+              sx={{ mr: 1 }}
+            >
+              <ArrowBackIcon />
+            </IconButton>
+            <Typography variant="h5" fontWeight="bold">
+              Add Revision Quiz
+            </Typography>
+          </Box>
+          <Box
+            component="form"
+            onSubmit={handleAddRevisionSubmit}
+            sx={{ width: "100%" }}
+          >
+            <Grid
+              container
+              spacing={2}
+              alignItems="center"
+              sx={{
+                mb: 2,
+                flexWrap: "nowrap",
+                overflowX: "auto",
+                background: "#f2f6f8",
+                borderRadius: 2,
+                p: 2,
+                boxShadow: "0 2px 8px rgba(60,72,99,0.04)",
+              }}
+            >
+              <Grid item xs={12} md={2.5}>
+                <FormControl
+                  fullWidth
+                  required
+                  variant="outlined"
+                  size="medium"
+                >
+                  <InputLabel id="course-label">Course</InputLabel>
+                  <Select
+                    labelId="course-label"
+                    name="courseId"
+                    value={form.courseId}
+                    label="Course"
+                    onChange={handleFormChange}
+                  >
+                    <MenuItem value="">Select course</MenuItem>
+                    {courses.map((c) => (
+                      <MenuItem value={c.id} key={c.id}>
+                        {c.title}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} md={2.5}>
+                <TextField
+                  label="Name"
+                  name="name"
+                  required
+                  fullWidth
+                  variant="outlined"
+                  size="medium"
+                  value={form.name}
+                  onChange={handleFormChange}
+                />
+              </Grid>
+              <Grid item xs={12} md={2.5}>
+                <TextField
+                  label="Email"
+                  name="email"
+                  required
+                  fullWidth
+                  variant="outlined"
+                  size="medium"
+                  value={form.email}
+                  onChange={handleFormChange}
+                />
+              </Grid>
+              <Grid item xs={12} md={2.5}>
+                <FormControl
+                  fullWidth
+                  required
+                  variant="outlined"
+                  size="medium"
+                >
+                  <InputLabel id="level-label">Level</InputLabel>
+                  <Select
+                    labelId="level-label"
+                    name="level"
+                    value={form.level}
+                    label="Level"
+                    onChange={handleFormChange}
+                  >
+                    <MenuItem value="">Select level</MenuItem>
+                    <MenuItem value="Core">Core</MenuItem>
+                    <MenuItem value="Advanced">Advanced</MenuItem>
+                    <MenuItem value="Intermediate">Intermediate</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} md={2.5}>
+                <Button
+                  variant="outlined"
+                  component="label"
+                  startIcon={<UploadFileIcon />}
+                  fullWidth
+                  sx={{
+                    height: 56,
+                    background: "#fff",
+                    borderRadius: 2,
+                    fontWeight: 600,
+                    fontSize: "1rem",
+                    "&:hover": {
+                      background: "#f0f7fb",
+                    },
+                  }}
+                >
+                  {form.excelFileName || "Upload Excel (Questions)"}
+                  <input
+                    type="file"
+                    hidden
+                    accept=".xlsx,.xls"
+                    onChange={handleExcelUpload}
+                  />
+                </Button>
+              </Grid>
+              <Grid item xs={12} md={1.5}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  sx={{
+                    height: 56,
+                    fontWeight: 700,
+                    fontSize: "1.1rem",
+                    borderRadius: 2,
+                    boxShadow: "0 2px 8px rgba(30,30,90,0.08)",
+                    textTransform: "none",
+                  }}
+                  type="submit"
+                  fullWidth
+                >
+                  Save
+                </Button>
+              </Grid>
+            </Grid>
+            {excelError && (
+              <Alert severity="error" sx={{ mt: 2 }}>
+                {excelError}
+              </Alert>
+            )}
+            {form.questions.length > 0 && (
+              <Alert severity="success" sx={{ my: 2 }}>
+                {form.questions.length} questions loaded.
+                <details>
+                  <summary>Preview first 2 rows</summary>
+                  <pre style={{ whiteSpace: "pre-wrap", margin: 0 }}>
+                    {JSON.stringify(form.questions.slice(0, 2), null, 2)}
+                  </pre>
+                </details>
+              </Alert>
+            )}
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
+
+  // --- REVISION TABLE ---
+  return (
+    <Container maxWidth={false} sx={{ pt: 5, minHeight: "100vh" }}>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={3}
+        mx="auto"
+        sx={{ maxWidth: 1500 }}
+      >
+        <Typography variant="h4" fontWeight="bold">
+          Revision Quizzes
+        </Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<AddIcon />}
+          sx={{
+            borderRadius: 2,
+            fontWeight: "bold",
+            fontSize: "1rem",
+            boxShadow: 2,
+            px: 3,
+            py: 1,
+            textTransform: "none",
+          }}
+          onClick={() => setShowAddRevision(true)}
+        >
+          Add Revision
+        </Button>
+      </Box>
+      <TableContainer
+        component={Paper}
+        sx={{
+          borderRadius: 4,
+          boxShadow: 3,
+          background: "#fff",
+          maxWidth: "1400px",
+          margin: "auto",
+        }}
+      >
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell sx={{ fontWeight: "bold", fontSize: "1.1rem" }}>
+                Course
+              </TableCell>
+              <TableCell sx={{ fontWeight: "bold", fontSize: "1.1rem" }}>
+                Name
+              </TableCell>
+              <TableCell sx={{ fontWeight: "bold", fontSize: "1.1rem" }}>
+                Email
+              </TableCell>
+              <TableCell sx={{ fontWeight: "bold", fontSize: "1.1rem" }}>
+                Level
+              </TableCell>
+              <TableCell sx={{ fontWeight: "bold", fontSize: "1.1rem" }}>
+                Action
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={5} align="center" sx={{ py: 6 }}>
+                  Loading...
+                </TableCell>
+              </TableRow>
+            ) : revisions.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} align="center">
+                  No revision quizzes found.
+                </TableCell>
+              </TableRow>
+            ) : (
+              revisions.map((rev) => (
+                <TableRow
+                  key={rev.id}
+                  hover
+                  sx={{ borderBottom: "1px solid #eee" }}
+                >
+                  <TableCell>{rev.course.title}</TableCell>
+                  <TableCell>{rev.name}</TableCell>
+                  <TableCell>{rev.email}</TableCell>
+                  <TableCell>
+                    <span
+                      style={{
+                        background:
+                          rev.level === "Core"
+                            ? "#e8f5e9"
+                            : rev.level === "Advanced"
+                            ? "#fce4ec"
+                            : "#e3f2fd",
+                        color:
+                          rev.level === "Core"
+                            ? "#388e3c"
+                            : rev.level === "Advanced"
+                            ? "#d81b60"
+                            : "#1976d2",
+                        fontWeight: "bold",
+                        padding: "4px 18px",
+                        borderRadius: 20,
+                        fontSize: "1.02rem",
+                        display: "inline-block",
+                      }}
+                    >
+                      {rev.level}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <IconButton color="primary" sx={{ mx: 0.5 }}>
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton color="success" sx={{ mx: 0.5 }}>
+                      <CheckCircleIcon />
+                    </IconButton>
+                    <IconButton color="error" sx={{ mx: 0.5 }}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+        <Box
+          display="flex"
+          justifyContent="flex-end"
+          alignItems="center"
+          px={2}
+          py={1}
+          fontSize="1rem"
+          color="gray"
+        >
+          Rows per page:&nbsp;
+          <select style={{ padding: "4px 12px", borderRadius: 6 }}>
+            <option>100</option>
+          </select>
+          &nbsp;&nbsp;1–{revisions.length} of {revisions.length}
+        </Box>
+      </TableContainer>
+    </Container>
+  );
+}

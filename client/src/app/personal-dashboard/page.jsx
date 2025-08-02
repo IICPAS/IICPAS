@@ -14,6 +14,7 @@ import {
 } from "react-icons/fa";
 import BookingCalendar from "./BookingCalendar";
 import TicketRaise from "./IndividualTicketRaiseAndList";
+import IndividualProfile from "./IndividualProfile";
 
 const API = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
 
@@ -28,7 +29,7 @@ const IndividualDashboardPage = () => {
     const verifyIndividual = async () => {
       try {
         console.log("Hi");
-        const res = await axios.get(`${API}/v1/individual/profile-valid`, {
+        const res = await axios.get(`${API}/api/v1/individual/profile-valid`, {
           withCredentials: true,
         });
 
@@ -46,7 +47,7 @@ const IndividualDashboardPage = () => {
   const handleLogout = async () => {
     try {
       await axios.post(
-        `${API}/v1/individual/logout`,
+        `${API}/api/v1/individual/logout`,
         {},
         { withCredentials: true }
       );
@@ -64,6 +65,8 @@ const IndividualDashboardPage = () => {
 
       case "Tickets":
         return <TicketRaise />;
+      case "Profile":
+        return <IndividualProfile />;
       default:
         return null;
     }
@@ -146,6 +149,15 @@ const Sidebar = ({ setActiveTab }) => {
         >
           <FaFileUpload className="text-xl" />
           Tickets
+        </button>
+      </li>
+      <li>
+        <button
+          className="flex items-center gap-3 text-gray-700 hover:text-green-600"
+          onClick={() => setActiveTab("Profile")}
+        >
+          <span className="text-xl">👤</span>
+          Profile
         </button>
       </li>
     </ul>

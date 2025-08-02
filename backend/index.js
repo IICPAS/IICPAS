@@ -46,6 +46,10 @@ import UploadRoutes from "./routes/uploadRoutes.js";
 
 //Payment Routes
 import paymentRoutes from "./routes/PaymentRoutes/paymentRoutes.js";
+import PaymentRoutes from "./routes/PaymentRoutes.js";
+
+//Topic Routes
+import TopicTrainingRoutes from "./routes/TopicRoutes/TopicRoutes.js";
 
 //App Configuration
 dotenv.config();
@@ -122,6 +126,10 @@ app.use("/api/upload", UploadRoutes);
 
 //Payment Routes
 app.use("/api/v1/payments", paymentRoutes);
+app.use("/api/payments", PaymentRoutes);
+
+//Topic Routes
+app.use("/api/v1/topics-trainings", TopicTrainingRoutes);
 
 // Server
 const PORT = process.env.PORT || 5000;

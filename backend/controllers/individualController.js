@@ -199,3 +199,44 @@ export const resetPassword = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+// ========================
+// ✅ Update Profile
+// ========================
+export const updateProfile = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { name, phone, password, confirmPassword } = req.body;
+
+    if (!name && !phone && !password) {
+      return res.status(400).json({ error: "No fields to update" });
+    }
+
+    const user = await Individual.findById(userId).select("+password");
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    if (name) user.name = name;
+    if (phone) user.phone = phone;
+
+    if (password || confirmPassword) {
+      if (!password || !confirmPassword)
+        return res.status(400).json({ error: "Both password fields required" });
+      if (password !== confirmPassword)
+        return res.status(400).json({ error: "Passwords do not match" });
+      user.password = password;
+    }
+
+    await user.save();
+    res.json({
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+      },
+      message: "Profile updated successfully",
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
