@@ -4,9 +4,14 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import axios from "axios";
+
 import { Menu, X, LogOut, ShoppingCart, Trash2 } from "lucide-react";
 import Drawer from "react-modern-drawer";
 import "react-modern-drawer/dist/index.css";
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
+
+const MySwal = withReactContent(Swal);
 
 const navLinks = [
   { name: "Home", href: "/" },
@@ -111,29 +116,90 @@ export default function Header() {
     location.reload();
   };
 
-  const handleRemoveFromCart = async (courseId) => {
+  const handleBuyNow = async (courseId) => {
+    const selectedCourse = cartCourses.find((c) => c._id === courseId);
+    if (!selectedCourse) return;
+
     try {
-      await axios.post(
-        `${API}/api/v1/students/remove-from-cart/${student._id}`,
-        { courseId },
-        { withCredentials: true }
+      const txnId = `TXN_${Date.now()}_${courseId}`;
+
+      const res = await axios.post(
+        `${API}/api/v1/payment/initiate-payment`,
+        {
+          transactionId: txnId,
+          amount: selectedCourse.price,
+        },
+        {
+          withCredentials: true,
+        }
       );
-      fetchStudentAndCart();
-    } catch {
-      alert("Failed to remove item.");
+
+      if (res.data.success && res.data.redirectUrl) {
+        window.location.href = res.data.redirectUrl;
+      } else {
+        Swal.fire(
+          "Payment Failed",
+          "Unable to redirect to payment page.",
+          "error"
+        );
+      }
+    } catch (err) {
+      Swal.fire(
+        "Error",
+        "Something went wrong while initiating payment.",
+        "error"
+      );
+      console.error("Payment error:", err);
+    }
+  };
+
+  const handleRemoveFromCart = async (courseId) => {
+    const result = await MySwal.fire({
+      title: "Are you sure?",
+      text: "You are about to remove this course from your cart.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, remove it!",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await axios.post(
+          `${API}/api/v1/students/remove-cart/${student._id}`,
+          { courseId },
+          { withCredentials: true }
+        );
+        fetchStudentAndCart();
+        Swal.fire("Removed!", "Course removed from cart.", "success");
+      } catch {
+        Swal.fire("Error", "Failed to remove item.", "error");
+      }
     }
   };
 
   const handleClearCart = async () => {
-    try {
-      await axios.post(
-        `${API}/api/v1/students/clear-cart/${student._id}`,
-        {},
-        { withCredentials: true }
-      );
-      fetchStudentAndCart();
-    } catch {
-      alert("Failed to clear cart.");
+    const result = await MySwal.fire({
+      title: "Clear entire cart?",
+      text: "This action cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, clear it!",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await axios.delete(`${API}/api/v1/students/clear-cart/${student._id}`, {
+          withCredentials: true,
+        });
+        fetchStudentAndCart();
+        Swal.fire("Cleared!", "Your cart has been emptied.", "success");
+      } catch {
+        Swal.fire("Error", "Failed to clear cart.", "error");
+      }
     }
   };
 
@@ -184,10 +250,21 @@ export default function Header() {
             </nav>
           )}
 
-          {/* CTA / User */}
           <div className="hidden lg:flex items-center space-x-6">
             {student ? (
               <>
+                <Link
+                  href="/student-dashboard"
+                  className="text-sm font-medium hover:text-green-600 transition"
+                >
+                  Dashboard
+                </Link>
+                <Link
+                  href="/course"
+                  className="text-sm font-medium hover:text-green-600 transition"
+                >
+                  Courses
+                </Link>
                 <button
                   onClick={() => setCartDrawer(true)}
                   className="relative"
@@ -216,17 +293,118 @@ export default function Header() {
             )}
           </div>
 
-          {/* Mobile menu button */}
-          {!student && (
-            <button
-              className="lg:hidden text-gray-800"
-              onClick={() => setDrawerOpen(true)}
-            >
-              <Menu size={26} />
-            </button>
-          )}
+          <button
+            className="lg:hidden text-gray-800"
+            onClick={() => setDrawerOpen(true)}
+          >
+            <Menu size={26} />
+          </button>
         </div>
       </header>
+
+      {/* Mobile Navigation Drawer */}
+      <Drawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        direction="right"
+        className="p-6 bg-white"
+      >
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-lg font-bold text-[#003057]">Menu</h2>
+          <button onClick={() => setDrawerOpen(false)}>
+            <X size={24} />
+          </button>
+        </div>
+
+        {student ? (
+          <div className="space-y-4">
+            <Link
+              href="/student-dashboard"
+              onClick={() => setDrawerOpen(false)}
+              className="block py-3 px-4 text-lg font-medium hover:bg-green-50 hover:text-green-600 rounded-md transition"
+            >
+              Dashboard
+            </Link>
+            <Link
+              href="/course"
+              onClick={() => setDrawerOpen(false)}
+              className="block py-3 px-4 text-lg font-medium hover:bg-green-50 hover:text-green-600 rounded-md transition"
+            >
+              Courses
+            </Link>
+            <button
+              onClick={() => {
+                setDrawerOpen(false);
+                setCartDrawer(true);
+              }}
+              className="w-full flex items-center justify-between py-3 px-4 text-lg font-medium hover:bg-green-50 hover:text-green-600 rounded-md transition"
+            >
+              <div className="flex items-center gap-2">
+                <ShoppingCart size={20} />
+                <span>Cart</span>
+              </div>
+              {cartCourses.length > 0 && (
+                <span className="bg-green-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                  {cartCourses.length}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => {
+                setDrawerOpen(false);
+                handleLogout();
+              }}
+              className="w-full flex items-center gap-2 py-3 px-4 text-lg font-medium hover:bg-red-50 hover:text-red-600 rounded-md transition"
+            >
+              <LogOut size={20} /> Logout
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {navLinks.map((item) =>
+              item.children ? (
+                <div key={item.name} className="space-y-2">
+                  <div className="py-2 px-4 text-lg font-medium text-gray-700">
+                    {item.name}
+                  </div>
+                  <div className="pl-4 space-y-1">
+                    {item.children.map((child) => (
+                      <Link
+                        key={child.name}
+                        href={child.href}
+                        onClick={() => setDrawerOpen(false)}
+                        className="block py-2 px-4 text-base hover:bg-green-50 hover:text-green-600 rounded-md transition"
+                      >
+                        {child.name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  onClick={() => setDrawerOpen(false)}
+                  className={`block py-3 px-4 text-lg font-medium hover:bg-green-50 hover:text-green-600 rounded-md transition ${
+                    pathname === item.href ? "text-green-600 bg-green-50" : ""
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              )
+            )}
+            <div className="pt-4 border-t">
+              <Link
+                href="/student-login"
+                onClick={() => setDrawerOpen(false)}
+                className="block w-full bg-green-600 hover:bg-green-700 text-white text-center py-3 px-4 rounded-md font-medium transition"
+              >
+                Student Login
+              </Link>
+            </div>
+          </div>
+        )}
+      </Drawer>
 
       {/* Cart Drawer */}
       <Drawer
@@ -238,12 +416,16 @@ export default function Header() {
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-base font-bold text-[#003057]">My Cart</h2>
           <div className="flex items-center gap-3">
-            {/* {cartCourses.length > 0 && (
-              <button onClick={handleClearCart}>
-                <X size={20} className="text-red-500" />
+            {cartCourses.length > 0 && (
+              <button
+                onClick={handleClearCart}
+                title="Clear Cart"
+                className="hover:text-red-600"
+              >
+                <Trash2 size={20} className="text-red-600" />
               </button>
-            )} */}
-            <button onClick={() => setCartDrawer(false)}>
+            )}
+            <button onClick={() => setCartDrawer(false)} title="Close">
               <X size={24} />
             </button>
           </div>
@@ -266,11 +448,9 @@ export default function Header() {
                   alt={c.title}
                   className="h-28 w-32 object-cover rounded"
                 />
-                <div className="flex-1">
+                <div className="flex-1 text-center">
                   <p className="font-semibold text-lg">{c.title}</p>
-                  <p className="text-xs text-gray-500 text-center">
-                    ₹{c.price}
-                  </p>
+                  <p className="text-xs text-gray-500">₹{c.price}</p>
                 </div>
                 <div className="flex flex-col items-end gap-2">
                   <button

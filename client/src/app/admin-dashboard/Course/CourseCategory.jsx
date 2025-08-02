@@ -184,8 +184,8 @@ export default function CourseCategoryExcelGrid() {
   ];
 
   return (
-    <Box sx={{ width: "76vw", mx: "auto", mt: 4 }}>
-      <Box sx={{ bgcolor: "#fff", borderRadius: 3 }}>
+    <Box sx={{ width: "100%", maxWidth: "1200px", mx: "auto", mt: 4, px: 2 }}>
+      <Box sx={{ bgcolor: "#fff", borderRadius: 3, overflow: "hidden" }}>
         {!showForm ? (
           <>
             <Box
@@ -221,7 +221,7 @@ export default function CourseCategoryExcelGrid() {
                 Add Course Category
               </Button>
             </Box>
-            <div style={{ width: "100%", height: 420 }}>
+            <div style={{ width: "100%", height: 420, overflow: "auto" }}>
               <DataGrid
                 rows={rows}
                 columns={columns}
@@ -254,10 +254,11 @@ export default function CourseCategoryExcelGrid() {
           <form
             onSubmit={handleFormSubmit}
             style={{
-              maxWidth: 900,
+              maxWidth: "100%",
               margin: "0 auto",
               background: "transparent",
-              padding: "0",
+              padding: "20px",
+              overflow: "hidden",
             }}
           >
             <h1
@@ -277,6 +278,8 @@ export default function CourseCategoryExcelGrid() {
                 justifyContent: "space-between",
                 alignItems: "center",
                 marginBottom: 26,
+                flexWrap: "wrap",
+                gap: "10px",
               }}
             >
               <h2 style={{ fontSize: 23, fontWeight: 500, margin: 0 }}>
@@ -312,7 +315,7 @@ export default function CourseCategoryExcelGrid() {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "1fr 1fr",
+                gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
                 gap: 24,
               }}
             >

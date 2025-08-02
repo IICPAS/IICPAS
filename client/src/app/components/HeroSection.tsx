@@ -24,7 +24,7 @@ export default function HeroSection() {
         <Image
           src="/images/young-woman.jpg"
           alt="Mobile Hero"
-          width={600}
+          width={300}
           height={300}
           className="w-full h-auto object-cover rounded-xl shadow-lg"
         />

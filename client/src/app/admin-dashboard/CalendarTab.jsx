@@ -14,6 +14,10 @@ const CalendarTab = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalBooking, setModalBooking] = useState(null);
+  const [linkInput, setLinkInput] = useState("");
+  const [recordingInput, setRecordingInput] = useState("");
 
   useEffect(() => {
     fetchBookings();
@@ -33,6 +37,21 @@ const CalendarTab = () => {
   };
 
   const handleSchedule = async (id) => {
+    const booking = bookings.find((b) => b._id === id);
+    if (
+      booking &&
+      (booking.category === "live" ||
+        booking.category === "recorded" ||
+        booking.type === "live" ||
+        booking.type === "recorded")
+    ) {
+      setModalBooking(booking);
+      setLinkInput(booking.link || "");
+      setRecordingInput(booking.recording || "");
+      setModalOpen(true);
+      return;
+    }
+    // Default: old behavior
     try {
       await axios.patch(
         `${API}/bookings/${id}/approve`,
@@ -92,8 +111,85 @@ const CalendarTab = () => {
       b.date && new Date(b.date).toDateString() === selectedDate.toDateString()
   );
 
+  // Modal submit for live/recorded
+  const handleModalSubmit = async () => {
+    if (!recordingInput) {
+      toast.error("Please enter a recording link");
+      return;
+    }
+    try {
+      await axios.patch(
+        `${API}/bookings/${modalBooking._id}/approve`,
+        { recording: recordingInput },
+        { withCredentials: true }
+      );
+      toast.success("Scheduled!");
+      setModalOpen(false);
+      setModalBooking(null);
+      setLinkInput("");
+      setRecordingInput("");
+      fetchBookings();
+    } catch (err) {
+      toast.error("Failed to schedule");
+    }
+  };
+
   return (
     <div className="w-full mx-auto space-y-12 pb-8">
+      {/* Modal for live/recorded booking link */}
+      {modalOpen && modalBooking && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/60"
+            onClick={() => setModalOpen(false)}
+          />
+          <div className="relative bg-white rounded-xl shadow-xl p-8 max-w-md w-full z-10">
+            <button
+              className="absolute top-2 right-2 text-gray-400 hover:text-gray-700 text-xl"
+              onClick={() => setModalOpen(false)}
+            >
+              <X size={24} />
+            </button>
+            <h3 className="text-xl font-bold mb-4 text-blue-700 text-center">
+              Schedule Live/Recorded Booking
+            </h3>
+            <div className="mb-4">
+              <div className="font-semibold text-gray-700 mb-1">
+                Title: <span className="font-normal">{modalBooking.title}</span>
+              </div>
+              <div className="font-semibold text-gray-700 mb-1">
+                By: <span className="font-normal">{modalBooking.by}</span>
+              </div>
+              <div className="font-semibold text-gray-700 mb-1">
+                Type:{" "}
+                <span className="font-normal">
+                  {modalBooking.type || modalBooking.category}
+                </span>
+              </div>
+              <div className="font-semibold text-gray-700 mb-1">
+                Hours: <span className="font-normal">{modalBooking.hrs}</span>
+              </div>
+            </div>
+            <label className="block mb-2 font-medium text-blue-900">
+              Recording Link
+            </label>
+            <input
+              type="url"
+              className="border rounded px-3 py-2 w-full mb-4"
+              placeholder="https://..."
+              value={recordingInput}
+              onChange={(e) => setRecordingInput(e.target.value)}
+              required
+            />
+            <button
+              onClick={handleModalSubmit}
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded"
+            >
+              Schedule & Save Recording
+            </button>
+          </div>
+        </div>
+      )}
       {/* Bookings Table */}
       <div className="rounded-xl">
         <h2 className="text-2xl font-bold text-blue-700 mb-6">

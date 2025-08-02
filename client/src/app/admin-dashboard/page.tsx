@@ -19,6 +19,7 @@ import AboutTab from "./AboutTab";
 import StudentsTab from "./StudentsTab";
 import { useRouter } from "next/navigation";
 import "react-modern-drawer/dist/index.css";
+import TopicsManager from "./Topic/TopicsManager";
 
 import {
   FaBars,
@@ -29,6 +30,7 @@ import {
   FaLayerGroup,
   FaHome,
   FaBook,
+  FaSyncAlt,
   FaChalkboardTeacher,
   FaUserGraduate,
   FaUserShield,
@@ -48,6 +50,7 @@ import CourseArea from "./CourseBuilder";
 import CourseCategory from "./Course/CourseCategory";
 import LiveSessionAdmin from "./Course/LiveSesionAdmin";
 import TicketTab from "../components/TicketTab";
+import RevisionQuizTable from "../code/page";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 
@@ -70,6 +73,8 @@ const tabs = [
   { id: "colleges", label: "Colleges", icon: <FaUniversity /> },
   { id: "calendar", label: "Calendar", icon: <FaCalendarAlt /> },
   { id: "team", label: "Our Team", icon: <FaUsers /> },
+  { id: "topics", label: "Training Topics", icon: <FaBook /> },
+  { id: "revision", label: "Revision", icon: <FaSyncAlt /> },
   { id: "support", label: "Support Requests", icon: <FaEnvelope /> },
 ];
 
@@ -203,6 +208,10 @@ export default function AdminDashboard() {
           <TestimonialAdmin />
         ) : activeTab === "course" ? (
           <CourseArea />
+        ) : activeTab === "revision" ? (
+          <RevisionQuizTable />
+        ) : activeTab === "topics" ? (
+          <TopicsManager />
         ) : null}
       </main>
     </div>

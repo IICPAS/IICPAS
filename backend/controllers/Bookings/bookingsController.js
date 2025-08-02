@@ -1,5 +1,4 @@
 // controllers/Bookings/bookingsController.js
-
 import Booking from "../../models/Booking.js";
 
 // PATCH /api/bookings/:id/reject
@@ -27,19 +26,41 @@ export const rejectBooking = async (req, res) => {
 
 // POST /api/bookings
 export const createBooking = async (req, res) => {
-  try {
-    const { by, title, hrs, type } = req.body;
+  // try {
 
-    console.log(by, title, hrs, type);
-    if (!by || !title || !hrs)
-      return res.status(400).json({ error: "All fields required" });
+  let { by, title, hrs, type, category } = req.body;
+  if (!type) type = "onsite";
 
-    const booking = new Booking({ by, title, hrs, type, status: "pending" });
-    await booking.save();
-    res.status(201).json(booking);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  console.log(by, title, hrs, type, category);
+
+  // Validate required fields
+  if (!by || !title || !hrs || !type || !category) {
+    return res.status(400).json({
+      error: "All fields (by, title, hrs, type, category) are required",
+    });
   }
+  // Optionally, validate type value
+  const validTypes = ["recorded", "live", "onsite"];
+
+  if (!validTypes.includes(category)) {
+    return res.status(400).json({
+      error: "Invalid type. Must be one of: recorded, live, onsite",
+    });
+  }
+
+  const booking = new Booking({
+    by,
+    title,
+    hrs,
+    type,
+    status: "pending",
+    category,
+  });
+  await booking.save();
+  res.status(201).json(booking);
+  // } catch (err) {
+  //   res.status(500).json({ error: err.message });
+  // }
 };
 
 const SLOT_START = 10; // 10am
@@ -108,6 +129,23 @@ export const approveAndBook = async (req, res) => {
     if (booking.status !== "pending")
       return res.status(400).json({ error: "Already processed" });
 
+    // If booking.category is 'live' or 'recorded', patch with req.body (e.g., link)
+    if (booking.category === "live" || booking.category === "recorded") {
+      const slot = await findNextAvailableSlot(booking.hrs);
+      if (!slot) return res.status(400).json({ error: "No slots available." });
+
+      booking.start = slot.start;
+      booking.end = slot.end;
+      booking.date = slot.date;
+      booking.status = "booked";
+
+      // Accept both 'link' and 'recording' fields from frontend
+      booking.link = req.body.link || req.body.recording;
+      booking.status = "booked";
+      await booking.save();
+      return res.json({ success: true, booking });
+    }
+
     // Find slot and assign (always starts from tomorrow)
     const slot = await findNextAvailableSlot(booking.hrs);
     if (!slot) return res.status(400).json({ error: "No slots available." });
@@ -116,6 +154,7 @@ export const approveAndBook = async (req, res) => {
     booking.end = slot.end;
     booking.date = slot.date;
     booking.status = "booked";
+
     await booking.save();
     res.json({ success: true, booking });
   } catch (err) {

@@ -1,4 +1,3 @@
-// CourseDetailPage.tsx
 "use client";
 
 import { useParams } from "next/navigation";
@@ -7,6 +6,8 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Select from "react-select";
 import Header from "../../components/Header";
+import toast from "react-hot-toast";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function CourseDetailPage() {
   const { slug } = useParams();
@@ -17,6 +18,8 @@ export default function CourseDetailPage() {
   const [student, setStudent] = useState(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [authMode, setAuthMode] = useState("login");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const locationOptions = [{ label: "Greater Noida", value: "Greater Noida" }];
   const modeOptions = [
@@ -35,6 +38,21 @@ export default function CourseDetailPage() {
     location: "Greater Noida",
     center: "Greater Noida",
   });
+
+  const clearFormData = () => {
+    setFormData({
+      name: "",
+      email: "",
+      phone: "",
+      password: "",
+      confirmPassword: "",
+      mode: "Online",
+      location: "Greater Noida",
+      center: "Greater Noida",
+    });
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+  };
 
   // Fetch course
   useEffect(() => {
@@ -66,9 +84,10 @@ export default function CourseDetailPage() {
         { courseId: course._id },
         { withCredentials: true }
       );
-      alert("Course added to cart!");
+      toast.success("Course added to cart!");
+      setTimeout(() => window.location.reload(), 100);
     } catch (err) {
-      alert("Something went wrong. Try again.");
+      toast.error("Something went wrong. Try again.");
     }
   };
 
@@ -84,25 +103,25 @@ export default function CourseDetailPage() {
       );
       setStudent(res.data.student);
       setShowLoginModal(false);
+      toast.success("Login successful!");
+      setTimeout(() => window.location.reload(), 1500);
     } catch {
-      alert("Login failed. Check credentials.");
+      toast.error("Login failed. Check credentials.");
     }
   };
 
   const handleSignup = async () => {
     if (formData.password !== formData.confirmPassword) {
-      return alert("Passwords do not match");
+      return toast.warn("Passwords do not match");
     }
     try {
-      const res = await axios.post(
-        `${API}/api/v1/students/register`,
-        formData,
-        { withCredentials: true }
-      );
-      setStudent(res.data.student);
+      await axios.post(`${API}/api/v1/students/register`, formData, {
+        withCredentials: true,
+      });
       setShowLoginModal(false);
+      toast.success("Signup successful!");
     } catch {
-      alert("Signup failed. Try again.");
+      toast.error("Signup failed. Try again.");
     }
   };
 
@@ -114,84 +133,95 @@ export default function CourseDetailPage() {
   return (
     <>
       <Header />
+
       <section className="bg-white mt-20 text-[#0b1224]">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-10 px-6 py-12">
-          {/* Left Content */}
-          <div className="lg:col-span-2">
-            <p className="text-sm bg-blue-100 text-blue-700 inline-block px-3 py-1 rounded-full mb-4">
-              Individual Course
-            </p>
-            <h1 className="text-4xl font-bold mb-4">{course.title}</h1>
-            <p className="text-gray-600 text-lg mb-8">
-              {course.seoDescription?.replace(/<[^>]+>/g, "")}
-            </p>
-
-            <div className="border-b border-gray-200 flex space-x-8 text-lg font-medium">
-              {["syllabus", "caseStudy", "examCert", "live"].map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`pb-2 ${
-                    activeTab === tab
-                      ? "border-b-2 border-blue-600 text-blue-600"
-                      : "text-gray-500"
-                  }`}
-                >
-                  {
-                    {
-                      syllabus: "Syllabus",
-                      caseStudy: "Case Studies",
-                      examCert: "Exam & Certification",
-                      live: "Live Schedule +",
-                    }[tab]
-                  }
-                </button>
-              ))}
-            </div>
-
-            <div className="mt-6 prose max-w-none">
-              {activeTab === "syllabus" && (
-                <div dangerouslySetInnerHTML={{ __html: course.description }} />
-              )}
-              {activeTab === "caseStudy" && (
-                <div dangerouslySetInnerHTML={{ __html: course.caseStudy }} />
-              )}
-              {activeTab === "examCert" && (
-                <div dangerouslySetInnerHTML={{ __html: course.examCert }} />
-              )}
-              {activeTab === "live" && <p>Live schedule coming soon.</p>}
-            </div>
-          </div>
-
-          {/* Right Sidebar */}
-          <div className="space-y-6">
-            <div className="aspect-video rounded-xl overflow-hidden shadow-md">
-              <Image
-                className="w-full h-full object-cover"
-                src={API + course.image}
-                height={80}
-                width={80}
-                alt="Course Thumbnail"
-              />
-            </div>
-            <p className="text-sm text-gray-600">
-              Get access to this course in <strong>Lab+</strong> &{" "}
-              <strong>Lab+ Live</strong>
-            </p>
-            <div className="border border-orange-600 rounded-lg p-4">
-              <h3 className="text-orange-700 font-bold text-lg mb-1">Price:</h3>
-              <p className="text-xl font-semibold text-orange-900 mb-2">
-                ₹{discountedPrice.toLocaleString()}
+        {course ? (
+          <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-10 px-6 py-12">
+            {/* Left Content */}
+            <div className="lg:col-span-2">
+              <p className="text-sm bg-blue-100 text-blue-700 inline-block px-3 py-1 rounded-full mb-4">
+                Individual Course
               </p>
-              <button
-                onClick={handleAddToCart}
-                className="w-full bg-orange-600 text-white py-2 rounded-md hover:bg-orange-700"
-              >
-                Add To Cart
-              </button>
+              <h1 className="text-4xl font-bold mb-4">{course.title}</h1>
+              <p className="text-gray-600 text-lg mb-8">
+                {course.seoDescription?.replace(/<[^>]+>/g, "")}
+              </p>
+
+              <div className="border-b border-gray-200 flex space-x-8 text-lg font-medium">
+                {["syllabus", "caseStudy", "examCert", "live"].map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`pb-2 ${
+                      activeTab === tab
+                        ? "border-b-2 border-blue-600 text-blue-600"
+                        : "text-gray-500"
+                    }`}
+                  >
+                    {
+                      {
+                        syllabus: "Syllabus",
+                        caseStudy: "Case Studies",
+                        examCert: "Exam & Certification",
+                        live: "Live Schedule +",
+                      }[tab]
+                    }
+                  </button>
+                ))}
+              </div>
+
+              <div className="mt-6 prose max-w-none">
+                {activeTab === "syllabus" && (
+                  <div
+                    dangerouslySetInnerHTML={{ __html: course.description }}
+                  />
+                )}
+                {activeTab === "caseStudy" && (
+                  <div dangerouslySetInnerHTML={{ __html: course.caseStudy }} />
+                )}
+                {activeTab === "examCert" && (
+                  <div dangerouslySetInnerHTML={{ __html: course.examCert }} />
+                )}
+                {activeTab === "live" && <p>Live schedule coming soon.</p>}
+              </div>
+            </div>
+
+            {/* Right Sidebar */}
+            <div className="space-y-6">
+              <div className="aspect-video rounded-xl overflow-hidden shadow-md">
+                <Image
+                  className="w-full h-full object-cover"
+                  src={API + course.image}
+                  height={80}
+                  width={80}
+                  alt="Course Thumbnail"
+                />
+              </div>
+              <p className="text-sm text-gray-600">
+                Get access to this course in <strong>Lab+</strong> &{" "}
+                <strong>Lab+ Live</strong>
+              </p>
+              <div className="border border-orange-600 rounded-lg p-4">
+                <h3 className="text-orange-700 font-bold text-lg mb-1">
+                  Price:
+                </h3>
+                <p className="text-xl font-semibold text-orange-900 mb-2">
+                  ₹{discountedPrice.toLocaleString()}
+                </p>
+                <button
+                  onClick={handleAddToCart}
+                  className="w-full bg-orange-600 text-white py-2 rounded-md hover:bg-orange-700"
+                >
+                  Add To Cart
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="h-[80vh] flex justify-center items-center border-black border-[3px]">
+            Loading...
+          </div>
+        )}
       </section>
 
       {/* Modal */}
@@ -267,28 +297,52 @@ export default function CourseDetailPage() {
               }
               className="w-full border px-3 py-2 mb-2 rounded"
             />
-            <input
-              type="password"
-              placeholder="Password"
-              value={formData.password}
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
-              className="w-full border px-3 py-2 mb-2 rounded"
-            />
-            {authMode === "signup" && (
+
+            <div className="relative mb-2">
               <input
-                type="password"
-                placeholder="Confirm Password"
-                value={formData.confirmPassword}
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                value={formData.password}
                 onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    confirmPassword: e.target.value,
-                  })
+                  setFormData({ ...formData, password: e.target.value })
                 }
-                className="w-full border px-3 py-2 mb-2 rounded"
+                className="w-full border px-3 py-2 pr-10 rounded"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+
+            {authMode === "signup" && (
+              <div className="relative mb-2">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Confirm Password"
+                  value={formData.confirmPassword}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      confirmPassword: e.target.value,
+                    })
+                  }
+                  className="w-full border px-3 py-2 pr-10 rounded"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff size={18} />
+                  ) : (
+                    <Eye size={18} />
+                  )}
+                </button>
+              </div>
             )}
 
             <button
@@ -303,7 +357,10 @@ export default function CourseDetailPage() {
                 <>
                   Don’t have an account?{" "}
                   <button
-                    onClick={() => setAuthMode("signup")}
+                    onClick={() => {
+                      setAuthMode("signup");
+                      clearFormData();
+                    }}
                     className="text-blue-600"
                   >
                     Register
@@ -313,7 +370,10 @@ export default function CourseDetailPage() {
                 <>
                   Already have an account?{" "}
                   <button
-                    onClick={() => setAuthMode("login")}
+                    onClick={() => {
+                      setAuthMode("login");
+                      clearFormData();
+                    }}
                     className="text-blue-600"
                   >
                     Login
