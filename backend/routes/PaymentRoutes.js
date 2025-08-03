@@ -175,7 +175,7 @@ router.post("/verify", async (req, res) => {
       await Booking.create({
         by: email,
         title: trainingTitle,
-        hrs: hrs || 1, // Use from frontend, fallback to 1 hou
+        hrs: hrs || 1, // Use from frontend, fallback to 1 hour
         status: "pending",
         type: type || "individual", // Use from frontend, fallback to individual
         category: category || "onsite", // Use from frontend, fallback to onsite
@@ -187,6 +187,53 @@ router.post("/verify", async (req, res) => {
         .status(400)
         .json({ success: false, error: "Signature mismatch" });
     }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get receipts by email
+router.get("/receipts", async (req, res) => {
+  try {
+    const { email } = req.query;
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+
+    const transactions = await Transaction.find({
+      email,
+      status: "success",
+      receiptLink: { $exists: true, $ne: null },
+    }).sort({ createdAt: -1 });
+
+    const receipts = transactions.map((transaction) => ({
+      _id: transaction._id,
+      for: transaction.for,
+      amount: transaction.amount,
+      receiptLink: transaction.receiptLink,
+      createdAt: transaction.createdAt,
+      razorpay_order_id: transaction.razorpay_order_id,
+    }));
+
+    res.json(receipts);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get transactions by email
+router.get("/transactions", async (req, res) => {
+  try {
+    const { email } = req.query;
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+
+    const transactions = await Transaction.find({ email }).sort({
+      createdAt: -1,
+    });
+
+    res.json(transactions);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

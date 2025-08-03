@@ -12,6 +12,7 @@ export const requireAuth = (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded; // decoded payload → { _id, name, email, etc. }
     next();
+    console.log("User authenticated:", req.user);
   } catch (err) {
     return res.status(401).json({ message: "Invalid or expired token" });
   }

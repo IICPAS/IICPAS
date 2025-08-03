@@ -13,14 +13,16 @@ import {
   CheckCircle2,
   Clock,
   Eye,
+  EyeOff,
   Download,
   Plus,
   Search,
   Filter,
 } from "lucide-react";
+import { FiImage, FiFile } from "react-icons/fi";
 
 const API = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080/api";
-
+const URL = process.env.NEXT_PUBLIC_URL || "http://localhost:8080";
 const IndividualProfile = () => {
   const [activeTab, setActiveTab] = useState("profile");
   const [profile, setProfile] = useState({ name: "", email: "", phone: "" });
@@ -41,14 +43,24 @@ const IndividualProfile = () => {
   const [trainings, setTrainings] = useState([]);
   const [receipts, setReceipts] = useState([]);
   const [deposits, setDeposits] = useState([]);
+  const [documents, setDocuments] = useState([]);
+  const [imageLoading, setImageLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     fetchProfile();
-    fetchEnquiries();
-    fetchTrainings();
-    fetchReceipts();
-    fetchDeposits();
   }, []);
+
+  useEffect(() => {
+    if (profile.email) {
+      fetchEnquiries();
+      fetchTrainings();
+      fetchReceipts();
+      fetchDeposits();
+      fetchDocuments();
+    }
+  }, [profile.email]);
 
   const fetchProfile = async () => {
     setLoading(true);
@@ -58,12 +70,31 @@ const IndividualProfile = () => {
         credentials: "include",
       });
       const data = await res.json();
+      console.log("Profile data received:", data); // Debug log
       if (data.success && data.user) {
         setProfile({
           name: data.user.name || "",
           email: data.user.email || "",
           phone: data.user.phone || "",
+          image: data.user.image || "",
         });
+        console.log("Profile image path:", data.user.image); // Debug log
+
+        // Prefetch image if it exists
+        if (data.user.image) {
+          const img = new Image();
+          img.onload = () => {
+            console.log(
+              "Profile image prefetched successfully:",
+              data.user.image
+            );
+          };
+          img.onerror = () => {
+            console.log("Profile image failed to prefetch:", data.user.image);
+          };
+          img.src = `${URL}/${data.user.image}`;
+        }
+
         setForm({
           name: data.user.name || "",
           phone: data.user.phone || "",
@@ -81,6 +112,11 @@ const IndividualProfile = () => {
 
   const fetchEnquiries = async () => {
     try {
+      if (!profile.email) {
+        console.log("No email available, skipping enquiries fetch");
+        return;
+      }
+
       const res = await axios.get(`${API}/tickets?email=${profile.email}`);
       setEnquiries(res.data || []);
     } catch (error) {
@@ -90,7 +126,12 @@ const IndividualProfile = () => {
 
   const fetchTrainings = async () => {
     try {
-      const res = await axios.get(`${API}/v1/bookings?email=${profile.email}`);
+      if (!profile.email) {
+        console.log("No email available, skipping trainings fetch");
+        return;
+      }
+
+      const res = await axios.get(`${API}/v1/bookings?by=${profile.email}`);
       setTrainings(res.data || []);
     } catch (error) {
       console.error("Failed to fetch trainings:", error);
@@ -99,6 +140,11 @@ const IndividualProfile = () => {
 
   const fetchReceipts = async () => {
     try {
+      if (!profile.email) {
+        console.log("No email available, skipping receipts fetch");
+        return;
+      }
+
       const res = await axios.get(
         `${API}/payments/receipts?email=${profile.email}`
       );
@@ -110,12 +156,65 @@ const IndividualProfile = () => {
 
   const fetchDeposits = async () => {
     try {
+      if (!profile.email) {
+        console.log("No email available, skipping deposits fetch");
+        return;
+      }
+
       const res = await axios.get(
         `${API}/payments/transactions?email=${profile.email}`
       );
       setDeposits(res.data || []);
     } catch (error) {
       console.error("Failed to fetch deposits:", error);
+    }
+  };
+
+  const fetchDocuments = async () => {
+    try {
+      if (!profile.email) {
+        console.log("No email available, skipping documents fetch");
+        return;
+      }
+
+      const res = await axios.post(`${API}/v1/individual/documents`, {
+        email: profile.email,
+      });
+      setDocuments(res.data.documents || []);
+    } catch (error) {
+      console.error("Failed to fetch documents:", error);
+      // Don't show error if it's just that email is not available yet
+      if (error.response?.status !== 400 || profile.email) {
+        console.error("Documents fetch error details:", error.response?.data);
+      }
+    }
+  };
+
+  const testServerConnection = async () => {
+    try {
+      console.log("Testing server connection...");
+      const res = await fetch(`${API}/v1/individual/test`);
+      const data = await res.json();
+      console.log("Server test response:", data);
+      alert("Server is accessible! Response: " + JSON.stringify(data));
+    } catch (error) {
+      console.error("Server test failed:", error);
+      alert("Server test failed: " + error.message);
+    }
+  };
+
+  const testAuthentication = async () => {
+    try {
+      console.log("Testing authentication...");
+      const res = await fetch(`${API}/v1/individual/profile-valid`, {
+        credentials: "include",
+      });
+      const data = await res.json();
+      console.log("Auth test response:", data);
+      alert("Auth test response: " + JSON.stringify(data));
+    } catch (error) {
+      console.error("Auth test failed:", error);
+      alert("Auth test failed: " + error.message);
     }
   };
 
@@ -155,29 +254,46 @@ const IndividualProfile = () => {
       }
       if (profileImage) {
         formData.append("profileImage", profileImage);
+        console.log("Adding profile image to form data:", profileImage.name);
       }
 
-      const res = await fetch("/api/individual/profile", {
+      // Debug: Log form data
+      console.log("Form data being sent:");
+      for (let [key, value] of formData.entries()) {
+        console.log(key, value);
+      }
+
+      const res = await fetch(`${API}/v1/individual/profile`, {
         method: "PUT",
         credentials: "include",
         body: formData,
       });
 
+      console.log("Response status:", res.status);
       const data = await res.json();
+      console.log("Response data:", data);
+
       if (res.ok) {
         setMessage(data.message || "Profile updated successfully");
         setProfile({
           name: data.user.name,
           email: data.user.email,
           phone: data.user.phone,
+          image: data.user.image || profile.image,
         });
         setForm({ ...form, password: "", confirmPassword: "" });
         setShowCheck(true);
         setTimeout(() => setShowCheck(false), 1800);
+
+        // Refresh documents to show updated image
+        if (profile.email) {
+          fetchDocuments();
+        }
       } else {
         setError(data.error || "Failed to update profile");
       }
     } catch (err) {
+      console.error("Profile update error:", err);
       setError("Error updating profile");
     }
     setLoading(false);
@@ -189,7 +305,52 @@ const IndividualProfile = () => {
     { id: "trainings", label: "Trainings", icon: GraduationCap },
     { id: "receipts", label: "Receipts", icon: Receipt },
     { id: "deposits", label: "Deposits", icon: CreditCard },
+    { id: "documents", label: "Documents", icon: FileText },
   ];
+
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+
+    // Refresh profile data when profile tab is clicked
+    if (tabId === "profile") {
+      fetchProfile();
+    }
+  };
+
+  const forceRefreshImage = () => {
+    if (profile.image) {
+      setImageLoading(true);
+      // Force browser to reload the image by adding a timestamp
+      const img = new Image();
+      img.onload = () => {
+        console.log("Image force refreshed successfully");
+        setImageLoading(false);
+      };
+      img.onerror = () => {
+        console.log("Image force refresh failed");
+        setImageLoading(false);
+      };
+      img.src = `${URL}/${profile.image}?t=${Date.now()}`;
+    }
+  };
+
+  const testImageLoad = () => {
+    // Test with the known image path from the database
+    const testImagePath = "uploads/individual_images/1754239585173-a2.avif";
+    const testImageUrl = `${URL}/${testImagePath}`;
+    console.log("Testing image load with URL:", testImageUrl);
+
+    const img = new Image();
+    img.onload = () => {
+      console.log("Test image loaded successfully!");
+      alert("Test image loaded successfully! URL: " + testImageUrl);
+    };
+    img.onerror = () => {
+      console.log("Test image failed to load");
+      alert("Test image failed to load. URL: " + testImageUrl);
+    };
+    img.src = testImageUrl;
+  };
 
   const renderProfileTab = () => (
     <div className="bg-white rounded-xl p-8 shadow-sm">
@@ -197,15 +358,64 @@ const IndividualProfile = () => {
         {/* Left Column - Profile Image */}
         <div className="flex-shrink-0">
           <div className="relative">
-            <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center overflow-hidden">
+            <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center overflow-hidden relative">
               {imagePreview ? (
                 <img
                   src={imagePreview}
-                  alt="Profile"
+                  alt="Profile Preview"
                   className="w-full h-full object-cover"
                 />
-              ) : (
+              ) : profile.image ? (
+                <img
+                  src={`${URL}/${profile.image}`}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                  onLoadStart={() => {
+                    console.log(
+                      "Image loading started:",
+                      `${URL}/${profile.image}`
+                    );
+                    setImageLoading(true);
+                  }}
+                  onLoad={(e) => {
+                    console.log(
+                      "Image loaded successfully:",
+                      `${URL}/${profile.image}`
+                    );
+                    setImageLoading(false);
+                    // Hide fallback icon when image loads successfully
+                    const fallbackIcon = e.target.nextElementSibling;
+                    if (fallbackIcon) {
+                      fallbackIcon.style.display = "none";
+                    }
+                  }}
+                  onError={(e) => {
+                    console.log(
+                      "Image failed to load:",
+                      `${URL}/${profile.image}`
+                    );
+                    setImageLoading(false);
+                    e.target.style.display = "none";
+                    // Show fallback icon when image fails to load
+                    e.target.nextElementSibling.style.display = "flex";
+                  }}
+                />
+              ) : null}
+
+              {/* Fallback icon - shown when no image or image fails to load */}
+              <div
+                className={`absolute inset-0 flex items-center justify-center ${
+                  profile.image ? "hidden" : ""
+                }`}
+              >
                 <User size={64} className="text-white" />
+              </div>
+
+              {/* Loading spinner - shown when image is loading */}
+              {imageLoading && profile.image && (
+                <div className="absolute inset-0 flex items-center justify-center bg-blue-400 bg-opacity-75 rounded-full">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                </div>
               )}
             </div>
             <label className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full cursor-pointer hover:bg-blue-700 transition">
@@ -223,6 +433,11 @@ const IndividualProfile = () => {
               {profile.name || "User"}
             </h3>
             <p className="text-sm text-gray-600">{profile.email}</p>
+            {profile.image && (
+              <p className="text-xs text-gray-500 mt-1">
+                Image: {profile.image}
+              </p>
+            )}
           </div>
         </div>
 
@@ -273,40 +488,62 @@ const IndividualProfile = () => {
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   New Password
                 </label>
-                <input
-                  type="password"
-                  name="password"
-                  value={form.password}
-                  onChange={handleChange}
-                  onFocus={() => handleFocus("password")}
-                  onBlur={handleBlur}
-                  className={`w-full px-4 py-3 border rounded-lg transition-all ${
-                    focus === "password"
-                      ? "border-blue-500 ring-2 ring-blue-200"
-                      : "border-gray-300"
-                  }`}
-                  placeholder="Leave blank to keep current"
-                />
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    value={form.password}
+                    onChange={handleChange}
+                    onFocus={() => handleFocus("password")}
+                    onBlur={handleBlur}
+                    className={`w-full px-4 py-3 pr-12 border rounded-lg transition-all ${
+                      focus === "password"
+                        ? "border-blue-500 ring-2 ring-blue-200"
+                        : "border-gray-300"
+                    }`}
+                    placeholder="Leave blank to keep current"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Confirm Password
                 </label>
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  value={form.confirmPassword}
-                  onChange={handleChange}
-                  onFocus={() => handleFocus("confirmPassword")}
-                  onBlur={handleBlur}
-                  className={`w-full px-4 py-3 border rounded-lg transition-all ${
-                    focus === "confirmPassword"
-                      ? "border-blue-500 ring-2 ring-blue-200"
-                      : "border-gray-300"
-                  }`}
-                  placeholder="Confirm new password"
-                />
+                <div className="relative">
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    name="confirmPassword"
+                    value={form.confirmPassword}
+                    onChange={handleChange}
+                    onFocus={() => handleFocus("confirmPassword")}
+                    onBlur={handleBlur}
+                    className={`w-full px-4 py-3 pr-12 border rounded-lg transition-all ${
+                      focus === "confirmPassword"
+                        ? "border-blue-500 ring-2 ring-blue-200"
+                        : "border-gray-300"
+                    }`}
+                    placeholder="Confirm new password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff size={20} />
+                    ) : (
+                      <Eye size={20} />
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -618,6 +855,95 @@ const IndividualProfile = () => {
     </div>
   );
 
+  const renderDocumentsTab = () => (
+    <div className="bg-white rounded-xl shadow-sm">
+      <div className="p-6 border-b border-gray-200">
+        <h3 className="text-xl font-bold text-gray-800">
+          Uploaded Documents & Images
+        </h3>
+      </div>
+
+      <div className="p-6">
+        {documents.length === 0 ? (
+          <div className="text-center py-8">
+            <FileText className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-2 text-sm font-medium text-gray-900">
+              No documents uploaded
+            </h3>
+            <p className="mt-1 text-sm text-gray-500">
+              Get started by uploading your documents and images.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {documents.map((doc, index) => (
+              <div
+                key={index}
+                className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center space-x-3">
+                    {doc.type === "image" ? (
+                      <FiImage className="h-8 w-8 text-blue-500" />
+                    ) : (
+                      <FiFile className="h-8 w-8 text-green-500" />
+                    )}
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-900">
+                        {doc.name}
+                      </h4>
+                      <p className="text-xs text-gray-500">{doc.filename}</p>
+                    </div>
+                  </div>
+                  <span
+                    className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                      doc.type === "image"
+                        ? "bg-blue-100 text-blue-800"
+                        : "bg-green-100 text-green-800"
+                    }`}
+                  >
+                    {doc.type}
+                  </span>
+                </div>
+
+                <div className="mt-4 flex items-center justify-between">
+                  <p className="text-xs text-gray-500">
+                    {new Date(doc.uploadedAt).toLocaleDateString()}
+                  </p>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() =>
+                        window.open(`${URL}/${doc.path}`, "_blank")
+                      }
+                      className="text-blue-600 hover:text-blue-800 p-1"
+                      title="View"
+                    >
+                      <Eye size={16} />
+                    </button>
+                    <button
+                      onClick={() => {
+                        const link = document.createElement("a");
+                        link.href = `${URL}/${doc.path}`;
+                        link.download = doc.filename;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                      }}
+                      className="text-green-600 hover:text-green-800 p-1"
+                      title="Download"
+                    >
+                      <Download size={16} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   const renderTabContent = () => {
     switch (activeTab) {
       case "profile":
@@ -630,6 +956,8 @@ const IndividualProfile = () => {
         return renderReceiptsTab();
       case "deposits":
         return renderDepositsTab();
+      case "documents":
+        return renderDocumentsTab();
       default:
         return renderProfileTab();
     }
@@ -658,7 +986,7 @@ const IndividualProfile = () => {
                 return (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
+                    onClick={() => handleTabChange(tab.id)}
                     className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                       activeTab === tab.id
                         ? "border-blue-500 text-blue-600"

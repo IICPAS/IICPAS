@@ -1,9 +1,13 @@
 import jwt from "jsonwebtoken";
 
-export const signJwt = (userId, email, name) =>
-  jwt.sign({ id: userId, email: email, name: name }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN || "3d",
-  });
+export const signJwt = (userId, email, name, image) =>
+  jwt.sign(
+    { _id: userId, email: email, name: name, image: image },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: process.env.JWT_EXPIRES_IN || "3d",
+    }
+  );
 
 export const cookieOptions = {
   httpOnly: true,

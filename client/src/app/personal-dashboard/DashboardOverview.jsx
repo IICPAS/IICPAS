@@ -14,9 +14,11 @@ import {
   Award,
   MessageSquare,
   Ticket,
+  User,
 } from "lucide-react";
 
 const API = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080/api";
+const URL = process.env.NEXT_PUBLIC_URL || "http://localhost:8080";
 
 const DashboardOverview = () => {
   const [metrics, setMetrics] = useState({
@@ -31,6 +33,11 @@ const DashboardOverview = () => {
   });
   const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState("");
+  const [userProfile, setUserProfile] = useState({
+    name: "",
+    email: "",
+    image: "",
+  });
 
   useEffect(() => {
     fetchUserAndMetrics();
@@ -42,14 +49,22 @@ const DashboardOverview = () => {
       const userRes = await axios.get(`${API}/v1/individual/profile-valid`, {
         withCredentials: true,
       });
-      const email = userRes.data.user?.email || userRes.data.individual?.email;
-      setUserEmail(email);
 
-      if (email) {
+      if (userRes.data.success && userRes.data.user) {
+        const user = userRes.data.user;
+        setUserProfile({
+          name: user.name || "",
+          email: user.email || "",
+          image: user.image || "",
+        });
+        setUserEmail(user.email || "");
+      }
+
+      if (userEmail) {
         await Promise.all([
-          fetchEnquiries(email),
-          fetchTrainings(email),
-          fetchTickets(email),
+          fetchEnquiries(userEmail),
+          fetchTrainings(userEmail),
+          fetchTickets(userEmail),
         ]);
       }
     } catch (error) {
@@ -202,12 +217,56 @@ const DashboardOverview = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Dashboard Overview
-          </h1>
-          <p className="text-gray-600">
-            Welcome back! Here's your activity summary and key metrics.
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                Dashboard Overview
+              </h1>
+              <p className="text-gray-600">
+                Welcome back! Here's your activity summary and key metrics.
+              </p>
+            </div>
+
+            {/* User Profile Section */}
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <p className="text-lg font-semibold text-gray-900">
+                  {userProfile.name || "User"}
+                </p>
+                <p className="text-sm text-gray-500">{userProfile.email}</p>
+              </div>
+
+              {/* Profile Image */}
+              <div className="relative">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center overflow-hidden">
+                  {userProfile.image ? (
+                    <img
+                      src={`${URL}/${userProfile.image}`}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        console.log(
+                          "Profile image failed to load:",
+                          `${URL}/${userProfile.image}`
+                        );
+                        e.target.style.display = "none";
+                        e.target.nextElementSibling.style.display = "flex";
+                      }}
+                    />
+                  ) : null}
+
+                  {/* Fallback icon - shown when no image or image fails to load */}
+                  <div
+                    className={`absolute inset-0 flex items-center justify-center ${
+                      userProfile.image ? "hidden" : ""
+                    }`}
+                  >
+                    <User size={24} className="text-white" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Metrics Grid */}
