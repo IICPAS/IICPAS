@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import toast from "react-hot-toast";
 import {
   Users,
   GraduationCap,
@@ -27,7 +28,7 @@ const DashboardOverview = () => {
     scheduleTrainings: 0,
     tickets: 0,
     totalSpent: 0,
-    completedTrainings: 0,
+    confirmedTrainings: 0,
     pendingTrainings: 0,
     resolvedTickets: 0,
   });
@@ -39,9 +40,13 @@ const DashboardOverview = () => {
     image: "",
   });
 
+
+
   useEffect(() => {
     fetchUserAndMetrics();
   }, []);
+
+
 
   const fetchUserAndMetrics = async () => {
     try {
@@ -52,20 +57,22 @@ const DashboardOverview = () => {
 
       if (userRes.data.success && userRes.data.user) {
         const user = userRes.data.user;
+        const email = user.email || "";
         setUserProfile({
           name: user.name || "",
-          email: user.email || "",
+          email: email,
           image: user.image || "",
         });
-        setUserEmail(user.email || "");
-      }
-
-      if (userEmail) {
-        await Promise.all([
-          fetchEnquiries(userEmail),
-          fetchTrainings(userEmail),
-          fetchTickets(userEmail),
-        ]);
+        setUserEmail(email);
+        
+        // Only fetch metrics if we have an email
+        if (email) {
+          await Promise.all([
+            fetchEnquiries(email),
+            fetchTrainings(email),
+            fetchTickets(email),
+          ]);
+        }
       }
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
@@ -88,36 +95,45 @@ const DashboardOverview = () => {
     }
   };
 
-  const fetchTrainings = async (email) => {
-    try {
-      const res = await axios.get(`${API}/v1/bookings?email=${email}`);
-      const trainings = res.data || [];
-
-      const pastTrainings = trainings.filter(
-        (t) => new Date(t.createdAt) < new Date() && t.status === "booked"
+  const fetchTrainings = async (email) => { 
+    try { 
+      if (!email) return;
+      
+      // Get all bookings without filtering by email
+      const res = await axios.get(`${API}/bookings`); 
+      // Filter bookings by email on the client side
+      const trainings = res.data.filter(booking => booking.by === email) || [];
+      const currentDate = new Date(); 
+ 
+      // Past trainings: those with start date in the past and status "booked" 
+      const pastTrainings = trainings.filter( 
+        (t) => t.start && new Date(t.start) < currentDate && t.status === "booked" 
+      ).length; 
+ 
+      // Scheduled trainings: those with start date in the future and status "booked" 
+      const scheduleTrainings = trainings.filter( 
+        (t) => t.start && new Date(t.start) >= currentDate && t.status === "booked" 
+      ).length; 
+ 
+      // Confirmed trainings: those with status "booked" (both past and future)
+      const confirmedTrainings = trainings.filter(
+        (t) => t.status === "booked"
       ).length;
-
-      const scheduleTrainings = trainings.filter(
-        (t) => new Date(t.createdAt) >= new Date() && t.status === "booked"
-      ).length;
-
-      const completedTrainings = trainings.filter(
-        (t) => t.status === "completed"
-      ).length;
-      const pendingTrainings = trainings.filter(
-        (t) => t.status === "pending"
-      ).length;
-
-      setMetrics((prev) => ({
-        ...prev,
-        pastTrainings,
-        scheduleTrainings,
-        completedTrainings,
-        pendingTrainings,
-      }));
-    } catch (error) {
-      console.error("Error fetching trainings:", error);
-    }
+      
+      const pendingTrainings = trainings.filter( 
+        (t) => t.status === "pending" 
+      ).length; 
+ 
+      setMetrics((prev) => ({ 
+        ...prev, 
+        pastTrainings, 
+        scheduleTrainings, 
+        confirmedTrainings, 
+        pendingTrainings, 
+      })); 
+    } catch (error) { 
+      console.error("Error fetching trainings:", error); 
+    } 
   };
 
   const fetchTickets = async (email) => {
@@ -132,6 +148,8 @@ const DashboardOverview = () => {
       console.error("Error fetching tickets:", error);
     }
   };
+
+
 
   const metricCards = [
     {
@@ -163,8 +181,8 @@ const DashboardOverview = () => {
       bgColor: "bg-orange-50",
     },
     {
-      title: "Completed Trainings",
-      value: metrics.completedTrainings,
+      title: "Confirmed Trainings",
+      value: metrics.confirmedTrainings,
       icon: CheckCircle2,
       color: "bg-emerald-500",
       bgColor: "bg-emerald-50",
@@ -213,7 +231,7 @@ const DashboardOverview = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-gray-50 p-8 relative">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -335,7 +353,7 @@ const DashboardOverview = () => {
                 <p className="text-2xl font-bold">
                   {metrics.pastTrainings > 0
                     ? Math.round(
-                        (metrics.completedTrainings / metrics.pastTrainings) *
+                        (metrics.confirmedTrainings / metrics.pastTrainings) *
                           100
                       )
                     : 0}
@@ -378,7 +396,7 @@ const DashboardOverview = () => {
                   sessions
                 </p>
                 <p className="text-xs text-gray-500">
-                  {metrics.completedTrainings} completed,{" "}
+                  {metrics.confirmedTrainings} confirmed,{" "}
                   {metrics.pendingTrainings} pending
                 </p>
               </div>

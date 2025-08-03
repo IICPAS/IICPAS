@@ -50,6 +50,7 @@ import PaymentRoutes from "./routes/PaymentRoutes.js";
 
 //Topic Routes
 import TopicTrainingRoutes from "./routes/TopicRoutes/TopicRoutes.js";
+import messageRoutes from "./routes/messageRoutes.js";
 
 //App Configuration
 dotenv.config();
@@ -111,7 +112,7 @@ app.use("/api/about", aboutRoutes);
 app.use("/api/tickets", ticketRoutes);
 app.use("/api/bookings", bookingRoutes);
 
-//Certification Requests
+//Certification Requestsimport messageRoutes from "./routes/messageRoutes.js";
 app.use("/api/certification-requests", certificationRoutes);
 app.use("/api/v1/individual", individualRoutes);
 
@@ -131,6 +132,7 @@ app.use("/api/payments", PaymentRoutes);
 
 //Topic Routes
 app.use("/api/v1/topics-trainings", TopicTrainingRoutes);
+app.use("/api/messages", messageRoutes);
 
 // Server
 const PORT = process.env.PORT || 8080;

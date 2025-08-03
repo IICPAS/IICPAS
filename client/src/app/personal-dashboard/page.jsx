@@ -12,6 +12,7 @@ import {
   FaFileUpload,
   FaTachometerAlt,
 } from "react-icons/fa";
+import { PlusCircle, X } from "lucide-react";
 import BookingCalendar from "./BookingCalendar";
 import TicketRaise from "./IndividualTicketRaiseAndList";
 import IndividualProfile from "./IndividualProfile";
@@ -25,6 +26,16 @@ const IndividualDashboardPage = () => {
   const [user, setUser] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("dashboard");
+  
+  // Ticket modal state
+  const [showTicketModal, setShowTicketModal] = useState(false);
+  const [ticketForm, setTicketForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    message: "",
+  });
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     const verifyIndividual = async () => {
@@ -33,7 +44,18 @@ const IndividualDashboardPage = () => {
           withCredentials: true,
         });
 
-        setUser(res.data.user || res.data.individual);
+        const userData = res.data.user || res.data.individual;
+        setUser(userData);
+        
+        // Update ticket form with user data
+        if (userData && userData.name && userData.email) {
+          setTicketForm(prev => ({
+            ...prev,
+            name: userData.name,
+            email: userData.email,
+          }));
+        }
+        
         setLoading(false);
       } catch (err) {
         toast.error("Unauthorized. Please login.");
@@ -55,6 +77,29 @@ const IndividualDashboardPage = () => {
       router.push("/training/practical");
     } catch (err) {
       toast.error("Logout failed");
+    }
+  };
+  
+  // Handle ticket submission
+  const handleTicketSubmit = async (e) => {
+    e.preventDefault();
+    const { name, email, phone, message } = ticketForm;
+
+    if (!phone.trim() || !message.trim()) {
+      return toast.error("Phone and Message are required.");
+    }
+
+    setSubmitting(true);
+    try {
+      await axios.post(`${API}/tickets`, { name, email, phone, message });
+      toast.success("Ticket raised successfully!");
+      setTicketForm((prev) => ({ ...prev, phone: "", message: "" }));
+      setShowTicketModal(false);
+    } catch (error) {
+      toast.error("Failed to raise ticket.");
+      console.error("Error submitting ticket:", error);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -126,6 +171,111 @@ const IndividualDashboardPage = () => {
           {renderTabContent()}
         </main>
       </div>
+      
+      {/* Floating Add Ticket Button */}
+      <div className="fixed bottom-8 left-8 z-50">
+        <button
+          onClick={() => setShowTicketModal(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-105"
+          title="Add New Ticket"
+        >
+          <PlusCircle size={24} />
+        </button>
+      </div>
+
+      {/* Ticket Modal */}
+      {showTicketModal && (
+        <div className="fixed inset-0 bg-transparent bg-opacity-10 backdrop-blur-[6px] flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-300 bg-opacity-30 rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-fade-in border border-gray-700">
+            <div className="flex justify-between items-center p-5 bg-blue-900 bg-opacity-50 border-b border-gray-700">
+              <h3 className="text-xl font-bold text-white">
+                Raise a New Ticket
+              </h3>
+              <button
+                onClick={() => setShowTicketModal(false)}
+                className="text-gray-300 hover:text-white transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleTicketSubmit} className="p-5 space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Name</label>
+                <input
+                  className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-800 bg-opacity-70 text-white"
+                  value={ticketForm.name}
+                  readOnly
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Email</label>
+                <input
+                  className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-800 bg-opacity-70 text-white"
+                  value={ticketForm.email}
+                  readOnly
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Phone *
+                </label>
+                <input
+                  type="tel"
+                  className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-800 bg-opacity-70 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400"
+                  placeholder="Your contact number"
+                  value={ticketForm.phone}
+                  onChange={(e) =>
+                    setTicketForm((prev) => ({
+                      ...prev,
+                      phone: e.target.value,
+                    }))
+                  }
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Message *
+                </label>
+                <textarea
+                  className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-800 bg-opacity-70 text-white focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400"
+                  rows={4}
+                  placeholder="Describe your issue or request..."
+                  value={ticketForm.message}
+                  onChange={(e) =>
+                    setTicketForm((prev) => ({
+                      ...prev,
+                      message: e.target.value,
+                    }))
+                  }
+                  required
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowTicketModal(false)}
+                  className="px-4 py-2 border border-gray-600 rounded-md hover:bg-gray-700 hover:text-white transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 bg-opacity-90 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 disabled:opacity-50"
+                  disabled={submitting}
+                >
+                  {submitting ? "Submitting..." : "Submit Ticket"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
