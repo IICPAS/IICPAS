@@ -7,6 +7,8 @@ const individualSchema = new mongoose.Schema(
     phone: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true, minlength: 6, select: false },
+    image: { type: String }, // Store the file path of uploaded profile image
+    document: { type: String }, // Store the file path of uploaded document
     resetPasswordToken: String,
     resetPasswordExpires: Date,
   },

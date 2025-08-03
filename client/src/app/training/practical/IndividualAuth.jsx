@@ -2,7 +2,7 @@
 import { useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { FiEye, FiEyeOff } from "react-icons/fi";
+import { FiEye, FiEyeOff, FiUpload, FiFile, FiTrash2 } from "react-icons/fi";
 
 const API = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080/api";
 
@@ -26,6 +26,8 @@ export default function IndividualAuthPanel() {
   const [showSignupPass, setShowSignupPass] = useState(false);
   const [showSignupConfirm, setShowSignupConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [uploadedDocument, setUploadedDocument] = useState(null);
 
   const switchTab = (t) => {
     setTab(t);
@@ -38,7 +40,26 @@ export default function IndividualAuthPanel() {
       confirmPassword: "",
     });
     setResetForm({ email: "", token: "", password: "", confirmPassword: "" });
+    setSelectedFile(null);
+    setUploadedDocument(null);
     toast.dismiss();
+  };
+
+  const handleFileSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (
+        file.type ===
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+        file.name.toLowerCase().endsWith(".docx")
+      ) {
+        setSelectedFile(file);
+        toast.success("Document selected successfully!");
+      } else {
+        toast.error("Please select a .docx file only!");
+        e.target.value = null;
+      }
+    }
   };
 
   const handleLogin = async (e) => {
@@ -58,17 +79,57 @@ export default function IndividualAuthPanel() {
 
   const handleSignup = async (e) => {
     e.preventDefault();
+
+    // Validate all required fields
+    if (
+      !signupForm.name ||
+      !signupForm.email ||
+      !signupForm.phone ||
+      !signupForm.password ||
+      !signupForm.confirmPassword
+    ) {
+      return toast.error("All fields are required!");
+    }
+
     if (signupForm.password !== signupForm.confirmPassword)
       return toast.error("Passwords do not match!");
 
     setLoading(true);
+
     try {
-      await axios.post(`${API}/v1/individual/signup`, signupForm, {
-        withCredentials: true,
-      });
+      const formData = new FormData();
+      formData.append("name", signupForm.name);
+      formData.append("email", signupForm.email);
+      formData.append("phone", signupForm.phone);
+      formData.append("password", signupForm.password);
+      formData.append("confirmPassword", signupForm.confirmPassword);
+
+      // Add document if selected
+      if (selectedFile) {
+        formData.append("document", selectedFile);
+      }
+
+      // Debug: Log form data
+      console.log("Form data being sent:");
+      for (let [key, value] of formData.entries()) {
+        console.log(key, value);
+      }
+
+      const response = await axios.post(
+        `${API}/v1/individual/signup`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      console.log("Signup response:", response.data);
       toast.success("Signup successful!");
       setTimeout(() => setTab("login"), 1200);
     } catch (err) {
+      console.error("Signup error:", err);
       toast.error(err?.response?.data?.error || "Signup failed");
     }
     setLoading(false);
@@ -262,6 +323,61 @@ export default function IndividualAuthPanel() {
                   </span>
                 </div>
               ))}
+
+              {/* Document Upload Section */}
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-gray-700 mb-3">
+                  Upload Document (Optional)
+                </h3>
+                <p className="text-sm text-gray-500 mb-3">
+                  Upload your resume or any relevant document (.docx only)
+                </p>
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-center w-full">
+                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <FiUpload className="w-8 h-8 mb-2 text-gray-500" />
+                        <p className="mb-2 text-sm text-gray-500">
+                          <span className="font-semibold">Click to upload</span>{" "}
+                          or drag and drop
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          DOCX files only (MAX. 5MB)
+                        </p>
+                      </div>
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept=".docx"
+                        onChange={handleFileSelect}
+                      />
+                    </label>
+                  </div>
+
+                  {selectedFile && (
+                    <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                      <div className="flex items-center space-x-2">
+                        <FiFile className="text-green-600" />
+                        <span className="text-sm text-gray-700">
+                          {selectedFile.name}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedFile(null);
+                          toast.success("Document removed.");
+                        }}
+                        className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <button
                 type="submit"
                 disabled={loading}
