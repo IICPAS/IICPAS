@@ -9,6 +9,7 @@ import Select from "react-select";
 // Razorpay script should be loaded in _document.js or index.html
 
 const API = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080/api";
+const URL = process.env.NEXT_PUBLIC_BACKEND || "http://localhost:8080";
 
 const BookingCalendar = () => {
   //Define the state variables
@@ -22,6 +23,7 @@ const BookingCalendar = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
+  const [bookingReceipt, setBookingReceipt] = useState(null);
 
   //Fetch the email from the profile
 
@@ -109,15 +111,48 @@ const BookingCalendar = () => {
   const fetchBookings = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API}/bookings`, {
+      const res = await axios.get(`${API}/bookings?by=${email}`, {
         withCredentials: true,
       });
-      const filtered = res.data?.filter((b) => b.by === email);
-      setBookings(filtered || []);
-    } catch {
+      setBookings(res.data || []);
+    } catch (error) {
+      console.error("Error fetching bookings:", error);
       setBookings([]);
     }
     setLoading(false);
+  };
+
+  const fetchBookingReceipt = async (bookingId) => {
+    try {
+      console.log("Fetching receipt for booking ID:", bookingId);
+
+      // First try to get receipt by booking ID (most accurate)
+      try {
+        const res = await axios.get(
+          `${API}/payments/receipts/booking/${bookingId}`
+        );
+        console.log("Receipt found by booking ID:", res.data);
+        setBookingReceipt(res.data);
+        return;
+      } catch (error) {
+        // If not found by booking ID, fallback to email-based search
+        console.log("Receipt not found by booking ID, trying email search...");
+      }
+
+      // Fallback: search by email and match by title
+      const res = await axios.get(`${API}/payments/receipts?email=${email}`);
+      const receipts = res.data || [];
+      console.log("All receipts for email:", receipts);
+
+      const receipt = receipts.find(
+        (r) => r.bookingId === bookingId || r.for === selectedBooking?.title
+      );
+      console.log("Found receipt:", receipt);
+      setBookingReceipt(receipt || null);
+    } catch (error) {
+      console.error("Error fetching receipt:", error);
+      setBookingReceipt(null);
+    }
   };
 
   useEffect(() => {
@@ -197,6 +232,7 @@ const BookingCalendar = () => {
         }),
       ];
     };
+
     let steps = [];
     if (status === "rejected") {
       steps = [
@@ -229,17 +265,46 @@ const BookingCalendar = () => {
           dateParts: formatDateParts(selectedBooking.start),
           completed: true,
           icon: <Check size={22} className="text-green-600" />,
-          extra:
-            isLiveOrRecorded && selectedBooking.link ? (
-              <a
-                href={selectedBooking.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 underline text-xs mt-1"
-              >
-                View Link
-              </a>
-            ) : null,
+          extra: (
+            <div className="mt-1">
+              {isLiveOrRecorded && selectedBooking.link ? (
+                <a
+                  href={selectedBooking.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 underline text-xs block"
+                >
+                  View Link
+                </a>
+              ) : null}
+              {bookingReceipt && (
+                <div className="mt-2 p-2 bg-green-50 rounded border border-green-200">
+                  <div className="text-xs text-green-800 font-semibold mb-1">
+                    Receipt
+                  </div>
+                  <div className="text-xs text-green-700 space-y-0.5">
+                    <div>Amount: ₹{bookingReceipt.amount}</div>
+                    <div>
+                      Order ID:{" "}
+                      {bookingReceipt.razorpay_order_id
+                        ? bookingReceipt.razorpay_order_id.slice(-8)
+                        : "N/A"}
+                    </div>
+                    {bookingReceipt.receiptLink && (
+                      <a
+                        href={URL + bookingReceipt.receiptLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 underline block"
+                      >
+                        View Receipt PDF
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          ),
         },
       ];
     } else {
@@ -275,13 +340,22 @@ const BookingCalendar = () => {
             onClick={() => {
               setModalOpen(false);
               setSelectedBooking(null);
+              setBookingReceipt(null);
             }}
           >
             <XIcon size={24} />
           </button>
-          <h3 className="text-xl font-bold mb-8 text-blue-700 text-center">
+          <h3 className="text-xl font-bold mb-4 text-blue-700 text-center">
             Booking Status
           </h3>
+          <div className="text-center mb-6">
+            <p className="text-sm text-gray-600 mb-2">
+              <strong>Booking ID:</strong> #{selectedBooking._id.slice(-8)}
+            </p>
+            <p className="text-sm text-gray-600">
+              <strong>Training:</strong> {selectedBooking.title}
+            </p>
+          </div>
           {/* Stepper Circles and Lines */}
           <div className="mb-6 w-full">
             <div
@@ -510,6 +584,7 @@ const BookingCalendar = () => {
           <table className="min-w-full border border-gray-200 rounded-lg shadow-sm">
             <thead>
               <tr className="bg-blue-100 text-blue-900 text-sm">
+                <th className="px-4 py-2">Booking ID</th>
                 <th className="px-4 py-2">Title</th>
                 <th className="px-4 py-2">Type</th>
                 <th className="px-4 py-2">Hours</th>
@@ -523,22 +598,27 @@ const BookingCalendar = () => {
             <tbody>
               {bookings.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="text-center text-gray-400 py-8">
+                  <td colSpan={9} className="text-center text-gray-400 py-8">
                     No bookings found.
                   </td>
                 </tr>
               ) : (
                 bookings.map((b) => (
                   <tr key={b._id} className="border-t hover:bg-blue-50 text-sm">
+                    <td className="px-4 py-2 font-mono text-xs">
+                      #{b._id.slice(-8)}
+                    </td>
                     <td className="px-4 py-2">{b.title}</td>
                     <td className="px-4 py-2 capitalize">{b.type}</td>
                     <td className="px-4 py-2">{b.hrs}</td>
                     <td className="px-4 py-2">
                       <button
                         className="bg-blue-500 hover:bg-blue-700 text-white px-4 py-1 rounded font-semibold text-xs shadow"
-                        onClick={() => {
+                        onClick={async () => {
                           setSelectedBooking(b);
                           setModalOpen(true);
+                          // Fetch receipt when opening modal
+                          await fetchBookingReceipt(b._id);
                         }}
                       >
                         Track

@@ -131,7 +131,7 @@ const IndividualProfile = () => {
         return;
       }
 
-      const res = await axios.get(`${API}/v1/bookings?by=${profile.email}`);
+      const res = await axios.get(`${API}/bookings?by=${profile.email}`);
       setTrainings(res.data || []);
     } catch (error) {
       console.error("Failed to fetch trainings:", error);
@@ -285,6 +285,26 @@ const IndividualProfile = () => {
         setShowCheck(true);
         setTimeout(() => setShowCheck(false), 1800);
 
+        // If token was updated, force a complete profile refresh
+        if (data.tokenUpdated) {
+          console.log("Token updated, refreshing profile data...");
+          setTimeout(() => {
+            fetchProfile();
+          }, 500);
+        }
+
+        // If image was uploaded, force refresh the image display
+        if (data.user.image && data.user.image !== profile.image) {
+          console.log("New image uploaded, refreshing image display...");
+          setImagePreview(null); // Clear any preview
+          setProfileImage(null); // Clear selected file
+
+          // Force refresh the image after a short delay
+          setTimeout(() => {
+            refreshProfileImage();
+          }, 1000);
+        }
+
         // Refresh documents to show updated image
         if (profile.email) {
           fetchDocuments();
@@ -350,6 +370,27 @@ const IndividualProfile = () => {
       alert("Test image failed to load. URL: " + testImageUrl);
     };
     img.src = testImageUrl;
+  };
+
+  const refreshProfileImage = () => {
+    if (profile.image) {
+      console.log("Refreshing profile image:", profile.image);
+      setImageLoading(true);
+
+      // Force browser to reload the image by adding a timestamp
+      const img = new Image();
+      img.onload = () => {
+        console.log("Profile image refreshed successfully");
+        setImageLoading(false);
+        // Trigger a re-render by updating the profile state
+        setProfile((prev) => ({ ...prev }));
+      };
+      img.onerror = () => {
+        console.log("Profile image refresh failed");
+        setImageLoading(false);
+      };
+      img.src = `${URL}/${profile.image}?t=${Date.now()}`;
+    }
   };
 
   const renderProfileTab = () => (

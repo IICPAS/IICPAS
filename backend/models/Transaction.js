@@ -7,6 +7,7 @@ const TransactionSchema = new mongoose.Schema({
   for: { type: String, required: true }, // e.g. training title
   razorpay_order_id: { type: String },
   razorpay_payment_id: { type: String },
+  bookingId: { type: String }, // Store the booking ID
   status: { type: String, default: "success" },
   receiptLink: { type: String },
   createdAt: { type: Date, default: Date.now },

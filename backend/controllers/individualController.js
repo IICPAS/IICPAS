@@ -81,7 +81,7 @@ export const signup = async (req, res) => {
     }
 
     const user = await Individual.create(userData);
-    const token = signJwt(user._id);
+    const token = signJwt(user._id, user.email, user.name, user.image);
     res.cookie("jwt", token, cookieOptions);
     res.status(201).json({
       user: {
@@ -293,6 +293,12 @@ export const updateProfile = async (req, res) => {
     await user.save();
     console.log("User saved with new image:", user.image);
 
+    // Generate new JWT token with updated user data
+    const newToken = signJwt(user._id, user.email, user.name, user.image);
+
+    // Set the new token in cookie
+    res.cookie("jwt", newToken, cookieOptions);
+
     res.json({
       user: {
         id: user._id,
@@ -303,6 +309,7 @@ export const updateProfile = async (req, res) => {
         document: user.document,
       },
       message: "Profile updated successfully",
+      tokenUpdated: true,
     });
   } catch (err) {
     console.error("Update profile error:", err);

@@ -90,7 +90,7 @@ const DashboardOverview = () => {
 
   const fetchTrainings = async (email) => {
     try {
-      const res = await axios.get(`${API}/v1/bookings?email=${email}`);
+      const res = await axios.get(`${API}/bookings?by=${email}`);
       const trainings = res.data || [];
 
       const pastTrainings = trainings.filter(
