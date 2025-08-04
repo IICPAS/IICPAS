@@ -94,6 +94,8 @@ const CompanyProfile = () => {
       });
       const data = res.data;
       console.log("Company profile data received:", data);
+      console.log("Full company object:", data.company);
+      console.log("Company documentPath:", data.company?.documentPath);
 
       if (data.company) {
         const companyData = {
@@ -106,6 +108,7 @@ const CompanyProfile = () => {
         };
 
         console.log("Setting company profile:", companyData);
+        console.log("Document path from API:", data.company.documentPath);
         setProfile(companyData);
         console.log("Company profile image path:", data.company.image);
 
@@ -214,6 +217,10 @@ const CompanyProfile = () => {
       }
 
       console.log("Generating documents for company ID:", profile._id);
+      console.log("Profile data:", profile);
+      console.log("Profile image:", profile.image);
+      console.log("Profile documentPath:", profile.documentPath);
+
       const documents = [];
 
       // Add profile image if exists
@@ -1050,6 +1057,9 @@ const CompanyProfile = () => {
             </h3>
             <p className="mt-1 text-sm text-gray-500">
               Company ID: {profile._id || "Not available"}
+            </p>
+            <p className="mt-1 text-sm text-gray-500">
+              Document Path: {profile.documentPath || "Not available"}
             </p>
             <p className="mt-1 text-sm text-gray-500">
               Documents will appear here when profile image or registration
