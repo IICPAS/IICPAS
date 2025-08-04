@@ -37,10 +37,12 @@ router.get("/iscompany", isCompany, async (req, res) => {
       message: "Authenticated company",
       company: {
         id: company._id,
+        _id: company._id,
         fullName: company.fullName,
         email: company.email,
         phone: company.phone,
         image: company.image,
+        documentPath: company.documentPath,
         status: company.status,
       },
     });
