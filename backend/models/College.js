@@ -6,6 +6,7 @@ const collegeSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   document: { type: String },
+  image: { type: String }, // Profile image field
   status: {
     type: String,
     enum: ["not approved", "approved"],
@@ -13,6 +14,8 @@ const collegeSchema = new mongoose.Schema({
   },
   otp: String,
   otpExpiry: Date,
+}, {
+  timestamps: true, // Add timestamps
 });
 
 export const College = mongoose.model("colleges", collegeSchema);

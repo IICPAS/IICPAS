@@ -87,20 +87,20 @@ export const collegeLogout = (req, res) => {
 };
 
 export const isCollegeLoggedIn = (req, res) => {
+  // console.log("Hi");
   const token = req.cookies?.token;
   if (!token) return res.status(401).json({ isLoggedIn: false });
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     if (decoded.role === "college") {
-      return res
-        .status(200)
-        .json({
-          isLoggedIn: true,
-          name: decoded.name,
-          user: decoded,
-          email: decoded.email,
-        });
+      // console.log(decoded.name, decoded.email, decoded);
+      return res.status(200).json({
+        isLoggedIn: true,
+        name: decoded.name,
+        user: decoded,
+        email: decoded.email,
+      });
     }
     return res.status(403).json({ isLoggedIn: false });
   } catch {
@@ -156,6 +156,7 @@ export const getAllColleges = async (req, res) => {
       .json({ message: "Failed to fetch colleges", error: err.message });
   }
 };
+
 // Approve a college by ID
 export const approveCollege = async (req, res) => {
   try {
@@ -169,5 +170,60 @@ export const approveCollege = async (req, res) => {
     res.status(200).json({ message: "College approved", college });
   } catch (err) {
     res.status(500).json({ message: "Approval failed", error: err.message });
+  }
+};
+
+// Update college profile
+export const updateCollegeProfile = async (req, res) => {
+  try {
+    const { name, phone, password, confirmPassword } = req.body;
+    const collegeId = req.user.id; // From JWT token
+
+    const college = await College.findById(collegeId);
+    if (!college) {
+      return res.status(404).json({ message: "College not found" });
+    }
+
+    // Update basic info
+    if (name) college.name = name;
+    if (phone) college.phone = phone;
+
+    // Handle password update
+    if (password) {
+      if (password !== confirmPassword) {
+        return res.status(400).json({ message: "Passwords do not match" });
+      }
+      college.password = await bcrypt.hash(password, 10);
+    }
+
+    // Handle profile image upload
+    if (req.file) {
+      college.image = req.file.path.replace(/\\/g, "/");
+    }
+
+    await college.save();
+
+    // Return updated college data (without password)
+    const updatedCollege = {
+      _id: college._id,
+      name: college.name,
+      email: college.email,
+      phone: college.phone,
+      image: college.image,
+      document: college.document,
+      status: college.status,
+      createdAt: college.createdAt,
+      updatedAt: college.updatedAt,
+    };
+
+    res.status(200).json({
+      message: "College profile updated successfully",
+      college: updatedCollege,
+    });
+  } catch (err) {
+    console.error("College profile update error:", err);
+    res
+      .status(500)
+      .json({ message: "Failed to update profile", error: err.message });
   }
 };
