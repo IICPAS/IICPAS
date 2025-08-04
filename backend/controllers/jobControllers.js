@@ -3,20 +3,40 @@ import JobsCompany from "../models/jobsCompany.js";
 // CREATE job
 export const createJob = async (req, res) => {
   try {
-    console.log(req.body);
+    console.log("Creating job with data:", req.body);
     const job = await JobsCompany.create(req.body);
+    console.log("Job created successfully:", job);
     res.json(job);
   } catch (err) {
+    console.error("Error creating job:", err);
     res.status(500).json({ error: err.message });
   }
 };
 
-// VIEW all jobs
+// VIEW all jobs by email
 export const getAllJobs = async (req, res) => {
   try {
-    const jobs = await JobsCompany.find();
+    const { email } = req.query;
+    console.log("getAllJobs called with email:", email);
+
+    let jobs;
+
+    if (email) {
+      // Filter jobs by company email
+      console.log("Filtering jobs by email:", email);
+      jobs = await JobsCompany.find({ email: email });
+      console.log("Found jobs with email filter:", jobs.length);
+    } else {
+      // Get all jobs (for admin purposes)
+      console.log("Getting all jobs (no email filter)");
+      jobs = await JobsCompany.find();
+      console.log("Found all jobs:", jobs.length);
+    }
+
+    console.log("Sending jobs response:", jobs);
     res.json(jobs);
   } catch (err) {
+    console.error("Error in getAllJobs:", err);
     res.status(500).json({ error: err.message });
   }
 };
