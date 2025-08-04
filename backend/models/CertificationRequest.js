@@ -3,12 +3,15 @@ import mongoose from "mongoose";
 const certificationRequestSchema = new mongoose.Schema(
   {
     college: { type: String, required: true },
-    specialization: { type: String, required: true },
-    topics: [{ type: String, required: true }],
-    document: { type: String },
+    course: { type: String, required: true },
+    syllabus: { type: String, required: true },
+    brochure: { type: String },
+    examCenter: { type: String, required: true },
+    fees: { type: Number, required: true },
+    sampleCertificate: { type: String },
     status: {
       type: String,
-      enum: ["pending", "active"],
+      enum: ["pending", "approved", "rejected"],
       default: "pending",
     },
   },

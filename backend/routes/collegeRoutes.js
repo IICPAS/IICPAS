@@ -6,11 +6,13 @@ import {
   isCollegeLoggedIn,
   sendCollegeOTP,
   resetCollegePassword,
+  updateCollegeProfile,
 } from "../controllers/collegeAuthControllers.js";
 
 import { uploadCollegeDoc } from "../middleware/upload.js";
 import { approveCollege } from "../controllers/collegeAuthControllers.js";
 import { getAllColleges } from "../controllers/collegeAuthControllers.js";
+import { requireAuth } from "../middleware/requireAuth.js";
 
 const router = express.Router();
 
@@ -52,5 +54,16 @@ router.post("/send-otp", sendCollegeOTP);
  * @desc    Reset password using OTP
  */
 router.post("/reset-password", resetCollegePassword);
+
+/**
+ * @route   PUT /api/college/profile
+ * @desc    Update college profile (with image upload)
+ */
+router.put(
+  "/profile",
+  requireAuth,
+  uploadCollegeDoc.single("profileImage"),
+  updateCollegeProfile
+);
 
 export default router;

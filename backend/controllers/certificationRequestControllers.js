@@ -16,24 +16,29 @@ export const upload = multer({ storage });
 
 // ===== CONTROLLERS =====
 
-// Create (with document upload support)
+// Create (with file upload support)
 export const createCertificationRequest = async (req, res) => {
   try {
     const data = { ...req.body };
-    if (req.file) {
-      data.document = req.file.path.replace(/\\/g, "/");
-    }
-    // Handle topics as string or array
-    if (typeof data.topics === "string") {
-      try {
-        data.topics = JSON.parse(data.topics);
-      } catch {
-        data.topics = data.topics
-          .split(",")
-          .map((t) => t.trim())
-          .filter(Boolean);
+
+    // Handle file uploads
+    if (req.files) {
+      if (req.files.brochure) {
+        data.brochure = req.files.brochure[0].path.replace(/\\/g, "/");
+      }
+      if (req.files.sampleCertificate) {
+        data.sampleCertificate = req.files.sampleCertificate[0].path.replace(
+          /\\/g,
+          "/"
+        );
       }
     }
+
+    // Convert fees to number
+    if (data.fees) {
+      data.fees = Number(data.fees);
+    }
+
     const newRequest = new CertificationRequest(data);
     await newRequest.save();
     res.status(201).json(newRequest);
@@ -63,24 +68,29 @@ export const getCertificationRequestById = async (req, res) => {
   }
 };
 
-// Update (admin sets status to active, and/or updates document/topics)
+// Update (admin sets status and/or updates files)
 export const updateCertificationRequest = async (req, res) => {
   try {
     const data = { ...req.body };
-    if (req.file) {
-      data.document = req.file.path.replace(/\\/g, "/");
-    }
-    // Handle topics as string or array
-    if (data.topics && typeof data.topics === "string") {
-      try {
-        data.topics = JSON.parse(data.topics);
-      } catch {
-        data.topics = data.topics
-          .split(",")
-          .map((t) => t.trim())
-          .filter(Boolean);
+
+    // Handle file uploads
+    if (req.files) {
+      if (req.files.brochure) {
+        data.brochure = req.files.brochure[0].path.replace(/\\/g, "/");
+      }
+      if (req.files.sampleCertificate) {
+        data.sampleCertificate = req.files.sampleCertificate[0].path.replace(
+          /\\/g,
+          "/"
+        );
       }
     }
+
+    // Convert fees to number
+    if (data.fees) {
+      data.fees = Number(data.fees);
+    }
+
     const updated = await CertificationRequest.findByIdAndUpdate(
       req.params.id,
       data,
