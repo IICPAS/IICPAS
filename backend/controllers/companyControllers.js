@@ -60,6 +60,7 @@ export const loginCompany = async (req, res) => {
         role: "company",
         name: company.fullName,
         email: company.email,
+        documentPath: company.documentPath,
       },
       JWT_SECRET,
       {
@@ -155,4 +156,100 @@ export const approveCompany = async (req, res) => {
     { new: true }
   );
   res.json({ message: "Approved", company });
+};
+
+// Update company profile
+export const updateCompanyProfile = async (req, res) => {
+  try {
+    const { name, phone, password, confirmPassword } = req.body;
+    const profileImage = req.file;
+    const companyId = req.company.id;
+
+    // Find the company
+    const company = await Company.findById(companyId);
+    if (!company) {
+      return res.status(404).json({ error: "Company not found" });
+    }
+
+    // Update basic fields (company name cannot be changed)
+    if (phone) company.phone = phone;
+
+    // Handle password update
+    if (password) {
+      if (password !== confirmPassword) {
+        return res.status(400).json({ error: "Passwords do not match" });
+      }
+      company.password = await bcrypt.hash(password, 10);
+    }
+
+    // Handle profile image upload
+    if (profileImage) {
+      company.image = profileImage.path;
+    }
+
+    await company.save();
+
+    res.status(200).json({
+      message: "Company profile updated successfully",
+      company: {
+        name: company.fullName,
+        email: company.email,
+        phone: company.phone,
+        image: company.image,
+      },
+    });
+  } catch (error) {
+    console.error("Profile update error:", error);
+    res.status(500).json({ error: "Failed to update company profile" });
+  }
+};
+
+// Get company documents by email
+export const getCompanyDocuments = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const companyId = req.company.id;
+
+    // Find the company
+    const company = await Company.findById(companyId);
+    if (!company) {
+      return res.status(404).json({ error: "Company not found" });
+    }
+
+    // Verify the email matches the authenticated company
+    if (company.email !== email) {
+      return res.status(403).json({ error: "Unauthorized access" });
+    }
+
+    const documents = [];
+
+    // Add profile image if exists
+    if (company.image) {
+      documents.push({
+        name: "Profile Image",
+        filename: company.image.split("/").pop(),
+        path: company.image,
+        type: "image",
+        uploadedAt: company.updatedAt || company.createdAt,
+      });
+    }
+
+    // Add registration document if exists
+    if (company.documentPath) {
+      documents.push({
+        name: "Registration Document",
+        filename: company.documentPath.split("/").pop(),
+        path: company.documentPath,
+        type: "document",
+        uploadedAt: company.createdAt,
+      });
+    }
+
+    res.status(200).json({
+      documents: documents,
+    });
+  } catch (error) {
+    console.error("Documents fetch error:", error);
+    res.status(500).json({ error: "Failed to fetch company documents" });
+  }
 };
