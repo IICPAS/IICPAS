@@ -321,7 +321,7 @@ const IndividualProfile = () => {
 
   const tabs = [
     { id: "profile", label: "Profile Update", icon: Settings },
-    { id: "enquiries", label: "Enquiries", icon: FileText },
+    { id: "tickets", label: "Tickets", icon: FileText },
     { id: "trainings", label: "Trainings", icon: GraduationCap },
     { id: "receipts", label: "Receipts", icon: Receipt },
     { id: "deposits", label: "Deposits", icon: CreditCard },
@@ -989,7 +989,7 @@ const IndividualProfile = () => {
     switch (activeTab) {
       case "profile":
         return renderProfileTab();
-      case "enquiries":
+      case "tickets":
         return renderEnquiriesTab();
       case "trainings":
         return renderTrainingsTab();

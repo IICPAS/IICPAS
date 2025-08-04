@@ -39,14 +39,11 @@ const DashboardOverview = () => {
     email: "",
     image: "",
   });
-
-
+  const [transactions, setTransactions] = useState([]);
 
   useEffect(() => {
     fetchUserAndMetrics();
   }, []);
-
-
 
   const fetchUserAndMetrics = async () => {
     try {
@@ -64,13 +61,15 @@ const DashboardOverview = () => {
           image: user.image || "",
         });
         setUserEmail(email);
-        
+
         // Only fetch metrics if we have an email
         if (email) {
           await Promise.all([
             fetchEnquiries(email),
             fetchTrainings(email),
             fetchTickets(email),
+            fetchTotalSpent(email),
+            fetchTransactions(email),
           ]);
         }
       }
@@ -95,45 +94,48 @@ const DashboardOverview = () => {
     }
   };
 
-  const fetchTrainings = async (email) => { 
-    try { 
+  const fetchTrainings = async (email) => {
+    try {
       if (!email) return;
-      
+
       // Get all bookings without filtering by email
-      const res = await axios.get(`${API}/bookings`); 
+      const res = await axios.get(`${API}/bookings`);
       // Filter bookings by email on the client side
-      const trainings = res.data.filter(booking => booking.by === email) || [];
-      const currentDate = new Date(); 
- 
-      // Past trainings: those with start date in the past and status "booked" 
-      const pastTrainings = trainings.filter( 
-        (t) => t.start && new Date(t.start) < currentDate && t.status === "booked" 
-      ).length; 
- 
-      // Scheduled trainings: those with start date in the future and status "booked" 
-      const scheduleTrainings = trainings.filter( 
-        (t) => t.start && new Date(t.start) >= currentDate && t.status === "booked" 
-      ).length; 
- 
+      const trainings =
+        res.data.filter((booking) => booking.by === email) || [];
+      const currentDate = new Date();
+
+      // Past trainings: those with start date in the past and status "booked"
+      const pastTrainings = trainings.filter(
+        (t) =>
+          t.start && new Date(t.start) < currentDate && t.status === "booked"
+      ).length;
+
+      // Scheduled trainings: those with start date in the future and status "booked"
+      const scheduleTrainings = trainings.filter(
+        (t) =>
+          t.start && new Date(t.start) >= currentDate && t.status === "booked"
+      ).length;
+
       // Confirmed trainings: those with status "booked" (both past and future)
       const confirmedTrainings = trainings.filter(
         (t) => t.status === "booked"
       ).length;
-      
-      const pendingTrainings = trainings.filter( 
-        (t) => t.status === "pending" 
-      ).length; 
- 
-      setMetrics((prev) => ({ 
-        ...prev, 
-        pastTrainings, 
-        scheduleTrainings, 
-        confirmedTrainings, 
-        pendingTrainings, 
-      })); 
-    } catch (error) { 
-      console.error("Error fetching trainings:", error); 
-    } 
+
+      const pendingTrainings = trainings.filter(
+        (t) => t.status === "pending"
+      ).length;
+
+      setMetrics((prev) => ({
+        ...prev,
+        pastTrainings,
+        scheduleTrainings,
+        confirmedTrainings,
+        pendingTrainings,
+      }));
+    } catch (error) {
+      console.error("Error fetching trainings:", error);
+    }
   };
 
   const fetchTickets = async (email) => {
@@ -149,7 +151,35 @@ const DashboardOverview = () => {
     }
   };
 
+  const fetchTotalSpent = async (email) => {
+    try {
+      const res = await axios.get(`${API}/payments/total-spent/${email}`);
+      const { totalSpent } = res.data;
+      setMetrics((prev) => ({
+        ...prev,
+        totalSpent: totalSpent || 0,
+      }));
+    } catch (error) {
+      console.error("Error fetching total spent:", error);
+      // Set to 0 if there's an error
+      setMetrics((prev) => ({
+        ...prev,
+        totalSpent: 0,
+      }));
+    }
+  };
 
+  const fetchTransactions = async (email) => {
+    try {
+      const res = await axios.get(
+        `${API}/payments/transactions-by-email/${email}`
+      );
+      setTransactions(res.data || []);
+    } catch (error) {
+      console.error("Error fetching transactions:", error);
+      setTransactions([]);
+    }
+  };
 
   const metricCards = [
     {
@@ -417,6 +447,50 @@ const DashboardOverview = () => {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Transaction History */}
+        <div className="bg-white rounded-xl shadow-sm p-6 mt-8">
+          <h3 className="text-xl font-bold text-gray-800 mb-4">
+            Recent Transactions
+          </h3>
+          {transactions.length > 0 ? (
+            <div className="space-y-3">
+              {transactions.slice(0, 5).map((transaction) => (
+                <div
+                  key={transaction._id}
+                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="bg-green-100 p-2 rounded-full">
+                      <TrendingUp size={16} className="text-green-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">
+                        {transaction.for}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(transaction.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-green-600">
+                      ₹{transaction.amount?.toLocaleString()}
+                    </p>
+                    <p className="text-xs text-gray-500 capitalize">
+                      {transaction.status}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <TrendingUp size={48} className="text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500">No transactions found</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

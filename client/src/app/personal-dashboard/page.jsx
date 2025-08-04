@@ -26,7 +26,7 @@ const IndividualDashboardPage = () => {
   const [user, setUser] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("dashboard");
-  
+
   // Ticket modal state
   const [showTicketModal, setShowTicketModal] = useState(false);
   const [ticketForm, setTicketForm] = useState({
@@ -46,16 +46,16 @@ const IndividualDashboardPage = () => {
 
         const userData = res.data.user || res.data.individual;
         setUser(userData);
-        
+
         // Update ticket form with user data
         if (userData && userData.name && userData.email) {
-          setTicketForm(prev => ({
+          setTicketForm((prev) => ({
             ...prev,
             name: userData.name,
             email: userData.email,
           }));
         }
-        
+
         setLoading(false);
       } catch (err) {
         toast.error("Unauthorized. Please login.");
@@ -79,7 +79,7 @@ const IndividualDashboardPage = () => {
       toast.error("Logout failed");
     }
   };
-  
+
   // Handle ticket submission
   const handleTicketSubmit = async (e) => {
     e.preventDefault();
@@ -171,7 +171,7 @@ const IndividualDashboardPage = () => {
           {renderTabContent()}
         </main>
       </div>
-      
+
       {/* Floating Add Ticket Button */}
       <div className="fixed bottom-8 left-8 z-50">
         <button
@@ -296,7 +296,7 @@ const Sidebar = ({ setActiveTab, activeTab }) => {
     },
     {
       id: "Tickets",
-      label: "Tickets",
+      label: "Messages",
       icon: FaFileUpload,
       color: "text-orange-600",
     },

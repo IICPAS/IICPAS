@@ -1,27 +1,31 @@
 import express from "express";
 import {
   createMessage,
-  getMessages,
-  getMessage,
-  updateMessage,
+  getAllMessages,
+  getMessagesByEmail,
+  getMessageById,
   deleteMessage,
+  adminReplyToMessage,
 } from "../controllers/messageControllers.js";
 
 const router = express.Router();
 
-// Create a message
+// Create a new message
 router.post("/", createMessage);
 
-// Get all messages
-router.get("/", getMessages);
+// Get all messages (for admin purposes)
+router.get("/all", getAllMessages);
 
-// Get a single message by ID
-router.get("/:id", getMessage);
+// Get messages by email
+router.get("/by-email/:email", getMessagesByEmail);
 
-// Update a message by ID
-router.put("/:id", updateMessage);
+// Admin reply to message (must come before /:id route)
+router.put("/admin-reply/:id", adminReplyToMessage);
 
-// Delete a message by ID
+// Get message by ID
+router.get("/:id", getMessageById);
+
+// Delete message by ID
 router.delete("/:id", deleteMessage);
 
 export default router;

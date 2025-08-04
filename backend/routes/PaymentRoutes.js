@@ -277,4 +277,81 @@ router.get("/receipts/booking/:bookingId", async (req, res) => {
   }
 });
 
+// Get all transactions (for admin purposes)
+router.get("/all-transactions", async (req, res) => {
+  try {
+    const transactions = await Transaction.find({}).sort({
+      createdAt: -1,
+    });
+
+    res.json(transactions);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get transactions by email (enhanced version)
+router.get("/transactions-by-email/:email", async (req, res) => {
+  try {
+    const { email } = req.params;
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+
+    const transactions = await Transaction.find({ email }).sort({
+      createdAt: -1,
+    });
+
+    res.json(transactions);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get transaction by ID
+router.get("/transaction/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ error: "Transaction ID is required" });
+    }
+
+    const transaction = await Transaction.findById(id);
+    if (!transaction) {
+      return res.status(404).json({ error: "Transaction not found" });
+    }
+
+    res.json(transaction);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get total spent by email
+router.get("/total-spent/:email", async (req, res) => {
+  try {
+    const { email } = req.params;
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+
+    const transactions = await Transaction.find({
+      email,
+      status: "success",
+    });
+
+    const totalSpent = transactions.reduce((sum, transaction) => {
+      return sum + (transaction.amount || 0);
+    }, 0);
+
+    res.json({
+      totalSpent,
+      transactionCount: transactions.length,
+      transactions,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;
