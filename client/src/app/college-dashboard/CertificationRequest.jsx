@@ -419,8 +419,7 @@ export default function CollegeCertRequests() {
                           {request.examCenter}
                         </div>
                         <div className="flex items-center gap-1">
-                          <DollarSign className="w-4 h-4" />₹
-                          {request.fees?.toLocaleString()}
+                          ₹{request.fees?.toLocaleString()}
                         </div>
                         <div className="flex items-center gap-1">
                           <Calendar className="w-4 h-4" />
