@@ -1,57 +1,204 @@
 import Message from "../models/Message.js";
 
-// Create
+// Create a new message
 export const createMessage = async (req, res) => {
   try {
-    const { email, name, message } = req.body;
-    const newMsg = await Message.create({ email, name, message });
-    res.status(201).json(newMsg);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-};
+    const { email, phone, message } = req.body;
 
-// Read all
-export const getMessages = async (req, res) => {
-  try {
-    const messages = await Message.find().sort({ created: -1 });
-    res.json(messages);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
+    if (!email || !phone || !message) {
+      return res.status(400).json({
+        success: false,
+        message: "Email, phone, and message are required",
+      });
+    }
 
-// Read one
-export const getMessage = async (req, res) => {
-  try {
-    const msg = await Message.findById(req.params.id);
-    if (!msg) return res.status(404).json({ error: "Not found" });
-    res.json(msg);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-// Update
-export const updateMessage = async (req, res) => {
-  try {
-    const msg = await Message.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
+    const newMessage = await Message.create({
+      email,
+      phone,
+      message,
     });
-    if (!msg) return res.status(404).json({ error: "Not found" });
-    res.json(msg);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
+
+    res.status(201).json({
+      success: true,
+      message: "Message sent successfully",
+      data: newMessage,
+    });
+  } catch (error) {
+    console.error("Error creating message:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to send message",
+      error: error.message,
+    });
   }
 };
 
-// Delete
+// Get all messages (for admin purposes)
+export const getAllMessages = async (req, res) => {
+  try {
+    const messages = await Message.find({}).sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      data: messages,
+    });
+  } catch (error) {
+    console.error("Error fetching messages:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch messages",
+      error: error.message,
+    });
+  }
+};
+
+// Get messages by email
+export const getMessagesByEmail = async (req, res) => {
+  try {
+    const { email } = req.params;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is required",
+      });
+    }
+
+    const messages = await Message.find({ email }).sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      data: messages,
+    });
+  } catch (error) {
+    console.error("Error fetching messages by email:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch messages",
+      error: error.message,
+    });
+  }
+};
+
+// Get message by ID
+export const getMessageById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Message ID is required",
+      });
+    }
+
+    const message = await Message.findById(id);
+
+    if (!message) {
+      return res.status(404).json({
+        success: false,
+        message: "Message not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: message,
+    });
+  } catch (error) {
+    console.error("Error fetching message by ID:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch message",
+      error: error.message,
+    });
+  }
+};
+
+// Delete message by ID
 export const deleteMessage = async (req, res) => {
   try {
-    const msg = await Message.findByIdAndDelete(req.params.id);
-    if (!msg) return res.status(404).json({ error: "Not found" });
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Message ID is required",
+      });
+    }
+
+    const message = await Message.findByIdAndDelete(id);
+
+    if (!message) {
+      return res.status(404).json({
+        success: false,
+        message: "Message not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Message deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting message:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete message",
+      error: error.message,
+    });
+  }
+};
+
+// Admin reply to message
+export const adminReplyToMessage = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { adminReply, adminRepliedBy } = req.body;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Message ID is required",
+      });
+    }
+
+    if (!adminReply || !adminRepliedBy) {
+      return res.status(400).json({
+        success: false,
+        message: "Admin reply and admin name are required",
+      });
+    }
+
+    const message = await Message.findByIdAndUpdate(
+      id,
+      {
+        adminReply,
+        adminRepliedBy,
+        adminRepliedAt: new Date(),
+        status: "replied",
+      },
+      { new: true }
+    );
+
+    if (!message) {
+      return res.status(404).json({
+        success: false,
+        message: "Message not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Admin reply sent successfully",
+      data: message,
+    });
+  } catch (error) {
+    console.error("Error sending admin reply:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to send admin reply",
+      error: error.message,
+    });
   }
 };

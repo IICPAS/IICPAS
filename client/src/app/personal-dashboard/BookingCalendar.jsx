@@ -435,7 +435,7 @@ const BookingCalendar = () => {
 
   return (
     <>
-      <div className="w-[79vw] mx-auto space-y-5 pb-8">
+      <div className="w-[79vw] mx-auto space-y-5 pb-8 mt-12">
         <div className="  pl-8 pr-8">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-bold text-blue-700">Your Bookings</h2>
