@@ -11,11 +11,13 @@ import TestimonialSection from "./components/TestimonialSection";
 import CourseCategorySection from "./components/CourseCategorySection";
 import ContactSection from "./components/ContactSection";
 import Header from "./components/Header";
+import AlertMarquee from "./components/AlertMarquee";
 
 const page = () => {
   return (
     <>
-      <div className="pb-20">
+      <AlertMarquee showMarquee={undefined} />
+      <div className="pt-10">
         <Header />
         <HeroSection />
         <AboutUsSection />
