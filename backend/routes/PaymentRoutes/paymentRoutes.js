@@ -135,6 +135,60 @@ router.get("/check-status", async (req, res) => {
   }
 });
 
+// Initiate payment for course purchase
+router.post("/initiate-payment", async (req, res) => {
+  try {
+    if (!client) {
+      return res.status(500).json({
+        error: "Payment service not initialized. Check environment variables.",
+      });
+    }
+
+    const { transactionId, amount } = req.body;
+
+    if (!amount || isNaN(amount)) {
+      return res.status(400).json({ error: "Valid amount is required" });
+    }
+
+    console.log(
+      "💰 Initiating payment for amount:",
+      amount,
+      "Transaction ID:",
+      transactionId
+    );
+
+    const merchantOrderId = transactionId || randomUUID();
+    const redirectUrl = `${BASE_URL_BACKEND.replace(
+      /\/$/,
+      ""
+    )}/api/v1/payments/check-status?merchantOrderId=${merchantOrderId}`;
+    console.log("🔄 Redirect URL:", redirectUrl);
+
+    const request = StandardCheckoutPayRequest.builder()
+      .merchantOrderId(merchantOrderId)
+      .amount(parseFloat(amount))
+      .redirectUrl(redirectUrl)
+      .build();
+
+    console.log("📤 Payment request:", JSON.stringify(request, null, 2));
+
+    const response = await client.pay(request);
+    console.log("✅ Payment initiated successfully");
+
+    return res.json({
+      success: true,
+      redirectUrl: response.redirectUrl,
+      merchantOrderId: merchantOrderId,
+    });
+  } catch (err) {
+    console.error("❌ Error initiating payment:", err.message || err);
+    return res.status(500).json({
+      error: "Payment initiation failed",
+      details: err.message,
+    });
+  }
+});
+
 // Health check endpoint
 router.get("/health", (req, res) => {
   const health = {

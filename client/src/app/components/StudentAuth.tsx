@@ -134,7 +134,7 @@ export default function StudentAuthForm() {
 
   // --- Render ---
   return (
-    <div className="pt-24 flex justify-center items-center bg-gray-50 p-4">
+    <div className="pt-36 flex justify-center items-center bg-gray-50 p-4">
       <div className="w-full max-w-lg  bg-white rounded-xl shadow p-5">
         <div className="flex justify-center items-center">
           <h2 className="text-2xl font-bold text-center mb-6">

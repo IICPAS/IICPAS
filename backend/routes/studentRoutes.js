@@ -54,12 +54,13 @@ router.post("/login", async (req, res) => {
 
   try {
     const student = await Student.findOne({ email });
+
     if (!student) return res.status(404).json({ message: "Not found" });
 
     const match = await bcrypt.compare(password, student.password);
     if (!match) return res.status(401).json({ message: "Wrong password" });
-
     const token = createToken(student);
+
     res
       .cookie("token", token, {
         httpOnly: true,
@@ -571,6 +572,50 @@ router.get("/list-courses/:id", async (req, res) => {
   } catch (err) {
     res.status(500).json({
       message: "Failed to fetch enrolled courses",
+      error: err.message,
+    });
+  }
+});
+
+// POST /api/v1/students/add-course/:id - Add course to student's enrolled courses
+router.post("/add-course/:id", async (req, res) => {
+  try {
+    const student = await Student.findById(req.params.id);
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    const { courseId } = req.body;
+    if (!courseId) {
+      return res.status(400).json({ message: "courseId is required" });
+    }
+
+    // Check if course exists
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    // Check if course is already enrolled
+    if (student.course.includes(courseId)) {
+      return res
+        .status(400)
+        .json({ message: "Student is already enrolled in this course" });
+    }
+
+    // Add course to student's enrolled courses
+    student.course.push(courseId);
+    await student.save();
+
+    res.json({
+      message: "Course added to student successfully",
+      studentId: student._id,
+      courseId: courseId,
+      enrolledCourses: student.course,
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: "Failed to add course to student",
       error: err.message,
     });
   }

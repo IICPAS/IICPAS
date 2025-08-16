@@ -1,8 +1,9 @@
 import React from "react";
+import { FaShareAlt } from "react-icons/fa";
 
 export default function DashboardTab() {
   return (
-    <main className="flex-1 px-8 py-6">
+    <main className="flex-1 px-8 py-6 bg-white">
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2 text-2xl font-semibold">
@@ -10,7 +11,7 @@ export default function DashboardTab() {
           <span className="bg-yellow-400 text-xs font-bold rounded px-2 ml-2">
             Urban
           </span>
-          <i className="fas fa-share-alt ml-2 text-blue-600 cursor-pointer"></i>
+          <FaShareAlt className="ml-2 text-blue-600 cursor-pointer" />
         </div>
         <div className="font-bold text-blue-600 cursor-pointer">GNAAGBN</div>
       </div>
@@ -126,7 +127,12 @@ export default function DashboardTab() {
           <div className="text-sm text-red-600 font-semibold mt-1">
             Kit Stock Critically Low. Order immediately!
           </div>
-          <button className="mt-3 bg-purple-500 hover:bg-purple-700 text-white px-4 py-2 rounded font-semibold w-fit">
+          <button
+            onClick={() =>
+              (window.location.href = "/center-dashboard?tab=kits")
+            }
+            className="mt-3 bg-purple-500 hover:bg-purple-700 text-white px-4 py-2 rounded font-semibold w-fit"
+          >
             Order Now
           </button>
           <div className="mt-2 text-sm text-gray-500">
