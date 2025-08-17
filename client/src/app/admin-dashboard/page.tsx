@@ -14,6 +14,7 @@ import axios from "axios";
 import ManageMetaTags from "./Course/ManageMetaTags";
 import BlogComponent from "./BlogComponent.jsx";
 import CollegeTab from "./CollegeTab";
+import CenterTab from "./CenterTab";
 import CalendarTab from "./CalendarTab";
 import AboutTab from "./AboutTab";
 import StudentsTab from "./StudentsTab";
@@ -225,6 +226,8 @@ export default function AdminDashboard() {
           <RevisionQuizTable />
         ) : activeTab === "topics" ? (
           <TopicsManager />
+        ) : activeTab === "center" ? (
+          <CenterTab />
         ) : null}
       </main>
     </div>

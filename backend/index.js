@@ -43,6 +43,7 @@ import individualRoutes from "./routes/individualRoutes.js";
 import JobsCompanyRoutes from "./routes/jobCompanyRoutes.js";
 import JobApplicationRoute from "./routes/jobApplicationRoutes.js";
 import UploadRoutes from "./routes/uploadRoutes.js";
+import centerRoutes from "./routes/centerRoutes.js";
 
 //Payment Routes
 import paymentRoutes from "./routes/PaymentRoutes/paymentRoutes.js";
@@ -51,6 +52,10 @@ import PaymentRoutes from "./routes/PaymentRoutes.js";
 //Topic Routes
 import TopicTrainingRoutes from "./routes/TopicRoutes/TopicRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
+
+//Kit Order Routes
+import kitOrderRoutes from "./routes/kitOrderRoutes.js";
+import teacherRoutes from "./routes/teacherRoutes.js";
 
 //App Configuration
 dotenv.config();
@@ -123,16 +128,26 @@ app.use("/api/apply/jobs-external", JobApplicationRoute);
 //Student Routes
 app.use("/api/v1/students", studentRoutes);
 
+//Center Routes
+app.use("/api/v1/centers", centerRoutes);
+
 //Video Routes
 app.use("/api/upload", UploadRoutes);
 
 //Payment Routes
 app.use("/api/v1/payments", paymentRoutes);
+app.use("/api/v1/payment", paymentRoutes); // Add this line to handle singular payment path
 app.use("/api/payments", PaymentRoutes);
 
 //Topic Routes
 app.use("/api/v1/topics-trainings", TopicTrainingRoutes);
 app.use("/api/messages", messageRoutes);
+
+//Kit Order Routes
+app.use("/api/v1/kit-orders", kitOrderRoutes);
+
+//Teacher Routes
+app.use("/api/v1/teachers", teacherRoutes);
 
 // Server
 const PORT = process.env.PORT || 8080;

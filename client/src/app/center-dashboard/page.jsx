@@ -1,5 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import axios from "axios";
 import {
   FaBars,
   FaTachometerAlt,
@@ -17,6 +19,7 @@ import {
   FaCalendarAlt,
   FaTicketAlt,
   FaUserCircle,
+  FaShoppingCart,
 } from "react-icons/fa";
 
 // Import tab content components
@@ -32,10 +35,12 @@ import BatchesTab from "./BatchesTab";
 import CollegesTab from "./CollegesTab";
 import KitsTab from "./KitsTab";
 import OrdersInvoicesTab from "./OrdersInvoicesTab";
+import OrdersTab from "./OrdersTab";
 import TrainingTab from "./TrainingTab";
 import CalendarTab from "./CalendarTab";
 import TicketTab from "./TicketTab";
 import ProfileTab from "./ProfileTab";
+import Header from "./Header";
 
 // Sidebar tabs config (icon for each)
 const tabs = [
@@ -50,6 +55,7 @@ const tabs = [
   { id: "batches", label: "Batches", icon: <FaLayerGroup /> },
   { id: "colleges", label: "Colleges", icon: <FaUniversity /> },
   { id: "kits", label: "Kits", icon: <FaBoxOpen /> },
+  { id: "orders", label: "Orders", icon: <FaShoppingCart /> },
   {
     id: "orders-invoices",
     label: "Orders & Invoices",
@@ -62,7 +68,7 @@ const tabs = [
 ];
 
 // Tab content renderer
-function renderTabContent(tabId) {
+function renderTabContent(tabId, center) {
   switch (tabId) {
     case "dashboard":
       return <DashboardTab />;
@@ -85,7 +91,9 @@ function renderTabContent(tabId) {
     case "colleges":
       return <CollegesTab />;
     case "kits":
-      return <KitsTab />;
+      return center ? <KitsTab center={center} /> : <div>Loading...</div>;
+    case "orders":
+      return center ? <OrdersTab center={center} /> : <div>Loading...</div>;
     case "orders-invoices":
       return <OrdersInvoicesTab />;
     case "training":
@@ -97,17 +105,106 @@ function renderTabContent(tabId) {
     case "profile":
       return <ProfileTab />;
     default:
-      return (
-        <div className="flex-1 px-8 py-6">
-          <div className="text-2xl font-semibold mb-6">Coming soon...</div>
-        </div>
-      );
+      return <DashboardTab />;
   }
 }
 
 export default function CenterDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [center, setCenter] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    // Check if center is authenticated
+    const checkAuth = async () => {
+      try {
+        console.log("Checking authentication...");
+        console.log("API URL:", process.env.NEXT_PUBLIC_API_URL);
+
+        if (!process.env.NEXT_PUBLIC_API_URL) {
+          console.error("API URL not configured");
+          throw new Error("API URL not configured");
+        }
+
+        const res = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/centers/iscenter`,
+          {
+            withCredentials: true,
+            timeout: 5000, // 5 second timeout
+          }
+        );
+
+        console.log("Auth response:", res.data);
+
+        if (res.data.center) {
+          console.log("Center data loaded:", res.data.center);
+          setCenter(res.data.center);
+        } else {
+          console.log("No center data found, redirecting to login");
+          router.push("/center-login");
+        }
+      } catch (error) {
+        console.error("Authentication error:", error);
+        console.error("Error details:", error.response?.data || error.message);
+
+        // If it's a network error or timeout, show a more specific message
+        if (
+          error.code === "ECONNABORTED" ||
+          error.message.includes("timeout")
+        ) {
+          console.error("API timeout or connection error");
+        }
+
+        router.push("/center-login");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, [router]);
+
+  const handleLogout = async () => {
+    try {
+      await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/centers/logout`,
+        {
+          withCredentials: true,
+        }
+      );
+      router.push("/center-login");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading center dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!center) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Redirecting to login...</p>
+          <p className="mt-2 text-sm text-gray-500">
+            If you're not redirected automatically, please check your
+            connection.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // Sidebar as component so you can reuse it in both desktop and drawer
   const Sidebar = (
@@ -124,8 +221,8 @@ export default function CenterDashboard() {
         </span>
       </div>
       <div className="mb-10 px-4">
-        <div className="font-semibold">Gupta Enterprises</div>
-        <div className="text-sm text-[#e0e7ff]">guptaab@gmail.com</div>
+        <div className="font-semibold">{center?.name || "Center"}</div>
+        <div className="text-sm text-[#e0e7ff]">{center?.email}</div>
       </div>
       <nav className="flex-1 flex flex-col gap-2 text-base overflow-y-auto px-2 scrollbar-hide">
         {tabs.map((tab) => (
@@ -133,7 +230,7 @@ export default function CenterDashboard() {
             key={tab.id}
             onClick={() => {
               setActiveTab(tab.id);
-              setDrawerOpen(false); // also close drawer on mobile
+              setSidebarOpen(false); // also close drawer on mobile
             }}
             className={`flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-all ${
               activeTab === tab.id
@@ -150,35 +247,39 @@ export default function CenterDashboard() {
   );
 
   return (
-    <div className="flex min-h-screen bg-[#f5f7fa] relative">
+    <div className="flex h-screen bg-[#f5f7fa] overflow-hidden">
       {/* Desktop Sidebar */}
-      <aside className="hidden md:block w-70 bg-blue-400 border-r-1 border-blue-500 rounded-[1vmin] text-white h-screen sticky top-0 overflow-y-auto z-20 shadow">
+      <aside className="hidden md:block w-70 bg-blue-400 border-r-1 border-blue-500 rounded-[1vmin] text-white h-full overflow-y-auto z-20 shadow">
         {Sidebar}
       </aside>
 
-      {/* Hamburger Button for Mobile */}
-      <button
-        className="md:hidden fixed top-4 left-4 z-30 bg-white p-2 rounded shadow"
-        onClick={() => setDrawerOpen(true)}
-      >
-        <FaBars className="text-xl text-[#3866c6]" />
-      </button>
-
       {/* Drawer for Mobile */}
-      {drawerOpen && (
-        <div className="fixed inset-0 z-40 bg-black bg-opacity-30 flex">
+      {sidebarOpen && (
+        <div className="fixed inset-0 z-40 bg-black bg-opacity-30 flex md:hidden">
           <div className="w-64 bg-[#3866c6] text-white h-full">{Sidebar}</div>
           <div
             className="flex-1"
-            onClick={() => setDrawerOpen(false)}
+            onClick={() => setSidebarOpen(false)}
             aria-label="Close Sidebar"
           />
         </div>
       )}
 
-      {/* Main content (full scrollable area) */}
-      <div className="flex-1 h-screen overflow-y-auto">
-        {renderTabContent(activeTab)}
+      {/* Main content area */}
+      <div className="flex-1 flex flex-col min-h-0">
+        {/* Header */}
+        <Header
+          center={center}
+          onLogout={handleLogout}
+          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+        />
+
+        {/* Main content (scrollable area) */}
+        <div className="flex-1 overflow-y-auto bg-white">
+          {renderTabContent(activeTab, center)}
+        </div>
       </div>
     </div>
   );
