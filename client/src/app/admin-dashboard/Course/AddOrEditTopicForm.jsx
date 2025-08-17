@@ -8,11 +8,13 @@ import {
   Stack,
   IconButton,
   Link,
+  Modal,
+  Paper,
 } from "@mui/material";
 import * as XLSX from "xlsx";
 import axios from "axios";
 import Swal from "sweetalert2";
-import { Delete } from "@mui/icons-material";
+import { Delete, Visibility, Close } from "@mui/icons-material";
 import dynamic from "next/dynamic";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
@@ -32,6 +34,8 @@ export default function AddOrEditTopicForm({
   const [quizData, setQuizData] = useState(null);
   const [videoLinks, setVideoLinks] = useState(topic?.videos || []);
   const [saving, setSaving] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [scrollPosition, setScrollPosition] = useState(0);
 
   useEffect(() => {
     if (topic) {
@@ -40,6 +44,57 @@ export default function AddOrEditTopicForm({
       setVideoLinks(topic.videos || []);
     }
   }, [topic]);
+
+  // Preserve scroll position when opening/closing modal
+  const handlePreviewOpen = () => {
+    setScrollPosition(window.scrollY);
+    setPreviewOpen(true);
+  };
+
+  const handlePreviewClose = () => {
+    setPreviewOpen(false);
+    // Restore scroll position after modal closes
+    setTimeout(() => {
+      window.scrollTo(0, scrollPosition);
+    }, 100);
+  };
+
+  // Function to process content for preview with centered images and videos
+  const processContentForPreview = (htmlContent) => {
+    if (!htmlContent) return "";
+
+    // Create a temporary div to parse the HTML
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = htmlContent;
+
+    // Center all images
+    const images = tempDiv.querySelectorAll("img");
+    images.forEach((img) => {
+      img.style.display = "block";
+      img.style.margin = "0 auto";
+      img.style.maxWidth = "100%";
+      img.style.height = "auto";
+    });
+
+    // Center all videos
+    const videos = tempDiv.querySelectorAll("video");
+    videos.forEach((video) => {
+      video.style.display = "block";
+      video.style.margin = "0 auto";
+      video.style.maxWidth = "100%";
+      video.style.height = "auto";
+    });
+
+    // Center iframes (for embedded videos)
+    const iframes = tempDiv.querySelectorAll("iframe");
+    iframes.forEach((iframe) => {
+      iframe.style.display = "block";
+      iframe.style.margin = "0 auto";
+      iframe.style.maxWidth = "100%";
+    });
+
+    return tempDiv.innerHTML;
+  };
 
   const handleQuizUpload = (e) => {
     const file = e.target.files[0];
@@ -227,6 +282,19 @@ export default function AddOrEditTopicForm({
             />
           </Box>
 
+          {/* Preview Button */}
+          <Box sx={{ display: "flex", justifyContent: "center" }}>
+            <Button
+              variant="outlined"
+              startIcon={<Visibility />}
+              onClick={handlePreviewOpen}
+              disabled={!content.trim()}
+              sx={{ mr: 2 }}
+            >
+              Preview Content
+            </Button>
+          </Box>
+
           {/* Quiz Upload */}
           {!topic && (
             <Box>
@@ -275,6 +343,93 @@ export default function AddOrEditTopicForm({
           </Stack>
         </Stack>
       </form>
+
+      {/* Preview Modal */}
+      <Modal
+        open={previewOpen}
+        onClose={handlePreviewClose}
+        aria-labelledby="preview-modal-title"
+        aria-describedby="preview-modal-description"
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          p: 2,
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 1300,
+        }}
+      >
+        <Paper
+          sx={{
+            width: "90vw",
+            maxWidth: "800px",
+            maxHeight: "90vh",
+            overflow: "auto",
+            p: 3,
+            position: "relative",
+            margin: "auto",
+            boxShadow: "0 10px 40px rgba(0,0,0,0.3)",
+            borderRadius: 2,
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              mb: 2,
+            }}
+          >
+            <Typography variant="h6" component="h2" id="preview-modal-title">
+              Preview: {title || "Untitled Topic"}
+            </Typography>
+            <IconButton
+              onClick={handlePreviewClose}
+              sx={{
+                color: "#666",
+                "&:hover": {
+                  backgroundColor: "#f5f5f5",
+                },
+              }}
+            >
+              <Close />
+            </IconButton>
+          </Box>
+
+          <Box
+            id="preview-modal-description"
+            sx={{
+              "& img": {
+                display: "block",
+                margin: "0 auto",
+                maxWidth: "100%",
+                height: "auto",
+              },
+              "& video": {
+                display: "block",
+                margin: "0 auto",
+                maxWidth: "100%",
+                height: "auto",
+              },
+              "& iframe": {
+                display: "block",
+                margin: "0 auto",
+                maxWidth: "100%",
+              },
+              "& *": {
+                maxWidth: "100%",
+              },
+            }}
+            dangerouslySetInnerHTML={{
+              __html: processContentForPreview(content),
+            }}
+          />
+        </Paper>
+      </Modal>
     </Box>
   );
 }
