@@ -85,6 +85,11 @@ export default function CourseList({
           color={statusColors[params.value] || "default"}
           variant="outlined"
           size="small"
+          sx={{
+            fontWeight: 600,
+            fontSize: "0.75rem",
+            borderRadius: "12px",
+          }}
         />
       ),
     },
@@ -98,41 +103,78 @@ export default function CourseList({
       renderCell: (params) => {
         const course = params.row;
         return (
-          <Stack direction="row" spacing={1} alignItems="center">
+          <Stack direction="row" spacing={1.5} alignItems="center" sx={{ height: '100%' }}>
             <Button
               variant="contained"
               size="small"
               startIcon={<AddIcon />}
               onClick={() => onAddChapter(course)}
-              sx={{ px: 2, py: 1, fontSize: "0.875rem", fontWeight: 600 }}
+              sx={{
+                px: 2,
+                py: 0.75,
+                fontSize: "0.75rem",
+                fontWeight: 600,
+                borderRadius: "8px",
+                textTransform: "none",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                height: 32,
+                minWidth: 'auto',
+                "&:hover": {
+                  boxShadow: "0 4px 8px rgba(0,0,0,0.15)",
+                },
+              }}
             >
-              Chapters
+              + Chapters
             </Button>
-            <Tooltip title="Edit Course">
+            <Tooltip title="Edit Course" arrow>
               <IconButton
-                color="info"
                 size="small"
                 onClick={() => onEditCourse(course)}
+                sx={{
+                  bgcolor: "#e3f2fd",
+                  color: "#1976d2",
+                  "&:hover": {
+                    bgcolor: "#bbdefb",
+                  },
+                  width: 32,
+                  height: 32,
+                }}
               >
-                <EditIcon />
+                <EditIcon fontSize="small" />
               </IconButton>
             </Tooltip>
-            <Tooltip title="Toggle Status">
+            <Tooltip title="Toggle Status" arrow>
               <IconButton
-                color="success"
                 size="small"
                 onClick={() => handleToggleStatus(course)}
+                sx={{
+                  bgcolor: "#e8f5e8",
+                  color: "#2e7d32",
+                  "&:hover": {
+                    bgcolor: "#c8e6c9",
+                  },
+                  width: 32,
+                  height: 32,
+                }}
               >
-                <CheckCircleIcon />
+                <CheckCircleIcon fontSize="small" />
               </IconButton>
             </Tooltip>
-            <Tooltip title="Delete Course">
+            <Tooltip title="Delete Course" arrow>
               <IconButton
-                color="error"
                 size="small"
                 onClick={() => handleDelete(course)}
+                sx={{
+                  bgcolor: "#ffebee",
+                  color: "#d32f2f",
+                  "&:hover": {
+                    bgcolor: "#ffcdd2",
+                  },
+                  width: 32,
+                  height: 32,
+                }}
               >
-                <DeleteIcon />
+                <DeleteIcon fontSize="small" />
               </IconButton>
             </Tooltip>
           </Stack>
@@ -147,21 +189,41 @@ export default function CourseList({
         direction="row"
         alignItems="center"
         justifyContent="space-between"
-        mb={2}
+        mb={3}
       >
-        <Typography variant="h5" fontWeight={700}>
+        <Typography variant="h5" fontWeight={700} sx={{ color: "#1a237e" }}>
           Courses
         </Typography>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
           onClick={onAddCourse}
-          sx={{ background: "#0d244b" }}
+          sx={{
+            background: "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
+            borderRadius: "8px",
+            px: 3,
+            py: 1,
+            fontWeight: 600,
+            textTransform: "none",
+            boxShadow: "0 4px 12px rgba(25, 118, 210, 0.3)",
+            "&:hover": {
+              background: "linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)",
+              boxShadow: "0 6px 16px rgba(25, 118, 210, 0.4)",
+            },
+          }}
         >
-          Add Course
+          + ADD COURSE
         </Button>
       </Stack>
-      <Box sx={{ bgcolor: "white", borderRadius: 3, boxShadow: 2, p: 1 }}>
+      <Box
+        sx={{
+          bgcolor: "white",
+          borderRadius: 3,
+          boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+          p: 2,
+          border: "1px solid #e8eaf6",
+        }}
+      >
         <DataGrid
           autoHeight
           rows={courses.map((c) => ({ ...c, id: c._id }))}
@@ -175,13 +237,26 @@ export default function CourseList({
             fontSize: 15,
             width: "72vw",
             "& .MuiDataGrid-cell": {
-              borderBottom: "1px solid #e0e0e0",
+              borderBottom: "1px solid #f0f0f0",
+              padding: "12px 16px",
+              display: "flex",
+              alignItems: "center",
             },
             "& .MuiDataGrid-columnHeaders": {
-              background: "#f6f8fa",
+              background: "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
               fontWeight: 700,
               width: "72vw",
               fontSize: 15,
+              borderBottom: "2px solid #dee2e6",
+            },
+            "& .MuiDataGrid-row": {
+              minHeight: "60px !important",
+              "&:hover": {
+                backgroundColor: "#f8f9fa",
+              },
+            },
+            "& .MuiDataGrid-cell:focus": {
+              outline: "none",
             },
           }}
         />

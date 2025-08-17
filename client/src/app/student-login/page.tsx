@@ -6,7 +6,9 @@ const page = () => {
   return (
     <>
       <Header />
-      <StudentAuth />
+      <div className="pt-10">
+        <StudentAuth />
+      </div>
     </>
   );
 };

@@ -1,12 +1,13 @@
 import React from "react";
+import { FaShareAlt, FaInfoCircle, FaEye, FaClipboard, FaMinusCircle } from "react-icons/fa";
 
 export default function TeamTab() {
   return (
-    <main className="flex-1 px-8 py-6">
+    <main className="flex-1 px-8 py-6 bg-white">
       <div className="flex items-center justify-between mb-4">
         <div className="text-2xl font-bold text-blue-700 flex items-center">
           Team{" "}
-          <i className="fa fa-share-alt ml-2 text-blue-600 cursor-pointer"></i>
+          <FaShareAlt className="ml-2 text-blue-600 cursor-pointer" />
         </div>
         <span className="font-bold text-blue-700 cursor-pointer">GNAAGBN</span>
       </div>
@@ -29,7 +30,7 @@ export default function TeamTab() {
                 <td>8920406657</td>
                 <td>guptaabl1356@gmail.com</td>
                 <td className="text-center">
-                  <i className="fa fa-eye text-blue-600"></i>
+                  <FaEye className="text-blue-600" />
                 </td>
               </tr>
             </tbody>
@@ -41,7 +42,7 @@ export default function TeamTab() {
         <div className="flex items-center justify-between mb-2">
           <div className="text-xl font-bold">
             Faculties{" "}
-            <i className="fa fa-info-circle text-blue-600 text-base" />
+            <FaInfoCircle className="text-blue-600 text-base" />
           </div>
           <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-semibold text-sm">
             Add Faculty
@@ -71,16 +72,16 @@ export default function TeamTab() {
                 <td>NA</td>
                 <td>NA</td>
                 <td className="text-center">
-                  <i className="fa fa-eye text-green-600"></i>
+                  <FaEye className="text-green-600" />
                 </td>
                 <td className="text-center">
-                  <i className="fa fa-eye text-blue-600"></i>
+                  <FaEye className="text-blue-600" />
                 </td>
                 <td className="text-center">
-                  <i className="fa fa-clipboard text-blue-600"></i>
+                  <FaClipboard className="text-blue-600" />
                 </td>
                 <td className="text-center">
-                  <i className="fa fa-minus-circle text-red-500"></i>
+                  <FaMinusCircle className="text-red-500" />
                 </td>
               </tr>
             </tbody>
@@ -109,7 +110,7 @@ export default function TeamTab() {
         <div className="flex items-center justify-between mb-2">
           <div className="text-xl font-bold">
             Counsellors{" "}
-            <i className="fa fa-info-circle text-blue-600 text-base" />
+            <FaInfoCircle className="text-blue-600 text-base" />
           </div>
           <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-semibold text-sm">
             Add Counsellor

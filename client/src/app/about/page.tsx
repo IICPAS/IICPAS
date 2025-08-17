@@ -10,7 +10,9 @@ const page = () => {
   return (
     <div>
       <Header />
-      <AboutHero />
+      <div className="pt-10">
+        <AboutHero />
+      </div>
       <AboutPeoplePassion />
       <TestimonialCarousel />
       <NewsletterSection />

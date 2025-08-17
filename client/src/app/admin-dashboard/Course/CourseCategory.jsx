@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { DataGrid } from "@mui/x-data-grid";
-import { Button, Box, IconButton } from "@mui/material";
+import { Button, Box, IconButton, Tooltip } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -160,24 +160,62 @@ export default function CourseCategoryExcelGrid() {
       headerAlign: "center",
       align: "center",
       renderCell: (params) => (
-        <Box display="flex" gap={1} justifyContent="center">
-          <IconButton
-            color="primary"
-            onClick={() => handleEdit(params.row)}
-            size="small"
-          >
-            <EditIcon />
-          </IconButton>
-          <IconButton color="success" size="small" disabled>
-            <CheckCircleIcon />
-          </IconButton>
-          <IconButton
-            color="error"
-            onClick={() => handleDelete(params.row._id)}
-            size="small"
-          >
-            <DeleteIcon />
-          </IconButton>
+        <Box
+          display="flex"
+          gap={1.5}
+          justifyContent="center"
+          alignItems="center"
+          sx={{ height: "100%" }}
+        >
+          <Tooltip title="Edit Category" arrow>
+            <IconButton
+              onClick={() => handleEdit(params.row)}
+              size="small"
+              sx={{
+                bgcolor: "#e3f2fd",
+                color: "#1976d2",
+                "&:hover": {
+                  bgcolor: "#bbdefb",
+                },
+                width: 32,
+                height: 32,
+              }}
+            >
+              <EditIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Toggle Status" arrow>
+            <IconButton
+              size="small"
+              disabled
+              sx={{
+                bgcolor: "#e8f5e8",
+                color: "#2e7d32",
+                opacity: 0.5,
+                width: 32,
+                height: 32,
+              }}
+            >
+              <CheckCircleIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Delete Category" arrow>
+            <IconButton
+              onClick={() => handleDelete(params.row._id)}
+              size="small"
+              sx={{
+                bgcolor: "#ffebee",
+                color: "#d32f2f",
+                "&:hover": {
+                  bgcolor: "#ffcdd2",
+                },
+                width: 32,
+                height: 32,
+              }}
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
         </Box>
       ),
     },
@@ -207,18 +245,26 @@ export default function CourseCategoryExcelGrid() {
                 variant="contained"
                 startIcon={<AddIcon />}
                 sx={{
-                  bgcolor: "#0f265c",
-                  "&:hover": { bgcolor: "#233772" },
+                  background:
+                    "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
+                  "&:hover": {
+                    background:
+                      "linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)",
+                  },
                   fontWeight: 600,
                   px: 3,
+                  py: 1.5,
                   fontSize: 16,
-                  borderRadius: 2,
-                  boxShadow: "none",
+                  borderRadius: "8px",
+                  boxShadow: "0 4px 12px rgba(25, 118, 210, 0.3)",
                   textTransform: "none",
+                  "&:hover": {
+                    boxShadow: "0 6px 16px rgba(25, 118, 210, 0.4)",
+                  },
                 }}
                 onClick={handleAdd}
               >
-                Add Course Category
+                + ADD COURSE CATEGORY
               </Button>
             </Box>
             <div style={{ width: "100%", height: 420, overflow: "auto" }}>
@@ -231,20 +277,32 @@ export default function CourseCategoryExcelGrid() {
                 disableRowSelectionOnClick
                 sx={{
                   "& .MuiDataGrid-columnHeaders": {
-                    backgroundColor: "#f3f4f6",
-                    fontWeight: "bold",
+                    background:
+                      "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
+                    fontWeight: 700,
                     fontSize: 15,
+                    borderBottom: "2px solid #dee2e6",
                   },
                   "& .MuiDataGrid-cell": {
-                    border: "1px solid #e5e7eb",
+                    borderBottom: "1px solid #f0f0f0",
+                    padding: "12px 16px",
+                    display: "flex",
+                    alignItems: "center",
                   },
                   "& .MuiDataGrid-row": {
                     fontSize: 15,
+                    minHeight: "60px !important",
+                    "&:hover": {
+                      backgroundColor: "#f8f9fa",
+                    },
                   },
-                  border: "1.5px solid #cbd5e1",
+                  "& .MuiDataGrid-cell:focus": {
+                    outline: "none",
+                  },
+                  border: "1px solid #e8eaf6",
                   borderRadius: 2,
                 }}
-                getRowHeight={() => 46}
+                getRowHeight={() => 60}
                 autoHeight
               />
             </div>

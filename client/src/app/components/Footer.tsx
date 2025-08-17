@@ -1,21 +1,33 @@
 "use client";
 
+import Link from "next/link";
 import {
   FaFacebookF,
   FaInstagram,
   FaPinterestP,
   FaLinkedinIn,
+  FaPhone,
+  FaEnvelope,
+  FaMapMarkerAlt,
 } from "react-icons/fa";
 
 export default function Footer() {
   return (
     <footer className="bg-[#0b1224] text-white pt-12 pb-6 px-6 md:px-20">
       <div className="grid md:grid-cols-4 gap-8">
-        {/* Column 1: About & Social */}
+        {/* Column 1: IICPA Institute (About) */}
         <div>
+          <h3 className="text-lg font-bold mb-4 text-yellow-400 border-b border-yellow-400 w-fit">
+            IICPA Institute
+          </h3>
           <p className="text-sm mb-4 opacity-80">
-            Lorem Ipsum is simply dummy text of the printing and typesetting
+            IICPA Institute is a premier educational organization committed to
+            excellence in professional development and skill enhancement.
           </p>
+          <div className="flex items-center gap-2 mb-4">
+            <FaPhone className="text-green-400" />
+            <span className="text-sm opacity-80">+91 98765 43210</span>
+          </div>
           <div className="flex gap-4 mb-4">
             <a
               href="#"
@@ -44,121 +56,105 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Column 2: Quick Links */}
+        {/* Column 2: Our Policy */}
+        <div>
+          <h3 className="text-lg font-bold mb-4 border-b border-yellow-400 w-fit">
+            Our Policy
+          </h3>
+          <ul className="space-y-2 text-sm opacity-90">
+            <li>
+              <a href="/privacy-policy" className="hover:text-[#3cd664]">
+                Privacy Policy
+              </a>
+            </li>
+            <li>
+              <a
+                href="/cancellation-refund-policy"
+                className="hover:text-[#3cd664]"
+              >
+                Cancellation & Refund Policy
+              </a>
+            </li>
+            <li>
+              <a href="/terms-conditions" className="hover:text-[#3cd664]">
+                Terms & Conditions
+              </a>
+            </li>
+            <li>
+              <a href="/shipping-delivery" className="hover:text-[#3cd664]">
+                Shipping & Delivery
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        {/* Column 3: Quick Links */}
         <div>
           <h3 className="text-lg font-bold mb-4 border-b border-yellow-400 w-fit">
             Quick Links
           </h3>
           <ul className="space-y-2 text-sm opacity-90">
             <li>
-              <a href="#" className="hover:text-[#3cd664]">
-                + Home
+              <Link href="/" className="hover:text-[#3cd664]">
+                Home
+              </Link>
+            </li>
+            <li>
+              <a href="/about" className="hover:text-[#3cd664]">
+                About
               </a>
             </li>
             <li>
-              <a href="#" className="hover:text-[#3cd664]">
-                + About Us
+              <a href="/courses" className="hover:text-[#3cd664]">
+                Courses
               </a>
             </li>
             <li>
-              <a href="#" className="hover:text-[#3cd664]">
-                + Courses
+              <a href="/live-session" className="hover:text-[#3cd664]">
+                Live Sessions
               </a>
             </li>
             <li>
-              <a href="#" className="hover:text-[#3cd664]">
-                + FAQs
+              <a href="/jobs" className="hover:text-[#3cd664]">
+                Jobs
               </a>
             </li>
             <li>
-              <a href="#" className="hover:text-[#3cd664]">
-                + Contact
+              <a href="/contact" className="hover:text-[#3cd664]">
+                Contact
               </a>
             </li>
             <li>
-              <a href="#" className="hover:text-[#3cd664]">
-                + Live class
+              <a href="/blog" className="hover:text-[#3cd664]">
+                Blog
               </a>
             </li>
           </ul>
         </div>
 
-        {/* Column 3: Support */}
+        {/* Column 4: Contact Info */}
         <div>
           <h3 className="text-lg font-bold mb-4 border-b border-yellow-400 w-fit">
-            Support
+            Contact Info
           </h3>
-          <ul className="space-y-2 text-sm opacity-90">
-            <li>
-              <a href="#" className="hover:text-[#3cd664]">
-                + Became Partners
+          <p className="text-sm mb-4 text-yellow-400">
+            &ldquo;Empowering Careers, Building Futures&rdquo; - IICPA Motto
+          </p>
+          <div className="space-y-3 text-sm opacity-90">
+            <div className="flex items-start gap-2">
+              <FaMapMarkerAlt className="text-green-400 mt-1 flex-shrink-0" />
+              <span>
+                IICPA Institute, Professional Development Center, New Delhi,
+                India
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <FaEnvelope className="text-green-400" />
+              <a href="mailto:info@iicpa.in" className="hover:text-[#3cd664]">
+                info@iicpa.in
               </a>
-            </li>
-            <li>
-              <a href="#" className="hover:text-[#3cd664]">
-                + Privacy & Policy
-              </a>
-            </li>
-            <li>
-              <a href="#" className="hover:text-[#3cd664]">
-                + Terms & Conditions
-              </a>
-            </li>
-            <li>
-              <a href="#" className="hover:text-[#3cd664]">
-                + Refund Policy
-              </a>
-            </li>
-            <li>
-              <a href="#" className="hover:text-[#3cd664]">
-                + Live Workshop
-              </a>
-            </li>
-            <li>
-              <a href="#" className="hover:text-[#3cd664]">
-                + Chose Career
-              </a>
-            </li>
-          </ul>
-        </div>
-
-        {/* Column 4: Courses */}
-        <div>
-          <h3 className="text-lg font-bold mb-4 border-b border-yellow-400 w-fit">
-            Our Courses
-          </h3>
-          <ul className="space-y-2 text-sm opacity-90">
-            <li>
-              <a href="#" className="hover:text-[#3cd664]">
-                + Website Design
-              </a>
-            </li>
-            <li>
-              <a href="#" className="hover:text-[#3cd664]">
-                + Digital Marketing
-              </a>
-            </li>
-            <li>
-              <a href="#" className="hover:text-[#3cd664]">
-                + Product Design
-              </a>
-            </li>
-            <li>
-              <a href="#" className="hover:text-[#3cd664]">
-                + Web Development
-              </a>
-            </li>
-            <li>
-              <a href="#" className="hover:text-[#3cd664]">
-                + App Development
-              </a>
-            </li>
-            <li>
-              <a href="#" className="hover:text-[#3cd664]">
-                + Many More
-              </a>
-            </li>
-          </ul>
+            </div>
+          </div>
         </div>
       </div>
 

@@ -14,6 +14,7 @@ import axios from "axios";
 import ManageMetaTags from "./Course/ManageMetaTags";
 import BlogComponent from "./BlogComponent.jsx";
 import CollegeTab from "./CollegeTab";
+import CenterTab from "./CenterTab";
 import CalendarTab from "./CalendarTab";
 import AboutTab from "./AboutTab";
 import StudentsTab from "./StudentsTab";
@@ -94,10 +95,14 @@ export default function AdminDashboard() {
   // SIDEBAR: scrollable, hidden scrollbar
   const renderSidebar = (isMobile = false) => (
     <div className="h-full flex flex-col">
-      <div className="p-4">
-        <img src="/images/logo.png" alt="logo" className="h-20 mx-auto mb-6" />
+      <div className="p-6 pb-4">
+        <div className="flex items-center justify-center mb-6">
+          <div className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg font-bold text-xl shadow-lg">
+            <span className="text-green-300">+</span> RoboBooks <span className="text-green-300">+</span>
+          </div>
+        </div>
       </div>
-      <nav className="flex-1 overflow-y-auto scrollbar-hide px-2">
+      <nav className="flex-1 overflow-y-auto scrollbar-hide px-3">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -105,38 +110,47 @@ export default function AdminDashboard() {
               setActiveTab(tab.id);
               if (isMobile) setDrawerOpen(false);
             }}
-            className={`flex items-center gap-3 px-4 py-2 rounded-md w-full text-left mb-1 transition-all ${
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg w-full text-left mb-2 transition-all duration-200 ${
               activeTab === tab.id
-                ? "bg-blue-100 text-blue-700 font-semibold"
-                : "hover:bg-gray-100 text-gray-800"
+                ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-md"
+                : "hover:bg-blue-50 text-gray-700 hover:text-blue-700"
             }`}
           >
-            {tab.icon}
-            {tab.label}
+            <span className={`text-lg ${activeTab === tab.id ? 'text-white' : 'text-blue-500'}`}>
+              {tab.icon}
+            </span>
+            <span className="font-medium">{tab.label}</span>
           </button>
         ))}
       </nav>
+      <div className="p-4 border-t border-blue-200">
+        <div className="text-center text-sm text-blue-600 font-medium">
+          28°C Partly cloudy
+        </div>
+      </div>
     </div>
   );
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen bg-gray-50">
       {/* Sidebar - Desktop: fixed height, scrollable, hidden scrollbar */}
-      <aside className="hidden lg:block w-70 min-h-screen bg-blue-200 border-r-1 border-blue-400 rounded-[1vmin] scrollbar-hide overflow-y-auto">
+      <aside className="hidden lg:block w-70 min-h-screen bg-gradient-to-b from-blue-100 to-blue-200 border-r border-blue-300 rounded-r-2xl shadow-xl">
         {renderSidebar()}
       </aside>
 
       {/* Topbar - Right: Bell & Logout */}
       <div className="fixed top-4 right-4 z-50 flex gap-4 items-center">
         <div className="relative">
-          <FaBell className="text-xl text-gray-700" />
-          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-1 rounded-full">
-            3
-          </span>
+          <div className="bg-white p-2 rounded-full shadow-md">
+            <FaBell className="text-xl text-gray-700" />
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full font-bold">
+              3
+            </span>
+          </div>
         </div>
         <button
           onClick={logout}
-          className="bg-red-100 text-red-600 px-3 py-1 rounded-md hover:bg-red-200 text-sm flex items-center gap-2"
+          className="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg hover:from-red-600 hover:to-red-700 text-sm flex items-center gap-2 font-medium shadow-md transition-all duration-200"
         >
           <FaSignOutAlt />
           Logout
@@ -147,9 +161,9 @@ export default function AdminDashboard() {
       <div className="fixed top-4 left-4 lg:hidden z-50">
         <button
           onClick={() => setDrawerOpen(true)}
-          className="bg-white p-2 shadow rounded-md"
+          className="bg-white p-3 shadow-lg rounded-lg hover:bg-gray-50 transition-colors"
         >
-          <FaBars />
+          <FaBars className="text-gray-700" />
         </button>
       </div>
 
@@ -158,12 +172,12 @@ export default function AdminDashboard() {
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         direction="left"
-        className="bg-white w-64 h-full scrollbar-hide"
+        className="bg-gradient-to-b from-blue-100 to-blue-200 w-64 h-full scrollbar-hide"
       >
         <div className="h-full">{renderSidebar(true)}</div>
         <button
           onClick={logout}
-          className="w-full flex items-center gap-3 px-4 py-2 text-red-600 hover:bg-red-100 mt-4"
+          className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 mt-4 mx-3 mb-3 rounded-lg transition-colors"
         >
           <FaSignOutAlt />
           Logout
@@ -212,6 +226,8 @@ export default function AdminDashboard() {
           <RevisionQuizTable />
         ) : activeTab === "topics" ? (
           <TopicsManager />
+        ) : activeTab === "center" ? (
+          <CenterTab />
         ) : null}
       </main>
     </div>

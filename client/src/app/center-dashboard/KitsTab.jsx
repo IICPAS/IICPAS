@@ -1,18 +1,31 @@
-import React from "react";
+import React, { useState } from "react";
+import { FaShareAlt, FaPlus, FaHistory } from "react-icons/fa";
+import KitOrderModal from "./KitOrderModal";
+import OrderHistoryModal from "./OrderHistoryModal";
 
-export default function KitsTab() {
+export default function KitsTab({ center }) {
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+
   return (
-    <main className="flex-1 px-8 py-6">
+    <main className="flex-1 px-8 py-6 bg-white">
       <div className="flex items-center justify-between mb-4">
         <div className="text-2xl font-bold text-blue-700 flex items-center">
-          Kit Stock{" "}
-          <i className="fa fa-share-alt ml-2 text-blue-600 cursor-pointer"></i>
+          Kit Stock <FaShareAlt className="ml-2 text-blue-600 cursor-pointer" />
         </div>
         <div className="flex items-center gap-2">
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-semibold text-sm">
+          <button
+            onClick={() => setIsOrderModalOpen(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-semibold text-sm flex items-center gap-2"
+          >
+            <FaPlus />
             Order New
           </button>
-          <button className="bg-white border border-blue-600 text-blue-700 px-4 py-2 rounded font-semibold text-sm">
+          <button
+            onClick={() => setIsHistoryModalOpen(true)}
+            className="bg-white border border-blue-600 text-blue-700 px-4 py-2 rounded font-semibold text-sm flex items-center gap-2"
+          >
+            <FaHistory />
             Order History
           </button>
           <span className="font-bold text-blue-700 cursor-pointer">
@@ -59,6 +72,20 @@ export default function KitsTab() {
           </table>
         </div>
       </div>
+
+      {/* Kit Order Modal */}
+      <KitOrderModal
+        isOpen={isOrderModalOpen}
+        onClose={() => setIsOrderModalOpen(false)}
+        center={center}
+      />
+
+      {/* Order History Modal */}
+      <OrderHistoryModal
+        isOpen={isHistoryModalOpen}
+        onClose={() => setIsHistoryModalOpen(false)}
+        center={center}
+      />
     </main>
   );
 }

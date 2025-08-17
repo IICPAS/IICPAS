@@ -12,6 +12,8 @@ import CourseCategorySection from "./components/CourseCategorySection";
 import ContactSection from "./components/ContactSection";
 import Header from "./components/Header";
 import AlertMarquee from "./components/AlertMarquee";
+import WhyIICPA from "./components/WhyIICPA";
+import SearchCenter from "./components/SearchCenter";
 
 const page = () => {
   return (
@@ -21,7 +23,10 @@ const page = () => {
         <Header />
         <HeroSection />
         <AboutUsSection />
+
         <CoursesSection />
+        <WhyIICPA />
+        <SearchCenter />
         <BlogSection />
         <YellowStatsStrip />
         <CourseCategorySection />

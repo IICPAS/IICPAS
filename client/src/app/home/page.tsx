@@ -2,6 +2,7 @@ import React from "react";
 import Header from "../components/Header";
 import AboutHero from "../contact/ContactHero";
 import HeroSection from "../components/HeroSection";
+import WhyIICPA from "../components/WhyIICPA";
 import AboutUsSection from "../components/AboutUsSection";
 import CoursesSection from "../components/CourseSection";
 import BlogSection from "../components/BlogsSection";
@@ -17,6 +18,7 @@ const page = () => {
     <div>
       <Header />
       <HeroSection />
+      <WhyIICPA />
       <AboutUsSection />
       <CoursesSection />
       <BlogSection />
