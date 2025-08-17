@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FaCog, FaBell, FaShield, FaPalette, FaKey } from "react-icons/fa";
+import { FaCog, FaBell, FaUserShield, FaPalette, FaKey } from "react-icons/fa";
 
 export default function TeacherSettingsTab({ teacher }) {
   const [activeSection, setActiveSection] = useState("general");
@@ -67,7 +67,7 @@ export default function TeacherSettingsTab({ teacher }) {
                     : "text-gray-600 hover:bg-gray-100"
                 }`}
               >
-                <FaShield className="inline mr-2" />
+                <FaUserShield className="inline mr-2" />
                 Privacy
               </button>
               <button
