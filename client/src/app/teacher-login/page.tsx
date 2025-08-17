@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -16,14 +17,14 @@ export default function TeacherLogin() {
   const [error, setError] = useState("");
   const router = useRouter();
 
-  const handleChange = (e) => {
+  const handleChange = (e: { target: { name: any; value: any } }) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
     setLoading(true);
     setError("");
@@ -38,8 +39,12 @@ export default function TeacherLogin() {
       if (response.data.message === "Teacher logged in successfully") {
         router.push("/teacher-dashboard");
       }
-    } catch (err) {
-      setError(err.response?.data?.message || "Login failed");
+    } catch (err: any) {
+      if (err?.response?.data?.message) {
+        setError(err.response.data.message);
+      } else {
+        setError("Login failed");
+      }
     } finally {
       setLoading(false);
     }
@@ -159,7 +164,7 @@ export default function TeacherLogin() {
           {/* Additional Links */}
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
-              Don't have an account?{" "}
+              Don&lsquo;t have an account?{" "}
               <Link
                 href="/teacher-register"
                 className="font-medium text-blue-600 hover:text-blue-500"
