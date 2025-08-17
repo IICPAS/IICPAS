@@ -24,14 +24,16 @@ export default function TeacherRegister() {
   const [success, setSuccess] = useState("");
   const router = useRouter();
 
-  const handleChange = (e) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError("");
@@ -72,8 +74,13 @@ export default function TeacherRegister() {
           router.push("/teacher-login");
         }, 2000);
       }
-    } catch (err) {
-      setError(err.response?.data?.message || "Registration failed");
+    } catch (err: unknown) {
+      const errorMessage =
+        err && typeof err === "object" && "response" in err
+          ? (err as { response?: { data?: { message?: string } } }).response
+              ?.data?.message
+          : "Registration failed";
+      setError(errorMessage || "Registration failed");
     } finally {
       setLoading(false);
     }
@@ -254,7 +261,7 @@ export default function TeacherRegister() {
               <textarea
                 id="bio"
                 name="bio"
-                rows="4"
+                rows={4}
                 value={formData.bio}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import Drawer from "react-modern-drawer";
@@ -12,22 +12,8 @@ import {
   FaBell,
   FaCalendarAlt,
   FaClipboardList,
-  FaLayerGroup,
-  FaHome,
   FaBook,
-  FaSyncAlt,
-  FaChalkboardTeacher,
   FaUserGraduate,
-  FaUsers,
-  FaBriefcase,
-  FaEnvelope,
-  FaBlog,
-  FaQuoteRight,
-  FaTags,
-  FaUniversity,
-  FaStarOfDavid,
-  FaBlogger,
-  FaNewspaper,
   FaChartBar,
   FaCog,
   FaUser,
@@ -54,18 +40,26 @@ const tabs = [
   { id: "settings", label: "Settings", icon: <FaCog /> },
 ];
 
+interface Teacher {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  specialization: string;
+  experience: number;
+  qualification: string;
+  bio: string;
+  courses: string[];
+}
+
 export default function TeacherDashboard() {
   const [activeTab, setActiveTab] = useState("profile");
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [teacher, setTeacher] = useState(null);
+  const [teacher, setTeacher] = useState<Teacher | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
-    fetchTeacherProfile();
-  }, []);
-
-  const fetchTeacherProfile = async () => {
+  const fetchTeacherProfile = useCallback(async () => {
     try {
       const response = await axios.get(`${API_BASE}/api/v1/teachers/profile`, {
         withCredentials: true,
@@ -77,7 +71,11 @@ export default function TeacherDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [router]);
+
+  useEffect(() => {
+    fetchTeacherProfile();
+  }, [fetchTeacherProfile]);
 
   const logout = async () => {
     try {
@@ -91,7 +89,9 @@ export default function TeacherDashboard() {
   const renderSidebar = (isMobile = false) => (
     <div className="h-full flex flex-col">
       <div className="p-4">
-        <img src="/images/logo.png" alt="logo" className="h-20 mx-auto mb-6" />
+        <div className="h-20 mx-auto mb-6 flex items-center justify-center">
+          <span className="text-2xl font-bold text-blue-600">IICPAS</span>
+        </div>
         {teacher && (
           <div className="text-center mb-6">
             <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -99,7 +99,9 @@ export default function TeacherDashboard() {
                 {teacher.name.charAt(0).toUpperCase()}
               </span>
             </div>
-            <h3 className="font-semibold text-gray-900 text-sm">{teacher.name}</h3>
+            <h3 className="font-semibold text-gray-900 text-sm">
+              {teacher.name}
+            </h3>
             <p className="text-gray-600 text-xs">{teacher.specialization}</p>
           </div>
         )}
