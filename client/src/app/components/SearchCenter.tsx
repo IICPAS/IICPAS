@@ -350,11 +350,11 @@ export default function SearchCenter() {
         <div className="text-center mt-12">
           <div className="bg-gradient-to-r from-green-500 to-blue-600 rounded-2xl p-8 text-white">
             <h3 className="text-3xl font-bold mb-4">
-              Can't Find Your Location?
+              Can&apos;t Find Your Location?
             </h3>
             <p className="text-lg mb-6 opacity-90">
-              We're expanding! Contact us to request a new center in your area
-              or explore our online learning options.
+              We&apos;re expanding! Contact us to request a new center in your
+              area or explore our online learning options.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link

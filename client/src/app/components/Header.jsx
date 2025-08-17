@@ -36,6 +36,7 @@ const navLinks = [
   {
     name: "Resources",
     children: [
+      { name: "Learning Lab", href: "/learning-lab" },
       { name: "Blogs", href: "/blog" },
       { name: "Contact", href: "/contact" },
       { name: "About", href: "/about" },
