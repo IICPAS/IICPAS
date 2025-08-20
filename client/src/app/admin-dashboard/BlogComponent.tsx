@@ -2,10 +2,35 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useAuth } from "@/contexts/AuthContext";
-import { showDeleteConfirmation, showSuccess, showError } from "@/utils/sweetAlert";
+import {
+  showDeleteConfirmation,
+  showSuccess,
+  showError,
+} from "@/utils/sweetAlert";
 import dynamic from "next/dynamic";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+
+// Blog interface
+interface Blog {
+  _id: string;
+  title: string;
+  author: string;
+  content: string;
+  imageUrl?: string;
+  status: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// Form interface
+interface BlogForm {
+  title: string;
+  author: string;
+  content: string;
+  image: File | null;
+  previewUrl: string | null;
+}
 
 // Dynamically import JoditEditor to avoid SSR issues
 const JoditEditor = dynamic(() => import("jodit-react"), { ssr: false });
@@ -57,11 +82,11 @@ const joditConfig = {
 };
 
 export default function BlogComponent() {
-  const [blogs, setBlogs] = useState([]);
+  const [blogs, setBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
   const [mode, setMode] = useState("list"); // list, add, edit, preview
-  const [selectedBlog, setSelectedBlog] = useState(null);
-  const [form, setForm] = useState({
+  const [selectedBlog, setSelectedBlog] = useState<Blog | null>(null);
+  const [form, setForm] = useState<BlogForm>({
     title: "",
     author: "",
     content: "",
@@ -91,7 +116,7 @@ export default function BlogComponent() {
   }, []);
 
   // Form handlers
-  const handleFormChange = (e) => {
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, files } = e.target;
     if (name === "image" && files) {
       const file = files[0];
@@ -105,7 +130,7 @@ export default function BlogComponent() {
     }
   };
 
-  const handleEditorChange = (content) => {
+  const handleEditorChange = (content: string) => {
     setForm((prev) => ({ ...prev, content }));
   };
 
@@ -126,26 +151,28 @@ export default function BlogComponent() {
     setMode("add");
   };
 
-  const handleEdit = (blog) => {
+  const handleEdit = (blog: Blog) => {
     setSelectedBlog(blog);
     setForm({
       title: blog.title || "",
       author: blog.author || "",
       content: blog.content || "",
       image: null,
-      previewUrl: blog.imageUrl ? `${API_BASE.replace("/api", "")}/${blog.imageUrl}` : null,
+      previewUrl: blog.imageUrl
+        ? `${API_BASE.replace("/api", "")}/${blog.imageUrl}`
+        : null,
     });
     setMode("edit");
   };
 
-  const handlePreview = (blog) => {
+  const handlePreview = (blog: Blog) => {
     setSelectedBlog(blog);
     setMode("preview");
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id: string) => {
     const confirmed = await showDeleteConfirmation("blog");
-    
+
     if (confirmed) {
       try {
         await axios.delete(`${API_BASE}/blogs/${id}`);
@@ -158,7 +185,7 @@ export default function BlogComponent() {
     }
   };
 
-  const handleToggleStatus = async (id, currentStatus) => {
+  const handleToggleStatus = async (id: string, currentStatus: string) => {
     try {
       const newStatus = currentStatus === "active" ? "inactive" : "active";
       await axios.put(`${API_BASE}/blogs/${id}`, { status: newStatus });
@@ -170,7 +197,7 @@ export default function BlogComponent() {
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setFormLoading(true);
 
@@ -211,8 +238,18 @@ export default function BlogComponent() {
             onClick={handleAdd}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
             </svg>
             Add Blog
           </button>
@@ -285,9 +322,24 @@ export default function BlogComponent() {
                           className="text-gray-600 hover:text-gray-900 p-1"
                           title="Preview"
                         >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                            />
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                            />
                           </svg>
                         </button>
                       )}
@@ -297,8 +349,18 @@ export default function BlogComponent() {
                           className="text-blue-600 hover:text-blue-900 p-1"
                           title="Edit"
                         >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                            />
                           </svg>
                         </button>
                       )}
@@ -308,8 +370,18 @@ export default function BlogComponent() {
                           className="text-red-600 hover:text-red-900 p-1"
                           title="Delete"
                         >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            />
                           </svg>
                         </button>
                       )}
@@ -319,7 +391,10 @@ export default function BlogComponent() {
               ))}
               {blogs.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                  <td
+                    colSpan={5}
+                    className="px-6 py-8 text-center text-gray-500"
+                  >
                     No blogs found.
                   </td>
                 </tr>
@@ -419,7 +494,13 @@ export default function BlogComponent() {
             disabled={formLoading}
             className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold px-6 py-2 rounded-md shadow transition-colors"
           >
-            {formLoading ? (mode === "edit" ? "Updating..." : "Submitting...") : (mode === "edit" ? "Update Blog" : "Submit Blog")}
+            {formLoading
+              ? mode === "edit"
+                ? "Updating..."
+                : "Submitting..."
+              : mode === "edit"
+              ? "Update Blog"
+              : "Submit Blog"}
           </button>
           <button
             type="button"
@@ -448,7 +529,9 @@ export default function BlogComponent() {
 
       {selectedBlog && (
         <div className="space-y-6">
-          <h1 className="text-4xl font-bold text-gray-900">{selectedBlog.title}</h1>
+          <h1 className="text-4xl font-bold text-gray-900">
+            {selectedBlog.title}
+          </h1>
           <div className="text-lg text-gray-600">
             <span className="font-semibold">By: {selectedBlog.author}</span>
           </div>
