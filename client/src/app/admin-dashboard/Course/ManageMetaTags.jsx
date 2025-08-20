@@ -158,7 +158,7 @@ export default function ManageMetatags() {
                 </Button>
               </label>
               <Button variant="contained" onClick={() => setMode("add")}>
-                + Add Meta Tag
+                Add Meta Tag
               </Button>
             </div>
           </div>

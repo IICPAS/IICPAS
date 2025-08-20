@@ -18,7 +18,15 @@ import { Delete, Visibility, Close } from "@mui/icons-material";
 import dynamic from "next/dynamic";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
-
+const joditConfig = {
+  readonly: false,
+  height: 200,
+  uploader: { insertImageAsBase64URI: true },
+  toolbarAdaptive: false,
+  showCharsCounter: false,
+  showWordsCounter: false,
+  spellcheck: true,
+};
 const JoditEditor = dynamic(() => import("jodit-react"), { ssr: false });
 export default function AddOrEditTopicForm({
   chapterId,
@@ -59,7 +67,7 @@ export default function AddOrEditTopicForm({
     }, 100);
   };
 
-  // Function to process content for preview with centered images and videos
+  // Function to process content for preview with proper formatting
   const processContentForPreview = (htmlContent) => {
     if (!htmlContent) return "";
 
@@ -67,30 +75,95 @@ export default function AddOrEditTopicForm({
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = htmlContent;
 
-    // Center all images
+    // Enhance headings with proper styling
+    const headings = tempDiv.querySelectorAll("h1, h2, h3, h4, h5, h6");
+    headings.forEach((heading) => {
+      heading.style.fontWeight = "600";
+      heading.style.marginTop = "1.5rem";
+      heading.style.marginBottom = "1rem";
+      heading.style.color = "#1a202c";
+      heading.style.borderBottom = "2px solid #e2e8f0";
+      heading.style.paddingBottom = "0.5rem";
+    });
+
+    // Style paragraphs
+    const paragraphs = tempDiv.querySelectorAll("p");
+    paragraphs.forEach((p) => {
+      p.style.marginBottom = "1rem";
+      p.style.lineHeight = "1.6";
+      p.style.color = "#2d3748";
+    });
+
+    // Center and style images
     const images = tempDiv.querySelectorAll("img");
     images.forEach((img) => {
       img.style.display = "block";
-      img.style.margin = "0 auto";
+      img.style.margin = "1.5rem auto";
       img.style.maxWidth = "100%";
       img.style.height = "auto";
+      img.style.borderRadius = "8px";
+      img.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
     });
 
-    // Center all videos
+    // Center and style videos
     const videos = tempDiv.querySelectorAll("video");
     videos.forEach((video) => {
       video.style.display = "block";
-      video.style.margin = "0 auto";
+      video.style.margin = "1.5rem auto";
       video.style.maxWidth = "100%";
       video.style.height = "auto";
+      video.style.borderRadius = "8px";
+      video.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
     });
 
-    // Center iframes (for embedded videos)
+    // Center and style iframes (for embedded videos)
     const iframes = tempDiv.querySelectorAll("iframe");
     iframes.forEach((iframe) => {
       iframe.style.display = "block";
-      iframe.style.margin = "0 auto";
+      iframe.style.margin = "1.5rem auto";
       iframe.style.maxWidth = "100%";
+      iframe.style.borderRadius = "8px";
+      iframe.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+    });
+
+    // Style lists
+    const lists = tempDiv.querySelectorAll("ul, ol");
+    lists.forEach((list) => {
+      list.style.marginBottom = "1rem";
+      list.style.paddingLeft = "1.5rem";
+    });
+
+    // Style list items
+    const listItems = tempDiv.querySelectorAll("li");
+    listItems.forEach((li) => {
+      li.style.marginBottom = "0.5rem";
+      li.style.lineHeight = "1.6";
+    });
+
+    // Style tables
+    const tables = tempDiv.querySelectorAll("table");
+    tables.forEach((table) => {
+      table.style.width = "100%";
+      table.style.borderCollapse = "collapse";
+      table.style.marginBottom = "1.5rem";
+      table.style.borderRadius = "8px";
+      table.style.overflow = "hidden";
+      table.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.1)";
+    });
+
+    // Style table cells
+    const cells = tempDiv.querySelectorAll("td, th");
+    cells.forEach((cell) => {
+      cell.style.padding = "0.75rem";
+      cell.style.border = "1px solid #e2e8f0";
+      cell.style.textAlign = "left";
+    });
+
+    // Style table headers
+    const headers = tempDiv.querySelectorAll("th");
+    headers.forEach((header) => {
+      header.style.backgroundColor = "#f7fafc";
+      header.style.fontWeight = "600";
     });
 
     return tempDiv.innerHTML;
@@ -273,12 +346,9 @@ export default function AddOrEditTopicForm({
             <JoditEditor
               ref={editor}
               value={content}
+              config={joditConfig}
               tabIndex={1}
               onBlur={(newContent) => setContent(newContent)}
-              config={{
-                readonly: false,
-                height: 350,
-              }}
             />
           </Box>
 
@@ -366,14 +436,15 @@ export default function AddOrEditTopicForm({
         <Paper
           sx={{
             width: "90vw",
-            maxWidth: "800px",
+            maxWidth: "900px",
             maxHeight: "90vh",
             overflow: "auto",
-            p: 3,
+            p: 4,
             position: "relative",
             margin: "auto",
-            boxShadow: "0 10px 40px rgba(0,0,0,0.3)",
-            borderRadius: 2,
+            boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+            borderRadius: 3,
+            backgroundColor: "#ffffff",
           }}
         >
           <Box
@@ -381,11 +452,22 @@ export default function AddOrEditTopicForm({
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              mb: 2,
+              mb: 3,
+              pb: 2,
+              borderBottom: "2px solid #e2e8f0",
             }}
           >
-            <Typography variant="h6" component="h2" id="preview-modal-title">
-              Preview: {title || "Untitled Topic"}
+            <Typography
+              variant="h4"
+              component="h1"
+              id="preview-modal-title"
+              sx={{
+                fontWeight: 700,
+                color: "#1a202c",
+                fontSize: "1.875rem",
+              }}
+            >
+              {title || "Untitled Topic"}
             </Typography>
             <IconButton
               onClick={handlePreviewClose}
@@ -403,22 +485,85 @@ export default function AddOrEditTopicForm({
           <Box
             id="preview-modal-description"
             sx={{
+              fontSize: "1rem",
+              lineHeight: 1.7,
+              color: "#2d3748",
+              "& h1": {
+                fontSize: "2rem",
+                fontWeight: 700,
+                color: "#1a202c",
+                marginTop: "2rem",
+                marginBottom: "1rem",
+                borderBottom: "3px solid #3182ce",
+                paddingBottom: "0.5rem",
+              },
+              "& h2": {
+                fontSize: "1.5rem",
+                fontWeight: 600,
+                color: "#1a202c",
+                marginTop: "1.5rem",
+                marginBottom: "0.75rem",
+                borderBottom: "2px solid #e2e8f0",
+                paddingBottom: "0.25rem",
+              },
+              "& h3": {
+                fontSize: "1.25rem",
+                fontWeight: 600,
+                color: "#1a202c",
+                marginTop: "1.25rem",
+                marginBottom: "0.5rem",
+              },
+              "& p": {
+                marginBottom: "1rem",
+                lineHeight: 1.7,
+              },
               "& img": {
                 display: "block",
-                margin: "0 auto",
+                margin: "1.5rem auto",
                 maxWidth: "100%",
                 height: "auto",
+                borderRadius: "8px",
+                boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
               },
               "& video": {
                 display: "block",
-                margin: "0 auto",
+                margin: "1.5rem auto",
                 maxWidth: "100%",
                 height: "auto",
+                borderRadius: "8px",
+                boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
               },
               "& iframe": {
                 display: "block",
-                margin: "0 auto",
+                margin: "1.5rem auto",
                 maxWidth: "100%",
+                borderRadius: "8px",
+                boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+              },
+              "& ul, & ol": {
+                marginBottom: "1rem",
+                paddingLeft: "1.5rem",
+              },
+              "& li": {
+                marginBottom: "0.5rem",
+                lineHeight: 1.6,
+              },
+              "& table": {
+                width: "100%",
+                borderCollapse: "collapse",
+                marginBottom: "1.5rem",
+                borderRadius: "8px",
+                overflow: "hidden",
+                boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+              },
+              "& td, & th": {
+                padding: "0.75rem",
+                border: "1px solid #e2e8f0",
+                textAlign: "left",
+              },
+              "& th": {
+                backgroundColor: "#f7fafc",
+                fontWeight: 600,
               },
               "& *": {
                 maxWidth: "100%",

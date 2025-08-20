@@ -191,7 +191,7 @@ export default function ChapterList({
               }}
               onClick={() => setAddingChapter(true)}
             >
-              + Add Chapter
+              Add Chapter
             </Button>
           )}
 

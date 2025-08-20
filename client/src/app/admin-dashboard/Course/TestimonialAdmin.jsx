@@ -100,7 +100,7 @@ export default function TestimonialsAdmin() {
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-semibold">Testimonials</h2>
             <Button variant="contained" onClick={() => setMode("add")}>
-              + Add Testimonial
+              Add Testimonial
             </Button>
           </div>
 

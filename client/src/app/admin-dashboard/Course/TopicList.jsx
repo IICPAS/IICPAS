@@ -120,7 +120,7 @@ export default function TopicList({
             View Chapters
           </Button>
           <Button variant="contained" onClick={onAddTopic}>
-            + Add Topic
+            Add Topic
           </Button>
         </Stack>
       </Stack>

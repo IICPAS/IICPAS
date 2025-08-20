@@ -103,7 +103,12 @@ export default function CourseList({
       renderCell: (params) => {
         const course = params.row;
         return (
-          <Stack direction="row" spacing={1.5} alignItems="center" sx={{ height: '100%' }}>
+          <Stack
+            direction="row"
+            spacing={1.5}
+            alignItems="center"
+            sx={{ height: "100%" }}
+          >
             <Button
               variant="contained"
               size="small"
@@ -118,13 +123,13 @@ export default function CourseList({
                 textTransform: "none",
                 boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
                 height: 32,
-                minWidth: 'auto',
+                minWidth: "auto",
                 "&:hover": {
                   boxShadow: "0 4px 8px rgba(0,0,0,0.15)",
                 },
               }}
             >
-              + Chapters
+              Chapters
             </Button>
             <Tooltip title="Edit Course" arrow>
               <IconButton
@@ -212,7 +217,7 @@ export default function CourseList({
             },
           }}
         >
-          + ADD COURSE
+          ADD COURSE
         </Button>
       </Stack>
       <Box

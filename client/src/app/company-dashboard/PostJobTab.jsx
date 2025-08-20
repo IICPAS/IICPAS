@@ -28,7 +28,7 @@ const PostJobTab = () => {
 
   return (
     <div className="bg-white p-6 rounded shadow max-w-xl">
-      <h2 className="text-xl font-bold mb-4">+ Add Job</h2>
+      <h2 className="text-xl font-bold mb-4">Add Job</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           placeholder="Job Title"
