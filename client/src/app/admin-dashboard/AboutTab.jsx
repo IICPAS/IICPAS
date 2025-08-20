@@ -1,20 +1,33 @@
 "use client";
-import { useEffect, useState } from "react";
-import { Button, IconButton } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
+import React, { useState, useEffect } from "react";
+import {
+  IconButton,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+} from "@mui/material";
+import { Edit as EditIcon, Delete as DeleteIcon } from "@mui/icons-material";
 import axios from "axios";
+import { useAuth } from "@/contexts/AuthContext";
 import QuillEditor from "../components/QuillEditor";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 
 const MySwal = withReactContent(Swal);
 
-export default function AboutUsAdmin() {
-  const [mode, setMode] = useState("view");
-  const [content, setContent] = useState("");
-  const [editId, setEditId] = useState(null);
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
+
+export default function AboutTab() {
   const [aboutList, setAboutList] = useState([]);
+  const [mode, setMode] = useState("view");
+  const [editingItem, setEditingItem] = useState(null);
+  const [form, setForm] = useState({
+    content: "",
+  });
+  const { hasPermission } = useAuth();
 
   useEffect(() => {
     fetchContent();
@@ -33,14 +46,14 @@ export default function AboutUsAdmin() {
 
   const handleSubmit = async () => {
     try {
-      if (editId) {
+      if (editingItem) {
         await axios.put(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/about/${editId}`,
-          { content }
+          `${process.env.NEXT_PUBLIC_API_URL}/api/about/${editingItem}`,
+          { content: form.content }
         );
       } else {
         await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/about`, {
-          content,
+          content: form.content,
         });
       }
       resetForm();
@@ -52,8 +65,8 @@ export default function AboutUsAdmin() {
   };
 
   const handleEdit = (item) => {
-    setEditId(item._id);
-    setContent(item.content);
+    setEditingItem(item._id);
+    setForm({ content: item.content });
     setMode("edit");
   };
 
@@ -83,8 +96,8 @@ export default function AboutUsAdmin() {
   };
 
   const resetForm = () => {
-    setEditId(null);
-    setContent("");
+    setEditingItem(null);
+    setForm({ content: "" });
   };
 
   return (
@@ -112,10 +125,10 @@ export default function AboutUsAdmin() {
 
       {mode === "edit" && (
         <div className="bg-white rounded-md p-1 w-full max-w-6xl">
-          <QuillEditor value={content} onChange={setContent} height={300} />
+          <QuillEditor value={form.content} onChange={(value) => setForm({ ...form, content: value })} height={300} />
           <div className="flex justify-end gap-3 mt-4">
             <Button variant="contained" onClick={handleSubmit}>
-              {editId ? "Update" : "Submit"}
+              {editingItem ? "Update" : "Submit"}
             </Button>
             <Button variant="outlined" onClick={() => setMode("view")}>
               Cancel
@@ -126,6 +139,14 @@ export default function AboutUsAdmin() {
 
       {mode === "view" && (
         <div className="bg-white rounded-md p-1 w-full max-w-6xl">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-bold">About Us</h2>
+            {hasPermission("about", "add") && (
+              <Button variant="contained" onClick={() => setMode("add")}>
+                Add About
+              </Button>
+            )}
+          </div>
           {aboutList.length === 0 ? (
             <p>No About Us content added yet.</p>
           ) : (
@@ -136,16 +157,20 @@ export default function AboutUsAdmin() {
                   dangerouslySetInnerHTML={{ __html: item.content }}
                 />
                 <div className="absolute top-2 right-2 flex gap-2">
-                  <IconButton onClick={() => handleEdit(item)} size="small">
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                  <IconButton
-                    onClick={() => handleDelete(item._id)}
-                    size="small"
-                    color="error"
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
+                  {hasPermission("edit_about") && (
+                    <IconButton onClick={() => handleEdit(item)} size="small">
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                  )}
+                  {hasPermission("delete_about") && (
+                    <IconButton
+                      onClick={() => handleDelete(item._id)}
+                      size="small"
+                      color="error"
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  )}
                 </div>
               </div>
             ))

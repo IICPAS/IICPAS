@@ -17,6 +17,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import axios from "axios";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
+import { useAuth } from "@/contexts/AuthContext";
 
 const MySwal = withReactContent(Swal);
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
@@ -34,6 +35,7 @@ export default function ChapterList({
   const [addingChapter, setAddingChapter] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [saving, setSaving] = useState(false);
+  const { hasPermission } = useAuth();
 
   const fetchChapters = useCallback(() => {
     setLoading(true);
@@ -102,34 +104,40 @@ export default function ChapterList({
       filterable: false,
       renderCell: (params) => (
         <Stack direction="row" spacing={1}>
-          <Button
-            variant="contained"
-            color="primary"
-            size="small"
-            onClick={() => onViewTopics(params.row)}
-          >
-            Topics
-          </Button>
-
-          <Tooltip title="Edit Chapter">
-            <IconButton
-              color="info"
+          {hasPermission("course", "read") && (
+            <Button
+              variant="contained"
+              color="primary"
               size="small"
-              onClick={() => onEditChapter(params.row)}
+              onClick={() => onViewTopics(params.row)}
             >
-              <EditIcon />
-            </IconButton>
-          </Tooltip>
+              Topics
+            </Button>
+          )}
 
-          <Tooltip title="Delete Chapter">
-            <IconButton
-              color="error"
-              size="small"
-              onClick={() => handleDelete(params.row._id)}
-            >
-              <DeleteIcon />
-            </IconButton>
-          </Tooltip>
+          {hasPermission("course", "update") && (
+            <Tooltip title="Edit Chapter">
+              <IconButton
+                color="info"
+                size="small"
+                onClick={() => onEditChapter(params.row)}
+              >
+                <EditIcon />
+              </IconButton>
+            </Tooltip>
+          )}
+
+          {hasPermission("course", "delete") && (
+            <Tooltip title="Delete Chapter">
+              <IconButton
+                color="error"
+                size="small"
+                onClick={() => handleDelete(params.row._id)}
+              >
+                <DeleteIcon />
+              </IconButton>
+            </Tooltip>
+          )}
         </Stack>
       ),
     },
@@ -176,7 +184,7 @@ export default function ChapterList({
             onChange={(e) => setSearch(e.target.value)}
           />
 
-          {!addingChapter && (
+          {!addingChapter && hasPermission("course", "add") && (
             <Button
               variant="contained"
               sx={{

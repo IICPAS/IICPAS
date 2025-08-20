@@ -5,6 +5,7 @@ import { Pencil, Trash2 } from "lucide-react";
 import { Switch } from "@headlessui/react";
 import Swal from "sweetalert2";
 import EditTopic from "./EditTopics";
+import { useAuth } from "@/contexts/AuthContext";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
@@ -15,6 +16,7 @@ const ViewTrainingsTab = ({ topics, fetchTopics }) => {
     description: "",
     price: "",
   });
+  const { hasPermission } = useAuth();
 
   const handleDelete = async (id) => {
     const result = await Swal.fire({
@@ -166,20 +168,24 @@ const ViewTrainingsTab = ({ topics, fetchTopics }) => {
                           }`}
                         />
                       </button>
-                      <button
-                        onClick={() => handleEditClick(topic)}
-                        className="rounded-full p-2 bg-blue-100 hover:bg-blue-600 hover:text-white text-blue-700 transition"
-                        title="Edit"
-                      >
-                        <Pencil size={18} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(topic._id)}
-                        className="rounded-full p-2 bg-red-100 hover:bg-red-600 hover:text-white text-red-700 transition"
-                        title="Delete"
-                      >
-                        <Trash2 size={18} />
-                      </button>
+                      {hasPermission("edit_training") && (
+                        <button
+                          onClick={() => handleEditClick(topic)}
+                          className="rounded-full p-2 bg-blue-100 hover:bg-blue-600 hover:text-white text-blue-700 transition"
+                          title="Edit"
+                        >
+                          <Pencil size={18} />
+                        </button>
+                      )}
+                      {hasPermission("delete_training") && (
+                        <button
+                          onClick={() => handleDelete(topic._id)}
+                          className="rounded-full p-2 bg-red-100 hover:bg-red-600 hover:text-white text-red-700 transition"
+                          title="Delete"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))

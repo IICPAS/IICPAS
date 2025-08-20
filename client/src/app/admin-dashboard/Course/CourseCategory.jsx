@@ -1,16 +1,15 @@
 "use client";
 import { useState, useEffect } from "react";
 import { DataGrid } from "@mui/x-data-grid";
-import { Button, Box, IconButton, Tooltip } from "@mui/material";
+import { Button, Box, IconButton, Tooltip, Chip } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CancelIcon from "@mui/icons-material/Cancel";
 import AddIcon from "@mui/icons-material/Add";
-import Swal from "sweetalert2";
-import withReactContent from "sweetalert2-react-content";
+import { showDeleteConfirmation, showSuccess, showError } from "@/utils/sweetAlert";
+import { useAuth } from "@/contexts/AuthContext";
 import axios from "axios";
-
-const MySwal = withReactContent(Swal);
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 
@@ -26,6 +25,7 @@ export default function CourseCategoryExcelGrid() {
     keywords: "",
     description: "",
   });
+  const { hasPermission } = useAuth();
 
   // Fetch data
   const loadRows = async () => {
@@ -46,7 +46,6 @@ export default function CourseCategoryExcelGrid() {
 
   useEffect(() => {
     if (!showForm) loadRows();
-    // eslint-disable-next-line
   }, [showForm]);
 
   // Form handlers
@@ -78,21 +77,31 @@ export default function CourseCategoryExcelGrid() {
     setShowForm(true);
   };
 
-  const handleDelete = (id) => {
-    MySwal.fire({
-      title: "Are you sure?",
-      text: "You want to delete this category?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      confirmButtonText: "Yes, delete it!",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
+  const handleDelete = async (id) => {
+    const confirmed = await showDeleteConfirmation("category");
+    
+    if (confirmed) {
+      try {
         await axios.delete(`${API_BASE}/categories/${id}`);
         loadRows();
-        MySwal.fire("Deleted!", "Category has been deleted.", "success");
+        showSuccess("Deleted!", "Category has been deleted.");
+      } catch (error) {
+        console.error("Error deleting category:", error);
+        showError("Error!", "Failed to delete category.");
       }
-    });
+    }
+  };
+
+  const handleToggleStatus = async (id, currentStatus) => {
+    try {
+      const newStatus = currentStatus === "Active" ? "Inactive" : "Active";
+      await axios.put(`${API_BASE}/categories/${id}`, { status: newStatus });
+      loadRows();
+      showSuccess("Status Updated!", `Category is now ${newStatus}.`);
+    } catch (error) {
+      console.error("Error toggling status:", error);
+      showError("Error!", "Failed to update status.");
+    }
   };
 
   const handleFormSubmit = async (e) => {
@@ -100,10 +109,10 @@ export default function CourseCategoryExcelGrid() {
     try {
       if (editRow) {
         await axios.put(`${API_BASE}/categories/${editRow._id}`, form);
-        MySwal.fire("Updated!", "Category updated.", "success");
+        showSuccess("Updated!", "Category updated successfully.");
       } else {
         await axios.post(`${API_BASE}/categories`, form);
-        MySwal.fire("Created!", "Category created.", "success");
+        showSuccess("Created!", "Category created successfully.");
       }
       setShowForm(false);
       setEditRow(null);
@@ -115,8 +124,9 @@ export default function CourseCategoryExcelGrid() {
         description: "",
       });
       loadRows();
-    } catch {
-      MySwal.fire("Error", "Failed to save category.", "error");
+    } catch (error) {
+      console.error("Error saving category:", error);
+      showError("Error!", "Failed to save category.");
     }
   };
 
@@ -128,6 +138,7 @@ export default function CourseCategoryExcelGrid() {
       flex: 1,
       headerAlign: "center",
       align: "center",
+      minWidth: 200,
     },
     {
       field: "status",
@@ -135,87 +146,111 @@ export default function CourseCategoryExcelGrid() {
       flex: 0.7,
       headerAlign: "center",
       align: "center",
+      minWidth: 120,
       renderCell: (params) => (
-        <span
-          style={{
-            color: "#059669",
-            background: "#ECFDF5",
-            borderRadius: 15,
-            padding: "4px 14px",
-            border: "1px solid #6ee7b7",
-            fontSize: 13,
-            fontWeight: 500,
+        <Chip
+          label={params.value}
+          color={params.value === "Active" ? "success" : "default"}
+          variant="outlined"
+          size="small"
+          sx={{
+            fontWeight: 600,
+            fontSize: "0.75rem",
+            borderRadius: "12px",
+            borderWidth: "2px",
+            "&.MuiChip-colorSuccess": {
+              backgroundColor: "#ecfdf5",
+              borderColor: "#10b981",
+              color: "#059669",
+            },
+            "&.MuiChip-colorDefault": {
+              backgroundColor: "#fef2f2",
+              borderColor: "#ef4444",
+              color: "#dc2626",
+            },
           }}
-        >
-          {params.value}
-        </span>
+        />
       ),
     },
-
     {
       field: "actions",
       headerName: "Action",
-      flex: 1,
+      flex: 1.2,
       sortable: false,
       headerAlign: "center",
       align: "center",
+      minWidth: 200,
       renderCell: (params) => (
         <Box
           display="flex"
-          gap={1.5}
+          gap={1}
           justifyContent="center"
           alignItems="center"
           sx={{ height: "100%" }}
         >
-          <Tooltip title="Edit Category" arrow>
-            <IconButton
-              onClick={() => handleEdit(params.row)}
-              size="small"
-              sx={{
-                bgcolor: "#e3f2fd",
-                color: "#1976d2",
-                "&:hover": {
-                  bgcolor: "#bbdefb",
-                },
-                width: 32,
-                height: 32,
-              }}
-            >
-              <EditIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Toggle Status" arrow>
-            <IconButton
-              size="small"
-              disabled
-              sx={{
-                bgcolor: "#e8f5e8",
-                color: "#2e7d32",
-                opacity: 0.5,
-                width: 32,
-                height: 32,
-              }}
-            >
-              <CheckCircleIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Delete Category" arrow>
-            <IconButton
-              onClick={() => handleDelete(params.row._id)}
-              size="small"
-              sx={{
-                bgcolor: "#ffebee",
-                color: "#d32f2f",
-                "&:hover": {
-                  bgcolor: "#ffcdd2",
-                },
-                width: 32,
-                height: 32,
-              }}
-            >
-              <DeleteIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
+          {hasPermission("course-category", "update") && (
+            <Tooltip title="Edit Category" arrow>
+              <IconButton
+                onClick={() => handleEdit(params.row)}
+                size="small"
+                sx={{
+                  bgcolor: "#e3f2fd",
+                  color: "#1976d2",
+                  "&:hover": {
+                    bgcolor: "#bbdefb",
+                  },
+                  width: 32,
+                  height: 32,
+                }}
+              >
+                <EditIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          )}
+          
+          {hasPermission("course-category", "active") && (
+            <Tooltip title={`${params.row.status === "Active" ? "Deactivate" : "Activate"} Category`} arrow>
+              <IconButton
+                onClick={() => handleToggleStatus(params.row._id, params.row.status)}
+                size="small"
+                sx={{
+                  bgcolor: params.row.status === "Active" ? "#e8f5e8" : "#fff3e0",
+                  color: params.row.status === "Active" ? "#2e7d32" : "#f57c00",
+                  "&:hover": {
+                    bgcolor: params.row.status === "Active" ? "#c8e6c9" : "#ffe0b2",
+                  },
+                  width: 32,
+                  height: 32,
+                }}
+              >
+                {params.row.status === "Active" ? (
+                  <CancelIcon fontSize="small" />
+                ) : (
+                  <CheckCircleIcon fontSize="small" />
+                )}
+              </IconButton>
+            </Tooltip>
+          )}
+          
+          {hasPermission("course-category", "delete") && (
+            <Tooltip title="Delete Category" arrow>
+              <IconButton
+                onClick={() => handleDelete(params.row._id)}
+                size="small"
+                sx={{
+                  bgcolor: "#ffebee",
+                  color: "#d32f2f",
+                  "&:hover": {
+                    bgcolor: "#ffcdd2",
+                  },
+                  width: 32,
+                  height: 32,
+                }}
+              >
+                <DeleteIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          )}
         </Box>
       ),
     },
@@ -223,33 +258,32 @@ export default function CourseCategoryExcelGrid() {
 
   return (
     <Box sx={{ width: "100%", maxWidth: "1200px", mx: "auto", mt: 4, px: 2 }}>
-      <Box sx={{ bgcolor: "#fff", borderRadius: 3, overflow: "hidden" }}>
-        {!showForm ? (
-          <>
-            <Box
-              display="flex"
-              alignItems="center"
-              justifyContent="space-between"
-              mb={2}
-              mt={2}
+      {!showForm ? (
+        <>
+          <Box
+            display="flex"
+            alignItems="center"
+            justifyContent="space-between"
+            mb={3}
+          >
+            <h1
+              style={{
+                fontSize: "2rem",
+                fontWeight: 700,
+                margin: 0,
+                color: "#1a237e",
+              }}
             >
-              <h1
-                style={{
-                  fontSize: 16,
-                  fontWeight: 700,
-                  margin: 0,
-                  letterSpacing: 0,
-                }}
-              ></h1>
+              Course Categories
+            </h1>
+            {hasPermission("course-category", "add") && (
               <Button
                 variant="contained"
                 startIcon={<AddIcon />}
                 sx={{
-                  background:
-                    "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
+                  background: "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
                   "&:hover": {
-                    background:
-                      "linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)",
+                    background: "linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)",
                   },
                   fontWeight: 600,
                   px: 3,
@@ -266,66 +300,74 @@ export default function CourseCategoryExcelGrid() {
               >
                 ADD COURSE CATEGORY
               </Button>
-            </Box>
-            <div style={{ width: "100%", height: 420, overflow: "auto" }}>
-              <DataGrid
-                rows={rows}
-                columns={columns}
-                loading={loading}
-                pageSize={10}
-                rowsPerPageOptions={[10, 25, 100]}
-                disableRowSelectionOnClick
-                sx={{
-                  "& .MuiDataGrid-columnHeaders": {
-                    background:
-                      "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
-                    fontWeight: 700,
-                    fontSize: 15,
-                    borderBottom: "2px solid #dee2e6",
-                  },
-                  "& .MuiDataGrid-cell": {
-                    borderBottom: "1px solid #f0f0f0",
-                    padding: "12px 16px",
-                    display: "flex",
-                    alignItems: "center",
-                  },
-                  "& .MuiDataGrid-row": {
-                    fontSize: 15,
-                    minHeight: "60px !important",
-                    "&:hover": {
-                      backgroundColor: "#f8f9fa",
-                    },
-                  },
-                  "& .MuiDataGrid-cell:focus": {
-                    outline: "none",
-                  },
-                  border: "1px solid #e8eaf6",
-                  borderRadius: 2,
-                }}
-                getRowHeight={() => 60}
-                autoHeight
-              />
-            </div>
-          </>
-        ) : (
-          // ----- FORM SECTION -----
-          <form
-            onSubmit={handleFormSubmit}
-            style={{
-              maxWidth: "100%",
-              margin: "0 auto",
-              background: "transparent",
-              padding: "20px",
+            )}
+          </Box>
+          
+          <Box
+            sx={{
+              borderRadius: 3,
               overflow: "hidden",
+              boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+              border: "1px solid #e8eaf6",
             }}
           >
+            <DataGrid
+              rows={rows}
+              columns={columns}
+              loading={loading}
+              pageSize={10}
+              rowsPerPageOptions={[10, 25, 100]}
+              disableRowSelectionOnClick
+              sx={{
+                "& .MuiDataGrid-columnHeaders": {
+                  background: "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
+                  fontWeight: 700,
+                  fontSize: 15,
+                  borderBottom: "2px solid #dee2e6",
+                },
+                "& .MuiDataGrid-cell": {
+                  borderBottom: "1px solid #f0f0f0",
+                  padding: "12px 16px",
+                  display: "flex",
+                  alignItems: "center",
+                },
+                "& .MuiDataGrid-row": {
+                  fontSize: 15,
+                  minHeight: "60px !important",
+                  "&:hover": {
+                    backgroundColor: "#f8f9fa",
+                  },
+                },
+                "& .MuiDataGrid-cell:focus": {
+                  outline: "none",
+                },
+                border: "none",
+                backgroundColor: "transparent",
+              }}
+              getRowHeight={() => 60}
+              autoHeight
+            />
+          </Box>
+        </>
+      ) : (
+        // ----- FORM SECTION -----
+        <Box
+          sx={{
+            maxWidth: "100%",
+            margin: "0 auto",
+            background: "transparent",
+            padding: "20px",
+            overflow: "hidden",
+          }}
+        >
+          <form onSubmit={handleFormSubmit}>
             <h1
               style={{
-                fontSize: 32,
+                fontSize: "2rem",
                 fontWeight: 700,
                 marginBottom: 20,
                 marginTop: 8,
-                letterSpacing: 0,
+                color: "#1a237e",
               }}
             >
               Course Categories
@@ -340,8 +382,8 @@ export default function CourseCategoryExcelGrid() {
                 gap: "10px",
               }}
             >
-              <h2 style={{ fontSize: 23, fontWeight: 500, margin: 0 }}>
-                {editRow ? "Edit Course Category" : ""}
+              <h2 style={{ fontSize: "1.5rem", fontWeight: 500, margin: 0 }}>
+                {editRow ? "Edit Course Category" : "Add New Category"}
               </h2>
               <Button
                 variant="contained"
@@ -383,25 +425,28 @@ export default function CourseCategoryExcelGrid() {
                     display: "block",
                     fontWeight: 600,
                     marginBottom: 6,
+                    color: "#374151",
                   }}
                 >
-                  Category Name
+                  Category Name *
                 </label>
                 <input
                   type="text"
                   name="category"
                   style={{
                     width: "100%",
-                    border: "1.5px solid #ccc",
-                    borderRadius: 6,
-                    padding: "11px 13px",
-                    fontSize: 12,
+                    border: "1.5px solid #d1d5db",
+                    borderRadius: 8,
+                    padding: "12px 16px",
+                    fontSize: 14,
                     outline: "none",
                     marginBottom: 10,
+                    transition: "border-color 0.2s ease",
                   }}
                   value={form.category}
                   onChange={handleFormChange}
                   required
+                  placeholder="Enter category name"
                 />
               </div>
               <div>
@@ -410,6 +455,7 @@ export default function CourseCategoryExcelGrid() {
                     display: "block",
                     fontWeight: 600,
                     marginBottom: 6,
+                    color: "#374151",
                   }}
                 >
                   Status
@@ -418,12 +464,13 @@ export default function CourseCategoryExcelGrid() {
                   name="status"
                   style={{
                     width: "100%",
-                    border: "1.5px solid #ccc",
-                    borderRadius: 6,
-                    padding: "11px 13px",
-                    fontSize: 16,
+                    border: "1.5px solid #d1d5db",
+                    borderRadius: 8,
+                    padding: "12px 16px",
+                    fontSize: 14,
                     outline: "none",
                     marginBottom: 10,
+                    transition: "border-color 0.2s ease",
                   }}
                   value={form.status}
                   onChange={handleFormChange}
@@ -438,6 +485,7 @@ export default function CourseCategoryExcelGrid() {
                     display: "block",
                     fontWeight: 600,
                     marginBottom: 6,
+                    color: "#374151",
                   }}
                 >
                   Title
@@ -447,15 +495,17 @@ export default function CourseCategoryExcelGrid() {
                   name="title"
                   style={{
                     width: "100%",
-                    border: "1.5px solid #ccc",
-                    borderRadius: 6,
-                    padding: "11px 13px",
-                    fontSize: 17,
+                    border: "1.5px solid #d1d5db",
+                    borderRadius: 8,
+                    padding: "12px 16px",
+                    fontSize: 14,
                     outline: "none",
                     marginBottom: 10,
+                    transition: "border-color 0.2s ease",
                   }}
                   value={form.title}
                   onChange={handleFormChange}
+                  placeholder="Enter title"
                 />
               </div>
               <div>
@@ -464,6 +514,7 @@ export default function CourseCategoryExcelGrid() {
                     display: "block",
                     fontWeight: 600,
                     marginBottom: 6,
+                    color: "#374151",
                   }}
                 >
                   Keywords
@@ -473,15 +524,17 @@ export default function CourseCategoryExcelGrid() {
                   name="keywords"
                   style={{
                     width: "100%",
-                    border: "1.5px solid #ccc",
-                    borderRadius: 6,
-                    padding: "11px 13px",
-                    fontSize: 17,
+                    border: "1.5px solid #d1d5db",
+                    borderRadius: 8,
+                    padding: "12px 16px",
+                    fontSize: 14,
                     outline: "none",
                     marginBottom: 10,
+                    transition: "border-color 0.2s ease",
                   }}
                   value={form.keywords}
                   onChange={handleFormChange}
+                  placeholder="Enter keywords (comma separated)"
                 />
               </div>
             </div>
@@ -491,6 +544,7 @@ export default function CourseCategoryExcelGrid() {
                   display: "block",
                   fontWeight: 600,
                   marginBottom: 6,
+                  color: "#374151",
                 }}
               >
                 Description
@@ -499,17 +553,19 @@ export default function CourseCategoryExcelGrid() {
                 name="description"
                 style={{
                   width: "100%",
-                  border: "1.5px solid #ccc",
-                  borderRadius: 6,
-                  padding: "11px 13px",
-                  fontSize: 17,
+                  border: "1.5px solid #d1d5db",
+                  borderRadius: 8,
+                  padding: "12px 16px",
+                  fontSize: 14,
                   outline: "none",
                   marginBottom: 10,
-                  minHeight: 84,
+                  minHeight: 100,
                   resize: "vertical",
+                  transition: "border-color 0.2s ease",
                 }}
                 value={form.description}
                 onChange={handleFormChange}
+                placeholder="Enter description"
               />
             </div>
             <div style={{ marginTop: 24, textAlign: "left" }}>
@@ -523,18 +579,21 @@ export default function CourseCategoryExcelGrid() {
                   px: 4,
                   py: 1.5,
                   fontSize: 15,
-                  borderRadius: 2,
-                  boxShadow: "none",
+                  borderRadius: 8,
+                  boxShadow: "0 4px 12px rgba(15, 38, 92, 0.3)",
                   textTransform: "none",
                   letterSpacing: 0,
+                  "&:hover": {
+                    boxShadow: "0 6px 16px rgba(15, 38, 92, 0.4)",
+                  },
                 }}
               >
-                {editRow ? "Update" : "Create"}
+                {editRow ? "Update Category" : "Create Category"}
               </Button>
             </div>
           </form>
-        )}
-      </Box>
+        </Box>
+      )}
     </Box>
   );
 }

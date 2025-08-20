@@ -1,36 +1,39 @@
-// src/components/NewsTab.jsx
-import React, { useState, useEffect, useCallback } from "react";
+"use client";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useAuth } from "@/contexts/AuthContext";
 
-const API = process.env.NEXT_PUBLIC_API_BASE;
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 
-const NewsTab = () => {
+export default function NewsTab() {
   const [newsList, setNewsList] = useState([]);
-  const [formData, setFormData] = useState({
+  const [form, setForm] = useState({
     title: "",
     descr: "",
     link: "",
   });
+  const [loading, setLoading] = useState(false);
+  const { hasPermission } = useAuth();
 
-  const fetchNews = useCallback(async () => {
+  const fetchNews = async () => {
     try {
-      const res = await axios.get(`${API}/news`);
+      const res = await axios.get(`${API_BASE}/news`);
       setNewsList(res.data);
     } catch (err) {
       console.error("Error fetching news:", err);
     }
-  }, []);
+  };
 
   useEffect(() => {
     fetchNews();
-  }, [fetchNews]);
+  }, []);
 
   const handleAdd = async (e) => {
     e.preventDefault();
-    if (!formData.title || !formData.descr || !formData.link) return;
+    if (!form.title || !form.descr || !form.link) return;
     try {
-      await axios.post(`${API}/news`, formData);
-      setFormData({ title: "", descr: "", link: "" });
+      await axios.post(`${API_BASE}/news`, form);
+      setForm({ title: "", descr: "", link: "" });
       fetchNews();
     } catch (err) {
       console.error("Error adding news:", err);
@@ -39,7 +42,7 @@ const NewsTab = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`${API}/news/${id}`);
+      await axios.delete(`${API_BASE}/news/${id}`);
       fetchNews();
     } catch (err) {
       console.error("Error deleting news:", err);
@@ -52,43 +55,38 @@ const NewsTab = () => {
         📰 View News
       </h2>
 
-      <form
-        onSubmit={handleAdd}
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 2fr 2fr auto",
-          gap: "10px",
-          marginBottom: "1.5rem",
-          alignItems: "center",
-        }}
-      >
-        <input
-          type="text"
-          placeholder="Title"
-          value={formData.title}
-          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-          required
-          style={inputStyle}
-        />
-        <input
-          type="text"
-          placeholder="Description"
-          value={formData.descr}
-          onChange={(e) => setFormData({ ...formData, descr: e.target.value })}
-          required
-          style={inputStyle}
-        />
-        <input
-          type="url"
-          placeholder="Link"
-          value={formData.link}
-          onChange={(e) => setFormData({ ...formData, link: e.target.value })}
-          required
-          style={inputStyle}
-        />
-        <button type="submit" style={btnStyle}>
-          Add
-        </button>
+      <form onSubmit={handleAdd} style={{ marginBottom: "20px" }}>
+        <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
+          <input
+            type="text"
+            placeholder="Title"
+            value={form.title}
+            onChange={(e) => setForm({ ...form, title: e.target.value })}
+            required
+            style={inputStyle}
+          />
+          <input
+            type="text"
+            placeholder="Description"
+            value={form.descr}
+            onChange={(e) => setForm({ ...form, descr: e.target.value })}
+            required
+            style={inputStyle}
+          />
+          <input
+            type="url"
+            placeholder="Link"
+            value={form.link}
+            onChange={(e) => setForm({ ...form, link: e.target.value })}
+            required
+            style={inputStyle}
+          />
+          {hasPermission("news", "add") && (
+            <button type="submit" style={btnStyle}>
+              Add News
+            </button>
+          )}
+        </div>
       </form>
 
       <div style={{ overflowX: "auto" }}>
@@ -121,13 +119,15 @@ const NewsTab = () => {
                   <span style={statusTag}>approved</span>
                 </td>
                 <td style={{ ...tdStyle, textAlign: "center" }}>
-                  <button
-                    onClick={() => handleDelete(item._id)}
-                    style={deleteBtn}
-                    title="Delete"
-                  >
-                    ✖
-                  </button>
+                  {hasPermission("news", "delete") && (
+                    <button
+                      onClick={() => handleDelete(item._id)}
+                      style={deleteBtn}
+                      title="Delete"
+                    >
+                      ✖
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
@@ -199,5 +199,3 @@ const deleteBtn = {
   fontSize: "18px",
   cursor: "pointer",
 };
-
-export default NewsTab;

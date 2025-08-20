@@ -1,31 +1,39 @@
-import { useEffect, useState } from "react";
+"use client";
+import React, { useState, useEffect } from "react";
 import {
-  Button,
-  TextField,
   Table,
+  TableBody,
+  TableCell,
   TableHead,
   TableRow,
-  TableCell,
-  TableBody,
+  Button,
   IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Typography,
+  Box,
 } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import DownloadIcon from "@mui/icons-material/Download";
-import CheckIcon from "@mui/icons-material/Check";
-import CloseIcon from "@mui/icons-material/Close";
+import {
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  Visibility as VisibilityIcon,
+} from "@mui/icons-material";
 import axios from "axios";
-import * as XLSX from "xlsx";
 import Swal from "sweetalert2";
+import * as XLSX from "xlsx";
+import { useAuth } from "@/contexts/AuthContext";
 
-const api = process.env.NEXT_PUBLIC_API_URL;
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 
 export default function JobsAdminPanel() {
-  const [mode, setMode] = useState("list");
   const [jobs, setJobs] = useState([]);
   const [applications, setApplications] = useState([]);
   const [selectedJob, setSelectedJob] = useState(null);
+  const [mode, setMode] = useState("list");
+  const [openDialog, setOpenDialog] = useState(false);
   const [form, setForm] = useState({
     title: "",
     type: "",
@@ -33,22 +41,23 @@ export default function JobsAdminPanel() {
     description: "",
   });
   const [editId, setEditId] = useState(null);
+  const { hasPermission } = useAuth();
 
   useEffect(() => {
     fetchJobs();
   }, []);
 
   const fetchJobs = async () => {
-    const res = await axios.get(`${api}/jobs-internal`);
+    const res = await axios.get(`${API_BASE}/jobs-internal`);
     setJobs(res.data);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (editId) {
-      await axios.put(`${api}/jobs-internal/${editId}`, form);
+      await axios.put(`${API_BASE}/jobs-internal/${editId}`, form);
     } else {
-      await axios.post(`${api}/jobs-internal`, form);
+      await axios.post(`${API_BASE}/jobs-internal`, form);
     }
     resetForm();
     fetchJobs();
@@ -72,7 +81,9 @@ export default function JobsAdminPanel() {
     });
 
     if (confirm.isConfirmed) {
-      await axios.delete(`${api}/jobs-internal/applications/${applicant._id}`);
+      await axios.delete(
+        `${API_BASE}/jobs-internal/applications/${applicant._id}`
+      );
       fetchApplications(selectedJob);
       Swal.fire("Deleted!", "The application has been removed.", "success");
     }
@@ -80,7 +91,9 @@ export default function JobsAdminPanel() {
 
   // Utility to refresh applications
   const fetchApplications = async (job) => {
-    const res = await axios.get(`${api}/jobs-internal/${job._id}/applications`);
+    const res = await axios.get(
+      `${API_BASE}/jobs-internal/${job._id}/applications`
+    );
     setApplications(res.data);
   };
 
@@ -92,7 +105,9 @@ export default function JobsAdminPanel() {
 
   const viewApplications = async (job) => {
     setSelectedJob(job);
-    const res = await axios.get(`${api}/jobs-internal/${job._id}/applications`);
+    const res = await axios.get(
+      `${API_BASE}/jobs-internal/${job._id}/applications`
+    );
     setApplications(res.data);
     setMode("applications");
   };
@@ -107,7 +122,7 @@ export default function JobsAdminPanel() {
 
     if (confirm.isConfirmed) {
       await axios.post(
-        `${api}/jobs-internal/applications/${applicant._id}/shortlist`
+        `${API_BASE}/jobs-internal/applications/${applicant._id}/shortlist`
       );
       fetchApplications(selectedJob); // Refresh the list
       Swal.fire(
@@ -137,9 +152,11 @@ export default function JobsAdminPanel() {
         <>
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold">Jobs</h2>
-            <Button variant="contained" onClick={() => setMode("add")}>
-              Add Job
-            </Button>
+            {hasPermission("jobs", "add") && (
+              <Button variant="contained" onClick={() => setMode("add")}>
+                Add Job
+              </Button>
+            )}
           </div>
 
           <Table className="bg-white shadow rounded-md w-full">
@@ -158,12 +175,16 @@ export default function JobsAdminPanel() {
                   <TableCell>{job.type}</TableCell>
                   <TableCell>{job.location}</TableCell>
                   <TableCell align="center">
-                    <IconButton onClick={() => handleEdit(job)}>
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton onClick={() => handleDelete(job._id)}>
-                      <DeleteIcon color="error" />
-                    </IconButton>
+                    {hasPermission("edit_job") && (
+                      <IconButton onClick={() => handleEdit(job)}>
+                        <EditIcon />
+                      </IconButton>
+                    )}
+                    {hasPermission("delete_job") && (
+                      <IconButton onClick={() => handleDelete(job._id)}>
+                        <DeleteIcon color="error" />
+                      </IconButton>
+                    )}
                     <IconButton onClick={() => viewApplications(job)}>
                       <VisibilityIcon />
                     </IconButton>

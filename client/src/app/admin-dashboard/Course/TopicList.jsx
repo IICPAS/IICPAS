@@ -16,6 +16,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import axios from "axios";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
+import { useAuth } from "@/contexts/AuthContext";
 
 const MySwal = withReactContent(Swal);
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
@@ -30,6 +31,7 @@ export default function TopicList({
   const [topics, setTopics] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
+  const { hasPermission } = useAuth();
 
   const fetchTopics = useCallback(() => {
     setLoading(true);
@@ -81,24 +83,28 @@ export default function TopicList({
       filterable: false,
       renderCell: (params) => (
         <Stack direction="row" spacing={1}>
-          <Tooltip title="Edit Topic">
-            <IconButton
-              color="info"
-              size="small"
-              onClick={() => onEditTopic && onEditTopic(params.row)}
-            >
-              <EditIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Delete Topic">
-            <IconButton
-              color="error"
-              size="small"
-              onClick={() => handleDelete(params.row?._id)}
-            >
-              <DeleteIcon />
-            </IconButton>
-          </Tooltip>
+          {hasPermission("course", "update") && (
+            <Tooltip title="Edit Topic">
+              <IconButton
+                color="info"
+                size="small"
+                onClick={() => onEditTopic && onEditTopic(params.row)}
+              >
+                <EditIcon />
+              </IconButton>
+            </Tooltip>
+          )}
+          {hasPermission("course", "delete") && (
+            <Tooltip title="Delete Topic">
+              <IconButton
+                color="error"
+                size="small"
+                onClick={() => handleDelete(params.row?._id)}
+              >
+                <DeleteIcon />
+              </IconButton>
+            </Tooltip>
+          )}
         </Stack>
       ),
     },
@@ -119,9 +125,11 @@ export default function TopicList({
           <Button variant="outlined" onClick={onViewChapters}>
             View Chapters
           </Button>
-          <Button variant="contained" onClick={onAddTopic}>
-            Add Topic
-          </Button>
+          {hasPermission("course", "add") && (
+            <Button variant="contained" onClick={onAddTopic}>
+              Add Topic
+            </Button>
+          )}
         </Stack>
       </Stack>
 

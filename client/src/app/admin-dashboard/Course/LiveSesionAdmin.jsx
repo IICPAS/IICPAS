@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import {
   Button,
@@ -12,10 +12,11 @@ import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import { useAuth } from "@/contexts/AuthContext";
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
-export default function LiveSessionAdmin() {
+export default function LiveSesionAdmin() {
   const [tab, setTab] = useState("list");
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -28,6 +29,7 @@ export default function LiveSessionAdmin() {
     link: "",
     price: "",
   });
+  const { hasPermission } = useAuth();
 
   useEffect(() => {
     fetchSessions();
@@ -150,17 +152,24 @@ export default function LiveSessionAdmin() {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-xl lg:text-3xl font-bold">Live Sessions</h1>
         {tab === "list" ? (
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            sx={{ bgcolor: "#0f265c", borderRadius: 2, fontWeight: 600, px: 3 }}
-            onClick={() => {
-              setTab("create");
-              resetForm();
-            }}
-          >
-            Add Live Session
-          </Button>
+          hasPermission("manage_live_sessions") && (
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              sx={{
+                bgcolor: "#0f265c",
+                borderRadius: 2,
+                fontWeight: 600,
+                px: 3,
+              }}
+              onClick={() => {
+                setTab("create");
+                resetForm();
+              }}
+            >
+              Add Live Session
+            </Button>
+          )
         ) : (
           <Button
             variant="contained"
@@ -207,16 +216,20 @@ export default function LiveSessionAdmin() {
               <div className="text-sm mb-3">Price: ₹{s.price}</div>
               <div className="flex justify-between items-center">
                 <div className="flex gap-2">
-                  <Tooltip title="Edit">
-                    <IconButton onClick={() => handleEdit(s._id)}>
-                      <EditIcon />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Delete">
-                    <IconButton onClick={() => handleDelete(s._id)}>
-                      <DeleteIcon />
-                    </IconButton>
-                  </Tooltip>
+                  {hasPermission("manage_live_sessions") && (
+                    <>
+                      <Tooltip title="Edit">
+                        <IconButton onClick={() => handleEdit(s._id)}>
+                          <EditIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Delete">
+                        <IconButton onClick={() => handleDelete(s._id)}>
+                          <DeleteIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </>
+                  )}
                 </div>
                 <div className="flex items-center gap-1">
                   <Switch
