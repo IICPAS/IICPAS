@@ -50,6 +50,80 @@ const registerEmployee = async (req, res) => {
   }
 };
 
+// @desc    Register initial admin (public)
+// @route   POST /api/employees/register-admin
+// @access  Public
+const registerInitialAdmin = async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+
+    // Check if any admin already exists
+    const existingAdmin = await Employee.findOne({ role: "Admin" });
+    if (existingAdmin) {
+      return res.status(400).json({ message: "Admin already exists" });
+    }
+
+    // Check if employee exists
+    const employeeExists = await Employee.findOne({ email });
+    if (employeeExists) {
+      return res.status(400).json({ message: "Employee already exists" });
+    }
+
+    // Create admin with all permissions
+    const adminPermissions = {
+      "course-category": { add: true, read: true, update: true, delete: true, active: true },
+      course: { add: true, read: true, update: true, delete: true, active: true },
+      "live-session": { add: true, read: true, update: true, delete: true, active: true },
+      blogs: { add: true, read: true, update: true, delete: true, active: true },
+      testimonials: { add: true, read: true, update: true, delete: true, active: true },
+      about: { add: true, read: true, update: true, delete: true, active: true },
+      meta: { add: true, read: true, update: true, delete: true, active: true },
+      alert: { add: true, read: true, update: true, delete: true, active: true },
+      enquiries: { add: true, read: true, update: true, delete: true, active: true },
+      jobs: { add: true, read: true, update: true, delete: true, active: true },
+      news: { add: true, read: true, update: true, delete: true, active: true },
+      center: { add: true, read: true, update: true, delete: true, active: true },
+      students: { add: true, read: true, update: true, delete: true, active: true },
+      staff: { add: true, read: true, update: true, delete: true, active: true },
+      companies: { add: true, read: true, update: true, delete: true, active: true },
+      colleges: { add: true, read: true, update: true, delete: true, active: true },
+      calendar: { add: true, read: true, update: true, delete: true, active: true },
+      team: { add: true, read: true, update: true, delete: true, active: true },
+      topics: { add: true, read: true, update: true, delete: true, active: true },
+      revision: { add: true, read: true, update: true, delete: true, active: true },
+      support: { add: true, read: true, update: true, delete: true, active: true },
+    };
+
+    const admin = await Employee.create({
+      name: name || "Admin User",
+      email,
+      password,
+      role: "Admin",
+      status: "Active",
+      permissions: adminPermissions,
+      createdBy: null, // No creator for initial admin
+    });
+
+    if (admin) {
+      res.status(201).json({
+        _id: admin._id,
+        name: admin.name,
+        email: admin.email,
+        role: admin.role,
+        status: admin.status,
+        permissions: admin.permissions,
+        token: generateToken(admin._id),
+        message: "Initial admin created successfully",
+      });
+    } else {
+      res.status(400).json({ message: "Invalid admin data" });
+    }
+  } catch (error) {
+    console.error("Register initial admin error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 // @desc    Authenticate employee
 // @route   POST /api/employees/login
 // @access  Public
@@ -247,6 +321,7 @@ const updatePassword = async (req, res) => {
 
 export {
   registerEmployee,
+  registerInitialAdmin,
   loginEmployee,
   getEmployees,
   getEmployeeById,

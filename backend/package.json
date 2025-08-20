@@ -6,7 +6,12 @@
   "scripts": {
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "create-admin": "node scripts/createAdmin.js"
+    "create-admin": "node scripts/createAdmin.js",
+    "create-admin-production": "node scripts/createAdminProduction.js",
+    "create-admin-direct": "node scripts/createAdminDirect.js",
+    "create-admin-db": "node scripts/createAdminDatabase.js",
+    "admin-setup": "node scripts/adminSetup.js",
+    "test-admin-endpoint": "node scripts/testAdminEndpoint.js"
   },
   "keywords": [],
   "author": "",

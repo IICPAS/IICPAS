@@ -7,8 +7,8 @@ import { useRouter } from "next/navigation";
 import { FaUser, FaLock, FaEye, FaEyeSlash, FaEnvelope } from "react-icons/fa";
 
 export default function AdminLogin() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("admin@iicpa.com");
+  const [password, setPassword] = useState("admin123");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
