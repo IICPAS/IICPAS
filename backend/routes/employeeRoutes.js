@@ -1,6 +1,7 @@
 import express from "express";
 import {
   registerEmployee,
+  registerInitialAdmin,
   loginEmployee,
   getEmployees,
   getEmployeeById,
@@ -16,6 +17,7 @@ const router = express.Router();
 
 // Public routes
 router.post("/login", loginEmployee);
+router.post("/register-admin", registerInitialAdmin); // Public admin registration
 
 // Protected routes
 router.use(requireAuth);
