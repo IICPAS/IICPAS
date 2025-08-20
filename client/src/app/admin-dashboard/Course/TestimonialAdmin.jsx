@@ -1,30 +1,41 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
+"use client";
+import React, { useState, useEffect } from "react";
 import {
-  Button,
-  IconButton,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableRow,
+  Button,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
   TextField,
 } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import CancelIcon from "@mui/icons-material/Cancel";
+import {
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  CheckCircle as CheckCircleIcon,
+  Cancel as CancelIcon,
+} from "@mui/icons-material";
+import axios from "axios";
+import { useAuth } from "@/contexts/AuthContext";
 import Swal from "sweetalert2";
 
-export default function TestimonialsAdmin() {
-  const [mode, setMode] = useState("list"); // list | add | edit
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
+
+export default function TestimonialAdmin() {
   const [testimonials, setTestimonials] = useState([]);
-  const [formData, setFormData] = useState({
+  const [mode, setMode] = useState("list");
+  const [editingTestimonial, setEditingTestimonial] = useState(null);
+  const [form, setForm] = useState({
     name: "",
     designation: "",
     message: "",
   });
-  const [editId, setEditId] = useState(null);
+  const { hasPermission } = useAuth();
 
   useEffect(() => {
     fetchTestimonials();
@@ -66,15 +77,15 @@ export default function TestimonialsAdmin() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (editId) {
+    if (editingTestimonial) {
       await axios.put(
-        `${process.env.NEXT_PUBLIC_API_URL}/testimonials/${editId}`,
-        formData
+        `${process.env.NEXT_PUBLIC_API_URL}/testimonials/${editingTestimonial}`,
+        form
       );
     } else {
       await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/testimonials`,
-        formData
+        form
       );
     }
     resetForm();
@@ -83,14 +94,14 @@ export default function TestimonialsAdmin() {
   };
 
   const handleEdit = (data) => {
-    setFormData(data);
-    setEditId(data._id);
+    setForm(data);
+    setEditingTestimonial(data._id);
     setMode("edit");
   };
 
   const resetForm = () => {
-    setFormData({ name: "", designation: "", message: "" });
-    setEditId(null);
+    setForm({ name: "", designation: "", message: "" });
+    setEditingTestimonial(null);
   };
 
   return (
@@ -98,10 +109,12 @@ export default function TestimonialsAdmin() {
       {mode === "list" && (
         <>
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-semibold">Testimonials</h2>
-            <Button variant="contained" onClick={() => setMode("add")}>
-              Add Testimonial
-            </Button>
+            <h2 className="text-2xl font-bold">Testimonials</h2>
+            {hasPermission("testimonials", "add") && (
+              <Button variant="contained" onClick={() => setMode("add")}>
+                Add Testimonial
+              </Button>
+            )}
           </div>
 
           <Table>
@@ -128,17 +141,23 @@ export default function TestimonialsAdmin() {
                     )}
                   </TableCell>
                   <TableCell align="center">
-                    <IconButton onClick={() => handleEdit(item)}>
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton
-                      onClick={() => handleStatusToggle(item._id, item.status)}
-                    >
-                      {item.status ? <CancelIcon /> : <CheckCircleIcon />}
-                    </IconButton>
-                    <IconButton onClick={() => handleDelete(item._id)}>
-                      <DeleteIcon color="error" />
-                    </IconButton>
+                    {hasPermission("edit_testimonial") && (
+                      <IconButton onClick={() => handleEdit(item)}>
+                        <EditIcon />
+                      </IconButton>
+                    )}
+                    {hasPermission("toggle_testimonial_status") && (
+                      <IconButton
+                        onClick={() => handleStatusToggle(item._id, item.status)}
+                      >
+                        {item.status ? <CancelIcon /> : <CheckCircleIcon />}
+                      </IconButton>
+                    )}
+                    {hasPermission("delete_testimonial") && (
+                      <IconButton onClick={() => handleDelete(item._id)}>
+                        <DeleteIcon color="error" />
+                      </IconButton>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
@@ -161,18 +180,18 @@ export default function TestimonialsAdmin() {
               label="Name"
               required
               fullWidth
-              value={formData.name}
+              value={form.name}
               onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
+                setForm({ ...form, name: e.target.value })
               }
             />
             <TextField
               label="Designation"
               required
               fullWidth
-              value={formData.designation}
+              value={form.designation}
               onChange={(e) =>
-                setFormData({ ...formData, designation: e.target.value })
+                setForm({ ...form, designation: e.target.value })
               }
             />
           </div>
@@ -184,9 +203,9 @@ export default function TestimonialsAdmin() {
               rows={4}
               required
               fullWidth
-              value={formData.message}
+              value={form.message}
               onChange={(e) =>
-                setFormData({ ...formData, message: e.target.value })
+                setForm({ ...form, message: e.target.value })
               }
             />
           </div>

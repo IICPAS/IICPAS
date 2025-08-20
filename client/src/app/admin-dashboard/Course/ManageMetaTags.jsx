@@ -1,27 +1,43 @@
-import { useEffect, useState } from "react";
+"use client";
+import React, { useState, useEffect } from "react";
 import {
-  Button,
-  IconButton,
-  TextField,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableRow,
+  Button,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Typography,
+  Box,
   InputAdornment,
 } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import UploadFileIcon from "@mui/icons-material/UploadFile";
-import SearchIcon from "@mui/icons-material/Search";
-import * as XLSX from "xlsx";
-import Swal from "sweetalert2";
+import {
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  UploadFile as UploadFileIcon,
+  Search as SearchIcon,
+} from "@mui/icons-material";
 import axios from "axios";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  showDeleteConfirmation,
+  showSuccess,
+  showError,
+} from "@/utils/sweetAlert";
+import * as XLSX from "xlsx";
 
-export default function ManageMetatags() {
-  const [mode, setMode] = useState("list");
-  const [metatags, setMetatags] = useState([]);
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
+
+export default function ManageMetaTags() {
+  const [metaTags, setMetaTags] = useState([]);
   const [filtered, setFiltered] = useState([]);
+  const [mode, setMode] = useState("list");
   const [formData, setFormData] = useState({
     type: "",
     title: "",
@@ -30,20 +46,21 @@ export default function ManageMetatags() {
   });
   const [editId, setEditId] = useState(null);
   const [search, setSearch] = useState("");
+  const { hasPermission } = useAuth();
 
   useEffect(() => {
     fetchMetatags();
   }, []);
 
   const fetchMetatags = async () => {
-    const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/metatags`);
-    setMetatags(res.data);
+    const res = await axios.get(`${API_BASE}/metatags`);
+    setMetaTags(res.data);
     setFiltered(res.data);
   };
 
   const handleSearch = (value) => {
     setSearch(value);
-    const filtered = metatags.filter((item) =>
+    const filtered = metaTags.filter((item) =>
       item.type.toLowerCase().includes(value.toLowerCase())
     );
     setFiltered(filtered);
@@ -52,12 +69,9 @@ export default function ManageMetatags() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (editId) {
-      await axios.put(
-        `${process.env.NEXT_PUBLIC_API_URL}/metatags/${editId}`,
-        formData
-      );
+      await axios.put(`${API_BASE}/metatags/${editId}`, formData);
     } else {
-      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/metatags`, formData);
+      await axios.post(`${API_BASE}/metatags`, formData);
     }
     resetForm();
     fetchMetatags();
@@ -71,24 +85,16 @@ export default function ManageMetatags() {
   };
 
   const handleDelete = async (id) => {
-    const confirm = await Swal.fire({
-      title: "Are you sure?",
-      text: "This metatag will be permanently deleted.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Yes, delete it!",
-    });
+    const confirmed = await showDeleteConfirmation("metatag");
 
-    if (confirm.isConfirmed) {
+    if (confirmed) {
       try {
-        await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/metatags/${id}`);
+        await axios.delete(`${API_BASE}/metatags/${id}`);
         fetchMetatags();
-        Swal.fire("Deleted!", "Metatag has been removed.", "success");
+        showSuccess("Deleted!", "Metatag has been removed.");
       } catch (err) {
         console.error(err);
-        Swal.fire("Error", "Something went wrong!", "error");
+        showError("Error!", "Something went wrong!");
       }
     }
   };
@@ -119,16 +125,13 @@ export default function ManageMetatags() {
 
       try {
         for (const entry of formatted) {
-          await axios.post(
-            `${process.env.NEXT_PUBLIC_API_URL}/metatags`,
-            entry
-          );
+          await axios.post(`${API_BASE}/metatags`, entry);
         }
-        alert("Imported successfully!");
+        showSuccess("Imported!", "Data imported successfully!");
         fetchMetatags();
       } catch (err) {
         console.error(err);
-        alert("Failed to import.");
+        showError("Error!", "Failed to import data.");
       }
     };
     reader.readAsBinaryString(file);
@@ -157,9 +160,11 @@ export default function ManageMetatags() {
                   Import Excel
                 </Button>
               </label>
-              <Button variant="contained" onClick={() => setMode("add")}>
-                Add Meta Tag
-              </Button>
+              {hasPermission("meta", "add") && (
+                <Button variant="contained" onClick={() => setMode("add")}>
+                  Add Meta Tag
+                </Button>
+              )}
             </div>
           </div>
 
@@ -200,12 +205,16 @@ export default function ManageMetatags() {
                     <TableCell>{item.description}</TableCell>
                     <TableCell>{item.keywords}</TableCell>
                     <TableCell align="center">
-                      <IconButton onClick={() => handleEdit(item)}>
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton onClick={() => handleDelete(item._id)}>
-                        <DeleteIcon color="error" />
-                      </IconButton>
+                      {hasPermission("meta", "update") && (
+                        <IconButton onClick={() => handleEdit(item)}>
+                          <EditIcon />
+                        </IconButton>
+                      )}
+                      {hasPermission("meta", "delete") && (
+                        <IconButton onClick={() => handleDelete(item._id)}>
+                          <DeleteIcon color="error" />
+                        </IconButton>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}

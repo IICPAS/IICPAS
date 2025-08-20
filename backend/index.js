@@ -57,6 +57,9 @@ import messageRoutes from "./routes/messageRoutes.js";
 import kitOrderRoutes from "./routes/kitOrderRoutes.js";
 import teacherRoutes from "./routes/teacherRoutes.js";
 
+//Import employee routes
+import employeeRoutes from "./routes/employeeRoutes.js";
+
 //App Configuration
 dotenv.config();
 connectDB();
@@ -148,6 +151,9 @@ app.use("/api/v1/kit-orders", kitOrderRoutes);
 
 //Teacher Routes
 app.use("/api/v1/teachers", teacherRoutes);
+
+// Use employee routes
+app.use("/api/employees", employeeRoutes);
 
 // Server
 const PORT = process.env.PORT || 8080;

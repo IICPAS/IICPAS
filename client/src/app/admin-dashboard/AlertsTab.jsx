@@ -1,28 +1,31 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { X } from "lucide-react";
+import { X, Plus } from "lucide-react";
+import axios from "axios";
+import { useAuth } from "@/contexts/AuthContext";
 
-const API = process.env.NEXT_PUBLIC_API_BASE + "/alerts";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 
 export default function AlertsTab() {
   const [alerts, setAlerts] = useState([]);
+  const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
     title: "",
     message: "",
-    status: "inactive",
   });
+  const { hasPermission } = useAuth();
 
   const fetchAlerts = async () => {
-    const res = await fetch(API);
+    const res = await fetch(API_BASE + "/alerts");
     const data = await res.json();
     setAlerts(data);
   };
 
   const addAlert = async (e) => {
     e.preventDefault();
-    const res = await fetch(API, {
+    const res = await fetch(API_BASE + "/alerts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
@@ -34,13 +37,13 @@ export default function AlertsTab() {
   };
 
   const deleteAlert = async (id) => {
-    await fetch(`${API}/${id}`, { method: "DELETE" });
+    await fetch(`${API_BASE}/alerts/${id}`, { method: "DELETE" });
     fetchAlerts();
   };
 
   const toggleStatus = async (id, currentStatus) => {
     const newStatus = currentStatus === "active" ? "inactive" : "active";
-    await fetch(`${API}/${id}`, {
+    await fetch(`${API_BASE}/alerts/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: newStatus }),
@@ -54,7 +57,18 @@ export default function AlertsTab() {
 
   return (
     <div className="p-1 max-w-7xl mx-auto ">
-      <h2 className="text-3xl font-bold mb-6 text-gray-800">📊 Alerts</h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-800">Alerts</h2>
+        {hasPermission("alert", "add") && (
+          <button
+            onClick={() => setShowForm(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+          >
+            <Plus size={20} />
+            Add Alert
+          </button>
+        )}
+      </div>
 
       {/* Form */}
       <form
@@ -138,13 +152,15 @@ export default function AlertsTab() {
                   </button>
                 </td>
                 <td className="px-6 py-3 text-center">
-                  <button
-                    onClick={() => deleteAlert(alert._id)}
-                    className="text-red-600 hover:text-red-800 transition"
-                    title="Delete alert"
-                  >
-                    <X size={18} />
-                  </button>
+                  {hasPermission("alert", "delete") && (
+                    <button
+                      onClick={() => deleteAlert(alert._id)}
+                      className="text-red-600 hover:text-red-800 transition"
+                      title="Delete alert"
+                    >
+                      <X size={18} />
+                    </button>
+                  )}
                 </td>
               </motion.tr>
             ))}

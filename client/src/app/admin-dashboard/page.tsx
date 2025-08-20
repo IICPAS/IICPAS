@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import AlertsTab from "./AlertsTab";
 import JobsAdminPanel from "./JobsAdminPanel";
 import CourseBuilder from "./CourseBuilder";
@@ -12,7 +14,7 @@ import RoleManager from "./RoleManager";
 import Drawer from "react-modern-drawer";
 import axios from "axios";
 import ManageMetaTags from "./Course/ManageMetaTags";
-import BlogComponent from "./BlogComponent.jsx";
+import BlogComponent from "./BlogComponent";
 import CollegeTab from "./CollegeTab";
 import CenterTab from "./CenterTab";
 import CalendarTab from "./CalendarTab";
@@ -55,11 +57,12 @@ import CourseCategory from "./Course/CourseCategory";
 import LiveSessionAdmin from "./Course/LiveSesionAdmin";
 import TicketTab from "../components/TicketTab";
 import RevisionQuizTable from "../code/page";
+import Header from "../components/Header";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 
-// Separate tabs into main tabs and website settings tabs
-const mainTabs = [
+// All available modules with their permissions
+const ALL_MODULES = [
   { id: "course-category", label: "Course Category", icon: <FaBook /> },
   { id: "course", label: "Course", icon: <FaLayerGroup /> },
   { id: "live-session", label: "Live Session", icon: <FaCalendarAlt /> },
@@ -78,26 +81,64 @@ const mainTabs = [
   { id: "support", label: "Support Requests", icon: <FaEnvelope /> },
 ];
 
-const websiteSettingsTabs = [
-  { id: "Blogs", label: "Blogs", icon: <FaBlogger /> },
+// Website Settings modules
+const WEBSITE_SETTINGS_MODULES = [
+  { id: "blogs", label: "Blogs", icon: <FaBlogger /> },
   { id: "testimonials", label: "Testimonials", icon: <FaQuoteRight /> },
   { id: "about", label: "About Us", icon: <FaBook /> },
   { id: "meta", label: "Manage Metatags", icon: <FaTags /> },
-  { id: "Alert", label: "Alert", icon: <FaBell /> },
+  { id: "alert", label: "Alert", icon: <FaBell /> },
 ];
 
-export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState("live-session");
+function AdminDashboardContent() {
+  const { user, hasPermission, canAccess, logout } = useAuth();
+  const [activeTab, setActiveTab] = useState("");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [websiteSettingsOpen, setWebsiteSettingsOpen] = useState(false);
   const router = useRouter();
 
-  const logout = async () => {
-    try {
-      await axios.post(`${API_BASE}/logout`, {}, { withCredentials: true });
-    } finally {
-      router.push("/admin");
+  // Filter modules based on user permissions
+  const getAccessibleModules = () => {
+    if (!user) return [];
+
+    // Admin has access to all modules
+    if (user.role === "Admin") return ALL_MODULES;
+
+    // Filter modules based on permissions
+    return ALL_MODULES.filter((module) => canAccess(module.id));
+  };
+
+  // Filter website settings modules based on permissions
+  const getAccessibleWebsiteSettings = () => {
+    if (!user) return [];
+
+    // Admin has access to all website settings
+    if (user.role === "Admin") return WEBSITE_SETTINGS_MODULES;
+
+    // Filter based on permissions
+    return WEBSITE_SETTINGS_MODULES.filter((module) => canAccess(module.id));
+  };
+
+  const accessibleModules = getAccessibleModules();
+  const accessibleWebsiteSettings = getAccessibleWebsiteSettings();
+
+  // Set default active tab to first accessible module only if no tab is selected
+  useEffect(() => {
+    if (activeTab === "" && accessibleModules.length > 0) {
+      setActiveTab(accessibleModules[0].id);
     }
+  }, [accessibleModules, activeTab]);
+
+  const handleLogout = async () => {
+    await logout();
+    router.push("/admin");
+  };
+
+  // Check if user can perform action on current tab
+  const canPerformAction = (action: string) => {
+    if (!user) return false;
+    if (user.role === "Admin") return true;
+    return hasPermission(activeTab, action);
   };
 
   // SIDEBAR: scrollable, hidden scrollbar
@@ -113,10 +154,15 @@ export default function AdminDashboard() {
             />
           </div>
         </div>
+        {/* User Info */}
+        <div className="text-center mb-4 p-3 bg-blue-50 rounded-lg">
+          <p className="font-semibold text-blue-800">{user?.name}</p>
+          <p className="text-sm text-blue-600">{user?.role}</p>
+        </div>
       </div>
       <nav className="flex-1 overflow-y-auto scrollbar-hide px-3">
-        {/* First 3 main tabs */}
-        {mainTabs.slice(0, 3).map((tab) => (
+        {/* Accessible main modules */}
+        {accessibleModules.slice(0, 3).map((tab) => (
           <button
             key={tab.id}
             onClick={() => {
@@ -141,70 +187,74 @@ export default function AdminDashboard() {
         ))}
 
         {/* Website Settings Dropdown - Position 4 */}
-        <div className="mb-2">
-          <button
-            onClick={() => setWebsiteSettingsOpen(!websiteSettingsOpen)}
-            className={`flex items-center justify-between gap-3 px-4 py-3 rounded-lg w-full text-left transition-all duration-200 ${
-              websiteSettingsTabs.some((tab) => activeTab === tab.id)
-                ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-md"
-                : "hover:bg-blue-50 text-gray-700 hover:text-blue-700"
-            }`}
-          >
-            <div className="flex items-center gap-3">
+        {accessibleWebsiteSettings.length > 0 && (
+          <div className="mb-2">
+            <button
+              onClick={() => setWebsiteSettingsOpen(!websiteSettingsOpen)}
+              className={`flex items-center justify-between gap-3 px-4 py-3 rounded-lg w-full text-left transition-all duration-200 ${
+                accessibleWebsiteSettings.some((tab) => activeTab === tab.id)
+                  ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-md"
+                  : "hover:bg-blue-50 text-gray-700 hover:text-blue-700"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span
+                  className={`text-lg ${
+                    accessibleWebsiteSettings.some(
+                      (tab) => activeTab === tab.id
+                    )
+                      ? "text-white"
+                      : "text-blue-500"
+                  }`}
+                >
+                  <FaCog />
+                </span>
+                <span className="font-medium">Website Settings</span>
+              </div>
               <span
-                className={`text-lg ${
-                  websiteSettingsTabs.some((tab) => activeTab === tab.id)
+                className={`text-sm transition-transform duration-200 ${
+                  accessibleWebsiteSettings.some((tab) => activeTab === tab.id)
                     ? "text-white"
                     : "text-blue-500"
                 }`}
               >
-                <FaCog />
+                {websiteSettingsOpen ? <FaChevronDown /> : <FaChevronRight />}
               </span>
-              <span className="font-medium">Website Settings</span>
-            </div>
-            <span
-              className={`text-sm transition-transform duration-200 ${
-                websiteSettingsTabs.some((tab) => activeTab === tab.id)
-                  ? "text-white"
-                  : "text-blue-500"
-              }`}
-            >
-              {websiteSettingsOpen ? <FaChevronDown /> : <FaChevronRight />}
-            </span>
-          </button>
+            </button>
 
-          {/* Dropdown content */}
-          {websiteSettingsOpen && (
-            <div className="ml-6 mt-2 space-y-1">
-              {websiteSettingsTabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => {
-                    setActiveTab(tab.id);
-                    if (isMobile) setDrawerOpen(false);
-                  }}
-                  className={`flex items-center gap-3 px-4 py-2 rounded-lg w-full text-left transition-all duration-200 ${
-                    activeTab === tab.id
-                      ? "bg-gradient-to-r from-blue-400 to-blue-500 text-white font-semibold shadow-md"
-                      : "hover:bg-blue-50 text-gray-600 hover:text-blue-600"
-                  }`}
-                >
-                  <span
-                    className={`text-sm ${
-                      activeTab === tab.id ? "text-white" : "text-blue-400"
+            {/* Dropdown content */}
+            {websiteSettingsOpen && (
+              <div className="ml-6 mt-2 space-y-1">
+                {accessibleWebsiteSettings.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => {
+                      setActiveTab(tab.id);
+                      if (isMobile) setDrawerOpen(false);
+                    }}
+                    className={`flex items-center gap-3 px-4 py-2 rounded-lg w-full text-left transition-all duration-200 ${
+                      activeTab === tab.id
+                        ? "bg-gradient-to-r from-blue-400 to-blue-500 text-white font-semibold shadow-md"
+                        : "hover:bg-blue-50 text-gray-600 hover:text-blue-600"
                     }`}
                   >
-                    {tab.icon}
-                  </span>
-                  <span className="font-medium text-sm">{tab.label}</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+                    <span
+                      className={`text-sm ${
+                        activeTab === tab.id ? "text-white" : "text-blue-400"
+                      }`}
+                    >
+                      {tab.icon}
+                    </span>
+                    <span className="font-medium text-sm">{tab.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
-        {/* Remaining main tabs */}
-        {mainTabs.slice(3).map((tab) => (
+        {/* Remaining accessible modules */}
+        {accessibleModules.slice(3).map((tab) => (
           <button
             key={tab.id}
             onClick={() => {
@@ -249,7 +299,7 @@ export default function AdminDashboard() {
           </div>
         </div>
         <button
-          onClick={logout}
+          onClick={handleLogout}
           className="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg hover:from-red-600 hover:to-red-700 text-sm flex items-center gap-2 font-medium shadow-md transition-all duration-200"
         >
           <FaSignOutAlt />
@@ -276,7 +326,7 @@ export default function AdminDashboard() {
       >
         <div className="h-full">{renderSidebar(true)}</div>
         <button
-          onClick={logout}
+          onClick={handleLogout}
           className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 mt-4 mx-3 mb-3 rounded-lg transition-colors"
         >
           <FaSignOutAlt />
@@ -286,50 +336,76 @@ export default function AdminDashboard() {
 
       {/* Main Content: scrolls independently of sidebar */}
       <main className="flex-1 min-h-screen p-6 pt-20 overflow-y-auto">
-        {activeTab === "live-session" ? (
+        {/* Permission-based content rendering */}
+        {activeTab === "live-session" && canAccess("live-session") ? (
           <LiveSessionAdmin />
-        ) : activeTab === "enquiries" ? (
+        ) : activeTab === "enquiries" && canAccess("enquiries") ? (
           <EnquiriesTab />
-        ) : activeTab === "support" ? (
+        ) : activeTab === "support" && canAccess("support") ? (
           <TicketTab />
-        ) : activeTab === "calendar" ? (
+        ) : activeTab === "calendar" && canAccess("calendar") ? (
           <CalendarTab />
-        ) : activeTab === "companies" ? (
+        ) : activeTab === "companies" && canAccess("companies") ? (
           <CompanyTab />
-        ) : activeTab === "meta" ? (
+        ) : activeTab === "meta" && canAccess("meta") ? (
           <ManageMetaTags />
-        ) : activeTab === "about" ? (
+        ) : activeTab === "about" && canAccess("about") ? (
           <AboutTab />
-        ) : activeTab === "colleges" ? (
+        ) : activeTab === "colleges" && canAccess("colleges") ? (
           <CollegeTab />
-        ) : activeTab === "roles" ? (
-          <RoleManager />
-        ) : activeTab === "Blogs" ? (
+        ) : activeTab === "blogs" && canAccess("blogs") ? (
           <BlogComponent />
-        ) : activeTab === "course-category" ? (
+        ) : activeTab === "course-category" && canAccess("course-category") ? (
           <CourseCategory />
-        ) : activeTab === "students" ? (
+        ) : activeTab === "students" && canAccess("students") ? (
           <StudentsTab />
-        ) : activeTab === "jobs" ? (
+        ) : activeTab === "jobs" && canAccess("jobs") ? (
           <JobsAdminPanel />
-        ) : activeTab === "staff" ? (
+        ) : activeTab === "staff" && canAccess("staff") ? (
           <StaffManagementTab />
-        ) : activeTab === "Alert" ? (
+        ) : activeTab === "alert" && canAccess("alert") ? (
           <AlertsTab />
-        ) : activeTab === "news" ? (
+        ) : activeTab === "news" && canAccess("news") ? (
           <NewsTab />
-        ) : activeTab === "testimonials" ? (
+        ) : activeTab === "testimonials" && canAccess("testimonials") ? (
           <TestimonialAdmin />
-        ) : activeTab === "course" ? (
+        ) : activeTab === "course" && canAccess("course") ? (
           <CourseArea />
-        ) : activeTab === "revision" ? (
+        ) : activeTab === "revision" && canAccess("revision") ? (
           <RevisionQuizTable />
-        ) : activeTab === "topics" ? (
+        ) : activeTab === "topics" && canAccess("topics") ? (
           <TopicsManager />
-        ) : activeTab === "center" ? (
+        ) : activeTab === "center" && canAccess("center") ? (
           <CenterTab />
-        ) : null}
+        ) : activeTab === "" ? (
+          <div className="text-center py-20">
+            <h2 className="text-2xl font-bold text-gray-600 mb-4">
+              Welcome to Admin Dashboard
+            </h2>
+            <p className="text-gray-500">
+              Please select a module from the sidebar to get started.
+            </p>
+          </div>
+        ) : (
+          <div className="text-center py-20">
+            <h2 className="text-2xl font-bold text-gray-600 mb-4">
+              Access Denied
+            </h2>
+            <p className="text-gray-500">
+              You don&apos;t have permission to access this module.
+            </p>
+          </div>
+        )}
       </main>
     </div>
+  );
+}
+
+// Wrap the dashboard with ProtectedRoute
+export default function AdminDashboard() {
+  return (
+    <ProtectedRoute>
+      <AdminDashboardContent />
+    </ProtectedRoute>
   );
 }
