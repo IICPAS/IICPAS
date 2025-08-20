@@ -181,7 +181,7 @@ const BlogComponent = () => {
           }}
           className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg shadow font-semibold"
         >
-          + Add Blog
+          Add Blog
         </button>
       </div>
       <div className="overflow-x-auto rounded-xl border border-gray-200">

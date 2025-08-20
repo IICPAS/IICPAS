@@ -264,7 +264,7 @@ export default function CourseCategoryExcelGrid() {
                 }}
                 onClick={handleAdd}
               >
-                + ADD COURSE CATEGORY
+                ADD COURSE CATEGORY
               </Button>
             </Box>
             <div style={{ width: "100%", height: 420, overflow: "auto" }}>

@@ -45,6 +45,9 @@ import {
   FaStarOfDavid,
   FaBlogger,
   FaNewspaper,
+  FaCog,
+  FaChevronDown,
+  FaChevronRight,
 } from "react-icons/fa";
 import CompanyTab from "./CompanyTab";
 import CourseArea from "./CourseBuilder";
@@ -55,17 +58,13 @@ import RevisionQuizTable from "../code/page";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 
-const tabs = [
+// Separate tabs into main tabs and website settings tabs
+const mainTabs = [
   { id: "course-category", label: "Course Category", icon: <FaBook /> },
   { id: "course", label: "Course", icon: <FaLayerGroup /> },
   { id: "live-session", label: "Live Session", icon: <FaCalendarAlt /> },
   { id: "enquiries", label: "Enquiries", icon: <FaEnvelope /> },
   { id: "jobs", label: "Jobs", icon: <FaBriefcase /> },
-  { id: "testimonials", label: "Testimonials", icon: <FaQuoteRight /> },
-  { id: "about", label: "About Us", icon: <FaBook /> },
-  { id: "meta", label: "Manage Metatags", icon: <FaTags /> },
-  { id: "Blogs", label: "Blogs", icon: <FaBlogger /> },
-  { id: "Alert", label: "Alert", icon: <FaBell /> },
   { id: "news", label: "News", icon: <FaNewspaper /> },
   { id: "center", label: "Center", icon: <FaHome /> },
   { id: "students", label: "Students", icon: <FaUserGraduate /> },
@@ -79,9 +78,18 @@ const tabs = [
   { id: "support", label: "Support Requests", icon: <FaEnvelope /> },
 ];
 
+const websiteSettingsTabs = [
+  { id: "Blogs", label: "Blogs", icon: <FaBlogger /> },
+  { id: "testimonials", label: "Testimonials", icon: <FaQuoteRight /> },
+  { id: "about", label: "About Us", icon: <FaBook /> },
+  { id: "meta", label: "Manage Metatags", icon: <FaTags /> },
+  { id: "Alert", label: "Alert", icon: <FaBell /> },
+];
+
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("live-session");
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [websiteSettingsOpen, setWebsiteSettingsOpen] = useState(false);
   const router = useRouter();
 
   const logout = async () => {
@@ -97,13 +105,18 @@ export default function AdminDashboard() {
     <div className="h-full flex flex-col">
       <div className="p-6 pb-4">
         <div className="flex items-center justify-center mb-6">
-          <div className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg font-bold text-xl shadow-lg">
-            <span className="text-green-300">+</span> RoboBooks <span className="text-green-300">+</span>
+          <div className="bg-white p-3 rounded-lg shadow-lg">
+            <img
+              src="/images/logo.png"
+              alt="IICPA Institute"
+              className="h-12 w-auto object-contain"
+            />
           </div>
         </div>
       </div>
       <nav className="flex-1 overflow-y-auto scrollbar-hide px-3">
-        {tabs.map((tab) => (
+        {/* First 3 main tabs */}
+        {mainTabs.slice(0, 3).map((tab) => (
           <button
             key={tab.id}
             onClick={() => {
@@ -116,18 +129,105 @@ export default function AdminDashboard() {
                 : "hover:bg-blue-50 text-gray-700 hover:text-blue-700"
             }`}
           >
-            <span className={`text-lg ${activeTab === tab.id ? 'text-white' : 'text-blue-500'}`}>
+            <span
+              className={`text-lg ${
+                activeTab === tab.id ? "text-white" : "text-blue-500"
+              }`}
+            >
+              {tab.icon}
+            </span>
+            <span className="font-medium">{tab.label}</span>
+          </button>
+        ))}
+
+        {/* Website Settings Dropdown - Position 4 */}
+        <div className="mb-2">
+          <button
+            onClick={() => setWebsiteSettingsOpen(!websiteSettingsOpen)}
+            className={`flex items-center justify-between gap-3 px-4 py-3 rounded-lg w-full text-left transition-all duration-200 ${
+              websiteSettingsTabs.some((tab) => activeTab === tab.id)
+                ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-md"
+                : "hover:bg-blue-50 text-gray-700 hover:text-blue-700"
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <span
+                className={`text-lg ${
+                  websiteSettingsTabs.some((tab) => activeTab === tab.id)
+                    ? "text-white"
+                    : "text-blue-500"
+                }`}
+              >
+                <FaCog />
+              </span>
+              <span className="font-medium">Website Settings</span>
+            </div>
+            <span
+              className={`text-sm transition-transform duration-200 ${
+                websiteSettingsTabs.some((tab) => activeTab === tab.id)
+                  ? "text-white"
+                  : "text-blue-500"
+              }`}
+            >
+              {websiteSettingsOpen ? <FaChevronDown /> : <FaChevronRight />}
+            </span>
+          </button>
+
+          {/* Dropdown content */}
+          {websiteSettingsOpen && (
+            <div className="ml-6 mt-2 space-y-1">
+              {websiteSettingsTabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                    if (isMobile) setDrawerOpen(false);
+                  }}
+                  className={`flex items-center gap-3 px-4 py-2 rounded-lg w-full text-left transition-all duration-200 ${
+                    activeTab === tab.id
+                      ? "bg-gradient-to-r from-blue-400 to-blue-500 text-white font-semibold shadow-md"
+                      : "hover:bg-blue-50 text-gray-600 hover:text-blue-600"
+                  }`}
+                >
+                  <span
+                    className={`text-sm ${
+                      activeTab === tab.id ? "text-white" : "text-blue-400"
+                    }`}
+                  >
+                    {tab.icon}
+                  </span>
+                  <span className="font-medium text-sm">{tab.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Remaining main tabs */}
+        {mainTabs.slice(3).map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => {
+              setActiveTab(tab.id);
+              if (isMobile) setDrawerOpen(false);
+            }}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg w-full text-left mb-2 transition-all duration-200 ${
+              activeTab === tab.id
+                ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-md"
+                : "hover:bg-blue-50 text-gray-700 hover:text-blue-700"
+            }`}
+          >
+            <span
+              className={`text-lg ${
+                activeTab === tab.id ? "text-white" : "text-blue-500"
+              }`}
+            >
               {tab.icon}
             </span>
             <span className="font-medium">{tab.label}</span>
           </button>
         ))}
       </nav>
-      <div className="p-4 border-t border-blue-200">
-        <div className="text-center text-sm text-blue-600 font-medium">
-          28°C Partly cloudy
-        </div>
-      </div>
     </div>
   );
 
