@@ -41,7 +41,7 @@ export default function AddOrEditTopicForm({
   const [content, setContent] = useState(topic?.content || "");
   const [quizFile, setQuizFile] = useState(null);
   const [quizData, setQuizData] = useState(null);
-  const [videoLinks, setVideoLinks] = useState(topic?.videos || []);
+  const [videoLinks, setVideoLinks] = useState([]);
   const [imageLinks, setImageLinks] = useState([]);
   const [saving, setSaving] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -100,32 +100,38 @@ export default function AddOrEditTopicForm({
     const images = tempDiv.querySelectorAll("img");
     images.forEach((img) => {
       img.style.display = "block";
-      img.style.margin = "1.5rem auto";
-      img.style.maxWidth = "100%";
+      img.style.margin = "2rem auto";
+      img.style.maxWidth = "90%";
+      img.style.minWidth = "400px";
       img.style.height = "auto";
-      img.style.borderRadius = "8px";
-      img.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+      img.style.borderRadius = "12px";
+      img.style.boxShadow = "0 8px 16px rgba(0, 0, 0, 0.15)";
+      img.style.border = "2px solid #f0f0f0";
     });
 
     // Center and style videos
     const videos = tempDiv.querySelectorAll("video");
     videos.forEach((video) => {
       video.style.display = "block";
-      video.style.margin = "1.5rem auto";
-      video.style.maxWidth = "100%";
+      video.style.margin = "2rem auto";
+      video.style.maxWidth = "80%";
+      video.style.minWidth = "500px";
       video.style.height = "auto";
-      video.style.borderRadius = "8px";
-      video.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+      video.style.borderRadius = "12px";
+      video.style.boxShadow = "0 8px 16px rgba(0, 0, 0, 0.15)";
+      video.style.border = "2px solid #f0f0f0";
     });
 
     // Center and style iframes (for embedded videos)
     const iframes = tempDiv.querySelectorAll("iframe");
     iframes.forEach((iframe) => {
       iframe.style.display = "block";
-      iframe.style.margin = "1.5rem auto";
-      iframe.style.maxWidth = "100%";
-      iframe.style.borderRadius = "8px";
-      iframe.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+      iframe.style.margin = "2rem auto";
+      iframe.style.maxWidth = "80%";
+      iframe.style.minWidth = "500px";
+      iframe.style.borderRadius = "12px";
+      iframe.style.boxShadow = "0 8px 16px rgba(0, 0, 0, 0.15)";
+      iframe.style.border = "2px solid #f0f0f0";
     });
 
     // Style lists
@@ -200,16 +206,41 @@ export default function AddOrEditTopicForm({
   const handleVideoUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    // Check file size (100MB limit for videos)
+    if (file.size > 100 * 1024 * 1024) {
+      Swal.fire("Error", "Video size must be less than 100MB", "error");
+      return;
+    }
+
+    // Check file type
+    if (!file.type.startsWith("video/")) {
+      Swal.fire("Error", "Please select a valid video file", "error");
+      return;
+    }
+
     const formData = new FormData();
     formData.append("video", file);
+
     try {
       const res = await axios.post(`${API_BASE}/upload/video`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      setVideoLinks((prev) => [...prev, res.data.videoUrl]);
-      Swal.fire("Success", "Video uploaded!", "success");
+
+      if (res.data.videoUrl) {
+        // Add the video URL to the list
+        setVideoLinks((prev) => [...prev, res.data.videoUrl]);
+        Swal.fire({
+          title: "Video Uploaded Successfully!",
+          text: "Video URL is now available below. You can copy and use it in the editor.",
+          icon: "success",
+          confirmButtonText: "OK",
+        });
+      } else {
+        Swal.fire("Error", "Failed to get video URL", "error");
+      }
     } catch (err) {
-      Swal.fire("Error", "Upload failed", "error");
+      Swal.fire("Error", err.response?.data?.error || "Upload failed", "error");
     }
   };
 
@@ -329,6 +360,10 @@ export default function AddOrEditTopicForm({
             <Typography fontWeight={600} fontSize={15}>
               Upload Videos
             </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              Upload videos to get a direct link. Copy the link below and use it
+              in the editor.
+            </Typography>
             <Button component="label" variant="contained" sx={{ mt: 1 }}>
               Upload Video
               <input
@@ -339,6 +374,7 @@ export default function AddOrEditTopicForm({
               />
             </Button>
 
+            {/* Display uploaded video links */}
             <Stack mt={2} spacing={1}>
               {videoLinks.map((url, i) => (
                 <Box
@@ -347,30 +383,129 @@ export default function AddOrEditTopicForm({
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
-                    background: "#f5f5f5",
-                    p: 1,
+                    background: "#f8f9fa",
+                    p: 2,
                     borderRadius: 1,
+                    border: "1px solid #e9ecef",
                   }}
                 >
-                  <Link
-                    href={url}
-                    target="_blank"
-                    rel="noopener"
-                    underline="hover"
-                  >
-                    {url.split("/").pop()}
-                  </Link>
-                  <IconButton
-                    size="small"
-                    color="error"
-                    onClick={() =>
-                      setVideoLinks((prev) =>
-                        prev.filter((_, index) => index !== i)
-                      )
-                    }
-                  >
-                    <Delete />
-                  </IconButton>
+                  <Box sx={{ flex: 1, mr: 2 }}>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mb: 0.5 }}
+                    >
+                      Video URL:
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        wordBreak: "break-all",
+                        fontFamily: "monospace",
+                        fontSize: "0.8rem",
+                        color: "#007bff",
+                      }}
+                    >
+                      {url}
+                    </Typography>
+                  </Box>
+                  <Stack direction="row" spacing={1}>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() => {
+                        navigator.clipboard.writeText(url);
+                        Swal.fire(
+                          "Copied!",
+                          "Video URL copied to clipboard",
+                          "success"
+                        );
+                      }}
+                    >
+                      Copy
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="contained"
+                      color="primary"
+                      onClick={() => {
+                        if (editor.current) {
+                          // Insert video as embedded player with better formatting
+                          const videoHtml = `<div style="text-align: center; margin: 2rem 0;">
+                            <video controls style="max-width: 80%; min-width: 500px; height: auto; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.15); border: 2px solid #f0f0f0;">
+                              <source src="${url}" type="video/mp4">
+                              <source src="${url}" type="video/webm">
+                              <source src="${url}" type="video/ogg">
+                              Your browser does not support the video tag.
+                            </video>
+                          </div>`;
+                          editor.current.selection.insertHTML(videoHtml);
+                          Swal.fire(
+                            "Video Inserted!",
+                            "Video has been inserted into the editor as a player",
+                            "success"
+                          );
+                        }
+                      }}
+                    >
+                      Insert
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      color="info"
+                      onClick={() => {
+                        if (editor.current) {
+                          // Insert as clickable link
+                          const linkHtml = `<a href="${url}" target="_blank" style="color: #007bff; text-decoration: underline;">📹 Watch Video: ${url
+                            .split("/")
+                            .pop()}</a>`;
+                          editor.current.selection.insertHTML(linkHtml);
+                          Swal.fire(
+                            "Link Inserted!",
+                            "Video link has been inserted into the editor",
+                            "success"
+                          );
+                        }
+                      }}
+                    >
+                      Link
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      color="secondary"
+                      onClick={() => {
+                        // Test video URL
+                        const testVideo = document.createElement("video");
+                        testVideo.src = url;
+                        testVideo.controls = true;
+                        testVideo.style.width = "300px";
+                        testVideo.style.height = "200px";
+
+                        Swal.fire({
+                          title: "Video Test",
+                          html: testVideo.outerHTML,
+                          width: 400,
+                          showConfirmButton: true,
+                          confirmButtonText: "Close",
+                        });
+                      }}
+                    >
+                      Test
+                    </Button>
+                    <IconButton
+                      size="small"
+                      color="error"
+                      onClick={() =>
+                        setVideoLinks((prev) =>
+                          prev.filter((_, index) => index !== i)
+                        )
+                      }
+                    >
+                      <Delete />
+                    </IconButton>
+                  </Stack>
                 </Box>
               ))}
             </Stack>
@@ -449,6 +584,47 @@ export default function AddOrEditTopicForm({
                       }}
                     >
                       Copy
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="contained"
+                      color="primary"
+                      onClick={() => {
+                        if (editor.current) {
+                          // Insert image directly
+                          editor.current.selection.insertImage(url);
+                          Swal.fire(
+                            "Image Inserted!",
+                            "Image has been inserted into the editor",
+                            "success"
+                          );
+                        }
+                      }}
+                    >
+                      Insert
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      color="secondary"
+                      onClick={() => {
+                        // Test video URL
+                        const testVideo = document.createElement("video");
+                        testVideo.src = url;
+                        testVideo.controls = true;
+                        testVideo.style.width = "300px";
+                        testVideo.style.height = "200px";
+
+                        Swal.fire({
+                          title: "Video Test",
+                          html: testVideo.outerHTML,
+                          width: 400,
+                          showConfirmButton: true,
+                          confirmButtonText: "Close",
+                        });
+                      }}
+                    >
+                      Test
                     </Button>
                     <IconButton
                       size="small"
