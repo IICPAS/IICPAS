@@ -22,14 +22,28 @@ const videoStorage = multer.diskStorage({
   filename: (_, file, cb) => cb(null, Date.now() + "-" + file.originalname),
 });
 
+// Video upload middleware with validation
+export const uploadVideo = multer({
+  storage: videoStorage,
+  fileFilter: (req, file, cb) => {
+    // Accept only video files
+    if (file.mimetype.startsWith("video/")) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only video files are allowed!"), false);
+    }
+  },
+  limits: {
+    fileSize: 100 * 1024 * 1024, // 100MB limit for videos
+  },
+});
+
 // Configure Multer storage for images
 const imageStorage = multer.diskStorage({
   destination: (_, __, cb) => cb(null, imageDir),
   filename: (_, file, cb) => cb(null, Date.now() + "-" + file.originalname),
 });
 
-// Export upload middleware
-export const uploadVideo = multer({ storage: videoStorage });
 export const uploadImage = multer({
   storage: imageStorage,
   fileFilter: (req, file, cb) => {
@@ -48,7 +62,7 @@ export const uploadImage = multer({
 const upload = multer({ storage: videoStorage });
 
 // Video upload route
-router.post("/video", upload.single("video"), (req, res) => {
+router.post("/video", uploadVideo.single("video"), (req, res) => {
   if (!req.file) return res.status(400).json({ error: "No file uploaded" });
 
   // Use API_URL from environment if available, otherwise use request host
