@@ -18,6 +18,7 @@ import { Delete, Visibility, Close } from "@mui/icons-material";
 import dynamic from "next/dynamic";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 const joditConfig = {
   readonly: false,
   height: 200,
@@ -41,6 +42,7 @@ export default function AddOrEditTopicForm({
   const [quizFile, setQuizFile] = useState(null);
   const [quizData, setQuizData] = useState(null);
   const [videoLinks, setVideoLinks] = useState(topic?.videos || []);
+  const [imageLinks, setImageLinks] = useState([]);
   const [saving, setSaving] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [scrollPosition, setScrollPosition] = useState(0);
@@ -211,6 +213,47 @@ export default function AddOrEditTopicForm({
     }
   };
 
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Check file size (10MB limit)
+    if (file.size > 10 * 1024 * 1024) {
+      Swal.fire("Error", "Image size must be less than 10MB", "error");
+      return;
+    }
+
+    // Check file type
+    if (!file.type.startsWith("image/")) {
+      Swal.fire("Error", "Please select a valid image file", "error");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      const res = await axios.post(`${API_BASE}/upload/image`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      if (res.data.imageUrl) {
+        // Add the image URL to the list
+        setImageLinks((prev) => [...prev, res.data.imageUrl]);
+        Swal.fire({
+          title: "Image Uploaded Successfully!",
+          text: "Image URL is now available below. You can copy and use it in the editor.",
+          icon: "success",
+          confirmButtonText: "OK",
+        });
+      } else {
+        Swal.fire("Error", "Failed to get image URL", "error");
+      }
+    } catch (err) {
+      Swal.fire("Error", err.response?.data?.error || "Upload failed", "error");
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title.trim() || !content.trim()) {
@@ -328,6 +371,97 @@ export default function AddOrEditTopicForm({
                   >
                     <Delete />
                   </IconButton>
+                </Box>
+              ))}
+            </Stack>
+          </Box>
+
+          {/* Upload Images */}
+          <Box>
+            <Typography fontWeight={600} fontSize={15}>
+              Upload Images
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              Upload images to get a direct link. Copy the link below and use it
+              in the editor.
+            </Typography>
+            <Button
+              component="label"
+              variant="contained"
+              color="secondary"
+              sx={{ mt: 1 }}
+            >
+              Upload Image
+              <input
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={handleImageUpload}
+              />
+            </Button>
+
+            {/* Display uploaded image links */}
+            <Stack mt={2} spacing={1}>
+              {imageLinks.map((url, i) => (
+                <Box
+                  key={i}
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    background: "#f8f9fa",
+                    p: 2,
+                    borderRadius: 1,
+                    border: "1px solid #e9ecef",
+                  }}
+                >
+                  <Box sx={{ flex: 1, mr: 2 }}>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mb: 0.5 }}
+                    >
+                      Image URL:
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        wordBreak: "break-all",
+                        fontFamily: "monospace",
+                        fontSize: "0.8rem",
+                        color: "#007bff",
+                      }}
+                    >
+                      {url}
+                    </Typography>
+                  </Box>
+                  <Stack direction="row" spacing={1}>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() => {
+                        navigator.clipboard.writeText(url);
+                        Swal.fire(
+                          "Copied!",
+                          "Image URL copied to clipboard",
+                          "success"
+                        );
+                      }}
+                    >
+                      Copy
+                    </Button>
+                    <IconButton
+                      size="small"
+                      color="error"
+                      onClick={() =>
+                        setImageLinks((prev) =>
+                          prev.filter((_, index) => index !== i)
+                        )
+                      }
+                    >
+                      <Delete />
+                    </IconButton>
+                  </Stack>
                 </Box>
               ))}
             </Stack>

@@ -5,6 +5,7 @@ import CourseList from "./Course/CourseList";
 import ChapterList from "./Course/ChapterList";
 import TopicList from "./Course/TopicList";
 import EditCourse from "./Course/EditCourse";
+import EditChapter from "./Course/EditChapter";
 import AddOrEditTopicForm from "./Course/AddOrEditTopicForm";
 import CourseAddTab from "./Course/CourseAdd";
 import axios from "axios";
@@ -16,7 +17,9 @@ export default function CourseArea() {
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [selectedChapter, setSelectedChapter] = useState(null);
   const [editingTopic, setEditingTopic] = useState(null);
+  const [editingChapter, setEditingChapter] = useState(null);
   const courseListRef = useRef();
+  const chapterListRef = useRef();
 
   // Navigation handlers
   const handleShowCourseList = () => {
@@ -62,6 +65,11 @@ export default function CourseArea() {
   const handleShowEditTopic = (topic) => {
     setEditingTopic(topic);
     setView("edit-topic");
+  };
+
+  const handleShowEditChapter = (chapter) => {
+    setEditingChapter(chapter);
+    setView("edit-chapter");
   };
 
   // Course actions with SweetAlert2
@@ -125,12 +133,12 @@ export default function CourseArea() {
 
       {view === "chapters" && selectedCourse && (
         <ChapterList
+          ref={chapterListRef}
           courseId={selectedCourse._id}
           courseName={selectedCourse.title}
           onViewCourse={handleShowCourseList}
           onViewTopics={handleShowTopics}
-          onEditChapter={() => {}}
-          onAddChapter={() => {}}
+          onEditChapter={handleShowEditChapter}
         />
       )}
 
@@ -151,6 +159,20 @@ export default function CourseArea() {
           topic={editingTopic}
           onCancel={() => setView("topics")}
           onSaved={() => setView("topics")}
+        />
+      )}
+
+      {view === "edit-chapter" && editingChapter && (
+        <EditChapter
+          chapterId={editingChapter._id}
+          onCancel={() => setView("chapters")}
+          onUpdated={() => {
+            setView("chapters");
+            // Refresh chapters list when returning from edit
+            if (chapterListRef.current?.fetchChapters) {
+              chapterListRef.current.fetchChapters();
+            }
+          }}
         />
       )}
     </>
