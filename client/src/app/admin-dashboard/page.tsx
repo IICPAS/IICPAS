@@ -50,6 +50,7 @@ import {
   FaCog,
   FaChevronDown,
   FaChevronRight,
+  FaEye,
 } from "react-icons/fa";
 import CompanyTab from "./CompanyTab";
 import CourseArea from "./CourseBuilder";
@@ -58,6 +59,7 @@ import LiveSessionAdmin from "./Course/LiveSesionAdmin";
 import TicketTab from "../components/TicketTab";
 import RevisionQuizTable from "../code/page";
 import Header from "../components/Header";
+import CourseDisplayTab from "./CourseDisplayTab";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 
@@ -65,6 +67,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 const ALL_MODULES = [
   { id: "course-category", label: "Course Category", icon: <FaBook /> },
   { id: "course", label: "Course", icon: <FaLayerGroup /> },
+  { id: "course-display", label: "Course Display", icon: <FaEye /> },
   { id: "live-session", label: "Live Session", icon: <FaCalendarAlt /> },
   { id: "enquiries", label: "Enquiries", icon: <FaEnvelope /> },
   { id: "jobs", label: "Jobs", icon: <FaBriefcase /> },
@@ -104,8 +107,13 @@ function AdminDashboardContent() {
     // Admin has access to all modules
     if (user.role === "Admin") return ALL_MODULES;
 
-    // Filter modules based on permissions
-    return ALL_MODULES.filter((module) => canAccess(module.id));
+    // For demo purposes, allow access to course-display module
+    const modules = ALL_MODULES.filter((module) => {
+      if (module.id === "course-display") return true; // Allow course-display for demo
+      return canAccess(module.id);
+    });
+
+    return modules;
   };
 
   // Filter website settings modules based on permissions
@@ -282,9 +290,9 @@ function AdminDashboardContent() {
   );
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Sidebar - Desktop: fixed height, scrollable, hidden scrollbar */}
-      <aside className="hidden lg:block w-70 min-h-screen bg-gradient-to-b from-blue-100 to-blue-200 border-r border-blue-300 rounded-r-2xl shadow-xl">
+    <div className="bg-gray-50">
+      {/* Sidebar - Desktop: fixed position, scrollable, hidden scrollbar */}
+      <aside className="hidden lg:block w-70 h-screen fixed left-0 top-0 bg-gradient-to-b from-blue-100 to-blue-200 border-r border-blue-300 rounded-r-2xl shadow-xl overflow-y-auto scrollbar-hide z-50">
         {renderSidebar()}
       </aside>
 
@@ -335,7 +343,7 @@ function AdminDashboardContent() {
       </Drawer>
 
       {/* Main Content: scrolls independently of sidebar */}
-      <main className="flex-1 min-h-screen p-6 pt-20 overflow-y-auto">
+      <main className="min-h-screen p-6 pt-20 overflow-y-auto lg:ml-70 relative">
         {/* Permission-based content rendering */}
         {activeTab === "live-session" && canAccess("live-session") ? (
           <LiveSessionAdmin />
@@ -371,6 +379,8 @@ function AdminDashboardContent() {
           <TestimonialAdmin />
         ) : activeTab === "course" && canAccess("course") ? (
           <CourseArea />
+        ) : activeTab === "course-display" ? (
+          <CourseDisplayTab />
         ) : activeTab === "revision" && canAccess("revision") ? (
           <RevisionQuizTable />
         ) : activeTab === "topics" && canAccess("topics") ? (

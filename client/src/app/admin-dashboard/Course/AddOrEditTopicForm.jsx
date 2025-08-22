@@ -21,12 +21,83 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 const joditConfig = {
   readonly: false,
-  height: 200,
+  height: 300,
   uploader: { insertImageAsBase64URI: true },
   toolbarAdaptive: false,
   showCharsCounter: false,
   showWordsCounter: false,
   spellcheck: true,
+  toolbar: [
+    "source",
+    "|",
+    "bold",
+    "strikethrough",
+    "underline",
+    "italic",
+    "|",
+    "ul",
+    "ol",
+    "|",
+    "outdent",
+    "indent",
+    "|",
+    "font",
+    "fontsize",
+    "brush",
+    "paragraph",
+    "|",
+    "image",
+    "link",
+    "table",
+    "|",
+    "align",
+    "undo",
+    "redo",
+    "|",
+    "hr",
+    "eraser",
+    "copyformat",
+    "|",
+    "fullsize",
+  ],
+  events: {
+    afterInit: function (editor) {
+      // Override the list commands to ensure they work
+      const originalExecCommand = editor.execCommand;
+      editor.execCommand = function (command, showUI, value) {
+        if (command === "insertUnorderedList") {
+          const selection = editor.selection;
+          const selectedText = selection.getText();
+
+          if (selectedText) {
+            // If text is selected, wrap it in list items
+            const lines = selectedText.split("\n");
+            const listItems = lines.map((line) => `<li>${line}</li>`).join("");
+            selection.insertHTML(`<ul>${listItems}</ul>`);
+          } else {
+            // If no text selected, insert a bullet point
+            selection.insertHTML("<ul><li>• </li></ul>");
+          }
+          return true;
+        } else if (command === "insertOrderedList") {
+          const selection = editor.selection;
+          const selectedText = selection.getText();
+
+          if (selectedText) {
+            // If text is selected, wrap it in list items
+            const lines = selectedText.split("\n");
+            const listItems = lines.map((line) => `<li>${line}</li>`).join("");
+            selection.insertHTML(`<ol>${listItems}</ol>`);
+          } else {
+            // If no text selected, insert a numbered point
+            selection.insertHTML("<ol><li>1. </li></ol>");
+          }
+          return true;
+        }
+        return originalExecCommand.call(this, command, showUI, value);
+      };
+    },
+  },
 };
 const JoditEditor = dynamic(() => import("jodit-react"), { ssr: false });
 export default function AddOrEditTopicForm({
@@ -46,14 +117,39 @@ export default function AddOrEditTopicForm({
   const [saving, setSaving] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [scrollPosition, setScrollPosition] = useState(0);
+  const [quizPreviewOpen, setQuizPreviewOpen] = useState(false);
+  const [editorReady, setEditorReady] = useState(false);
 
   useEffect(() => {
     if (topic) {
       setTitle(topic.title || "");
       setContent(topic.content || "");
       setVideoLinks(topic.videos || []);
+
+      // Load existing quiz data if available
+      if (topic.quiz) {
+        loadExistingQuiz(topic.quiz);
+      }
     }
   }, [topic]);
+
+  const loadExistingQuiz = async (quizId) => {
+    try {
+      const response = await axios.get(`${API_BASE}/quizzes/${quizId}`);
+      if (response.data && response.data.questions) {
+        setQuizData(response.data.questions);
+      }
+    } catch (error) {
+      console.error("Error loading existing quiz:", error);
+    }
+  };
+
+  const handleEditorReady = (editorInstance) => {
+    if (editorInstance) {
+      editor.current = editorInstance;
+      setEditorReady(true);
+    }
+  };
 
   // Preserve scroll position when opening/closing modal
   const handlePreviewOpen = () => {
@@ -177,28 +273,192 @@ export default function AddOrEditTopicForm({
     return tempDiv.innerHTML;
   };
 
+  const downloadQuizTemplate = () => {
+    const templateData = [
+      {
+        question: "What is the capital of France?",
+        option1: "London",
+        option2: "Paris",
+        option3: "Berlin",
+        option4: "Madrid",
+        answer: "Paris",
+      },
+      {
+        question: "Which planet is closest to the Sun?",
+        option1: "Venus",
+        option2: "Earth",
+        option3: "Mars",
+        option4: "Mercury",
+        answer: "Mercury",
+      },
+      {
+        question: "What is 2 + 2?",
+        option1: "3",
+        option2: "4",
+        option3: "5",
+        option4: "6",
+        answer: "4",
+      },
+    ];
+
+    const worksheet = XLSX.utils.json_to_sheet(templateData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Quiz Template");
+
+    // Generate and download the file
+    XLSX.writeFile(workbook, "quiz_template.xlsx");
+
+    Swal.fire({
+      title: "Template Downloaded!",
+      text: "quiz_template.xlsx has been downloaded. Use this as a reference for your quiz format.",
+      icon: "success",
+      confirmButtonText: "OK",
+    });
+  };
+
   const handleQuizUpload = (e) => {
     const file = e.target.files[0];
     setQuizFile(file);
     if (!file) return;
+
+    // Check file size (5MB limit for Excel files)
+    if (file.size > 5 * 1024 * 1024) {
+      Swal.fire("Error", "Excel file size must be less than 5MB", "error");
+      return;
+    }
+
+    // Check file type
+    const validTypes = [
+      "application/vnd.ms-excel",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "application/vnd.ms-excel.sheet.macroEnabled.12",
+    ];
+    if (!validTypes.includes(file.type) && !file.name.match(/\.(xls|xlsx)$/i)) {
+      Swal.fire(
+        "Error",
+        "Please select a valid Excel file (.xls or .xlsx)",
+        "error"
+      );
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = (evt) => {
-      const data = new Uint8Array(evt.target.result);
-      const workbook = XLSX.read(data, { type: "array" });
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
-      const questions = rows.map((row) => ({
-        question: row.question || row.Question || "",
-        options: [
-          row.option1 || row.Option1 || "",
-          row.option2 || row.Option2 || "",
-          row.option3 || row.Option3 || "",
-          row.option4 || row.Option4 || "",
-        ].filter(Boolean),
-        answer: row.answer || row.Answer || "",
-      }));
-      setQuizData(questions);
-      Swal.fire("Quiz Loaded", `${file.name} parsed successfully!`, "success");
+      try {
+        const data = new Uint8Array(evt.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+
+        if (rows.length === 0) {
+          Swal.fire("Error", "Excel file is empty or has no data", "error");
+          return;
+        }
+
+        const questions = [];
+        const errors = [];
+
+        rows.forEach((row, index) => {
+          const question = row.question || row.Question || "";
+          const option1 = row.option1 || row.Option1 || "";
+          const option2 = row.option2 || row.Option2 || "";
+          const option3 = row.option3 || row.Option3 || "";
+          const option4 = row.option4 || row.Option4 || "";
+          const answer = row.answer || row.Answer || "";
+
+          // Skip completely empty rows
+          if (
+            !question.trim() &&
+            !option1.trim() &&
+            !option2.trim() &&
+            !option3.trim() &&
+            !option4.trim() &&
+            !answer.trim()
+          ) {
+            return; // Skip this row entirely
+          }
+
+          // Validation
+          if (!question.trim()) {
+            errors.push(`Row ${index + 1}: Question is required`);
+            return;
+          }
+
+          const options = [option1, option2, option3, option4].filter(Boolean);
+          if (options.length < 2) {
+            errors.push(`Row ${index + 1}: At least 2 options are required`);
+            return;
+          }
+
+          if (!answer.trim()) {
+            errors.push(`Row ${index + 1}: Answer is required`);
+            return;
+          }
+
+          if (!options.includes(answer)) {
+            errors.push(
+              `Row ${index + 1}: Answer must match one of the options exactly`
+            );
+            return;
+          }
+
+          questions.push({
+            question: question.trim(),
+            options: options,
+            answer: answer.trim(),
+          });
+        });
+
+        if (errors.length > 0) {
+          let errorMessage = "";
+          if (errors.length > 10) {
+            errorMessage =
+              `Found ${errors.length} validation errors. The first 5 errors are:<br><br>` +
+              errors.slice(0, 5).join("<br>") +
+              `<br><br><strong>Please check your Excel file format. Make sure:</strong><br>` +
+              `• Column headers are: question, option1, option2, option3, option4, answer<br>` +
+              `• All required fields are filled<br>` +
+              `• Answer matches one of the options exactly<br>` +
+              `• Empty rows are removed`;
+          } else {
+            errorMessage = errors.join("<br>");
+          }
+
+          Swal.fire({
+            title: "Validation Errors",
+            html: errorMessage,
+            icon: "error",
+            confirmButtonText: "OK",
+            width: "600px",
+          });
+          return;
+        }
+
+        if (questions.length === 0) {
+          Swal.fire({
+            title: "No Valid Questions Found",
+            text: "No valid quiz questions were found in the Excel file. Please check the format and try again.",
+            icon: "warning",
+            confirmButtonText: "OK",
+          });
+          return;
+        }
+
+        setQuizData(questions);
+        Swal.fire({
+          title: "Quiz Loaded Successfully!",
+          text: `${questions.length} questions parsed from ${file.name}`,
+          icon: "success",
+          confirmButtonText: "OK",
+        });
+      } catch (error) {
+        console.error("Error parsing Excel file:", error);
+        Swal.fire(
+          "Error",
+          "Failed to parse Excel file. Please check the format.",
+          "error"
+        );
+      }
     };
     reader.readAsArrayBuffer(file);
   };
@@ -294,12 +554,30 @@ export default function AddOrEditTopicForm({
     setSaving(true);
     try {
       if (topic?._id) {
+        // Update existing topic
         await axios.put(`${API_BASE}/topics/${topic._id}`, {
           title,
           content,
           videos: videoLinks,
         });
+
+        // Handle quiz update for existing topic
+        if (quizData?.length > 0) {
+          if (topic.quiz) {
+            // Update existing quiz
+            await axios.put(`${API_BASE}/quizzes/${topic.quiz}`, {
+              questions: quizData,
+            });
+          } else {
+            // Create new quiz for existing topic
+            await axios.post(`${API_BASE}/quizzes`, {
+              topic: topic._id,
+              questions: quizData,
+            });
+          }
+        }
       } else {
+        // Create new topic
         const topicRes = await axios.post(
           `${API_BASE}/topics/by-chapter/${chapterId}`,
           {
@@ -323,9 +601,11 @@ export default function AddOrEditTopicForm({
       setQuizData(null);
       setVideoLinks([]);
       onSaved && onSaved();
+      const quizMessage =
+        quizData?.length > 0 ? ` with ${quizData.length} quiz questions` : "";
       Swal.fire(
         "Success!",
-        topic ? "Topic updated!" : "Topic added!",
+        topic ? `Topic updated${quizMessage}!` : `Topic added${quizMessage}!`,
         "success"
       );
     } catch (err) {
@@ -659,6 +939,7 @@ export default function AddOrEditTopicForm({
               config={joditConfig}
               tabIndex={1}
               onBlur={(newContent) => setContent(newContent)}
+              onLoad={handleEditorReady}
             />
           </Box>
 
@@ -676,25 +957,105 @@ export default function AddOrEditTopicForm({
           </Box>
 
           {/* Quiz Upload */}
-          {!topic && (
+          {
             <Box>
-              <Button component="label" variant="outlined" sx={{ mr: 2 }}>
-                Upload Quiz (Excel)
-                <input
-                  type="file"
-                  accept=".xls,.xlsx"
-                  hidden
-                  onChange={handleQuizUpload}
-                  disabled={saving}
-                />
+              <Typography fontWeight={600} fontSize={15} sx={{ mb: 1 }}>
+                Quiz Management
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                {topic
+                  ? "Upload a new Excel file to replace the existing quiz, or keep the current quiz."
+                  : "Upload an Excel file with quiz questions. The file should have columns: question, option1, option2, option3, option4, answer"}
+              </Typography>
+
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={downloadQuizTemplate}
+                sx={{ mb: 2 }}
+              >
+                📥 Download Excel Template
               </Button>
-              {quizFile && (
-                <Typography fontSize={14} mt={1} color="primary">
-                  {quizFile.name}
-                </Typography>
+
+              <Stack
+                direction="row"
+                spacing={2}
+                alignItems="center"
+                sx={{ mb: 2 }}
+              >
+                <Button component="label" variant="outlined">
+                  Upload Quiz (Excel)
+                  <input
+                    type="file"
+                    accept=".xls,.xlsx"
+                    hidden
+                    onChange={handleQuizUpload}
+                    disabled={saving}
+                  />
+                </Button>
+                {quizFile && (
+                  <Typography fontSize={14} color="primary">
+                    📄 {quizFile.name}
+                  </Typography>
+                )}
+                {quizData && quizData.length > 0 && (
+                  <>
+                    <Button
+                      variant="outlined"
+                      color="info"
+                      onClick={() => setQuizPreviewOpen(true)}
+                    >
+                      Preview Quiz ({quizData.length} questions)
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      color="warning"
+                      onClick={() => {
+                        setQuizData(null);
+                        setQuizFile(null);
+                        Swal.fire(
+                          "Quiz Cleared",
+                          "Quiz data has been cleared.",
+                          "info"
+                        );
+                      }}
+                    >
+                      Clear Quiz
+                    </Button>
+                  </>
+                )}
+              </Stack>
+
+              {/* Quiz Data Preview */}
+              {quizData && quizData.length > 0 && (
+                <Box
+                  sx={{
+                    background: "#f8f9fa",
+                    p: 2,
+                    borderRadius: 2,
+                    border: "1px solid #e9ecef",
+                    mb: 2,
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 1 }}
+                  >
+                    ✅ Quiz loaded successfully! {quizData.length} questions
+                    ready to save.
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    fontSize="0.8rem"
+                    color="text.secondary"
+                  >
+                    First question: "{quizData[0].question.substring(0, 50)}..."
+                  </Typography>
+                </Box>
               )}
             </Box>
-          )}
+          }
 
           {/* Action Buttons */}
           <Stack direction="row" spacing={2} justifyContent="center">
@@ -724,7 +1085,7 @@ export default function AddOrEditTopicForm({
         </Stack>
       </form>
 
-      {/* Preview Modal */}
+      {/* Content Preview Modal */}
       <Modal
         open={previewOpen}
         onClose={handlePreviewClose}
@@ -883,6 +1244,143 @@ export default function AddOrEditTopicForm({
               __html: processContentForPreview(content),
             }}
           />
+        </Paper>
+      </Modal>
+
+      {/* Quiz Preview Modal */}
+      <Modal
+        open={quizPreviewOpen}
+        onClose={() => setQuizPreviewOpen(false)}
+        aria-labelledby="quiz-preview-modal-title"
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          p: 2,
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 1300,
+        }}
+      >
+        <Paper
+          sx={{
+            width: "90vw",
+            maxWidth: "800px",
+            maxHeight: "90vh",
+            overflow: "auto",
+            p: 4,
+            position: "relative",
+            margin: "auto",
+            boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+            borderRadius: 3,
+            backgroundColor: "#ffffff",
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              mb: 3,
+              pb: 2,
+              borderBottom: "2px solid #e2e8f0",
+            }}
+          >
+            <Typography
+              variant="h4"
+              component="h1"
+              id="quiz-preview-modal-title"
+              sx={{
+                fontWeight: 700,
+                color: "#1a202c",
+                fontSize: "1.5rem",
+              }}
+            >
+              Quiz Preview ({quizData?.length || 0} Questions)
+            </Typography>
+            <IconButton
+              onClick={() => setQuizPreviewOpen(false)}
+              sx={{
+                color: "#666",
+                "&:hover": {
+                  backgroundColor: "#f5f5f5",
+                },
+              }}
+            >
+              <Close />
+            </IconButton>
+          </Box>
+
+          <Stack spacing={3}>
+            {quizData?.map((question, index) => (
+              <Box
+                key={index}
+                sx={{
+                  p: 3,
+                  border: "1px solid #e2e8f0",
+                  borderRadius: 2,
+                  backgroundColor: "#f8f9fa",
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 600,
+                    color: "#1a202c",
+                    mb: 2,
+                  }}
+                >
+                  Question {index + 1}
+                </Typography>
+
+                <Typography
+                  variant="body1"
+                  sx={{
+                    mb: 2,
+                    fontWeight: 500,
+                    color: "#2d3748",
+                  }}
+                >
+                  {question.question}
+                </Typography>
+
+                <Stack spacing={1}>
+                  {question.options.map((option, optionIndex) => (
+                    <Box
+                      key={optionIndex}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        p: 1.5,
+                        borderRadius: 1,
+                        backgroundColor:
+                          option === question.answer ? "#e6fffa" : "#ffffff",
+                        border:
+                          option === question.answer
+                            ? "2px solid #38b2ac"
+                            : "1px solid #e2e8f0",
+                      }}
+                    >
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontWeight: option === question.answer ? 600 : 400,
+                          color:
+                            option === question.answer ? "#2c7a7b" : "#4a5568",
+                        }}
+                      >
+                        {String.fromCharCode(65 + optionIndex)}. {option}
+                        {option === question.answer && " ✓"}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Stack>
+              </Box>
+            ))}
+          </Stack>
         </Paper>
       </Modal>
     </Box>
