@@ -48,6 +48,7 @@ export default function StudentDashboard() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [student, setStudent] = useState(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const router = useRouter();
 
   // Student auth check
@@ -111,10 +112,44 @@ export default function StudentDashboard() {
   };
 
   const SidebarContent = () => (
-    <div className="flex flex-col justify-between h-full p-5 w-64 pt-30">
+    <div
+      className={`flex flex-col justify-between h-full p-5 ${
+        sidebarCollapsed ? "w-16" : "w-64"
+      } pt-30 transition-all duration-300`}
+    >
       <div>
-        <h2 className="text-2xl font-bold text-blue-600 mb-6">IICPA</h2>
-        {student && (
+        <div
+          className={`flex items-center ${
+            sidebarCollapsed ? "justify-center" : "justify-between"
+          } mb-6`}
+        >
+          <h2
+            className={`font-bold text-blue-600 ${
+              sidebarCollapsed ? "text-lg" : "text-2xl"
+            }`}
+          >
+            {sidebarCollapsed ? "IICPA" : "IICPA INSTITUTE"}
+          </h2>
+          {!sidebarCollapsed && (
+            <button
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className="p-1 rounded hover:bg-gray-100"
+              title="Collapse sidebar"
+            >
+              ←
+            </button>
+          )}
+          {sidebarCollapsed && (
+            <button
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className="p-1 rounded hover:bg-gray-100"
+              title="Expand sidebar"
+            >
+              →
+            </button>
+          )}
+        </div>
+        {student && !sidebarCollapsed && (
           <div className="mb-6">
             <p className="font-semibold">{student.name}</p>
             <p className="text-sm text-gray-600">{student.email}</p>
@@ -125,10 +160,11 @@ export default function StudentDashboard() {
             <NavItem
               key={tab.id}
               icon={tab.icon}
-              label={tab.label}
+              label={sidebarCollapsed ? "" : tab.label}
               active={activeTab === tab.id}
               dot={tab.dot}
               dotColor={tab.dotColor}
+              collapsed={sidebarCollapsed}
               onClick={() => {
                 setActiveTab(tab.id);
                 setIsDrawerOpen(false);
@@ -165,7 +201,11 @@ export default function StudentDashboard() {
   return (
     <div className="flex overflow-hidden font-sans">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:block bg-white border-r">
+      <aside
+        className={`hidden lg:block bg-white border-r ${
+          sidebarCollapsed ? "w-16" : "w-64"
+        } transition-all duration-300`}
+      >
         <SidebarContent />
       </aside>
       {/* Mobile Drawer */}
@@ -210,15 +250,26 @@ export default function StudentDashboard() {
   );
 }
 
-function NavItem({ icon, label, active, dot, dotColor = "red", onClick }) {
+function NavItem({
+  icon,
+  label,
+  active,
+  dot,
+  dotColor = "red",
+  collapsed,
+  onClick,
+}) {
   return (
     <div
       onClick={onClick}
-      className={`flex items-center gap-3 px-4 py-2 rounded cursor-pointer ${
+      className={`flex items-center ${
+        collapsed ? "justify-center" : "gap-3"
+      } px-4 py-2 rounded cursor-pointer ${
         active
           ? "bg-blue-100 text-blue-700 font-semibold"
           : "text-gray-800 hover:bg-gray-100"
       }`}
+      title={collapsed ? label : ""}
     >
       <div className="relative">
         {icon}
@@ -234,7 +285,7 @@ function NavItem({ icon, label, active, dot, dotColor = "red", onClick }) {
           />
         )}
       </div>
-      <span>{label}</span>
+      {!collapsed && <span>{label}</span>}
     </div>
   );
 }
