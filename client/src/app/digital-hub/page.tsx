@@ -1,9 +1,30 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+
+// Add Google Translate types
+declare global {
+  interface Window {
+    google: {
+      translate: {
+        TranslateElement: {
+          new (options: Record<string, unknown>, elementId: string): unknown;
+          getInstance(): {
+            translatePage: (languageCode: string) => void;
+          };
+          InlineLayout: {
+            SIMPLE: number;
+          };
+        };
+      };
+    };
+    googleTranslateElementInit: () => void;
+  }
+}
 import {
   CheckCircle,
   Play,
   Moon,
+  Sun,
   Info,
   AlertTriangle,
   ArrowRight,
@@ -47,6 +68,162 @@ export default function DigitalHub() {
   const [points, setPoints] = useState(110);
   const [chapterDropdownOpen, setChapterDropdownOpen] = useState(false);
   const [hamburgerOpen, setHamburgerOpen] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [ticketForm, setTicketForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    message: "",
+  });
+
+  // Sound effects for experiments
+  const playSuccessSound = () => {
+    const audio = new Audio("/sounds/success.mp3");
+    audio.volume = 0.7;
+    audio.play().catch((e) => console.log("Success audio play failed:", e));
+  };
+
+  const playErrorSound = () => {
+    const audio = new Audio("/sounds/error.mp3");
+    audio.volume = 0.5;
+    audio.play().catch((e) => console.log("Error audio play failed:", e));
+  };
+
+  // Ticket submission functions
+  const handleTicketSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      const response = await fetch("/api/tickets", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(ticketForm),
+      });
+
+      if (response.ok) {
+        setToastMessage(
+          "Ticket submitted successfully! We'll get back to you soon."
+        );
+        setShowToast(true);
+        setIsModalOpen(false);
+        setTicketForm({
+          name: "",
+          email: "",
+          phone: "",
+          message: "",
+        });
+
+        // Hide toast after 3 seconds
+        setTimeout(() => setShowToast(false), 3000);
+      } else {
+        setToastMessage("Failed to submit ticket. Please try again.");
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
+      }
+    } catch (error) {
+      setToastMessage("Error submitting ticket. Please try again.");
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+    }
+  };
+
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    const { name, value } = e.target;
+    setTicketForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+  };
+
+  // Initialize Google Translate
+  useEffect(() => {
+    // Initialize Google Translate
+    const script = document.createElement("script");
+    script.src =
+      "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+    script.async = true;
+    document.head.appendChild(script);
+
+    // Define the callback function
+    window.googleTranslateElementInit = function () {
+      new window.google.translate.TranslateElement(
+        {
+          pageLanguage: "en",
+        },
+        "google_translate_element"
+      );
+    };
+
+    // Add custom CSS for Google Translate styling
+    const style = document.createElement("style");
+    style.textContent = `
+      .goog-te-banner-frame {
+        display: none !important;
+      }
+      .goog-te-gadget {
+        color: black !important;
+      }
+      .goog-te-gadget .goog-te-combo {
+        color: black !important;
+        background-color: white !important;
+        border: 1px solid #ccc !important;
+      }
+      .goog-te-gadget .goog-te-combo option {
+        color: black !important;
+        background-color: white !important;
+      }
+      .goog-te-banner {
+        display: none !important;
+      }
+      .goog-te-menu-value {
+        color: black !important;
+      }
+      .goog-te-menu-value span {
+        color: black !important;
+      }
+      .goog-te-menu-value span:first-child {
+        color: black !important;
+      }
+      .goog-te-gadget-simple {
+        color: black !important;
+        background-color: white !important;
+      }
+      .goog-te-gadget-simple .goog-te-menu-value {
+        color: black !important;
+      }
+    `;
+    document.head.appendChild(style);
+
+    return () => {
+      // Clean up script if component unmounts
+      const existingScript = document.querySelector(
+        'script[src*="translate.google.com"]'
+      );
+      if (existingScript) {
+        document.head.removeChild(existingScript);
+      }
+      // Remove custom styles
+      const existingStyle = document.querySelector(
+        "style[data-google-translate]"
+      );
+      if (existingStyle) {
+        document.head.removeChild(existingStyle);
+      }
+    };
+  }, []);
 
   // Sample experiment data
   const experiments = [
@@ -115,13 +292,25 @@ export default function DigitalHub() {
         
         <div class="flex justify-center my-12">
           <div class="relative">
-            <div class="w-40 h-40 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg">Accounting</div>
-            <div class="absolute -top-6 -left-6 w-24 h-24 bg-gradient-to-br from-orange-400 to-orange-500 rounded-full flex items-center justify-center text-white text-sm font-medium shadow-md">Identifying</div>
-            <div class="absolute -top-6 right-0 w-24 h-24 bg-gradient-to-br from-gray-500 to-gray-600 rounded-full flex items-center justify-center text-white text-sm font-medium shadow-md">Recording</div>
-            <div class="absolute bottom-0 right-0 w-24 h-24 bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-full flex items-center justify-center text-white text-sm font-medium shadow-md">Classifying</div>
-            <div class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 w-24 h-24 bg-gradient-to-br from-blue-700 to-blue-800 rounded-full flex items-center justify-center text-white text-sm font-medium shadow-md">Summarising</div>
-            <div class="absolute bottom-0 -left-6 w-24 h-24 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white text-sm font-medium shadow-md">Analysing</div>
-            <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 w-24 h-24 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center text-white text-sm font-medium shadow-md">Reporting</div>
+            <div class="w-48 h-48 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white font-bold text-2xl shadow-lg z-10">Accounting</div>
+            <div class="absolute -top-12 -left-12 w-32 h-32 bg-gradient-to-br from-orange-400 to-orange-500 rounded-full flex items-center justify-center text-white text-sm font-medium shadow-md z-20">
+              <span class="text-center leading-tight px-2">Identifying</span>
+            </div>
+            <div class="absolute -top-12 -right-12 w-32 h-32 bg-gradient-to-br from-gray-500 to-gray-600 rounded-full flex items-center justify-center text-white text-sm font-medium shadow-md z-20">
+              <span class="text-center leading-tight px-2">Recording</span>
+            </div>
+            <div class="absolute -bottom-12 -right-12 w-32 h-32 bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-full flex items-center justify-center text-white text-sm font-medium shadow-md z-20">
+              <span class="text-center leading-tight px-2">Classifying</span>
+            </div>
+            <div class="absolute -bottom-12 left-1/2 transform -translate-x-1/2 w-32 h-32 bg-gradient-to-br from-blue-700 to-blue-800 rounded-full flex items-center justify-center text-white text-sm font-medium shadow-md z-20">
+              <span class="text-center leading-tight px-2">Summarising</span>
+            </div>
+            <div class="absolute -bottom-12 -left-12 w-32 h-32 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white text-sm font-medium shadow-md z-20">
+              <span class="text-center leading-tight px-2">Analysing</span>
+            </div>
+            <div class="absolute -top-12 left-1/2 transform -translate-x-1/2 w-32 h-32 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center text-white text-sm font-medium shadow-md z-20">
+              <span class="text-center leading-tight px-2">Reporting</span>
+            </div>
           </div>
         </div>
       `,
@@ -424,9 +613,19 @@ export default function DigitalHub() {
   ];
 
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div
+      className={`min-h-screen transition-colors duration-300 ${
+        isDarkMode ? "bg-gray-900 text-white" : "bg-white text-gray-900"
+      }`}
+    >
       {/* Header */}
-      <div className="border-b border-gray-200 bg-white p-4 shadow-sm">
+      <div
+        className={`border-b transition-colors duration-300 ${
+          isDarkMode
+            ? "border-gray-700 bg-gray-800"
+            : "border-gray-200 bg-white"
+        } p-4 shadow-sm`}
+      >
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           <div className="flex items-center space-x-4">
             <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-green-500 rounded-lg shadow-md"></div>
@@ -447,9 +646,8 @@ export default function DigitalHub() {
               <span className="text-sm font-medium">{progress}%</span>
             </div>
 
-            <select className="px-3 py-1 rounded-lg border bg-white border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500">
-              <option>Language</option>
-            </select>
+            {/* Google Translate Widget */}
+            <div id="google_translate_element"></div>
 
             <span className="text-sm font-medium">Introduction</span>
 
@@ -465,7 +663,13 @@ export default function DigitalHub() {
 
       <div className="flex">
         {/* Narrow Left Sidebar */}
-        <div className="w-16 bg-gray-50 border-r border-gray-200 min-h-screen flex flex-col items-center py-4">
+        <div
+          className={`w-16 transition-colors duration-300 ${
+            isDarkMode
+              ? "bg-blue-800 border-blue-700"
+              : "bg-blue-50 border-blue-200"
+          } border-r min-h-screen flex flex-col items-center py-4`}
+        >
           {/* Logo */}
           <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-green-500 rounded-lg mb-8"></div>
 
@@ -473,28 +677,67 @@ export default function DigitalHub() {
           <div className="flex flex-col items-center space-y-6">
             <button
               onClick={() => setHamburgerOpen(!hamburgerOpen)}
-              className="p-2 rounded-lg hover:bg-gray-200 transition-colors"
+              className={`p-2 rounded-lg transition-colors ${
+                isDarkMode ? "hover:bg-gray-700" : "hover:bg-gray-200"
+              }`}
             >
-              <Menu className="w-5 h-5 text-green-600" />
+              <Menu
+                className={`w-5 h-5 ${
+                  isDarkMode ? "text-white" : "text-black"
+                }`}
+              />
             </button>
-            <button className="p-2 rounded-lg hover:bg-gray-200 transition-colors">
-              <ArrowRight className="w-5 h-5 text-green-600" />
+            <button
+              className={`p-2 rounded-lg transition-colors ${
+                isDarkMode ? "hover:bg-gray-700" : "hover:bg-gray-200"
+              }`}
+            >
+              <ArrowRight
+                className={`w-5 h-5 ${
+                  isDarkMode ? "text-white" : "text-black"
+                }`}
+              />
             </button>
-            <button className="p-2 rounded-lg hover:bg-gray-200 transition-colors">
-              <Moon className="w-5 h-5 text-green-600" />
+            <button
+              onClick={toggleDarkMode}
+              className={`p-2 rounded-lg transition-colors ${
+                isDarkMode
+                  ? "hover:bg-gray-700 bg-gray-700"
+                  : "hover:bg-gray-200"
+              }`}
+              title={
+                isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"
+              }
+            >
+              {isDarkMode ? (
+                <Sun className="w-5 h-5 text-white" />
+              ) : (
+                <Moon className="w-5 h-5 text-black" />
+              )}
             </button>
           </div>
 
           {/* Bottom Icons */}
           <div className="mt-auto flex flex-col items-center space-y-4">
-            <button className="p-2 rounded-lg hover:bg-gray-200 transition-colors">
-              <Info className="w-5 h-5 text-gray-600" />
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className={`p-2 rounded-lg transition-colors ${
+                isDarkMode ? "hover:bg-gray-700" : "hover:bg-gray-200"
+              }`}
+              title="Submit a ticket"
+            >
+              <AlertTriangle
+                className={`w-5 h-5 ${
+                  isDarkMode ? "text-white" : "text-black"
+                }`}
+              />
             </button>
             <button className="p-2 rounded-lg hover:bg-gray-200 transition-colors">
-              <AlertTriangle className="w-5 h-5 text-gray-600" />
-            </button>
-            <button className="p-2 rounded-lg hover:bg-gray-200 transition-colors">
-              <ArrowRight className="w-5 h-5 text-gray-600" />
+              <ArrowRight
+                className={`w-5 h-5 ${
+                  isDarkMode ? "text-white" : "text-black"
+                }`}
+              />
             </button>
           </div>
         </div>
@@ -503,11 +746,21 @@ export default function DigitalHub() {
         <div
           className={`transition-all duration-300 ease-in-out ${
             hamburgerOpen ? "w-80" : "w-0"
-          } overflow-hidden bg-white border-r border-gray-200`}
+          } overflow-hidden ${
+            isDarkMode
+              ? "bg-blue-800 border-blue-700"
+              : "bg-white border-gray-200"
+          } border-r`}
         >
           <div className="w-80 p-4">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-800">Chapters</h2>
+              <h2
+                className={`text-lg font-semibold ${
+                  isDarkMode ? "text-white" : "text-gray-800"
+                }`}
+              >
+                Chapters
+              </h2>
               <button
                 onClick={() => setHamburgerOpen(false)}
                 className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
@@ -523,7 +776,9 @@ export default function DigitalHub() {
                     setHamburgerOpen(false);
                     // Handle chapter selection
                   }}
-                  className="w-full text-left p-3 rounded-lg hover:bg-green-50 transition-colors text-gray-700 border border-gray-200"
+                  className={`w-full text-left p-3 rounded-lg hover:bg-green-50 hover:text-black transition-colors border border-gray-200 ${
+                    isDarkMode ? "text-white" : "text-gray-700"
+                  }`}
                 >
                   <div className="flex items-center space-x-3">
                     <div className="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-medium">
@@ -538,7 +793,11 @@ export default function DigitalHub() {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 p-8 bg-white">
+        <div
+          className={`flex-1 p-8 transition-colors duration-300 ${
+            isDarkMode ? "bg-gray-900" : "bg-white"
+          }`}
+        >
           <div className="w-full">
             {/* Chapter Selection Dropdown */}
             <div className="mb-8">
@@ -583,7 +842,7 @@ export default function DigitalHub() {
                 {learningContent[activeContent].title}
               </h1>
               <div
-                className="text-lg leading-relaxed bg-gray-50 border border-gray-200 rounded-lg p-8 shadow-sm"
+                className="text-lg leading-relaxed bg-white border border-gray-200 rounded-lg p-8 shadow-sm text-gray-900"
                 dangerouslySetInnerHTML={{
                   __html: learningContent[activeContent].content,
                 }}
@@ -595,7 +854,11 @@ export default function DigitalHub() {
               <h2 className="text-3xl font-bold text-green-600 mb-8">
                 Interactive Experiments
               </h2>
-              <p className="text-gray-700 mb-8 text-lg">
+              <p
+                className={`mb-8 text-lg ${
+                  isDarkMode ? "text-white" : "text-gray-700"
+                }`}
+              >
                 Practice real accounting scenarios by creating journal entries.
                 Fill in the correct accounts, types, and amounts to complete
                 each transaction.
@@ -613,6 +876,13 @@ export default function DigitalHub() {
                         isCorrect ? "Correct" : "Incorrect"
                       }`
                     );
+
+                    // Play sound effects based on result
+                    if (isCorrect) {
+                      playSuccessSound();
+                    } else {
+                      playErrorSound();
+                    }
                   }}
                 />
               ))}
@@ -668,6 +938,120 @@ export default function DigitalHub() {
           </div>
         </div>
       </div>
+
+      {/* Ticket Submission Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Hazy transparent background overlay */}
+          <div
+            className="absolute inset-0 bg-transparent bg-opacity-50 backdrop-blur-sm"
+            onClick={() => setIsModalOpen(false)}
+          ></div>
+
+          {/* Modal content */}
+          <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-gray-900">
+                Submit a Ticket
+              </h2>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            <form onSubmit={handleTicketSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Name
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={ticketForm.name}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  placeholder="Enter your name"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={ticketForm.email}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  placeholder="Enter your email"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Phone
+                </label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={ticketForm.phone}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  placeholder="Enter your phone number"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Message
+                </label>
+                <textarea
+                  name="message"
+                  value={ticketForm.message}
+                  onChange={handleInputChange}
+                  required
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  placeholder="Describe your issue or request..."
+                />
+              </div>
+
+              <div className="flex space-x-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                >
+                  Submit Ticket
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {showToast && (
+        <div className="fixed top-4 right-4 z-50">
+          <div className="bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-2">
+            <CheckCircle className="w-5 h-5" />
+            <span>{toastMessage}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
