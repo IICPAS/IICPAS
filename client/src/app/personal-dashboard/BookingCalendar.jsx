@@ -67,8 +67,9 @@ const BookingCalendar = () => {
     }
     // try {
     console.log(API + "/payments/create-order");
+    const totalPrice = selectedPrice * form.hrs;
     const res = await axios.post(API + "/payments/create-order", {
-      price: selectedPrice,
+      price: totalPrice,
       email,
       trainingTitle: form.title,
       category: form.category,
@@ -486,12 +487,12 @@ const BookingCalendar = () => {
                       const found = allTrainings.find(
                         (t) => t.title === option.value
                       );
-                      if (found) {
-                        setSelectedPrice(found.price);
-                        console.log("price:", found.price);
-                      } else {
-                        setSelectedPrice(null);
-                      }
+                                              if (found) {
+                          setSelectedPrice(found.pricePerHour || found.price);
+                          console.log("price per hour:", found.pricePerHour || found.price);
+                        } else {
+                          setSelectedPrice(null);
+                        }
                     } catch (err) {
                       setSelectedPrice(null);
                     }
@@ -549,11 +550,16 @@ const BookingCalendar = () => {
                 <option value="recorded">Recorded</option>
               </select>
             </div>
-            {selectedPrice && (
-              <div className="mb-2 text-blue-700 font-semibold">
-                Price: ₹{selectedPrice}
-              </div>
-            )}
+                          {selectedPrice && (
+                <div className="mb-2 text-blue-700 font-semibold">
+                  Price per Hour: ₹{selectedPrice}
+                  {form.hrs > 0 && (
+                    <div className="text-sm text-gray-600">
+                      Total for {form.hrs} hour(s): ₹{selectedPrice * form.hrs}
+                    </div>
+                  )}
+                </div>
+              )}
             <button
               type="button"
               className="bg-green-600 text-white px-7 py-2 rounded font-semibold hover:bg-green-700"

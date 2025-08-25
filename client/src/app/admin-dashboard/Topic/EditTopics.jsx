@@ -26,14 +26,16 @@ const EditTopic = ({ formData, onChange, onSubmit, onCancel }) => {
 
         <div>
           <label className="block mb-1 font-medium text-gray-700">
-            Price (₹)
+            Price per Hour (₹)
           </label>
           <input
             type="number"
-            name="price"
-            value={formData.price}
+            name="pricePerHour"
+            value={formData.pricePerHour}
             onChange={onChange}
-            placeholder="Enter price"
+            placeholder="Enter price per hour"
+            min="0"
+            step="0.01"
             className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
           />
@@ -58,16 +60,15 @@ const EditTopic = ({ formData, onChange, onSubmit, onCancel }) => {
       <div className="flex flex-wrap gap-4 pt-2">
         <button
           type="submit"
-          className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition duration-200"
+          className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
         >
-          Update
+          Update Training
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="text-gray-500 hover:text-gray-700 flex items-center gap-1 transition duration-200"
+          className="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400 transition-colors"
         >
-          <X size={18} />
           Cancel
         </button>
       </div>

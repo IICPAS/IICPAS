@@ -24,8 +24,28 @@ export const getTopicById = async (req, res) => {
 // Create a new topic
 export const createTopic = async (req, res) => {
   try {
-    const { title, description, price } = req.body;
-    const newTopic = new Topics_Trainings({ title, description, price });
+    const { title, description, price, pricePerHour } = req.body;
+    
+    // Validate required fields
+    if (!title || !description || !pricePerHour) {
+      return res.status(400).json({ 
+        message: "Title, description, and price per hour are required" 
+      });
+    }
+
+    // Validate price per hour is positive
+    if (pricePerHour <= 0) {
+      return res.status(400).json({ 
+        message: "Price per hour must be greater than 0" 
+      });
+    }
+
+    const newTopic = new Topics_Trainings({ 
+      title, 
+      description, 
+      price: pricePerHour, // Set price to pricePerHour for backward compatibility
+      pricePerHour 
+    });
     await newTopic.save();
     res.status(201).json(newTopic);
   } catch (error) {

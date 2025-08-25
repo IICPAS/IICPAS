@@ -15,6 +15,7 @@ const ViewTrainingsTab = ({ topics, fetchTopics }) => {
     title: "",
     description: "",
     price: "",
+    pricePerHour: "",
   });
   const { hasPermission } = useAuth();
 
@@ -57,6 +58,7 @@ const ViewTrainingsTab = ({ topics, fetchTopics }) => {
       title: topic.title,
       description: topic.description,
       price: topic.price,
+      pricePerHour: topic.pricePerHour,
     });
   };
 
@@ -103,7 +105,7 @@ const ViewTrainingsTab = ({ topics, fetchTopics }) => {
                   Description
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-bold text-blue-900 uppercase tracking-wider whitespace-nowrap">
-                  Price
+                  Price/Hour
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-bold text-blue-900 uppercase tracking-wider whitespace-nowrap">
                   Status
@@ -136,7 +138,7 @@ const ViewTrainingsTab = ({ topics, fetchTopics }) => {
                       {topic.description}
                     </td>
                     <td className="px-4 py-3 text-gray-600 font-normal whitespace-nowrap">
-                      ₹{topic.price}
+                      ₹{topic.pricePerHour || topic.price}/hour
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       {topic.status === "active" ? (
