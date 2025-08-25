@@ -40,7 +40,7 @@ interface Topic {
   subtopics: string[];
 }
 
-export default function LearningLab() {
+export default function DigitalHub() {
   const [darkMode, setDarkMode] = useState(false);
   const [activeContent, setActiveContent] = useState<ContentKey>("intro");
   const [progress, setProgress] = useState(0);
@@ -432,7 +432,7 @@ export default function LearningLab() {
             <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-green-500 rounded-lg shadow-md"></div>
             <div className="flex items-center space-x-2">
               <CheckCircle className="w-5 h-5 text-green-500" />
-              <h1 className="text-xl font-semibold">Basic Accounting</h1>
+              <h1 className="text-xl font-semibold">Digital Hub</h1>
             </div>
           </div>
 

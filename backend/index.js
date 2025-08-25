@@ -53,6 +53,12 @@ import PaymentRoutes from "./routes/PaymentRoutes.js";
 import TopicTrainingRoutes from "./routes/TopicRoutes/TopicRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
 
+//Guide Routes
+import guideRoutes from "./routes/guideRoutes.js";
+
+//Kit Routes
+import kitRoutes from "./routes/kitRoutes.js";
+
 //Kit Order Routes
 import kitOrderRoutes from "./routes/kitOrderRoutes.js";
 import teacherRoutes from "./routes/teacherRoutes.js";
@@ -145,6 +151,12 @@ app.use("/api/payments", PaymentRoutes);
 //Topic Routes
 app.use("/api/v1/topics-trainings", TopicTrainingRoutes);
 app.use("/api/messages", messageRoutes);
+
+//Guide Routes
+app.use("/api/v1/guides", guideRoutes);
+
+//Kit Routes
+app.use("/api/v1/kits", kitRoutes);
 
 //Kit Order Routes
 app.use("/api/v1/kit-orders", kitOrderRoutes);

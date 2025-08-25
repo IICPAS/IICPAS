@@ -14,6 +14,7 @@ export default function TopicsPage() {
     title: "",
     description: "",
     price: "",
+    pricePerHour: "",
   });
 
   // Fetch topics once on mount
@@ -55,7 +56,7 @@ export default function TopicsPage() {
     e.preventDefault();
     try {
       await axios.post(`${API_URL}/api/v1/topics-trainings`, formData);
-      setFormData({ title: "", description: "", price: "" });
+      setFormData({ title: "", description: "", price: "", pricePerHour: "" });
       setIsAdding(false);
       fetchTopics();
       Swal.fire("Success!", "Topic has been added.", "success");
@@ -104,12 +105,14 @@ export default function TopicsPage() {
           />
           <input
             type="number"
-            placeholder="Price"
-            value={formData.price}
+            placeholder="Price per Hour (₹)"
+            value={formData.pricePerHour}
             onChange={(e) =>
-              setFormData({ ...formData, price: e.target.value })
+              setFormData({ ...formData, pricePerHour: e.target.value })
             }
             className="border p-2 rounded"
+            min="0"
+            step="0.01"
             required
           />
           <div className="md:col-span-3">

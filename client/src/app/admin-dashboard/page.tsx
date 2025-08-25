@@ -23,6 +23,8 @@ import StudentsTab from "./StudentsTab";
 import { useRouter } from "next/navigation";
 import "react-modern-drawer/dist/index.css";
 import TopicsManager from "./Topic/TopicsManager";
+import GuidesTab from "./GuidesTab";
+import KitsTab from "./KitsTab";
 
 import {
   FaBars,
@@ -51,6 +53,8 @@ import {
   FaChevronDown,
   FaChevronRight,
   FaEye,
+  FaFileAlt,
+  FaBoxes,
 } from "react-icons/fa";
 import CompanyTab from "./CompanyTab";
 import CourseArea from "./CourseBuilder";
@@ -80,6 +84,8 @@ const ALL_MODULES = [
   { id: "calendar", label: "Calendar", icon: <FaCalendarAlt /> },
   { id: "team", label: "Our Team", icon: <FaUsers /> },
   { id: "topics", label: "Training Topics", icon: <FaBook /> },
+  { id: "guides", label: "Guides & Resources", icon: <FaFileAlt /> },
+  { id: "kits", label: "Kit Stock", icon: <FaBoxes /> },
   { id: "revision", label: "Revision", icon: <FaSyncAlt /> },
   { id: "support", label: "Support Requests", icon: <FaEnvelope /> },
 ];
@@ -107,9 +113,9 @@ function AdminDashboardContent() {
     // Admin has access to all modules
     if (user.role === "Admin") return ALL_MODULES;
 
-    // For demo purposes, allow access to course-display module
+    // For demo purposes, allow access to course-display and guides modules
     const modules = ALL_MODULES.filter((module) => {
-      if (module.id === "course-display") return true; // Allow course-display for demo
+      if (module.id === "course-display" || module.id === "guides") return true; // Allow course-display and guides for demo
       return canAccess(module.id);
     });
 
@@ -385,6 +391,10 @@ function AdminDashboardContent() {
           <RevisionQuizTable />
         ) : activeTab === "topics" && canAccess("topics") ? (
           <TopicsManager />
+        ) : activeTab === "guides" ? (
+          <GuidesTab />
+        ) : activeTab === "kits" ? (
+          <KitsTab />
         ) : activeTab === "center" && canAccess("center") ? (
           <CenterTab />
         ) : activeTab === "" ? (

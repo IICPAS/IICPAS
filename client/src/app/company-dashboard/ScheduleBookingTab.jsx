@@ -65,8 +65,9 @@ export default function CompanyBookingsMainArea() {
       return;
     }
     console.log(API + "/payments/create-order");
+    const totalPrice = selectedPrice * form.hrs;
     const res = await axios.post(API + "/payments/create-order", {
-      price: selectedPrice,
+      price: totalPrice,
       email,
       trainingTitle: form.title,
       category: form.category,
@@ -503,8 +504,11 @@ export default function CompanyBookingsMainArea() {
                         (t) => t.title === option.value
                       );
                       if (found) {
-                        setSelectedPrice(found.price);
-                        console.log("price:", found.price);
+                        setSelectedPrice(found.pricePerHour || found.price);
+                        console.log(
+                          "price per hour:",
+                          found.pricePerHour || found.price
+                        );
                       } else {
                         setSelectedPrice(null);
                       }
@@ -567,7 +571,12 @@ export default function CompanyBookingsMainArea() {
             </div>
             {selectedPrice && (
               <div className="mb-2 text-blue-700 font-semibold">
-                Price: ₹{selectedPrice}
+                Price per Hour: ₹{selectedPrice}
+                {form.hrs > 0 && (
+                  <div className="text-sm text-gray-600">
+                    Total for {form.hrs} hour(s): ₹{selectedPrice * form.hrs}
+                  </div>
+                )}
               </div>
             )}
             <button
