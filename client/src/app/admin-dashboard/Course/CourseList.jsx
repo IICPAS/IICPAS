@@ -11,7 +11,6 @@ import {
   IconButton,
   Tooltip,
 } from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -72,131 +71,8 @@ const CourseList = forwardRef(
       }
     };
 
-    const columns = [
-      { field: "category", headerName: "Category", flex: 1, minWidth: 120 },
-      { field: "title", headerName: "Course Name", flex: 1.5, minWidth: 150 },
-      { field: "level", headerName: "Level", flex: 1, minWidth: 100 },
-      {
-        field: "status",
-        headerName: "Status",
-        flex: 1,
-        minWidth: 110,
-        renderCell: (params) => (
-          <Chip
-            label={params.value}
-            color={statusColors[params.value] || "default"}
-            variant="outlined"
-            size="small"
-            sx={{
-              fontWeight: 600,
-              fontSize: "0.75rem",
-              borderRadius: "12px",
-            }}
-          />
-        ),
-      },
-      {
-        field: "actions",
-        headerName: "Action",
-        flex: 2,
-        minWidth: 300,
-        sortable: false,
-        filterable: false,
-        renderCell: (params) => {
-          const course = params.row;
-          return (
-            <Stack
-              direction="row"
-              spacing={1.5}
-              alignItems="center"
-              sx={{ height: "100%" }}
-            >
-              {hasPermission("course", "read") && (
-                <Button
-                  variant="contained"
-                  size="small"
-                  startIcon={<AddIcon />}
-                  onClick={() => onAddChapter(course)}
-                  sx={{
-                    px: 2,
-                    py: 0.75,
-                    fontSize: "0.75rem",
-                    fontWeight: 600,
-                    borderRadius: "8px",
-                    textTransform: "none",
-                    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                    height: 32,
-                    minWidth: "auto",
-                    "&:hover": {
-                      boxShadow: "0 4px 8px rgba(0,0,0,0.15)",
-                    },
-                  }}
-                >
-                  Chapters
-                </Button>
-              )}
-
-              {hasPermission("course", "update") && (
-                <Tooltip title="Edit Course" arrow>
-                  <IconButton
-                    size="small"
-                    onClick={() => onEditCourse(course)}
-                    sx={{
-                      bgcolor: "#e3f2fd",
-                      color: "#1976d2",
-                      "&:hover": {
-                        bgcolor: "#bbdefb",
-                      },
-                    }}
-                  >
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              )}
-
-              {hasPermission("course", "read") && (
-                <Tooltip title="View Course" arrow>
-                  <IconButton
-                    size="small"
-                    onClick={() => onEditCourse(course)}
-                    sx={{
-                      bgcolor: "#e8f5e8",
-                      color: "#2e7d32",
-                      "&:hover": {
-                        bgcolor: "#c8e6c9",
-                      },
-                    }}
-                  >
-                    <VisibilityIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              )}
-
-              {hasPermission("course", "delete") && (
-                <Tooltip title="Delete Course" arrow>
-                  <IconButton
-                    size="small"
-                    onClick={() => onDeleteCourse(course, fetchCourses)}
-                    sx={{
-                      bgcolor: "#ffebee",
-                      color: "#d32f2f",
-                      "&:hover": {
-                        bgcolor: "#ffcdd2",
-                      },
-                    }}
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              )}
-            </Stack>
-          );
-        },
-      },
-    ];
-
     return (
-      <Box sx={{}}>
+      <Box sx={{ height: "auto", overflow: "visible" }}>
         <Stack
           direction="row"
           alignItems="center"
@@ -237,44 +113,210 @@ const CourseList = forwardRef(
             boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
             p: 2,
             border: "1px solid #e8eaf6",
+            height: "auto",
+            overflow: "visible",
           }}
         >
-          <DataGrid
-            autoHeight
-            rows={courses.map((c) => ({ ...c, id: c._id }))}
-            columns={columns}
-            pageSize={10}
-            rowsPerPageOptions={[10, 20, 50]}
-            loading={loading}
-            disableRowSelectionOnClick
-            sx={{
-              border: "none",
-              fontSize: 15,
-              width: "72vw",
-              "& .MuiDataGrid-cell": {
-                borderBottom: "1px solid #f0f0f0",
-                padding: "12px 16px",
-                display: "flex",
-                alignItems: "center",
-              },
-              "& .MuiDataGrid-columnHeaders": {
-                background: "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
-                fontWeight: 700,
-                width: "72vw",
-                fontSize: 15,
-                borderBottom: "2px solid #dee2e6",
-              },
-              "& .MuiDataGrid-row": {
-                minHeight: "60px !important",
-                "&:hover": {
-                  backgroundColor: "#f8f9fa",
-                },
-              },
-              "& .MuiDataGrid-cell:focus": {
-                outline: "none",
-              },
-            }}
-          />
+          {loading ? (
+            <Box sx={{ textAlign: "center", py: 4 }}>
+              <Typography>Loading courses...</Typography>
+            </Box>
+          ) : (
+            <Box sx={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr
+                    style={{
+                      background:
+                        "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
+                      borderBottom: "2px solid #dee2e6",
+                    }}
+                  >
+                    <th
+                      style={{
+                        padding: "16px",
+                        textAlign: "left",
+                        fontWeight: 700,
+                        fontSize: 15,
+                        borderBottom: "2px solid #dee2e6",
+                      }}
+                    >
+                      Category
+                    </th>
+                    <th
+                      style={{
+                        padding: "16px",
+                        textAlign: "left",
+                        fontWeight: 700,
+                        fontSize: 15,
+                        borderBottom: "2px solid #dee2e6",
+                      }}
+                    >
+                      Course Name
+                    </th>
+                    <th
+                      style={{
+                        padding: "16px",
+                        textAlign: "left",
+                        fontWeight: 700,
+                        fontSize: 15,
+                        borderBottom: "2px solid #dee2e6",
+                      }}
+                    >
+                      Level
+                    </th>
+                    <th
+                      style={{
+                        padding: "16px",
+                        textAlign: "left",
+                        fontWeight: 700,
+                        fontSize: 15,
+                        borderBottom: "2px solid #dee2e6",
+                      }}
+                    >
+                      Status
+                    </th>
+                    <th
+                      style={{
+                        padding: "16px",
+                        textAlign: "left",
+                        fontWeight: 700,
+                        fontSize: 15,
+                        borderBottom: "2px solid #dee2e6",
+                      }}
+                    >
+                      Action
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {courses.map((course) => (
+                    <tr
+                      key={course._id}
+                      style={{
+                        borderBottom: "1px solid #f0f0f0",
+                        minHeight: "60px",
+                        "&:hover": {
+                          backgroundColor: "#f8f9fa",
+                        },
+                      }}
+                    >
+                      <td style={{ padding: "16px", fontSize: 15 }}>
+                        {course.category}
+                      </td>
+                      <td style={{ padding: "16px", fontSize: 15 }}>
+                        {course.title}
+                      </td>
+                      <td style={{ padding: "16px", fontSize: 15 }}>
+                        {course.level}
+                      </td>
+                      <td style={{ padding: "16px", fontSize: 15 }}>
+                        <Chip
+                          label={course.status}
+                          color={statusColors[course.status] || "default"}
+                          variant="outlined"
+                          size="small"
+                          sx={{
+                            fontWeight: 600,
+                            fontSize: "0.75rem",
+                            borderRadius: "12px",
+                          }}
+                        />
+                      </td>
+                      <td style={{ padding: "16px", fontSize: 15 }}>
+                        <Stack
+                          direction="row"
+                          spacing={1.5}
+                          alignItems="center"
+                        >
+                          {hasPermission("course", "read") && (
+                            <Button
+                              variant="contained"
+                              size="small"
+                              startIcon={<AddIcon />}
+                              onClick={() => onAddChapter(course)}
+                              sx={{
+                                px: 2,
+                                py: 0.75,
+                                fontSize: "0.75rem",
+                                fontWeight: 600,
+                                borderRadius: "8px",
+                                textTransform: "none",
+                                boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                                height: 32,
+                                minWidth: "auto",
+                                "&:hover": {
+                                  boxShadow: "0 4px 8px rgba(0,0,0,0.15)",
+                                },
+                              }}
+                            >
+                              Chapters
+                            </Button>
+                          )}
+
+                          {hasPermission("course", "update") && (
+                            <Tooltip title="Edit Course" arrow>
+                              <IconButton
+                                size="small"
+                                onClick={() => onEditCourse(course)}
+                                sx={{
+                                  bgcolor: "#e3f2fd",
+                                  color: "#1976d2",
+                                  "&:hover": {
+                                    bgcolor: "#bbdefb",
+                                  },
+                                }}
+                              >
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          )}
+
+                          {hasPermission("course", "read") && (
+                            <Tooltip title="View Course" arrow>
+                              <IconButton
+                                size="small"
+                                onClick={() => onEditCourse(course)}
+                                sx={{
+                                  bgcolor: "#e8f5e8",
+                                  color: "#2e7d32",
+                                  "&:hover": {
+                                    bgcolor: "#c8e6c9",
+                                  },
+                                }}
+                              >
+                                <VisibilityIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          )}
+
+                          {hasPermission("course", "delete") && (
+                            <Tooltip title="Delete Course" arrow>
+                              <IconButton
+                                size="small"
+                                onClick={() =>
+                                  onDeleteCourse(course, fetchCourses)
+                                }
+                                sx={{
+                                  bgcolor: "#ffebee",
+                                  color: "#d32f2f",
+                                  "&:hover": {
+                                    bgcolor: "#ffcdd2",
+                                  },
+                                }}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          )}
+                        </Stack>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </Box>
+          )}
         </Box>
       </Box>
     );

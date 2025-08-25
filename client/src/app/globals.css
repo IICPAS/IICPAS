@@ -99,6 +99,28 @@
   animation: float 6s ease-in-out infinite;
 }
 
+/* Fix DataGrid auto-height issues */
+.MuiDataGrid-root {
+  height: auto !important;
+}
+
+.MuiDataGrid-main {
+  height: auto !important;
+}
+
+.MuiDataGrid-virtualScroller {
+  height: auto !important;
+  overflow: visible !important;
+}
+
+.MuiDataGrid-virtualScrollerContent {
+  height: auto !important;
+}
+
+.MuiDataGrid-virtualScrollerRenderZone {
+  height: auto !important;
+}
+
 @keyframes ping-slow {
   0% {
     transform: scale(1);
