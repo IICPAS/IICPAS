@@ -170,12 +170,32 @@ export default function EditCourse({ courseId, onBack }) {
               onChange={handleInputChange}
               className="w-full"
             />
+            {/* Show existing image */}
             {form.imageUrl && (
-              <img
-                src={process.env.NEXT_PUBLIC_API_URL + form.imageUrl}
-                alt="Course"
-                className="h-24 rounded shadow border mt-2"
-              />
+              <div className="mt-2">
+                <p className="text-sm text-gray-600 mb-1">Current Image:</p>
+                <img
+                  src={form.imageUrl.startsWith('http') ? form.imageUrl : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}${form.imageUrl}`}
+                  alt="Current Course"
+                  className="h-24 rounded shadow border"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'block';
+                  }}
+                />
+                <p className="text-xs text-red-500" style={{display: 'none'}}>Image not found</p>
+              </div>
+            )}
+            {/* Show preview of newly selected image */}
+            {form.image && (
+              <div className="mt-2">
+                <p className="text-sm text-gray-600 mb-1">New Image Preview:</p>
+                <img
+                  src={URL.createObjectURL(form.image)}
+                  alt="New Course Preview"
+                  className="h-24 rounded shadow border"
+                />
+              </div>
             )}
             <label>Video Link</label>
             <input

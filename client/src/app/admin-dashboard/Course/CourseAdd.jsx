@@ -182,6 +182,17 @@ export default function CourseAddTab({ onBack }) {
                 onChange={handleInputChange}
                 className="w-full"
               />
+              {/* Show preview of selected image */}
+              {form.image && (
+                <div className="mt-2">
+                  <p className="text-sm text-gray-600 mb-1">Image Preview:</p>
+                  <img
+                    src={URL.createObjectURL(form.image)}
+                    alt="Course Preview"
+                    className="h-24 rounded shadow border"
+                  />
+                </div>
+              )}
             </div>
             <div>
               <label className="block mb-1 font-semibold">Discount (%)</label>

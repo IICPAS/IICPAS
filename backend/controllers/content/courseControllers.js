@@ -66,11 +66,24 @@ export const createCourse = async (req, res) => {
 };
 
 export const updateCourse = async (req, res) => {
-  const course = await Course.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-  });
-  if (!course) return res.status(404).json({ error: "Course not found" });
-  res.json(course);
+  try {
+    // Prepare update data
+    const updateData = { ...req.body };
+    
+    // Handle uploaded image (if present)
+    if (req.file) {
+      updateData.image = `/uploads/${req.file.filename}`;
+    }
+
+    const course = await Course.findByIdAndUpdate(req.params.id, updateData, {
+      new: true,
+    });
+    
+    if (!course) return res.status(404).json({ error: "Course not found" });
+    res.json(course);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 export const deleteCourse = async (req, res) => {
