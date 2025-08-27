@@ -55,6 +55,7 @@ import {
   FaEye,
   FaFileAlt,
   FaBoxes,
+  FaShieldAlt,
 } from "react-icons/fa";
 import CompanyTab from "./CompanyTab";
 import CourseArea from "./CourseBuilder";
@@ -64,6 +65,7 @@ import TicketTab from "../components/TicketTab";
 import RevisionQuizTable from "../code/page";
 import Header from "../components/Header";
 import CourseDisplayTab from "./CourseDisplayTab";
+import IPLogsTab from "./IPLogsTab";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 
@@ -88,6 +90,7 @@ const ALL_MODULES = [
   { id: "kits", label: "Kit Stock", icon: <FaBoxes /> },
   { id: "revision", label: "Revision", icon: <FaSyncAlt /> },
   { id: "support", label: "Support Requests", icon: <FaEnvelope /> },
+  { id: "audit", label: "IP Logs", icon: <FaShieldAlt /> },
 ];
 
 // Website Settings modules
@@ -395,6 +398,8 @@ function AdminDashboardContent() {
           <GuidesTab />
         ) : activeTab === "kits" ? (
           <KitsTab />
+        ) : activeTab === "audit" && canAccess("audit") ? (
+          <IPLogsTab />
         ) : activeTab === "center" && canAccess("center") ? (
           <CenterTab />
         ) : activeTab === "" ? (
