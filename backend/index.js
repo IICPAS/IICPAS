@@ -66,6 +66,9 @@ import teacherRoutes from "./routes/teacherRoutes.js";
 //Import employee routes
 import employeeRoutes from "./routes/employeeRoutes.js";
 
+//Import audit routes
+import auditRoutes from "./routes/auditRoutes.js";
+
 //App Configuration
 dotenv.config();
 connectDB();
@@ -166,6 +169,9 @@ app.use("/api/v1/teachers", teacherRoutes);
 
 // Use employee routes
 app.use("/api/employees", employeeRoutes);
+
+// Use audit routes
+app.use("/api/audit", auditRoutes);
 
 // Server
 const PORT = process.env.PORT || 8080;
