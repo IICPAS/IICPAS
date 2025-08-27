@@ -82,6 +82,7 @@ function DigitalHubContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const courseId = searchParams.get("courseId");
+  const chapterId = searchParams.get("chapterId");
   const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
   const [darkMode, setDarkMode] = useState(false);
@@ -231,24 +232,77 @@ function DigitalHubContent() {
         ) {
           setCourseChapters(chaptersResponse.data.chapters);
 
-          // Auto-select first chapter
-          const firstChapter = chaptersResponse.data.chapters[0];
-          setSelectedChapter(firstChapter);
+          // If chapterId is provided, select that specific chapter
+          if (chapterId) {
+            const specificChapter = chaptersResponse.data.chapters.find(
+              (chapter: ChapterData) => chapter._id === chapterId
+            );
 
-          // Auto-select first topic of first chapter
-          if (firstChapter.topics && firstChapter.topics.length > 0) {
-            const firstTopic = firstChapter.topics[0];
-            setSelectedTopic(firstTopic);
-            setTopics(firstChapter.topics);
+            if (specificChapter) {
+              setSelectedChapter(specificChapter);
 
-            // Decode and set topic content
-            if (firstTopic.content) {
-              try {
-                const decodedContent = atob(firstTopic.content);
-                setTopicContent(decodedContent);
-              } catch (error) {
-                console.error("Error decoding topic content:", error);
-                setTopicContent(firstTopic.content || "Content not available");
+              // Auto-select first topic of the specific chapter
+              if (specificChapter.topics && specificChapter.topics.length > 0) {
+                const firstTopic = specificChapter.topics[0];
+                setSelectedTopic(firstTopic);
+                setTopics(specificChapter.topics);
+
+                // Decode and set topic content
+                if (firstTopic.content) {
+                  try {
+                    const decodedContent = atob(firstTopic.content);
+                    setTopicContent(decodedContent);
+                  } catch (error) {
+                    console.error("Error decoding topic content:", error);
+                    setTopicContent(
+                      firstTopic.content || "Content not available"
+                    );
+                  }
+                }
+              }
+            } else {
+              // Fallback to first chapter if specific chapter not found
+              const firstChapter = chaptersResponse.data.chapters[0];
+              setSelectedChapter(firstChapter);
+
+              if (firstChapter.topics && firstChapter.topics.length > 0) {
+                const firstTopic = firstChapter.topics[0];
+                setSelectedTopic(firstTopic);
+                setTopics(firstChapter.topics);
+
+                if (firstTopic.content) {
+                  try {
+                    const decodedContent = atob(firstTopic.content);
+                    setTopicContent(decodedContent);
+                  } catch (error) {
+                    console.error("Error decoding topic content:", error);
+                    setTopicContent(
+                      firstTopic.content || "Content not available"
+                    );
+                  }
+                }
+              }
+            }
+          } else {
+            // No chapterId provided, auto-select first chapter
+            const firstChapter = chaptersResponse.data.chapters[0];
+            setSelectedChapter(firstChapter);
+
+            if (firstChapter.topics && firstChapter.topics.length > 0) {
+              const firstTopic = firstChapter.topics[0];
+              setSelectedTopic(firstTopic);
+              setTopics(firstChapter.topics);
+
+              if (firstTopic.content) {
+                try {
+                  const decodedContent = atob(firstTopic.content);
+                  setTopicContent(decodedContent);
+                } catch (error) {
+                  console.error("Error decoding topic content:", error);
+                  setTopicContent(
+                    firstTopic.content || "Content not available"
+                  );
+                }
               }
             }
           }
@@ -262,7 +316,7 @@ function DigitalHubContent() {
     };
 
     fetchCourseData();
-  }, [courseId, API]);
+  }, [courseId, chapterId, API]);
 
   // Initialize Google Translate
   useEffect(() => {
