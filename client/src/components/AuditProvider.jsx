@@ -4,7 +4,10 @@ import { useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { createAuditClient } from "triostack-audit-sdk";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+console.log("AuditProvider - API_BASE:", API_BASE);
+console.log("AuditProvider - Full baseUrl will be:", `${API_BASE}/audit`);
 
 const AuditProvider = ({ children }) => {
   const { user } = useAuth();
@@ -17,8 +20,14 @@ const AuditProvider = ({ children }) => {
         // Get user ID from auth context or use anonymous
         const userId = user?.email || user?.id || "anonymous";
 
+        const baseUrl = `${API_BASE}/audit`;
+        console.log(
+          "AuditProvider - Creating audit client with baseUrl:",
+          baseUrl
+        );
+
         auditClientRef.current = createAuditClient({
-          baseUrl: `${API_BASE}/audit`,
+          baseUrl: baseUrl,
           userId: userId,
           includeGeo: true,
           onError: (error) => {
@@ -59,8 +68,14 @@ const AuditProvider = ({ children }) => {
 
       // Re-initialize with new user
       const userId = user?.email || user?.id || "anonymous";
+      const baseUrl = `${API_BASE}/audit`;
+      console.log(
+        "AuditProvider - Re-initializing audit client with baseUrl:",
+        baseUrl
+      );
+
       auditClientRef.current = createAuditClient({
-        baseUrl: `${API_BASE}/audit`,
+        baseUrl: baseUrl,
         userId: userId,
         includeGeo: true,
         onError: (error) => {

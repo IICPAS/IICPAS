@@ -17,7 +17,8 @@ export default function TicketTab() {
   const [resolveText, setResolveText] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const BASE_URL = process.env.NEXT_PUBLIC_API_BASE;
+  const BASE_URL =
+    process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
 
   // Fetch tickets on mount
   useEffect(() => {
