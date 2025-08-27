@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import axios from "axios";
 
@@ -78,7 +78,7 @@ interface TopicData {
   updatedAt: string;
 }
 
-export default function DigitalHub() {
+function DigitalHubContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const courseId = searchParams.get("courseId");
@@ -838,7 +838,7 @@ export default function DigitalHub() {
             <div className="space-y-2">
               {selectedChapter
                 ? // Show topics for selected chapter
-                  topics.map((topic, index) => (
+                  topics.map((topic: TopicData, index) => (
                     <button
                       key={topic._id}
                       onClick={() => {
@@ -860,7 +860,7 @@ export default function DigitalHub() {
                     </button>
                   ))
                 : // Show chapters if no chapter is selected
-                  courseChapters.map((chapter, index) => (
+                  courseChapters.map((chapter: ChapterData, index) => (
                     <button
                       key={chapter._id}
                       onClick={() => {
@@ -868,10 +868,8 @@ export default function DigitalHub() {
                         handleChapterSelect(chapter);
                       }}
                       className={`w-full text-left p-3 rounded-lg hover:bg-green-50 hover:text-black transition-colors border border-gray-200 ${
-                        selectedChapter?._id === chapter._id
-                          ? "bg-green-100 border-green-300"
-                          : ""
-                      } ${isDarkMode ? "text-white" : "text-gray-700"}`}
+                        isDarkMode ? "text-white" : "text-gray-700"
+                      }`}
                     >
                       <div className="flex items-center space-x-3">
                         <div className="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-medium">
@@ -916,7 +914,7 @@ export default function DigitalHub() {
 
                 {chapterDropdownOpen && (
                   <div className="absolute top-full left-0 w-80 bg-white border border-gray-300 rounded-lg shadow-xl z-50 mt-1">
-                    {courseChapters.map((chapter, index) => (
+                    {courseChapters.map((chapter: ChapterData, index) => (
                       <button
                         key={chapter._id}
                         onClick={() => {
@@ -1079,5 +1077,19 @@ export default function DigitalHub() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function DigitalHub() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-lg text-gray-600">Loading Digital Hub...</div>
+        </div>
+      }
+    >
+      <DigitalHubContent />
+    </Suspense>
   );
 }
