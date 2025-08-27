@@ -1,6 +1,5 @@
 import express from "express";
 import path from "path";
-import { createAuditServer } from "triostack-audit-sdk";
 
 import dotenv from "dotenv";
 import collegeRoutes from "./routes/collegeRoutes.js";
@@ -67,8 +66,7 @@ import teacherRoutes from "./routes/teacherRoutes.js";
 //Import employee routes
 import employeeRoutes from "./routes/employeeRoutes.js";
 
-//Import audit routes
-import auditRoutes from "./routes/auditRoutes.js";
+
 
 //App Configuration
 dotenv.config();
@@ -76,13 +74,7 @@ connectDB();
 
 const app = express();
 
-// Initialize audit server
-const auditServer = createAuditServer({
-  dbUrl: `http://localhost:8080/api/audit/track`,
-  userIdHeader: "x-user-id", // Custom header for user ID
-  enableGeo: true,
-  onError: (err) => console.error("Audit error:", err),
-});
+
 
 // CORS configuration
 
@@ -104,8 +96,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Use audit middleware for automatic request tracking
-app.use(auditServer.expressMiddleware());
+
 
 // Routes
 app.use("/api/college", collegeRoutes);
@@ -182,8 +173,7 @@ app.use("/api/v1/teachers", teacherRoutes);
 // Use employee routes
 app.use("/api/employees", employeeRoutes);
 
-// Use audit routes
-app.use("/api/audit", auditRoutes);
+
 
 // Server
 const PORT = process.env.PORT || 8080;
