@@ -1,5 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import axios from "axios";
 
 // Add Google Translate types
 declare global {
@@ -27,11 +29,10 @@ import {
   Sun,
   Info,
   AlertTriangle,
-  ArrowRight,
+  ArrowLeft,
   Menu,
   X,
   Home,
-  GraduationCap,
   Target,
   BarChart3,
   FileText,
@@ -42,7 +43,6 @@ import {
   BookOpen,
   ChevronDown,
 } from "lucide-react";
-import AccountingExperimentCard from "../components/AccountingExperimentCard";
 
 type ContentKey =
   | "intro"
@@ -61,7 +61,29 @@ interface Topic {
   subtopics: string[];
 }
 
+interface ChapterData {
+  _id: string;
+  title: string;
+  topics: TopicData[];
+  order: number;
+  status: string;
+}
+
+interface TopicData {
+  _id: string;
+  title: string;
+  content: string;
+  quiz?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export default function DigitalHub() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const courseId = searchParams.get("courseId");
+  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+
   const [darkMode, setDarkMode] = useState(false);
   const [activeContent, setActiveContent] = useState<ContentKey>("intro");
   const [progress, setProgress] = useState(0);
@@ -79,18 +101,15 @@ export default function DigitalHub() {
     message: "",
   });
 
-  // Sound effects for experiments
-  const playSuccessSound = () => {
-    const audio = new Audio("/sounds/success.mp3");
-    audio.volume = 0.7;
-    audio.play().catch((e) => console.log("Success audio play failed:", e));
-  };
-
-  const playErrorSound = () => {
-    const audio = new Audio("/sounds/error.mp3");
-    audio.volume = 0.5;
-    audio.play().catch((e) => console.log("Error audio play failed:", e));
-  };
+  // New state for dynamic content
+  const [courseChapters, setCourseChapters] = useState<ChapterData[]>([]);
+  const [selectedChapter, setSelectedChapter] = useState<ChapterData | null>(
+    null
+  );
+  const [topics, setTopics] = useState<TopicData[]>([]);
+  const [selectedTopic, setSelectedTopic] = useState<TopicData | null>(null);
+  const [topicContent, setTopicContent] = useState("");
+  const [loading, setLoading] = useState(true);
 
   // Ticket submission functions
   const handleTicketSubmit = async (e: React.FormEvent) => {
@@ -147,6 +166,103 @@ export default function DigitalHub() {
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
   };
+
+  // Handle chapter selection
+  const handleChapterSelect = (chapter: ChapterData) => {
+    setSelectedChapter(chapter);
+    setTopics(chapter.topics || []);
+
+    // Auto-select first topic of selected chapter
+    if (chapter.topics && chapter.topics.length > 0) {
+      const firstTopic = chapter.topics[0];
+      setSelectedTopic(firstTopic);
+
+      // Decode and set topic content
+      if (firstTopic.content) {
+        try {
+          const decodedContent = atob(firstTopic.content);
+          setTopicContent(decodedContent);
+        } catch (error) {
+          console.error("Error decoding topic content:", error);
+          setTopicContent(firstTopic.content || "Content not available");
+        }
+      }
+    } else {
+      setSelectedTopic(null);
+      setTopicContent("No topics available for this chapter.");
+    }
+  };
+
+  // Handle topic selection
+  const handleTopicSelect = (topic: TopicData) => {
+    setSelectedTopic(topic);
+
+    // Decode and set topic content
+    if (topic.content) {
+      try {
+        const decodedContent = atob(topic.content);
+        setTopicContent(decodedContent);
+      } catch (error) {
+        console.error("Error decoding topic content:", error);
+        setTopicContent(topic.content || "Content not available");
+      }
+    }
+  };
+
+  // Fetch course data when courseId is available
+  useEffect(() => {
+    const fetchCourseData = async () => {
+      if (!courseId) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+
+        // Fetch chapters for the course
+        const chaptersResponse = await axios.get(
+          `${API}/api/chapters/course/${courseId}`
+        );
+
+        if (
+          chaptersResponse.data.success &&
+          chaptersResponse.data.chapters.length > 0
+        ) {
+          setCourseChapters(chaptersResponse.data.chapters);
+
+          // Auto-select first chapter
+          const firstChapter = chaptersResponse.data.chapters[0];
+          setSelectedChapter(firstChapter);
+
+          // Auto-select first topic of first chapter
+          if (firstChapter.topics && firstChapter.topics.length > 0) {
+            const firstTopic = firstChapter.topics[0];
+            setSelectedTopic(firstTopic);
+            setTopics(firstChapter.topics);
+
+            // Decode and set topic content
+            if (firstTopic.content) {
+              try {
+                const decodedContent = atob(firstTopic.content);
+                setTopicContent(decodedContent);
+              } catch (error) {
+                console.error("Error decoding topic content:", error);
+                setTopicContent(firstTopic.content || "Content not available");
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching course data:", error);
+        setTopicContent("Error loading course content. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourseData();
+  }, [courseId, API]);
 
   // Initialize Google Translate
   useEffect(() => {
@@ -224,56 +340,6 @@ export default function DigitalHub() {
       }
     };
   }, []);
-
-  // Sample experiment data
-  const experiments = [
-    {
-      id: 1,
-      statement:
-        "20th April, Mr. Mahesh & Mr. Kiran Invested Rs. 1,00,000 each as capital by cheque",
-      correctEntries: [
-        {
-          id: "1",
-          date: "20/04/2025",
-          type: "Debit",
-          particulars: "Bank A/c",
-          debit: "200000",
-          credit: "",
-        },
-        {
-          id: "2",
-          date: "20/04/2025",
-          type: "Credit",
-          particulars: "Capital A/c",
-          debit: "",
-          credit: "200000",
-        },
-      ],
-    },
-    {
-      id: 2,
-      statement:
-        "26th April, Company purchased Furniture worth Rs.50,000/- through bank payment",
-      correctEntries: [
-        {
-          id: "1",
-          date: "26/04/2025",
-          type: "Debit",
-          particulars: "Furniture A/c",
-          debit: "50000",
-          credit: "",
-        },
-        {
-          id: "2",
-          date: "26/04/2025",
-          type: "Credit",
-          particulars: "Bank A/c",
-          debit: "",
-          credit: "50000",
-        },
-      ],
-    },
-  ];
 
   const chapters = [
     "Basic Accounting",
@@ -688,11 +754,12 @@ export default function DigitalHub() {
               />
             </button>
             <button
+              onClick={() => router.push("/student-dashboard")}
               className={`p-2 rounded-lg transition-colors ${
                 isDarkMode ? "hover:bg-gray-700" : "hover:bg-gray-200"
               }`}
             >
-              <ArrowRight
+              <ArrowLeft
                 className={`w-5 h-5 ${
                   isDarkMode ? "text-white" : "text-black"
                 }`}
@@ -733,7 +800,7 @@ export default function DigitalHub() {
               />
             </button>
             <button className="p-2 rounded-lg hover:bg-gray-200 transition-colors">
-              <ArrowRight
+              <ArrowLeft
                 className={`w-5 h-5 ${
                   isDarkMode ? "text-white" : "text-black"
                 }`}
@@ -769,25 +836,51 @@ export default function DigitalHub() {
               </button>
             </div>
             <div className="space-y-2">
-              {chapters.map((chapter, index) => (
-                <button
-                  key={index}
-                  onClick={() => {
-                    setHamburgerOpen(false);
-                    // Handle chapter selection
-                  }}
-                  className={`w-full text-left p-3 rounded-lg hover:bg-green-50 hover:text-black transition-colors border border-gray-200 ${
-                    isDarkMode ? "text-white" : "text-gray-700"
-                  }`}
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-medium">
-                      {index + 1}
-                    </div>
-                    <span className="font-medium">{chapter}</span>
-                  </div>
-                </button>
-              ))}
+              {selectedChapter
+                ? // Show topics for selected chapter
+                  topics.map((topic, index) => (
+                    <button
+                      key={topic._id}
+                      onClick={() => {
+                        setHamburgerOpen(false);
+                        handleTopicSelect(topic);
+                      }}
+                      className={`w-full text-left p-3 rounded-lg hover:bg-green-50 hover:text-black transition-colors border border-gray-200 ${
+                        selectedTopic?._id === topic._id
+                          ? "bg-green-100 border-green-300"
+                          : ""
+                      } ${isDarkMode ? "text-white" : "text-gray-700"}`}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-medium">
+                          {index + 1}
+                        </div>
+                        <span className="font-medium">{topic.title}</span>
+                      </div>
+                    </button>
+                  ))
+                : // Show chapters if no chapter is selected
+                  courseChapters.map((chapter, index) => (
+                    <button
+                      key={chapter._id}
+                      onClick={() => {
+                        setHamburgerOpen(false);
+                        handleChapterSelect(chapter);
+                      }}
+                      className={`w-full text-left p-3 rounded-lg hover:bg-green-50 hover:text-black transition-colors border border-gray-200 ${
+                        selectedChapter?._id === chapter._id
+                          ? "bg-green-100 border-green-300"
+                          : ""
+                      } ${isDarkMode ? "text-white" : "text-gray-700"}`}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-medium">
+                          {index + 1}
+                        </div>
+                        <span className="font-medium">{chapter.title}</span>
+                      </div>
+                    </button>
+                  ))}
             </div>
           </div>
         </div>
@@ -808,7 +901,11 @@ export default function DigitalHub() {
                 >
                   <div className="flex items-center space-x-3">
                     <CheckCircle className="w-5 h-5 text-white" />
-                    <span>Select a chapter</span>
+                    <span>
+                      {selectedChapter
+                        ? selectedChapter.title
+                        : "Select a chapter"}
+                    </span>
                   </div>
                   <ChevronDown
                     className={`w-5 h-5 transition-transform ${
@@ -819,16 +916,16 @@ export default function DigitalHub() {
 
                 {chapterDropdownOpen && (
                   <div className="absolute top-full left-0 w-80 bg-white border border-gray-300 rounded-lg shadow-xl z-50 mt-1">
-                    {chapters.map((chapter, index) => (
+                    {courseChapters.map((chapter, index) => (
                       <button
-                        key={index}
+                        key={chapter._id}
                         onClick={() => {
                           setChapterDropdownOpen(false);
-                          // Handle chapter selection
+                          handleChapterSelect(chapter);
                         }}
                         className="w-full text-left px-4 py-3 hover:bg-green-50 transition-colors text-gray-700 border-b border-gray-200 last:border-b-0"
                       >
-                        {chapter}
+                        {chapter.title}
                       </button>
                     ))}
                   </div>
@@ -838,103 +935,32 @@ export default function DigitalHub() {
 
             {/* Content Display */}
             <div className="prose max-w-none">
-              <h1 className="text-4xl font-bold text-green-600 mb-8">
-                {learningContent[activeContent].title}
-              </h1>
-              <div
-                className="text-lg leading-relaxed bg-white border border-gray-200 rounded-lg p-8 shadow-sm text-gray-900"
-                dangerouslySetInnerHTML={{
-                  __html: learningContent[activeContent].content,
-                }}
-              />
-            </div>
-
-            {/* Interactive Experiments Section */}
-            <div className="mt-12">
-              <h2 className="text-3xl font-bold text-green-600 mb-8">
-                Interactive Experiments
-              </h2>
-              <p
-                className={`mb-8 text-lg ${
-                  isDarkMode ? "text-white" : "text-gray-700"
-                }`}
-              >
-                Practice real accounting scenarios by creating journal entries.
-                Fill in the correct accounts, types, and amounts to complete
-                each transaction.
-              </p>
-
-              {experiments.map((experiment) => (
-                <AccountingExperimentCard
-                  key={experiment.id}
-                  experimentNumber={experiment.id}
-                  statement={experiment.statement}
-                  correctEntries={experiment.correctEntries}
-                  onComplete={(isCorrect) => {
-                    console.log(
-                      `Experiment ${experiment.id} completed: ${
-                        isCorrect ? "Correct" : "Incorrect"
-                      }`
-                    );
-
-                    // Play sound effects based on result
-                    if (isCorrect) {
-                      playSuccessSound();
-                    } else {
-                      playErrorSound();
-                    }
-                  }}
-                />
-              ))}
-            </div>
-
-            {/* Quiz Section */}
-            {activeContent === "comparison" && (
-              <div className="mt-12 p-8 bg-gradient-to-r from-green-50 to-green-100 rounded-2xl shadow-lg border border-green-200">
-                <h3 className="text-2xl font-semibold mb-6 flex items-center text-green-800">
-                  <GraduationCap className="w-6 h-6 mr-3" />
-                  Quick Quiz
-                </h3>
-                <p className="mb-6 text-lg text-gray-700">
-                  What is the primary focus of accounting?
-                </p>
-                <div className="space-y-4">
-                  <label className="flex items-center space-x-3 cursor-pointer p-4 rounded-lg border-2 border-transparent hover:border-green-200 transition-colors">
-                    <input
-                      type="radio"
-                      name="quiz"
-                      className="text-green-500 w-5 h-5"
-                    />
-                    <span className="text-lg text-gray-700">
-                      Managing financial resources
-                    </span>
-                  </label>
-                  <label className="flex items-center space-x-3 cursor-pointer p-4 rounded-lg border-2 border-transparent hover:border-green-200 transition-colors">
-                    <input
-                      type="radio"
-                      name="quiz"
-                      className="text-green-500 w-5 h-5"
-                    />
-                    <span className="text-lg text-gray-700">
-                      Planning for the future
-                    </span>
-                  </label>
-                  <label className="flex items-center space-x-3 cursor-pointer p-4 rounded-lg border-2 border-transparent hover:border-green-200 transition-colors">
-                    <input
-                      type="radio"
-                      name="quiz"
-                      className="text-green-500 w-5 h-5"
-                    />
-                    <span className="text-lg text-gray-700">
-                      Recording and reporting financial transactions
-                    </span>
-                  </label>
+              {loading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-lg text-gray-600">
+                    Loading content...
+                  </div>
                 </div>
-                <button className="mt-6 bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-lg">
-                  Submit Answer
-                </button>
-              </div>
-            )}
+              ) : selectedTopic ? (
+                <>
+                  <h1 className="text-4xl font-bold text-green-600 mb-8">
+                    {selectedTopic.title}
+                  </h1>
+                  <div
+                    className="text-lg leading-relaxed bg-white border border-gray-200 rounded-lg p-8 shadow-sm text-gray-900"
+                    dangerouslySetInnerHTML={{
+                      __html: topicContent,
+                    }}
+                  />
+                </>
+              ) : (
+                <div className="text-center py-12">
+                  <div className="text-lg text-gray-600">
+                    No content available
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

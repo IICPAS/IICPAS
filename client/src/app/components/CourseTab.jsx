@@ -31,7 +31,8 @@ export default function CourseTab() {
   const [showForm, setShowForm] = useState(false);
   const [formType, setFormType] = useState("");
   const [formData, setFormData] = useState({});
-  const [viewMode, setViewMode] = useState("overview"); // "overview" or "detailed"
+  const [viewModes, setViewModes] = useState({}); // Track view mode for each course
+  const [courseChapters, setCourseChapters] = useState({}); // Store chapters for each course
   const router = useRouter();
   const API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -201,6 +202,33 @@ export default function CourseTab() {
     } catch (error) {
       console.error("Error submitting form:", error);
       alert("Error submitting form. Please try again.");
+    }
+  };
+
+  // Fetch chapters for a course
+  const fetchChaptersForCourse = async (courseId) => {
+    try {
+      const response = await axios.get(
+        `${API}/api/chapters/course/${courseId}`
+      );
+      if (response.data.success) {
+        setCourseChapters((prev) => ({
+          ...prev,
+          [courseId]: response.data.chapters,
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching chapters:", error);
+    }
+  };
+
+  // Handle detailed view toggle
+  const handleDetailedToggle = (courseId) => {
+    setViewModes((prev) => ({ ...prev, [courseId]: "detailed" }));
+
+    // Fetch chapters if not already loaded
+    if (!courseChapters[courseId]) {
+      fetchChaptersForCourse(courseId);
     }
   };
 
@@ -463,7 +491,7 @@ export default function CourseTab() {
             ) : (
               <div className="text-center py-8 text-gray-500">
                 <Book className="mx-auto mb-4 text-4xl text-gray-300" />
-                <p>No chapters available for this course.</p>
+                <p>Loading chapters...</p>
               </div>
             )}
           </div>
@@ -622,7 +650,7 @@ export default function CourseTab() {
             key={course._id}
             className="bg-white rounded-lg shadow-lg overflow-hidden"
           >
-            {viewMode === "overview" ? (
+            {viewModes[course._id] !== "detailed" ? (
               // State 1: Course Overview
               <div className="p-6">
                 {/* Course Name at Top of White Card */}
@@ -681,7 +709,7 @@ export default function CourseTab() {
 
                     {/* Detailed Button */}
                     <button
-                      onClick={() => setViewMode("detailed")}
+                      onClick={() => handleDetailedToggle(course._id)}
                       className="w-full mt-6 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
                     >
                       Detailed
@@ -745,12 +773,88 @@ export default function CourseTab() {
 
                     {/* Tab Content */}
                     <div className="bg-white rounded-lg p-6 h-[300px] overflow-y-auto">
-                      {renderContentList()}
+                      {activeTab === "chapters" ? (
+                        <div className="space-y-3">
+                          {courseChapters[course._id] &&
+                          courseChapters[course._id].length > 0 ? (
+                            courseChapters[course._id].map((chapter, index) => (
+                              <div
+                                key={chapter._id || index}
+                                className="bg-gradient-to-r from-gray-100 to-gray-150 border border-gray-300 rounded-lg p-4 hover:shadow-md transition-all duration-200 cursor-pointer"
+                                onClick={() =>
+                                  router.push(
+                                    `/digital-hub?courseId=${course._id}&chapterId=${chapter._id}`
+                                  )
+                                }
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                      <span className="font-bold text-blue-600 text-sm">
+                                        {index + 1}
+                                      </span>
+                                    </div>
+                                    <div>
+                                      <p className="font-semibold text-gray-800">
+                                        {chapter.title || chapter.name}
+                                      </p>
+                                      {chapter.description && (
+                                        <p className="text-sm text-gray-600">
+                                          {chapter.description}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-24 bg-gray-200 rounded-full h-2">
+                                      <div
+                                        className={`h-2 rounded-full transition-all duration-300 ${
+                                          chapter.completion === 100
+                                            ? "bg-green-500"
+                                            : chapter.completion >= 70
+                                            ? "bg-blue-500"
+                                            : chapter.completion >= 40
+                                            ? "bg-yellow-500"
+                                            : "bg-gray-400"
+                                        }`}
+                                        style={{
+                                          width: `${chapter.completion || 0}%`,
+                                        }}
+                                      />
+                                    </div>
+                                    <span
+                                      className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                                        (chapter.completion || 0) === 100
+                                          ? "bg-green-100 text-green-800"
+                                          : "bg-blue-100 text-blue-800"
+                                      }`}
+                                    >
+                                      {chapter.completion || 0}%
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="text-center py-8 text-gray-500">
+                              <Book className="mx-auto mb-4 text-4xl text-gray-300" />
+                              <p>No chapters available for this course.</p>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        renderContentList()
+                      )}
                     </div>
 
                     {/* Back Button */}
                     <button
-                      onClick={() => setViewMode("overview")}
+                      onClick={() =>
+                        setViewModes((prev) => ({
+                          ...prev,
+                          [course._id]: "overview",
+                        }))
+                      }
                       className="w-full mt-6 bg-gray-600 text-white py-3 px-4 rounded-lg hover:bg-gray-700 transition-colors font-semibold flex items-center justify-center gap-2"
                     >
                       <ArrowBack />
