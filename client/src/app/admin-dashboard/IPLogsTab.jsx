@@ -49,7 +49,7 @@ import {
 } from '@mui/icons-material';
 import dayjs from 'dayjs';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
 
 const IPLogsTab = () => {
   const [activities, setActivities] = useState([]);

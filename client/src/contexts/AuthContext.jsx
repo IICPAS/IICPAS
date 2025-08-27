@@ -18,7 +18,8 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [permissions, setPermissions] = useState({});
 
-  const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
+  const API_BASE =
+    process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
 
   // Check if user has permission for specific module and action
   const hasPermission = (module, action) => {
