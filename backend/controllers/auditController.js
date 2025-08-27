@@ -4,6 +4,13 @@ import dayjs from "dayjs";
 // Track a new audit activity
 export const trackActivity = async (req, res) => {
   try {
+    // Debug: Log the incoming request data
+    console.log(
+      "🔍 Audit tracking request body:",
+      JSON.stringify(req.body, null, 2)
+    );
+    console.log("🔍 Audit tracking request headers:", req.headers);
+
     const {
       userId,
       route,
@@ -21,12 +28,28 @@ export const trackActivity = async (req, res) => {
       os,
     } = req.body;
 
-    // Validate required fields
-    if (!userId || !route || !duration || !ip || !sessionId) {
+    // More flexible validation - handle different data formats from the SDK
+    if (!userId) {
       return res.status(400).json({
         success: false,
-        message:
-          "Missing required fields: userId, route, duration, ip, sessionId",
+        message: "Missing required field: userId",
+        receivedData: req.body,
+      });
+    }
+
+    if (!route) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required field: route",
+        receivedData: req.body,
+      });
+    }
+
+    if (typeof duration !== "number" && duration !== undefined) {
+      return res.status(400).json({
+        success: false,
+        message: "Duration must be a number",
+        receivedData: req.body,
       });
     }
 
@@ -39,17 +62,33 @@ export const trackActivity = async (req, res) => {
       finalUserId = userId;
     }
 
+    // Get IP from request if not provided in body
+    const clientIP =
+      ip ||
+      req.ip ||
+      req.connection.remoteAddress ||
+      req.headers["x-forwarded-for"] ||
+      "unknown";
+
+    // Generate session ID if not provided
+    const finalSessionId =
+      sessionId ||
+      `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+    // Handle duration - default to 0 if not provided
+    const finalDuration = typeof duration === "number" ? duration : 0;
+
     // Create new audit activity
     const auditActivity = new AuditActivity({
       userId: finalUserId,
       route,
-      duration,
-      ip,
+      duration: finalDuration,
+      ip: clientIP,
       city: city || "unknown",
       region: region || "unknown",
       country: country || "unknown",
       timestamp: timestamp || new Date(),
-      sessionId,
+      sessionId: finalSessionId,
       userAgent: userAgent || req.headers["user-agent"] || "unknown",
       referrer: referrer || req.headers.referer || "",
       deviceType: deviceType || "unknown",
@@ -58,6 +97,14 @@ export const trackActivity = async (req, res) => {
     });
 
     await auditActivity.save();
+
+    console.log("✅ Audit activity tracked successfully:", {
+      userId: finalUserId,
+      route,
+      duration: finalDuration,
+      ip: clientIP,
+      sessionId: finalSessionId,
+    });
 
     res.status(201).json({
       success: true,
