@@ -125,7 +125,11 @@ export default function AboutTab() {
 
       {mode === "edit" && (
         <div className="bg-white rounded-md p-1 w-full max-w-6xl">
-          <QuillEditor value={form.content} onChange={(value) => setForm({ ...form, content: value })} height={300} />
+          <QuillEditor
+            value={form.content}
+            onChange={(value) => setForm({ ...form, content: value })}
+            height={300}
+          />
           <div className="flex justify-end gap-3 mt-4">
             <Button variant="contained" onClick={handleSubmit}>
               {editingItem ? "Update" : "Submit"}
