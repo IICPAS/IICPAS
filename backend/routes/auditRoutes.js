@@ -14,7 +14,6 @@ const router = express.Router();
 
 // Public route for tracking activities (no auth required)
 router.post("/track", trackActivity);
-router.post("/audit-log", trackActivity); // Alias for triostack-audit-sdk compatibility
 
 // Debug endpoint to see what data is being sent
 router.post("/debug", (req, res) => {

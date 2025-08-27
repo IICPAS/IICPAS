@@ -1,5 +1,6 @@
 import express from "express";
 import path from "path";
+import { createAuditServer } from "triostack-audit-sdk";
 
 import dotenv from "dotenv";
 import collegeRoutes from "./routes/collegeRoutes.js";
@@ -75,6 +76,14 @@ connectDB();
 
 const app = express();
 
+// Initialize audit server
+const auditServer = createAuditServer({
+  dbUrl: `http://localhost:8080/api/audit/track`,
+  userIdHeader: "x-user-id", // Custom header for user ID
+  enableGeo: true,
+  onError: (err) => console.error("Audit error:", err),
+});
+
 // CORS configuration
 
 app.use(
@@ -94,6 +103,9 @@ app.use("/uploads", express.static("uploads")); // Make uploaded images accessib
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+// Use audit middleware for automatic request tracking
+app.use(auditServer.expressMiddleware());
 
 // Routes
 app.use("/api/college", collegeRoutes);

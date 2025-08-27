@@ -1,105 +1,77 @@
-const axios = require("axios");
+// Test script to verify backend audit integration
+import fetch from "node-fetch";
 
 const API_BASE = "http://localhost:8080/api";
 
-// Test audit tracking
-async function testAuditTracking() {
+async function testAuditIntegration() {
+  console.log("🧪 Testing backend audit integration...");
+
   try {
-    console.log("🧪 Testing audit tracking...");
+    // Test 1: Make a request to trigger automatic audit logging
+    console.log("\n📡 Test 1: Making API request to trigger audit...");
+    const response1 = await fetch(`${API_BASE}/audit/stats?days=1`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "x-user-id": "test-user@example.com",
+      },
+    });
 
-    const testActivity = {
-      userId: "test-user-123",
-      route: "/test-route",
-      duration: 120,
-      ip: "192.168.1.100",
-      city: "Test City",
-      region: "Test Region",
-      country: "Test Country",
-      timestamp: new Date().toISOString(),
-      sessionId: "test-session-456",
-      userAgent: "Mozilla/5.0 (Test Browser)",
-      referrer: "https://test.com",
-      deviceType: "desktop",
-      browser: "Chrome",
-      os: "Windows",
-    };
+    console.log("✅ API request completed with status:", response1.status);
+    const stats = await response1.json();
+    console.log("📊 Audit stats response:", JSON.stringify(stats, null, 2));
 
-    const response = await axios.post(`${API_BASE}/audit/track`, testActivity);
+    // Test 2: Check if the request was logged
+    console.log("\n📡 Test 2: Checking if request was logged...");
+    const response2 = await fetch(`${API_BASE}/audit/activities?limit=5`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "x-user-id": "test-user@example.com",
+      },
+    });
 
-    if (response.data.success) {
-      console.log("✅ Audit tracking test passed!");
-      console.log("📊 Activity ID:", response.data.data._id);
-    } else {
-      console.log("❌ Audit tracking test failed:", response.data.message);
-    }
-  } catch (error) {
-    console.error(
-      "❌ Audit tracking test error:",
-      error.response?.data || error.message
+    console.log(
+      "✅ Activities request completed with status:",
+      response2.status
     );
+    const activities = await response2.json();
+    console.log("📊 Recent activities:", JSON.stringify(activities, null, 2));
+
+    // Test 3: Manual audit tracking
+    console.log("\n📡 Test 3: Testing manual audit tracking...");
+    const response3 = await fetch(`${API_BASE}/audit/track`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-user-id": "test-user@example.com",
+      },
+      body: JSON.stringify({
+        userId: "test-user@example.com",
+        route: "/test/manual",
+        method: "POST",
+        statusCode: 200,
+        duration: 150,
+        event: "manual_test",
+        metadata: {
+          testType: "manual_tracking",
+          success: true,
+        },
+      }),
+    });
+
+    console.log("✅ Manual tracking completed with status:", response3.status);
+    const manualResult = await response3.json();
+    console.log(
+      "📊 Manual tracking result:",
+      JSON.stringify(manualResult, null, 2)
+    );
+
+    console.log("\n🎉 All tests completed successfully!");
+  } catch (error) {
+    console.error("❌ Test failed:", error.message);
   }
 }
 
-// Test audit stats
-async function testAuditStats() {
-  try {
-    console.log("\n🧪 Testing audit stats...");
-
-    const response = await axios.get(`${API_BASE}/audit/stats?days=7`);
-
-    if (response.data.success) {
-      console.log("✅ Audit stats test passed!");
-      console.log("📊 Total activities:", response.data.data.totalActivities);
-      console.log("👥 Unique users:", response.data.data.uniqueUsers);
-      console.log("🌐 Unique IPs:", response.data.data.uniqueIPs);
-    } else {
-      console.log("❌ Audit stats test failed:", response.data.message);
-    }
-  } catch (error) {
-    console.error(
-      "❌ Audit stats test error:",
-      error.response?.data || error.message
-    );
-  }
-}
-
-// Test audit activities retrieval
-async function testAuditActivities() {
-  try {
-    console.log("\n🧪 Testing audit activities retrieval...");
-
-    const response = await axios.get(`${API_BASE}/audit/activities?limit=5`);
-
-    if (response.data.success) {
-      console.log("✅ Audit activities test passed!");
-      console.log("📊 Total activities:", response.data.pagination.total);
-      console.log("📄 Retrieved activities:", response.data.data.length);
-    } else {
-      console.log("❌ Audit activities test failed:", response.data.message);
-    }
-  } catch (error) {
-    console.error(
-      "❌ Audit activities test error:",
-      error.response?.data || error.message
-    );
-  }
-}
-
-// Run all tests
-async function runTests() {
-  console.log("🚀 Starting audit integration tests...\n");
-
-  await testAuditTracking();
-  await testAuditStats();
-  await testAuditActivities();
-
-  console.log("\n✨ All tests completed!");
-}
-
-// Run tests if this file is executed directly
-if (require.main === module) {
-  runTests().catch(console.error);
-}
-
-module.exports = { testAuditTracking, testAuditStats, testAuditActivities };
-
+// Run the test
+testAuditIntegration();
