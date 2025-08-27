@@ -17,6 +17,7 @@ import {
   Add,
   Save,
   Close,
+  ArrowBack,
 } from "@mui/icons-material";
 
 export default function CourseTab() {
@@ -30,6 +31,7 @@ export default function CourseTab() {
   const [showForm, setShowForm] = useState(false);
   const [formType, setFormType] = useState("");
   const [formData, setFormData] = useState({});
+  const [viewMode, setViewMode] = useState("overview"); // "overview" or "detailed"
   const router = useRouter();
   const API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -220,15 +222,15 @@ export default function CourseTab() {
   const getTabLabel = (tabName) => {
     switch (tabName) {
       case "chapters":
-        return "Chapters";
+        return "Chapter";
       case "assignments":
-        return "Assignment";
+        return "Assign";
       case "experiments":
-        return "Experiment";
+        return "Exp";
       case "tests":
-        return "Test";
+        return "Conf";
       default:
-        return "Chapters";
+        return "Chapter";
     }
   };
 
@@ -469,15 +471,8 @@ export default function CourseTab() {
       case "assignments":
         return (
           <div className="space-y-3">
-            <div className="flex justify-between items-center mb-4">
+            <div className="mb-4">
               <h3 className="text-lg font-semibold">Course Assignments</h3>
-              <button
-                onClick={() => handleAddNew("assignment")}
-                className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors flex items-center gap-2"
-              >
-                <Add />
-                Add Assignment
-              </button>
             </div>
 
             {selectedCourse.assignments &&
@@ -514,12 +509,6 @@ export default function CourseTab() {
               <div className="text-center py-8 text-gray-500">
                 <Assignment className="mx-auto mb-4 text-4xl text-gray-300" />
                 <p>No assignments available for this course.</p>
-                <button
-                  onClick={() => handleAddNew("assignment")}
-                  className="mt-4 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
-                >
-                  Add First Assignment
-                </button>
               </div>
             )}
           </div>
@@ -527,15 +516,8 @@ export default function CourseTab() {
       case "experiments":
         return (
           <div className="space-y-3">
-            <div className="flex justify-between items-center mb-4">
+            <div className="mb-4">
               <h3 className="text-lg font-semibold">Course Experiments</h3>
-              <button
-                onClick={() => handleAddNew("database")}
-                className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition-colors flex items-center gap-2"
-              >
-                <Add />
-                Add Database
-              </button>
             </div>
 
             {selectedCourse.experiments &&
@@ -572,12 +554,6 @@ export default function CourseTab() {
               <div className="text-center py-8 text-gray-500">
                 <Science className="mx-auto mb-4 text-4xl text-gray-300" />
                 <p>No experiments available for this course.</p>
-                <button
-                  onClick={() => handleAddNew("database")}
-                  className="mt-4 bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition-colors"
-                >
-                  Add First Database
-                </button>
               </div>
             )}
           </div>
@@ -585,15 +561,8 @@ export default function CourseTab() {
       case "tests":
         return (
           <div className="space-y-3">
-            <div className="flex justify-between items-center mb-4">
+            <div className="mb-4">
               <h3 className="text-lg font-semibold">Course Tests</h3>
-              <button
-                onClick={() => handleAddNew("test")}
-                className="bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 transition-colors flex items-center gap-2"
-              >
-                <Add />
-                Add Test
-              </button>
             </div>
 
             {selectedCourse.tests && selectedCourse.tests.length > 0 ? (
@@ -627,12 +596,6 @@ export default function CourseTab() {
               <div className="text-center py-8 text-gray-500">
                 <QuestionAnswer className="mx-auto mb-4 text-4xl text-gray-300" />
                 <p>No tests available for this course.</p>
-                <button
-                  onClick={() => handleAddNew("test")}
-                  className="mt-4 bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 transition-colors"
-                >
-                  Add First Test
-                </button>
               </div>
             )}
           </div>
@@ -652,300 +615,157 @@ export default function CourseTab() {
 
   return (
     <div className="p-4 w-full max-w-full mt-16">
-      {/* All Courses Display - Left/Right Pane Layout */}
+      {/* Course Display with State Switching */}
       <div className="space-y-8">
         {courses.map((course) => (
           <div
             key={course._id}
             className="bg-white rounded-lg shadow-lg overflow-hidden"
           >
-            {/* Course Header */}
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 border-b">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-200">
-                    <img
-                      src={course.image || "/images/a1.jpeg"}
-                      alt={course.title}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-800">
-                      {course.title}
-                    </h2>
-                    <div className="flex items-center gap-4 mt-2">
-                      <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-                        {course.level}
-                      </span>
-                      <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
-                        {course.status}
-                      </span>
-                      <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
-                        ₹{course.price}
-                      </span>
+            {viewMode === "overview" ? (
+              // State 1: Course Overview
+              <div className="p-6">
+                {/* Course Name at Top of White Card */}
+                <h2 className="text-xl font-bold text-gray-800 mb-6 text-center w-full">
+                  {course.title}
+                </h2>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Left Side - Course Image Only */}
+                  <div className="space-y-6">
+                    {/* Course Image */}
+                    <div className="bg-gray-50 rounded-lg p-6 flex items-center justify-center">
+                      <div className="w-96 h-64 rounded-lg overflow-hidden bg-gray-200">
+                        <img
+                          src={
+                            course.image
+                              ? `${API}${course.image}`
+                              : "/images/a1.jpeg"
+                          }
+                          alt={course.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-3xl font-bold text-green-600">
-                    {course.overallProgress || 0}%
-                  </div>
-                  <div className="text-sm text-gray-600">Overall Progress</div>
-                  <div className="w-32 bg-gray-200 rounded-full h-2 mt-2">
-                    <div
-                      className="bg-green-600 h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${course.overallProgress || 0}%` }}
-                    ></div>
+
+                  {/* Right Side - Course Stats */}
+                  <div className="bg-gray-50 rounded-lg p-6">
+                    <h3 className="text-lg font-semibold mb-4 text-gray-800">
+                      Course Statistics
+                    </h3>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Overall Progress:</span>
+                        <span className="font-semibold text-green-600">
+                          {course.overallProgress || 0}%
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Course:</span>
+                        <span className="font-semibold">{course.title}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Level:</span>
+                        <span className="font-semibold text-blue-600">
+                          {course.level}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Status:</span>
+                        <span className="font-semibold text-green-600">
+                          {course.status}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Price:</span>
+                        <span className="font-semibold text-purple-600">
+                          ₹{course.price}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Detailed Button */}
+                    <button
+                      onClick={() => setViewMode("detailed")}
+                      className="w-full mt-6 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+                    >
+                      Detailed
+                    </button>
                   </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              // State 2: Course Detailed View
+              <div className="p-6">
+                {/* Course Name at Top of White Card */}
+                <h2 className="text-xl font-bold text-gray-800 mb-6 text-center w-full">
+                  {course.title}
+                </h2>
 
-            {/* Course Content - Left/Right Pane */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
-              {/* Left Pane - Course Statistics */}
-              <div className="space-y-6">
-                <div className="bg-gray-50 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold mb-4 text-gray-800">
-                    Course Statistics
-                  </h3>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Overall Progress:</span>
-                      <span className="font-semibold text-green-600">
-                        {course.overallProgress || 0}%
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Course:</span>
-                      <span className="font-semibold">{course.title}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Level:</span>
-                      <span className="font-semibold text-blue-600">
-                        {course.level}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Status:</span>
-                      <span className="font-semibold text-green-600">
-                        {course.status}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Price:</span>
-                      <span className="font-semibold text-purple-600">
-                        ₹{course.price}
-                      </span>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Left Side - Course Image Only */}
+                  <div className="bg-gray-50 rounded-lg p-6 flex items-center justify-center">
+                    <div className="w-96 h-64 rounded-lg overflow-hidden bg-gray-200">
+                      <img
+                        src={
+                          course.image
+                            ? `${API}${course.image}`
+                            : "/images/a1.jpeg"
+                        }
+                        alt={course.title}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                   </div>
-                </div>
 
-                {/* Course Summary */}
-                <div className="bg-gray-50 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold mb-4 text-gray-800">
-                    Course Summary
-                  </h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <Book className="text-blue-600" />
-                      <span className="text-gray-700">
-                        Chapters: {course.chapters?.length || 0}
-                      </span>
+                  {/* Right Side - Tabs + Content */}
+                  <div className="bg-gray-50 rounded-lg p-6">
+                    {/* Tab Navigation */}
+                    <div className="flex gap-2 bg-gray-200 p-2 rounded-lg mb-6">
+                      {["chapters", "assignments", "experiments", "tests"].map(
+                        (tab) => (
+                          <div
+                            key={tab}
+                            onClick={() => setActiveTab(tab)}
+                            className={`flex items-center gap-2 px-4 py-3 rounded-lg cursor-pointer transition-all duration-200 min-w-[100px] justify-center border-2 ${
+                              activeTab === tab
+                                ? "bg-blue-600 shadow-md text-white font-semibold border-blue-600"
+                                : "bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900 border-transparent"
+                            }`}
+                          >
+                            {getTabIcon(tab)}
+                            <span
+                              className={`font-medium ${
+                                activeTab === tab
+                                  ? "text-white"
+                                  : "text-gray-700"
+                              }`}
+                            >
+                              {getTabLabel(tab)}
+                            </span>
+                          </div>
+                        )
+                      )}
                     </div>
-                    <div className="flex items-center gap-3">
-                      <Assignment className="text-green-600" />
-                      <span className="text-gray-700">
-                        Assignments: {course.assignments?.length || 0}
-                      </span>
+
+                    {/* Tab Content */}
+                    <div className="bg-white rounded-lg p-6 h-[300px] overflow-y-auto">
+                      {renderContentList()}
                     </div>
-                    <div className="flex items-center gap-3">
-                      <Science className="text-purple-600" />
-                      <span className="text-gray-700">
-                        Experiments: {course.experiments?.length || 0}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <QuestionAnswer className="text-orange-600" />
-                      <span className="text-gray-700">
-                        Tests: {course.tests?.length || 0}
-                      </span>
-                    </div>
+
+                    {/* Back Button */}
+                    <button
+                      onClick={() => setViewMode("overview")}
+                      className="w-full mt-6 bg-gray-600 text-white py-3 px-4 rounded-lg hover:bg-gray-700 transition-colors font-semibold flex items-center justify-center gap-2"
+                    >
+                      <ArrowBack />
+                      Back to Course Preview
+                    </button>
                   </div>
                 </div>
               </div>
-
-              {/* Right Pane - Course Content */}
-              <div className="space-y-6">
-                {/* Chapters Section */}
-                <div className="bg-gray-50 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center gap-2">
-                    <Book className="text-blue-600" />
-                    Chapters
-                  </h3>
-                  <div className="space-y-3">
-                    {course.chapters && course.chapters.length > 0 ? (
-                      course.chapters.map((chapter, index) => (
-                        <div
-                          key={chapter._id || index}
-                          className="bg-white rounded-lg p-4 border border-gray-200"
-                        >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="font-medium text-gray-800">
-                                {chapter.title || chapter.name}
-                              </p>
-                              {chapter.description && (
-                                <p className="text-sm text-gray-600 mt-1">
-                                  {chapter.description}
-                                </p>
-                              )}
-                            </div>
-                            <div className="text-right">
-                              <div className="text-sm text-gray-600">
-                                Progress
-                              </div>
-                              <div className="w-20 bg-gray-200 rounded-full h-2 mt-1">
-                                <div
-                                  className="bg-blue-600 h-2 rounded-full"
-                                  style={{ width: `${chapter.progress || 0}%` }}
-                                ></div>
-                              </div>
-                              <div className="text-xs text-gray-500 mt-1">
-                                {chapter.progress || 0}%
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-center py-4 text-gray-500">
-                        <Book className="mx-auto mb-2 text-2xl text-gray-300" />
-                        <p>No chapters available</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Assignments Section */}
-                <div className="bg-gray-50 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center gap-2">
-                    <Assignment className="text-green-600" />
-                    Assignments
-                  </h3>
-                  <div className="space-y-3">
-                    {course.assignments && course.assignments.length > 0 ? (
-                      course.assignments.map((assignment, index) => (
-                        <div
-                          key={assignment._id || index}
-                          className="bg-white rounded-lg p-4 border border-gray-200"
-                        >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="font-medium text-gray-800">
-                                {assignment.title || assignment.name}
-                              </p>
-                              {assignment.description && (
-                                <p className="text-sm text-gray-600 mt-1">
-                                  {assignment.description}
-                                </p>
-                              )}
-                            </div>
-                            <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
-                              {assignment.status || "Pending"}
-                            </span>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-center py-4 text-gray-500">
-                        <Assignment className="mx-auto mb-2 text-2xl text-gray-300" />
-                        <p>No assignments available</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Experiments Section */}
-                <div className="bg-gray-50 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center gap-2">
-                    <Science className="text-purple-600" />
-                    Experiments
-                  </h3>
-                  <div className="space-y-3">
-                    {course.experiments && course.experiments.length > 0 ? (
-                      course.experiments.map((experiment, index) => (
-                        <div
-                          key={experiment._id || index}
-                          className="bg-white rounded-lg p-4 border border-gray-200"
-                        >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="font-medium text-gray-800">
-                                {experiment.title || experiment.name}
-                              </p>
-                              {experiment.description && (
-                                <p className="text-sm text-gray-600 mt-1">
-                                  {experiment.description}
-                                </p>
-                              )}
-                            </div>
-                            <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
-                              {experiment.status || "Available"}
-                            </span>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-center py-4 text-gray-500">
-                        <Science className="mx-auto mb-2 text-2xl text-gray-300" />
-                        <p>No experiments available</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Tests Section */}
-                <div className="bg-gray-50 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center gap-2">
-                    <QuestionAnswer className="text-orange-600" />
-                    Tests
-                  </h3>
-                  <div className="space-y-3">
-                    {course.tests && course.tests.length > 0 ? (
-                      course.tests.map((test, index) => (
-                        <div
-                          key={test._id || index}
-                          className="bg-white rounded-lg p-4 border border-gray-200"
-                        >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="font-medium text-gray-800">
-                                {test.title || test.name}
-                              </p>
-                              {test.description && (
-                                <p className="text-sm text-gray-600 mt-1">
-                                  {test.description}
-                                </p>
-                              )}
-                            </div>
-                            <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium">
-                              {test.status || "Not Started"}
-                            </span>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-center py-4 text-gray-500">
-                        <QuestionAnswer className="mx-auto mb-2 text-2xl text-gray-300" />
-                        <p>No tests available</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
         ))}
       </div>
