@@ -651,9 +651,6 @@ export default function CourseTab() {
 
                   {/* Right Side - Course Stats */}
                   <div className="bg-gray-50 rounded-lg p-6">
-                    <h3 className="text-lg font-semibold mb-4 text-gray-800">
-                      Course Statistics
-                    </h3>
                     <div className="space-y-4">
                       <div className="flex justify-between items-center">
                         <span className="text-gray-600">Overall Progress:</span>
@@ -661,10 +658,7 @@ export default function CourseTab() {
                           {course.overallProgress || 0}%
                         </span>
                       </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-600">Course:</span>
-                        <span className="font-semibold">{course.title}</span>
-                      </div>
+
                       <div className="flex justify-between items-center">
                         <span className="text-gray-600">Level:</span>
                         <span className="font-semibold text-blue-600">
