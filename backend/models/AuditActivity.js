@@ -11,10 +11,30 @@ const auditActivitySchema = new mongoose.Schema({
     required: true,
     index: true
   },
+  method: {
+    type: String,
+    required: true,
+    enum: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'],
+    default: 'GET'
+  },
+  statusCode: {
+    type: Number,
+    required: true,
+    min: 100,
+    max: 599
+  },
   duration: {
     type: Number,
     required: true,
     min: 0
+  },
+  requestSize: {
+    type: Number,
+    default: 0
+  },
+  responseSize: {
+    type: Number,
+    default: 0
   },
   ip: {
     type: String,
@@ -33,6 +53,14 @@ const auditActivitySchema = new mongoose.Schema({
     type: String,
     default: 'unknown'
   },
+  latitude: {
+    type: Number,
+    default: null
+  },
+  longitude: {
+    type: Number,
+    default: null
+  },
   timestamp: {
     type: Date,
     required: true,
@@ -48,22 +76,13 @@ const auditActivitySchema = new mongoose.Schema({
     type: String,
     default: 'unknown'
   },
-  referrer: {
+  event: {
     type: String,
-    default: ''
+    default: 'api_request'
   },
-  deviceType: {
-    type: String,
-    enum: ['desktop', 'mobile', 'tablet', 'unknown'],
-    default: 'unknown'
-  },
-  browser: {
-    type: String,
-    default: 'unknown'
-  },
-  os: {
-    type: String,
-    default: 'unknown'
+  metadata: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {}
   }
 }, {
   timestamps: true
@@ -74,6 +93,9 @@ auditActivitySchema.index({ timestamp: -1 });
 auditActivitySchema.index({ userId: 1, timestamp: -1 });
 auditActivitySchema.index({ ip: 1, timestamp: -1 });
 auditActivitySchema.index({ sessionId: 1, timestamp: -1 });
+auditActivitySchema.index({ method: 1, timestamp: -1 });
+auditActivitySchema.index({ statusCode: 1, timestamp: -1 });
+auditActivitySchema.index({ event: 1, timestamp: -1 });
 
 // Virtual for formatted duration
 auditActivitySchema.virtual('durationFormatted').get(function() {

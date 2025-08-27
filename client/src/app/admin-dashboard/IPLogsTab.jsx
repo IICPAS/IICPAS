@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { useState, useEffect } from "react";
+import axios from "axios";
 import {
   Box,
   Typography,
@@ -31,8 +31,8 @@ import {
   DialogContent,
   DialogActions,
   Tooltip,
-  Badge
-} from '@mui/material';
+  Badge,
+} from "@mui/material";
 import {
   Search,
   FilterList,
@@ -45,11 +45,12 @@ import {
   Computer,
   Public,
   TrendingUp,
-  Security
-} from '@mui/icons-material';
-import dayjs from 'dayjs';
+  Security,
+} from "@mui/icons-material";
+import dayjs from "dayjs";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
 
 const IPLogsTab = () => {
   const [activities, setActivities] = useState([]);
@@ -60,13 +61,16 @@ const IPLogsTab = () => {
   const [rowsPerPage, setRowsPerPage] = useState(25);
   const [total, setTotal] = useState(0);
   const [filters, setFilters] = useState({
-    userId: '',
-    ip: '',
-    route: '',
-    country: '',
-    city: '',
-    startDate: '',
-    endDate: ''
+    userId: "",
+    ip: "",
+    route: "",
+    method: "",
+    statusCode: "",
+    event: "",
+    country: "",
+    city: "",
+    startDate: "",
+    endDate: "",
   });
   const [selectedActivity, setSelectedActivity] = useState(null);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
@@ -80,17 +84,24 @@ const IPLogsTab = () => {
       const params = new URLSearchParams({
         page: page + 1,
         limit: rowsPerPage,
-        ...Object.fromEntries(Object.entries(filters).filter(([_, value]) => value))
+        ...Object.fromEntries(
+          Object.entries(filters).filter(([_, value]) => value)
+        ),
       });
 
-      const response = await axios.get(`${API_BASE}/audit/activities?${params}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
-      });
+      const response = await axios.get(
+        `${API_BASE}/audit/activities?${params}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+          },
+        }
+      );
 
       setActivities(response.data.data);
       setTotal(response.data.pagination.total);
     } catch (error) {
-      console.error('Error fetching activities:', error);
+      console.error("Error fetching activities:", error);
     } finally {
       setLoading(false);
     }
@@ -101,11 +112,13 @@ const IPLogsTab = () => {
     try {
       setStatsLoading(true);
       const response = await axios.get(`${API_BASE}/audit/stats?days=7`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+        },
       });
       setStats(response.data.data);
     } catch (error) {
-      console.error('Error fetching stats:', error);
+      console.error("Error fetching stats:", error);
     } finally {
       setStatsLoading(false);
     }
@@ -129,7 +142,7 @@ const IPLogsTab = () => {
   };
 
   const handleFilterChange = (field, value) => {
-    setFilters(prev => ({ ...prev, [field]: value }));
+    setFilters((prev) => ({ ...prev, [field]: value }));
     setPage(0);
   };
 
@@ -141,8 +154,10 @@ const IPLogsTab = () => {
   const handleDeleteActivities = async () => {
     try {
       const response = await axios.delete(`${API_BASE}/audit/activities`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` },
-        data: deleteFilters
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+        },
+        data: deleteFilters,
       });
 
       alert(`Successfully deleted ${response.data.deletedCount} activities`);
@@ -151,8 +166,8 @@ const IPLogsTab = () => {
       fetchActivities();
       fetchStats();
     } catch (error) {
-      console.error('Error deleting activities:', error);
-      alert('Failed to delete activities');
+      console.error("Error deleting activities:", error);
+      alert("Failed to delete activities");
     }
   };
 
@@ -163,34 +178,50 @@ const IPLogsTab = () => {
   };
 
   const getLocationDisplay = (activity) => {
-    const parts = [activity.city, activity.region, activity.country].filter(Boolean);
-    return parts.length > 0 ? parts.join(', ') : 'Unknown';
+    const parts = [activity.city, activity.region, activity.country].filter(
+      Boolean
+    );
+    return parts.length > 0 ? parts.join(", ") : "Unknown";
   };
 
   const getDeviceInfo = (userAgent) => {
-    if (!userAgent) return 'Unknown';
-    
+    if (!userAgent) return "Unknown";
+
     const isMobile = /Mobile|Android|iPhone|iPad/.test(userAgent);
-    const isTablet = /iPad|Android(?=.*\bMobile\b)(?=.*\bSafari\b)/.test(userAgent);
-    
-    if (isTablet) return 'Tablet';
-    if (isMobile) return 'Mobile';
-    return 'Desktop';
+    const isTablet = /iPad|Android(?=.*\bMobile\b)(?=.*\bSafari\b)/.test(
+      userAgent
+    );
+
+    if (isTablet) return "Tablet";
+    if (isMobile) return "Mobile";
+    return "Desktop";
   };
 
   const getBrowserInfo = (userAgent) => {
-    if (!userAgent) return 'Unknown';
-    
-    if (userAgent.includes('Chrome')) return 'Chrome';
-    if (userAgent.includes('Firefox')) return 'Firefox';
-    if (userAgent.includes('Safari')) return 'Safari';
-    if (userAgent.includes('Edge')) return 'Edge';
-    return 'Other';
+    if (!userAgent) return "Unknown";
+
+    if (userAgent.includes("Chrome")) return "Chrome";
+    if (userAgent.includes("Firefox")) return "Firefox";
+    if (userAgent.includes("Safari")) return "Safari";
+    if (userAgent.includes("Edge")) return "Edge";
+    return "Other";
+  };
+
+  const getStatusColor = (statusCode) => {
+    if (statusCode >= 200 && statusCode < 300) return "success";
+    if (statusCode >= 300 && statusCode < 400) return "warning";
+    if (statusCode >= 400 && statusCode < 500) return "error";
+    if (statusCode >= 500) return "error";
+    return "default";
   };
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h4" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Typography
+        variant="h4"
+        gutterBottom
+        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+      >
         <Security color="primary" />
         IP Logs & User Activity
       </Typography>
@@ -251,7 +282,11 @@ const IPLogsTab = () => {
 
       {/* Filters */}
       <Paper sx={{ p: 2, mb: 3 }}>
-        <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Typography
+          variant="h6"
+          gutterBottom
+          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+        >
           <FilterList />
           Filters
         </Typography>
@@ -261,7 +296,7 @@ const IPLogsTab = () => {
               fullWidth
               label="User ID"
               value={filters.userId}
-              onChange={(e) => handleFilterChange('userId', e.target.value)}
+              onChange={(e) => handleFilterChange("userId", e.target.value)}
               size="small"
             />
           </Grid>
@@ -270,7 +305,7 @@ const IPLogsTab = () => {
               fullWidth
               label="IP Address"
               value={filters.ip}
-              onChange={(e) => handleFilterChange('ip', e.target.value)}
+              onChange={(e) => handleFilterChange("ip", e.target.value)}
               size="small"
             />
           </Grid>
@@ -279,8 +314,45 @@ const IPLogsTab = () => {
               fullWidth
               label="Route"
               value={filters.route}
-              onChange={(e) => handleFilterChange('route', e.target.value)}
+              onChange={(e) => handleFilterChange("route", e.target.value)}
               size="small"
+            />
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Method</InputLabel>
+              <Select
+                value={filters.method}
+                onChange={(e) => handleFilterChange("method", e.target.value)}
+                label="Method"
+              >
+                <MenuItem value="">All</MenuItem>
+                <MenuItem value="GET">GET</MenuItem>
+                <MenuItem value="POST">POST</MenuItem>
+                <MenuItem value="PUT">PUT</MenuItem>
+                <MenuItem value="DELETE">DELETE</MenuItem>
+                <MenuItem value="PATCH">PATCH</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <TextField
+              fullWidth
+              label="Status Code"
+              value={filters.statusCode}
+              onChange={(e) => handleFilterChange("statusCode", e.target.value)}
+              size="small"
+              placeholder="e.g., 200, 404"
+            />
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <TextField
+              fullWidth
+              label="Event"
+              value={filters.event}
+              onChange={(e) => handleFilterChange("event", e.target.value)}
+              size="small"
+              placeholder="e.g., api_request, user_login"
             />
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
@@ -288,7 +360,7 @@ const IPLogsTab = () => {
               fullWidth
               label="Country"
               value={filters.country}
-              onChange={(e) => handleFilterChange('country', e.target.value)}
+              onChange={(e) => handleFilterChange("country", e.target.value)}
               size="small"
             />
           </Grid>
@@ -297,7 +369,7 @@ const IPLogsTab = () => {
               fullWidth
               label="City"
               value={filters.city}
-              onChange={(e) => handleFilterChange('city', e.target.value)}
+              onChange={(e) => handleFilterChange("city", e.target.value)}
               size="small"
             />
           </Grid>
@@ -307,7 +379,7 @@ const IPLogsTab = () => {
               type="date"
               label="Start Date"
               value={filters.startDate}
-              onChange={(e) => handleFilterChange('startDate', e.target.value)}
+              onChange={(e) => handleFilterChange("startDate", e.target.value)}
               size="small"
               InputLabelProps={{ shrink: true }}
             />
@@ -318,13 +390,20 @@ const IPLogsTab = () => {
               type="date"
               label="End Date"
               value={filters.endDate}
-              onChange={(e) => handleFilterChange('endDate', e.target.value)}
+              onChange={(e) => handleFilterChange("endDate", e.target.value)}
               size="small"
               InputLabelProps={{ shrink: true }}
             />
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
-            <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-end', height: '100%' }}>
+            <Box
+              sx={{
+                display: "flex",
+                gap: 1,
+                alignItems: "flex-end",
+                height: "100%",
+              }}
+            >
               <Button
                 variant="contained"
                 onClick={fetchActivities}
@@ -355,6 +434,8 @@ const IPLogsTab = () => {
                 <TableCell>User ID</TableCell>
                 <TableCell>IP Address</TableCell>
                 <TableCell>Route</TableCell>
+                <TableCell>Method</TableCell>
+                <TableCell>Status</TableCell>
                 <TableCell>Location</TableCell>
                 <TableCell>Duration</TableCell>
                 <TableCell>Device</TableCell>
@@ -365,13 +446,13 @@ const IPLogsTab = () => {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={8} align="center">
+                  <TableCell colSpan={10} align="center">
                     <CircularProgress />
                   </TableCell>
                 </TableRow>
               ) : activities.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} align="center">
+                  <TableCell colSpan={10} align="center">
                     <Typography variant="body2" color="textSecondary">
                       No activities found
                     </Typography>
@@ -381,7 +462,7 @@ const IPLogsTab = () => {
                 activities.map((activity) => (
                   <TableRow key={activity._id} hover>
                     <TableCell>
-                      <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                      <Typography variant="body2" sx={{ fontWeight: "medium" }}>
                         {activity.userId}
                       </Typography>
                     </TableCell>
@@ -394,12 +475,32 @@ const IPLogsTab = () => {
                       />
                     </TableCell>
                     <TableCell>
-                      <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
+                      <Typography
+                        variant="body2"
+                        sx={{ fontFamily: "monospace" }}
+                      >
                         {activity.route}
                       </Typography>
                     </TableCell>
                     <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <Chip
+                        label={activity.method || "GET"}
+                        size="small"
+                        color="info"
+                        variant="outlined"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={activity.statusCode || 200}
+                        size="small"
+                        color={getStatusColor(activity.statusCode)}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
+                      >
                         <LocationOn fontSize="small" color="action" />
                         <Typography variant="body2">
                           {getLocationDisplay(activity)}
@@ -420,7 +521,7 @@ const IPLogsTab = () => {
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2">
-                        {dayjs(activity.timestamp).format('MMM DD, YYYY HH:mm')}
+                        {dayjs(activity.timestamp).format("MMM DD, YYYY HH:mm")}
                       </Typography>
                     </TableCell>
                     <TableCell>
@@ -462,61 +563,151 @@ const IPLogsTab = () => {
           {selectedActivity && (
             <Grid container spacing={2}>
               <Grid item xs={12} md={6}>
-                <Typography variant="subtitle2" color="textSecondary">User ID</Typography>
-                <Typography variant="body1">{selectedActivity.userId}</Typography>
+                <Typography variant="subtitle2" color="textSecondary">
+                  User ID
+                </Typography>
+                <Typography variant="body1">
+                  {selectedActivity.userId}
+                </Typography>
               </Grid>
               <Grid item xs={12} md={6}>
-                <Typography variant="subtitle2" color="textSecondary">IP Address</Typography>
+                <Typography variant="subtitle2" color="textSecondary">
+                  IP Address
+                </Typography>
                 <Typography variant="body1">{selectedActivity.ip}</Typography>
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="subtitle2" color="textSecondary">Route</Typography>
-                <Typography variant="body1" sx={{ fontFamily: 'monospace' }}>
+                <Typography variant="subtitle2" color="textSecondary">
+                  Route
+                </Typography>
+                <Typography variant="body1" sx={{ fontFamily: "monospace" }}>
                   {selectedActivity.route}
                 </Typography>
               </Grid>
               <Grid item xs={12} md={6}>
-                <Typography variant="subtitle2" color="textSecondary">Location</Typography>
-                <Typography variant="body1">{getLocationDisplay(selectedActivity)}</Typography>
+                <Typography variant="subtitle2" color="textSecondary">
+                  HTTP Method
+                </Typography>
+                <Typography variant="body1">
+                  {selectedActivity.method || "GET"}
+                </Typography>
               </Grid>
               <Grid item xs={12} md={6}>
-                <Typography variant="subtitle2" color="textSecondary">Duration</Typography>
-                <Typography variant="body1">{formatDuration(selectedActivity.duration)}</Typography>
+                <Typography variant="subtitle2" color="textSecondary">
+                  Status Code
+                </Typography>
+                <Typography variant="body1">
+                  {selectedActivity.statusCode || 200}
+                </Typography>
               </Grid>
               <Grid item xs={12} md={6}>
-                <Typography variant="subtitle2" color="textSecondary">Device Type</Typography>
-                <Typography variant="body1">{getDeviceInfo(selectedActivity.userAgent)}</Typography>
+                <Typography variant="subtitle2" color="textSecondary">
+                  Request Size
+                </Typography>
+                <Typography variant="body1">
+                  {selectedActivity.requestSize || 0} bytes
+                </Typography>
               </Grid>
               <Grid item xs={12} md={6}>
-                <Typography variant="subtitle2" color="textSecondary">Browser</Typography>
-                <Typography variant="body1">{getBrowserInfo(selectedActivity.userAgent)}</Typography>
+                <Typography variant="subtitle2" color="textSecondary">
+                  Response Size
+                </Typography>
+                <Typography variant="body1">
+                  {selectedActivity.responseSize || 0} bytes
+                </Typography>
               </Grid>
               <Grid item xs={12} md={6}>
-                <Typography variant="subtitle2" color="textSecondary">Session ID</Typography>
-                <Typography variant="body1" sx={{ fontFamily: 'monospace', fontSize: '0.875rem' }}>
+                <Typography variant="subtitle2" color="textSecondary">
+                  Location
+                </Typography>
+                <Typography variant="body1">
+                  {getLocationDisplay(selectedActivity)}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Typography variant="subtitle2" color="textSecondary">
+                  Duration
+                </Typography>
+                <Typography variant="body1">
+                  {formatDuration(selectedActivity.duration)}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Typography variant="subtitle2" color="textSecondary">
+                  Device Type
+                </Typography>
+                <Typography variant="body1">
+                  {getDeviceInfo(selectedActivity.userAgent)}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Typography variant="subtitle2" color="textSecondary">
+                  Browser
+                </Typography>
+                <Typography variant="body1">
+                  {getBrowserInfo(selectedActivity.userAgent)}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Typography variant="subtitle2" color="textSecondary">
+                  Session ID
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{ fontFamily: "monospace", fontSize: "0.875rem" }}
+                >
                   {selectedActivity.sessionId}
                 </Typography>
               </Grid>
               <Grid item xs={12} md={6}>
-                <Typography variant="subtitle2" color="textSecondary">Timestamp</Typography>
+                <Typography variant="subtitle2" color="textSecondary">
+                  Timestamp
+                </Typography>
                 <Typography variant="body1">
-                  {dayjs(selectedActivity.timestamp).format('MMM DD, YYYY HH:mm:ss')}
+                  {dayjs(selectedActivity.timestamp).format(
+                    "MMM DD, YYYY HH:mm:ss"
+                  )}
                 </Typography>
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="subtitle2" color="textSecondary">User Agent</Typography>
-                <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.75rem', wordBreak: 'break-all' }}>
+                <Typography variant="subtitle2" color="textSecondary">
+                  User Agent
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontFamily: "monospace",
+                    fontSize: "0.75rem",
+                    wordBreak: "break-all",
+                  }}
+                >
                   {selectedActivity.userAgent}
                 </Typography>
               </Grid>
-              {selectedActivity.referrer && (
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2" color="textSecondary">Referrer</Typography>
-                  <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.75rem' }}>
-                    {selectedActivity.referrer}
+              {selectedActivity.event && (
+                <Grid item xs={12} md={6}>
+                  <Typography variant="subtitle2" color="textSecondary">
+                    Event
+                  </Typography>
+                  <Typography variant="body1">
+                    {selectedActivity.event}
                   </Typography>
                 </Grid>
               )}
+              {selectedActivity.metadata &&
+                Object.keys(selectedActivity.metadata).length > 0 && (
+                  <Grid item xs={12}>
+                    <Typography variant="subtitle2" color="textSecondary">
+                      Metadata
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ fontFamily: "monospace", fontSize: "0.75rem" }}
+                    >
+                      {JSON.stringify(selectedActivity.metadata, null, 2)}
+                    </Typography>
+                  </Grid>
+                )}
             </Grid>
           )}
         </DialogContent>
@@ -526,19 +717,28 @@ const IPLogsTab = () => {
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+      >
         <DialogTitle>Delete Activities</DialogTitle>
         <DialogContent>
           <Typography variant="body2" sx={{ mb: 2 }}>
-            This will permanently delete audit activities. Please specify deletion criteria:
+            This will permanently delete audit activities. Please specify
+            deletion criteria:
           </Typography>
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <TextField
                 fullWidth
                 label="User ID (optional)"
-                value={deleteFilters.userId || ''}
-                onChange={(e) => setDeleteFilters(prev => ({ ...prev, userId: e.target.value }))}
+                value={deleteFilters.userId || ""}
+                onChange={(e) =>
+                  setDeleteFilters((prev) => ({
+                    ...prev,
+                    userId: e.target.value,
+                  }))
+                }
                 size="small"
               />
             </Grid>
@@ -546,8 +746,10 @@ const IPLogsTab = () => {
               <TextField
                 fullWidth
                 label="IP Address (optional)"
-                value={deleteFilters.ip || ''}
-                onChange={(e) => setDeleteFilters(prev => ({ ...prev, ip: e.target.value }))}
+                value={deleteFilters.ip || ""}
+                onChange={(e) =>
+                  setDeleteFilters((prev) => ({ ...prev, ip: e.target.value }))
+                }
                 size="small"
               />
             </Grid>
@@ -556,8 +758,13 @@ const IPLogsTab = () => {
                 fullWidth
                 type="date"
                 label="Start Date (optional)"
-                value={deleteFilters.startDate || ''}
-                onChange={(e) => setDeleteFilters(prev => ({ ...prev, startDate: e.target.value }))}
+                value={deleteFilters.startDate || ""}
+                onChange={(e) =>
+                  setDeleteFilters((prev) => ({
+                    ...prev,
+                    startDate: e.target.value,
+                  }))
+                }
                 size="small"
                 InputLabelProps={{ shrink: true }}
               />
@@ -567,8 +774,13 @@ const IPLogsTab = () => {
                 fullWidth
                 type="date"
                 label="End Date (optional)"
-                value={deleteFilters.endDate || ''}
-                onChange={(e) => setDeleteFilters(prev => ({ ...prev, endDate: e.target.value }))}
+                value={deleteFilters.endDate || ""}
+                onChange={(e) =>
+                  setDeleteFilters((prev) => ({
+                    ...prev,
+                    endDate: e.target.value,
+                  }))
+                }
                 size="small"
                 InputLabelProps={{ shrink: true }}
               />
@@ -577,7 +789,11 @@ const IPLogsTab = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleDeleteActivities} color="error" variant="contained">
+          <Button
+            onClick={handleDeleteActivities}
+            color="error"
+            variant="contained"
+          >
             Delete
           </Button>
         </DialogActions>

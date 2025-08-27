@@ -1,8 +1,50 @@
 import Course from "../../models/Content/Course.js";
+import Student from "../../models/Students.js";
 
 export const getAllCourses = async (req, res) => {
   const courses = await Course.find().populate("chapters");
   res.json(courses);
+};
+
+export const getStudentCourses = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    
+    // Find student and populate their enrolled courses
+    const student = await Student.findById(studentId).populate({
+      path: 'course',
+      populate: {
+        path: 'chapters'
+      }
+    });
+    
+    if (!student) {
+      return res.status(404).json({ error: "Student not found" });
+    }
+    
+    res.json({ 
+      courses: student.course || [],
+      student: {
+        _id: student._id,
+        name: student.name,
+        email: student.email
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching student courses:", error);
+    res.status(500).json({ error: "Failed to fetch student courses" });
+  }
+};
+
+export const getAvailableCourses = async (req, res) => {
+  try {
+    // Get all active courses
+    const courses = await Course.find({ status: "Active" }).populate("chapters");
+    res.json(courses);
+  } catch (error) {
+    console.error("Error fetching available courses:", error);
+    res.status(500).json({ error: "Failed to fetch available courses" });
+  }
 };
 
 export const getCourse = async (req, res) => {

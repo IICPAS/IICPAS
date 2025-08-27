@@ -14,18 +14,22 @@ export const trackActivity = async (req, res) => {
     const {
       userId,
       route,
+      method,
+      statusCode,
       duration,
+      requestSize,
+      responseSize,
       ip,
       city,
       region,
       country,
+      latitude,
+      longitude,
       timestamp,
       sessionId,
       userAgent,
-      referrer,
-      deviceType,
-      browser,
-      os,
+      event,
+      metadata,
     } = req.body;
 
     // More flexible validation - handle different data formats from the SDK
@@ -82,18 +86,22 @@ export const trackActivity = async (req, res) => {
     const auditActivity = new AuditActivity({
       userId: finalUserId,
       route,
+      method: method || req.method,
+      statusCode: statusCode || 200,
       duration: finalDuration,
+      requestSize: requestSize || 0,
+      responseSize: responseSize || 0,
       ip: clientIP,
       city: city || "unknown",
       region: region || "unknown",
       country: country || "unknown",
+      latitude: latitude || null,
+      longitude: longitude || null,
       timestamp: timestamp || new Date(),
       sessionId: finalSessionId,
       userAgent: userAgent || req.headers["user-agent"] || "unknown",
-      referrer: referrer || req.headers.referer || "",
-      deviceType: deviceType || "unknown",
-      browser: browser || "unknown",
-      os: os || "unknown",
+      event: event || "api_request",
+      metadata: metadata || {},
     });
 
     await auditActivity.save();
@@ -131,6 +139,9 @@ export const getAuditActivities = async (req, res) => {
       ip,
       sessionId,
       route,
+      method,
+      statusCode,
+      event,
       startDate,
       endDate,
       country,
@@ -145,6 +156,9 @@ export const getAuditActivities = async (req, res) => {
     if (ip) filter.ip = ip;
     if (sessionId) filter.sessionId = sessionId;
     if (route) filter.route = { $regex: route, $options: "i" };
+    if (method) filter.method = method;
+    if (statusCode) filter.statusCode = parseInt(statusCode);
+    if (event) filter.event = { $regex: event, $options: "i" };
     if (country) filter.country = { $regex: country, $options: "i" };
     if (city) filter.city = { $regex: city, $options: "i" };
 
@@ -234,6 +248,7 @@ export const getAuditStats = async (req, res) => {
           _id: "$route",
           count: { $sum: 1 },
           totalDuration: { $sum: "$duration" },
+          avgDuration: { $avg: "$duration" },
         },
       },
       {
@@ -241,6 +256,43 @@ export const getAuditStats = async (req, res) => {
       },
       {
         $limit: 10,
+      },
+    ]);
+
+    // Get top methods
+    const topMethods = await AuditActivity.aggregate([
+      {
+        $match: {
+          timestamp: { $gte: startDate },
+        },
+      },
+      {
+        $group: {
+          _id: "$method",
+          count: { $sum: 1 },
+          totalDuration: { $sum: "$duration" },
+        },
+      },
+      {
+        $sort: { count: -1 },
+      },
+    ]);
+
+    // Get status code distribution
+    const statusCodeDistribution = await AuditActivity.aggregate([
+      {
+        $match: {
+          timestamp: { $gte: startDate },
+        },
+      },
+      {
+        $group: {
+          _id: "$statusCode",
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { _id: 1 },
       },
     ]);
 
@@ -308,6 +360,8 @@ export const getAuditStats = async (req, res) => {
         totalDuration: durationStats[0]?.totalDuration || 0,
         avgDuration: Math.round(durationStats[0]?.avgDuration || 0),
         topRoutes,
+        topMethods,
+        statusCodeDistribution,
         topCountries,
         dailyActivity,
       },

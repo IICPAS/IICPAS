@@ -14,6 +14,9 @@ import {
   QuestionAnswer,
   ExpandMore,
   ExpandLess,
+  Add,
+  Save,
+  Close,
 } from "@mui/icons-material";
 
 export default function CourseTab() {
@@ -24,10 +27,63 @@ export default function CourseTab() {
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [activeTab, setActiveTab] = useState("chapters");
   const [expandedFaqs, setExpandedFaqs] = useState({});
+  const [showForm, setShowForm] = useState(false);
+  const [formType, setFormType] = useState("");
+  const [formData, setFormData] = useState({});
   const router = useRouter();
   const API = process.env.NEXT_PUBLIC_API_URL;
 
-  // Mock data for demonstration (copied from admin dashboard)
+  // Fetch student courses from database
+  const fetchStudentCourses = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`${API}/api/v1/students/isstudent`, {
+        withCredentials: true,
+      });
+
+      if (response.data && response.data.student) {
+        const student = response.data.student;
+        setStudentId(student._id);
+
+        // Fetch enrolled courses
+        if (student.course && student.course.length > 0) {
+          const coursesResponse = await axios.get(
+            `${API}/api/courses/student-courses/${student._id}`,
+            {
+              withCredentials: true,
+            }
+          );
+
+          if (coursesResponse.data && coursesResponse.data.courses) {
+            setCourses(coursesResponse.data.courses);
+            if (coursesResponse.data.courses.length > 0) {
+              setSelectedCourse(coursesResponse.data.courses[0]);
+              setLastAccessedCourse(coursesResponse.data.courses[0]);
+            }
+          }
+        } else {
+          // If no enrolled courses, fetch all available courses
+          const allCoursesResponse = await axios.get(`${API}/api/courses/all`);
+
+          if (allCoursesResponse.data) {
+            setCourses(allCoursesResponse.data);
+            if (allCoursesResponse.data.length > 0) {
+              setSelectedCourse(allCoursesResponse.data[0]);
+              setLastAccessedCourse(allCoursesResponse.data[0]);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+      // Fallback to demo data if API fails
+      showDemoData();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Mock data for demonstration (fallback)
   const showDemoData = () => {
     const demoCourses = [
       {
@@ -36,8 +92,9 @@ export default function CourseTab() {
         description:
           "Comprehensive accounting course covering all aspects of modern accounting practices.",
         image: "/images/a1.jpeg",
-        status: "active",
+        status: "Active",
         level: "Foundation",
+        price: 999,
         overallProgress: 75,
         totalChapters: 8,
         totalAssignments: 12,
@@ -102,7 +159,7 @@ export default function CourseTab() {
   };
 
   useEffect(() => {
-    showDemoData();
+    fetchStudentCourses();
   }, []);
 
   const handleTabChange = (event, newValue) => {
@@ -119,6 +176,30 @@ export default function CourseTab() {
   const handleChapterClick = (chapterName) => {
     // Navigate to digital-hub when any chapter is clicked
     router.push("/digital-hub");
+  };
+
+  const handleAddNew = (type) => {
+    setFormType(type);
+    setFormData({});
+    setShowForm(true);
+  };
+
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      // Here you would submit the form data to your backend
+      console.log("Submitting form data:", { type: formType, data: formData });
+
+      // For now, just close the form
+      setShowForm(false);
+      setFormData({});
+
+      // You could add a success message here
+      alert(`${formType} added successfully!`);
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      alert("Error submitting form. Please try again.");
+    }
   };
 
   const getTabIcon = (tabName) => {
@@ -151,6 +232,170 @@ export default function CourseTab() {
     }
   };
 
+  const renderForm = () => {
+    if (!showForm) return null;
+
+    const formFields = {
+      test: [
+        { name: "title", label: "Test Title", type: "text", required: true },
+        {
+          name: "description",
+          label: "Description",
+          type: "textarea",
+          required: true,
+        },
+        {
+          name: "duration",
+          label: "Duration (minutes)",
+          type: "number",
+          required: true,
+        },
+        {
+          name: "totalQuestions",
+          label: "Total Questions",
+          type: "number",
+          required: true,
+        },
+      ],
+      database: [
+        {
+          name: "title",
+          label: "Database Title",
+          type: "text",
+          required: true,
+        },
+        {
+          name: "description",
+          label: "Description",
+          type: "textarea",
+          required: true,
+        },
+        {
+          name: "type",
+          label: "Database Type",
+          type: "select",
+          options: ["MySQL", "PostgreSQL", "MongoDB", "SQLite"],
+          required: true,
+        },
+        {
+          name: "difficulty",
+          label: "Difficulty Level",
+          type: "select",
+          options: ["Beginner", "Intermediate", "Advanced"],
+          required: true,
+        },
+      ],
+      assignment: [
+        {
+          name: "title",
+          label: "Assignment Title",
+          type: "text",
+          required: true,
+        },
+        {
+          name: "description",
+          label: "Description",
+          type: "textarea",
+          required: true,
+        },
+        { name: "dueDate", label: "Due Date", type: "date", required: true },
+        {
+          name: "maxScore",
+          label: "Maximum Score",
+          type: "number",
+          required: true,
+        },
+      ],
+    };
+
+    const fields = formFields[formType] || [];
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[80vh] overflow-y-auto">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold">
+              Add New {formType.charAt(0).toUpperCase() + formType.slice(1)}
+            </h3>
+            <button
+              onClick={() => setShowForm(false)}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <Close />
+            </button>
+          </div>
+
+          <form onSubmit={handleFormSubmit} className="space-y-4">
+            {fields.map((field) => (
+              <div key={field.name}>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {field.label}
+                </label>
+                {field.type === "textarea" ? (
+                  <textarea
+                    name={field.name}
+                    value={formData[field.name] || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData, [field.name]: e.target.value })
+                    }
+                    required={field.required}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    rows={3}
+                  />
+                ) : field.type === "select" ? (
+                  <select
+                    name={field.name}
+                    value={formData[field.name] || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData, [field.name]: e.target.value })
+                    }
+                    required={field.required}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Select {field.label}</option>
+                    {field.options.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type={field.type}
+                    name={field.name}
+                    value={formData[field.name] || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData, [field.name]: e.target.value })
+                    }
+                    required={field.required}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                )}
+              </div>
+            ))}
+
+            <div className="flex gap-3 pt-4">
+              <button
+                type="submit"
+                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
+              >
+                <Save className="inline mr-2" />
+                Save
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowForm(false)}
+                className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  };
+
   const renderContentList = () => {
     if (!selectedCourse) return null;
 
@@ -158,127 +403,238 @@ export default function CourseTab() {
       case "chapters":
         return (
           <div className="space-y-3">
-            {selectedCourse.chapters.map((chapter) => (
-              <div
-                key={chapter.id}
-                className="bg-gradient-to-r from-gray-100 to-gray-150 border border-gray-300 rounded-lg p-4 hover:shadow-md transition-all duration-200 cursor-pointer"
-                onClick={() => handleChapterClick(chapter.name)}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                      <span className="font-bold text-blue-600 text-sm">
-                        {chapter.id}
+            {selectedCourse.chapters && selectedCourse.chapters.length > 0 ? (
+              selectedCourse.chapters.map((chapter, index) => (
+                <div
+                  key={chapter._id || index}
+                  className="bg-gradient-to-r from-gray-100 to-gray-150 border border-gray-300 rounded-lg p-4 hover:shadow-md transition-all duration-200 cursor-pointer"
+                  onClick={() =>
+                    handleChapterClick(chapter.title || chapter.name)
+                  }
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        <span className="font-bold text-blue-600 text-sm">
+                          {index + 1}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-800">
+                          {chapter.title || chapter.name}
+                        </p>
+                        {chapter.description && (
+                          <p className="text-sm text-gray-600">
+                            {chapter.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-24 bg-gray-200 rounded-full h-2">
+                        <div
+                          className={`h-2 rounded-full transition-all duration-300 ${
+                            chapter.completion === 100
+                              ? "bg-green-500"
+                              : chapter.completion >= 70
+                              ? "bg-blue-500"
+                              : chapter.completion >= 40
+                              ? "bg-yellow-500"
+                              : "bg-gray-400"
+                          }`}
+                          style={{ width: `${chapter.completion || 0}%` }}
+                        />
+                      </div>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                          (chapter.completion || 0) === 100
+                            ? "bg-green-100 text-green-800"
+                            : "bg-blue-100 text-blue-800"
+                        }`}
+                      >
+                        {chapter.completion || 0}%
                       </span>
                     </div>
-                    <div>
-                      <p className="font-semibold text-gray-800">
-                        {chapter.name}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-24 bg-gray-200 rounded-full h-2">
-                      <div
-                        className={`h-2 rounded-full transition-all duration-300 ${
-                          chapter.completion === 100
-                            ? "bg-green-500"
-                            : chapter.completion >= 70
-                            ? "bg-blue-500"
-                            : chapter.completion >= 40
-                            ? "bg-yellow-500"
-                            : "bg-gray-400"
-                        }`}
-                        style={{ width: `${chapter.completion}%` }}
-                      />
-                    </div>
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                        chapter.completion === 100
-                          ? "bg-green-100 text-green-800"
-                          : "bg-blue-100 text-blue-800"
-                      }`}
-                    >
-                      {chapter.completion}%
-                    </span>
                   </div>
                 </div>
+              ))
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <Book className="mx-auto mb-4 text-4xl text-gray-300" />
+                <p>No chapters available for this course.</p>
               </div>
-            ))}
+            )}
           </div>
         );
       case "assignments":
         return (
           <div className="space-y-3">
-            {selectedCourse.assignments.map((assignment) => (
-              <div
-                key={assignment.id}
-                className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4 hover:shadow-md transition-all duration-200"
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Course Assignments</h3>
+              <button
+                onClick={() => handleAddNew("assignment")}
+                className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors flex items-center gap-2"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                    <Assignment className="text-green-600" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-800">
-                      {assignment.name}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Assignment {assignment.id}
-                    </p>
+                <Add />
+                Add Assignment
+              </button>
+            </div>
+
+            {selectedCourse.assignments &&
+            selectedCourse.assignments.length > 0 ? (
+              selectedCourse.assignments.map((assignment, index) => (
+                <div
+                  key={assignment._id || index}
+                  className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4 hover:shadow-md transition-all duration-200"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                      <Assignment className="text-green-600" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-800">
+                        {assignment.title || assignment.name}
+                      </p>
+                      {assignment.description && (
+                        <p className="text-sm text-gray-600">
+                          {assignment.description}
+                        </p>
+                      )}
+                      <p className="text-sm text-gray-600">
+                        Assignment {index + 1}
+                      </p>
+                    </div>
+                    <button className="bg-green-600 text-white px-3 py-1 rounded-md hover:bg-green-700 transition-colors">
+                      View
+                    </button>
                   </div>
                 </div>
+              ))
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <Assignment className="mx-auto mb-4 text-4xl text-gray-300" />
+                <p>No assignments available for this course.</p>
+                <button
+                  onClick={() => handleAddNew("assignment")}
+                  className="mt-4 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
+                >
+                  Add First Assignment
+                </button>
               </div>
-            ))}
+            )}
           </div>
         );
       case "experiments":
         return (
           <div className="space-y-3">
-            {selectedCourse.experiments.map((experiment) => (
-              <div
-                key={experiment.id}
-                className="bg-gradient-to-r from-purple-50 to-violet-50 border border-purple-200 rounded-lg p-4 hover:shadow-md transition-all duration-200"
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Course Experiments</h3>
+              <button
+                onClick={() => handleAddNew("database")}
+                className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition-colors flex items-center gap-2"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                    <Science className="text-purple-600" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-800">
-                      {experiment.name}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Experiment {experiment.id}
-                    </p>
+                <Add />
+                Add Database
+              </button>
+            </div>
+
+            {selectedCourse.experiments &&
+            selectedCourse.experiments.length > 0 ? (
+              selectedCourse.experiments.map((experiment, index) => (
+                <div
+                  key={experiment._id || index}
+                  className="bg-gradient-to-r from-purple-50 to-violet-50 border border-purple-200 rounded-lg p-4 hover:shadow-md transition-all duration-200"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                      <Science className="text-purple-600" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-800">
+                        {experiment.title || experiment.name}
+                      </p>
+                      {experiment.description && (
+                        <p className="text-sm text-gray-600">
+                          {experiment.description}
+                        </p>
+                      )}
+                      <p className="text-sm text-gray-600">
+                        Experiment {index + 1}
+                      </p>
+                    </div>
+                    <button className="bg-purple-600 text-white px-3 py-1 rounded-md hover:bg-purple-700 transition-colors">
+                      Start
+                    </button>
                   </div>
                 </div>
+              ))
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <Science className="mx-auto mb-4 text-4xl text-gray-300" />
+                <p>No experiments available for this course.</p>
+                <button
+                  onClick={() => handleAddNew("database")}
+                  className="mt-4 bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition-colors"
+                >
+                  Add First Database
+                </button>
               </div>
-            ))}
+            )}
           </div>
         );
       case "tests":
         return (
           <div className="space-y-3">
-            {selectedCourse.tests.map((test) => (
-              <div
-                key={test.id}
-                className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-lg p-4 hover:shadow-md transition-all duration-200"
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Course Tests</h3>
+              <button
+                onClick={() => handleAddNew("test")}
+                className="bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 transition-colors flex items-center gap-2"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
-                    <QuestionAnswer className="text-orange-600" />
+                <Add />
+                Add Test
+              </button>
+            </div>
+
+            {selectedCourse.tests && selectedCourse.tests.length > 0 ? (
+              selectedCourse.tests.map((test, index) => (
+                <div
+                  key={test._id || index}
+                  className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-lg p-4 hover:shadow-md transition-all duration-200"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                      <QuestionAnswer className="text-orange-600" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-800">
+                        {test.title || test.name}
+                      </p>
+                      {test.description && (
+                        <p className="text-sm text-gray-600">
+                          {test.description}
+                        </p>
+                      )}
+                      <p className="text-sm text-gray-600">Test {index + 1}</p>
+                    </div>
+                    <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium">
+                      {test.status || "Coming Soon"}
+                    </span>
                   </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-gray-800">{test.name}</p>
-                    <p className="text-sm text-gray-600">Test {test.id}</p>
-                  </div>
-                  <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium">
-                    {test.status}
-                  </span>
                 </div>
+              ))
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <QuestionAnswer className="mx-auto mb-4 text-4xl text-gray-300" />
+                <p>No tests available for this course.</p>
+                <button
+                  onClick={() => handleAddNew("test")}
+                  className="mt-4 bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 transition-colors"
+                >
+                  Add First Test
+                </button>
               </div>
-            ))}
+            )}
           </div>
         );
       default:
@@ -296,120 +652,306 @@ export default function CourseTab() {
 
   return (
     <div className="p-4 w-full max-w-full mt-16">
-      <div className="flex gap-4 w-full min-h-[80vh]">
-        {/* Left Sidebar - Course Statistics */}
-        <div className="flex-1 min-w-[250px] max-w-[25%]">
-          <div className="bg-white rounded-lg shadow-lg p-6 h-full">
-            {/* Course Image */}
-            <div className="flex justify-center mb-6">
-              <div className="w-36 h-36 rounded-lg overflow-hidden">
-                <img
-                  src={selectedCourse?.image}
-                  alt={selectedCourse?.title}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-
-            {/* Course Stats */}
-            <h2 className="text-xl font-bold text-center mb-6">
-              Course Statistics
-            </h2>
-
-            <div className="space-y-6">
-              <div className="bg-green-50 p-4 rounded-lg mt-4">
-                <div className="flex justify-between items-center mb-2">
-                  <p className="font-semibold">Overall Progress</p>
-                  <p className="font-bold text-green-600">
-                    {selectedCourse?.overallProgress}%
-                  </p>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div
-                    className="bg-green-600 h-3 rounded-full transition-all duration-300"
-                    style={{
-                      width: `${selectedCourse?.overallProgress || 0}%`,
-                    }}
-                  ></div>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                  <p className="font-medium">Course: {selectedCourse?.title}</p>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                  <p className="font-medium">Chapters</p>
-                  <p className="font-bold text-blue-600">
-                    {selectedCourse?.totalChapters}
-                  </p>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                  <p className="font-medium">Assignments</p>
-                  <p className="font-bold text-green-600">
-                    {selectedCourse?.totalAssignments}
-                  </p>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                  <p className="font-medium">Experiments</p>
-                  <p className="font-bold text-purple-600">
-                    {selectedCourse?.totalExperiments}
-                  </p>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                  <p className="font-medium">Tests</p>
-                  <p className="font-bold text-orange-600">
-                    {selectedCourse?.totalTests}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Main Content Area */}
-        <div className="flex-1 min-w-[700px] max-w-[75%]">
-          <div className="bg-white rounded-lg shadow-lg p-6 h-full">
-            {/* Top Navigation Tabs */}
-            <div className="mb-6">
-              <div className="flex gap-2 bg-gray-300 p-2 rounded-lg">
-                {["chapters", "assignments", "experiments", "tests"].map(
-                  (tab) => (
-                    <div
-                      key={tab}
-                      onClick={() => setActiveTab(tab)}
-                      className={`flex items-center gap-2 px-4 py-3 rounded-lg cursor-pointer transition-all duration-200 min-w-[120px] justify-center border-2 ${
-                        activeTab === tab
-                          ? "bg-gray-800 shadow-md text-white font-semibold border-gray-800"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-gray-900 border-transparent"
-                      }`}
-                    >
-                      {getTabIcon(tab)}
-                      <span
-                        className={`font-medium ${
-                          activeTab === tab ? "text-white" : "text-gray-700"
-                        }`}
-                      >
-                        {getTabLabel(tab)}
+      {/* All Courses Display - Left/Right Pane Layout */}
+      <div className="space-y-8">
+        {courses.map((course) => (
+          <div
+            key={course._id}
+            className="bg-white rounded-lg shadow-lg overflow-hidden"
+          >
+            {/* Course Header */}
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 border-b">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-200">
+                    <img
+                      src={course.image || "/images/a1.jpeg"}
+                      alt={course.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-800">
+                      {course.title}
+                    </h2>
+                    <div className="flex items-center gap-4 mt-2">
+                      <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                        {course.level}
+                      </span>
+                      <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                        {course.status}
+                      </span>
+                      <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
+                        ₹{course.price}
                       </span>
                     </div>
-                  )
-                )}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-3xl font-bold text-green-600">
+                    {course.overallProgress || 0}%
+                  </div>
+                  <div className="text-sm text-gray-600">Overall Progress</div>
+                  <div className="w-32 bg-gray-200 rounded-full h-2 mt-2">
+                    <div
+                      className="bg-green-600 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${course.overallProgress || 0}%` }}
+                    ></div>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Content Section */}
-            <div className="w-full h-full">
-              {/* Content List - Full Height */}
-              <div className="bg-white border-2 border-gray-200 rounded-lg shadow-sm h-[calc(100vh-300px)] min-h-[500px] flex flex-col">
-                <div className="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-gray-300 scrollbar-thumb-rounded">
-                  {renderContentList()}
+            {/* Course Content - Left/Right Pane */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
+              {/* Left Pane - Course Statistics */}
+              <div className="space-y-6">
+                <div className="bg-gray-50 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold mb-4 text-gray-800">
+                    Course Statistics
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Overall Progress:</span>
+                      <span className="font-semibold text-green-600">
+                        {course.overallProgress || 0}%
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Course:</span>
+                      <span className="font-semibold">{course.title}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Level:</span>
+                      <span className="font-semibold text-blue-600">
+                        {course.level}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Status:</span>
+                      <span className="font-semibold text-green-600">
+                        {course.status}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Price:</span>
+                      <span className="font-semibold text-purple-600">
+                        ₹{course.price}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Course Summary */}
+                <div className="bg-gray-50 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold mb-4 text-gray-800">
+                    Course Summary
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <Book className="text-blue-600" />
+                      <span className="text-gray-700">
+                        Chapters: {course.chapters?.length || 0}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Assignment className="text-green-600" />
+                      <span className="text-gray-700">
+                        Assignments: {course.assignments?.length || 0}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Science className="text-purple-600" />
+                      <span className="text-gray-700">
+                        Experiments: {course.experiments?.length || 0}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <QuestionAnswer className="text-orange-600" />
+                      <span className="text-gray-700">
+                        Tests: {course.tests?.length || 0}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Pane - Course Content */}
+              <div className="space-y-6">
+                {/* Chapters Section */}
+                <div className="bg-gray-50 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center gap-2">
+                    <Book className="text-blue-600" />
+                    Chapters
+                  </h3>
+                  <div className="space-y-3">
+                    {course.chapters && course.chapters.length > 0 ? (
+                      course.chapters.map((chapter, index) => (
+                        <div
+                          key={chapter._id || index}
+                          className="bg-white rounded-lg p-4 border border-gray-200"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="font-medium text-gray-800">
+                                {chapter.title || chapter.name}
+                              </p>
+                              {chapter.description && (
+                                <p className="text-sm text-gray-600 mt-1">
+                                  {chapter.description}
+                                </p>
+                              )}
+                            </div>
+                            <div className="text-right">
+                              <div className="text-sm text-gray-600">
+                                Progress
+                              </div>
+                              <div className="w-20 bg-gray-200 rounded-full h-2 mt-1">
+                                <div
+                                  className="bg-blue-600 h-2 rounded-full"
+                                  style={{ width: `${chapter.progress || 0}%` }}
+                                ></div>
+                              </div>
+                              <div className="text-xs text-gray-500 mt-1">
+                                {chapter.progress || 0}%
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-4 text-gray-500">
+                        <Book className="mx-auto mb-2 text-2xl text-gray-300" />
+                        <p>No chapters available</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Assignments Section */}
+                <div className="bg-gray-50 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center gap-2">
+                    <Assignment className="text-green-600" />
+                    Assignments
+                  </h3>
+                  <div className="space-y-3">
+                    {course.assignments && course.assignments.length > 0 ? (
+                      course.assignments.map((assignment, index) => (
+                        <div
+                          key={assignment._id || index}
+                          className="bg-white rounded-lg p-4 border border-gray-200"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="font-medium text-gray-800">
+                                {assignment.title || assignment.name}
+                              </p>
+                              {assignment.description && (
+                                <p className="text-sm text-gray-600 mt-1">
+                                  {assignment.description}
+                                </p>
+                              )}
+                            </div>
+                            <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                              {assignment.status || "Pending"}
+                            </span>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-4 text-gray-500">
+                        <Assignment className="mx-auto mb-2 text-2xl text-gray-300" />
+                        <p>No assignments available</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Experiments Section */}
+                <div className="bg-gray-50 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center gap-2">
+                    <Science className="text-purple-600" />
+                    Experiments
+                  </h3>
+                  <div className="space-y-3">
+                    {course.experiments && course.experiments.length > 0 ? (
+                      course.experiments.map((experiment, index) => (
+                        <div
+                          key={experiment._id || index}
+                          className="bg-white rounded-lg p-4 border border-gray-200"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="font-medium text-gray-800">
+                                {experiment.title || experiment.name}
+                              </p>
+                              {experiment.description && (
+                                <p className="text-sm text-gray-600 mt-1">
+                                  {experiment.description}
+                                </p>
+                              )}
+                            </div>
+                            <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
+                              {experiment.status || "Available"}
+                            </span>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-4 text-gray-500">
+                        <Science className="mx-auto mb-2 text-2xl text-gray-300" />
+                        <p>No experiments available</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Tests Section */}
+                <div className="bg-gray-50 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center gap-2">
+                    <QuestionAnswer className="text-orange-600" />
+                    Tests
+                  </h3>
+                  <div className="space-y-3">
+                    {course.tests && course.tests.length > 0 ? (
+                      course.tests.map((test, index) => (
+                        <div
+                          key={test._id || index}
+                          className="bg-white rounded-lg p-4 border border-gray-200"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="font-medium text-gray-800">
+                                {test.title || test.name}
+                              </p>
+                              {test.description && (
+                                <p className="text-sm text-gray-600 mt-1">
+                                  {test.description}
+                                </p>
+                              )}
+                            </div>
+                            <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium">
+                              {test.status || "Not Started"}
+                            </span>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-4 text-gray-500">
+                        <QuestionAnswer className="mx-auto mb-2 text-2xl text-gray-300" />
+                        <p>No tests available</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        ))}
       </div>
+
+      {/* Form Modal */}
+      {renderForm()}
     </div>
   );
 }
