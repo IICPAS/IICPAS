@@ -34,6 +34,8 @@ const AuditProvider = ({ children }) => {
             console.error("Audit tracking error:", error);
             // You can send this to your error reporting service
           },
+          // Add debug mode to see what's being sent
+          debug: true,
         });
 
         console.log("Audit client initialized for user:", userId);
