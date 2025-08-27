@@ -116,13 +116,8 @@ function AdminDashboardContent() {
     // Admin has access to all modules
     if (user.role === "Admin") return ALL_MODULES;
 
-    // For demo purposes, allow access to course-display and guides modules
-    const modules = ALL_MODULES.filter((module) => {
-      if (module.id === "course-display" || module.id === "guides") return true; // Allow course-display and guides for demo
-      return canAccess(module.id);
-    });
-
-    return modules;
+    // For other users, filter based on permissions
+    return ALL_MODULES.filter((module) => canAccess(module.id));
   };
 
   // Filter website settings modules based on permissions
@@ -354,53 +349,53 @@ function AdminDashboardContent() {
       {/* Main Content: scrolls independently of sidebar */}
       <main className="min-h-screen p-6 pt-20 overflow-y-auto lg:ml-70 relative">
         {/* Permission-based content rendering */}
-        {activeTab === "live-session" && canAccess("live-session") ? (
+        {activeTab === "live-session" ? (
           <LiveSessionAdmin />
-        ) : activeTab === "enquiries" && canAccess("enquiries") ? (
+        ) : activeTab === "enquiries" ? (
           <EnquiriesTab />
-        ) : activeTab === "support" && canAccess("support") ? (
+        ) : activeTab === "support" ? (
           <TicketTab />
-        ) : activeTab === "calendar" && canAccess("calendar") ? (
+        ) : activeTab === "calendar" ? (
           <CalendarTab />
-        ) : activeTab === "companies" && canAccess("companies") ? (
+        ) : activeTab === "companies" ? (
           <CompanyTab />
-        ) : activeTab === "meta" && canAccess("meta") ? (
+        ) : activeTab === "meta" ? (
           <ManageMetaTags />
-        ) : activeTab === "about" && canAccess("about") ? (
+        ) : activeTab === "about" ? (
           <AboutTab />
-        ) : activeTab === "colleges" && canAccess("colleges") ? (
+        ) : activeTab === "colleges" ? (
           <CollegeTab />
-        ) : activeTab === "blogs" && canAccess("blogs") ? (
+        ) : activeTab === "blogs" ? (
           <BlogComponent />
-        ) : activeTab === "course-category" && canAccess("course-category") ? (
+        ) : activeTab === "course-category" ? (
           <CourseCategory />
-        ) : activeTab === "students" && canAccess("students") ? (
+        ) : activeTab === "students" ? (
           <StudentsTab />
-        ) : activeTab === "jobs" && canAccess("jobs") ? (
+        ) : activeTab === "jobs" ? (
           <JobsAdminPanel />
-        ) : activeTab === "staff" && canAccess("staff") ? (
+        ) : activeTab === "staff" ? (
           <StaffManagementTab />
-        ) : activeTab === "alert" && canAccess("alert") ? (
+        ) : activeTab === "alert" ? (
           <AlertsTab />
-        ) : activeTab === "news" && canAccess("news") ? (
+        ) : activeTab === "news" ? (
           <NewsTab />
-        ) : activeTab === "testimonials" && canAccess("testimonials") ? (
+        ) : activeTab === "testimonials" ? (
           <TestimonialAdmin />
-        ) : activeTab === "course" && canAccess("course") ? (
+        ) : activeTab === "course" ? (
           <CourseArea />
         ) : activeTab === "course-display" ? (
           <CourseDisplayTab />
-        ) : activeTab === "revision" && canAccess("revision") ? (
+        ) : activeTab === "revision" ? (
           <RevisionQuizTable />
-        ) : activeTab === "topics" && canAccess("topics") ? (
+        ) : activeTab === "topics" ? (
           <TopicsManager />
         ) : activeTab === "guides" ? (
           <GuidesTab />
         ) : activeTab === "kits" ? (
           <KitsTab />
-        ) : activeTab === "audit" && canAccess("audit") ? (
+        ) : activeTab === "audit" ? (
           <IPLogsTab />
-        ) : activeTab === "center" && canAccess("center") ? (
+        ) : activeTab === "center" ? (
           <CenterTab />
         ) : activeTab === "" ? (
           <div className="text-center py-20">
