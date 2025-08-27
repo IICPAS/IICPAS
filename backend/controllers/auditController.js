@@ -30,9 +30,18 @@ export const trackActivity = async (req, res) => {
       });
     }
 
+    // Handle userId - it can be an email or user ID
+    let finalUserId = userId;
+    if (userId === "anonymous") {
+      finalUserId = "anonymous";
+    } else if (userId.includes("@")) {
+      // If userId is an email, we'll use it as is for tracking
+      finalUserId = userId;
+    }
+
     // Create new audit activity
     const auditActivity = new AuditActivity({
-      userId,
+      userId: finalUserId,
       route,
       duration,
       ip,
@@ -302,10 +311,7 @@ export const getIPActivitySummary = async (req, res) => {
     const { ip, days } = req.params;
     const daysToUse = days ? parseInt(days) : 7;
 
-    const summary = await AuditActivity.getIPActivitySummary(
-      ip,
-      daysToUse
-    );
+    const summary = await AuditActivity.getIPActivitySummary(ip, daysToUse);
 
     res.json({
       success: true,
