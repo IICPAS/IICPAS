@@ -27,6 +27,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const MySwal = withReactContent(Swal);
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
+console.log("API_BASE:", API_BASE);
 
 const ChapterList = forwardRef(
   (
@@ -47,9 +48,23 @@ const ChapterList = forwardRef(
 
     const fetchChapters = useCallback(() => {
       setLoading(true);
+      console.log("Fetching chapters for courseId:", courseId);
       axios
-        .get(`${API_BASE}/chapters/by-course/${courseId}`)
-        .then((res) => setChapters(res.data))
+        .get(`${API_BASE}/chapters/course/${courseId}`)
+        .then((res) => {
+          console.log("Chapters API response:", res.data);
+          if (res.data.success) {
+            setChapters(res.data.chapters || []);
+            console.log("Set chapters:", res.data.chapters || []);
+          } else {
+            setChapters([]);
+            console.log("No success, set empty chapters");
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching chapters:", error);
+          setChapters([]);
+        })
         .finally(() => setLoading(false));
     }, [courseId]);
 
@@ -81,6 +96,9 @@ const ChapterList = forwardRef(
     const filteredChapters = chapters.filter((ch) =>
       ch.title.toLowerCase().includes(search.toLowerCase())
     );
+    
+    console.log("Chapters state:", chapters);
+    console.log("Filtered chapters:", filteredChapters);
 
     // Columns definition WITHOUT status
     const columns = [
@@ -158,14 +176,16 @@ const ChapterList = forwardRef(
       setSaving(true);
       try {
         await axios.post(`${API_BASE}/chapters/by-course/${courseId}`, {
-          courseId,
           title: newTitle.trim(),
+          order: chapters.length + 1,
+          status: "Active"
         });
         setNewTitle("");
         setAddingChapter(false);
         fetchChapters();
         MySwal.fire("Success!", "Chapter added successfully", "success");
       } catch (error) {
+        console.error("Error adding chapter:", error);
         MySwal.fire("Error!", "Failed to add chapter", "error");
       }
       setSaving(false);

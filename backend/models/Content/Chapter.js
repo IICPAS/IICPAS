@@ -6,7 +6,7 @@ const ChapterSchema = new Schema({
   topics: [{ type: Schema.Types.ObjectId, ref: "Topic" }],
   subchapters: [{ type: Schema.Types.ObjectId, ref: "SubChapter" }], // Add sub-chapters
   order: { type: Number, default: 0 }, // For ordering chapters
-  status: { type: String, default: "active", enum: ["active", "inactive"] },
+  status: { type: String, default: "Active", enum: ["Active", "Inactive"] },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });
