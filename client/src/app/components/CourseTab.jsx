@@ -19,6 +19,13 @@ import {
   Close,
   ArrowBack,
 } from "@mui/icons-material";
+import {
+  FaStar,
+  FaClock,
+  FaGraduationCap,
+  FaCheckCircle,
+  FaExclamationTriangle,
+} from "react-icons/fa";
 
 export default function CourseTab() {
   const [studentId, setStudentId] = useState(null);
@@ -636,151 +643,247 @@ export default function CourseTab() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p className="text-gray-500 text-lg">Loading courses...</p>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gradient-to-r from-blue-500 to-purple-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 text-lg font-medium">
+            Loading your courses...
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-4 w-full max-w-full mt-16">
+    <div className="p-6 w-full max-w-full mt-16 bg-gradient-to-br from-gray-50 to-blue-50 min-h-screen">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-800 to-blue-800 bg-clip-text text-transparent mb-2">
+          My Courses
+        </h1>
+        <p className="text-gray-600 text-lg">Continue your learning journey</p>
+      </div>
+
       {/* Course Display with State Switching */}
       <div className="space-y-8">
         {courses.map((course) => (
-          <div
-            key={course._id}
-            className="bg-white rounded-lg shadow-lg overflow-hidden"
-          >
+          <div key={course._id} className="group relative">
             {viewModes[course._id] !== "detailed" ? (
-              // State 1: Course Overview
-              <div className="p-6">
-                {/* Course Name at Top of White Card */}
-                <h2 className="text-xl font-bold text-gray-800 mb-6 text-center w-full">
-                  {course.title}
-                </h2>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Left Side - Course Image Only */}
-                  <div className="space-y-6">
-                    {/* Course Image */}
-                    <div className="bg-gray-50 rounded-lg p-6 flex items-center justify-center">
-                      <div className="w-96 h-64 rounded-lg overflow-hidden bg-gray-200">
-                        <img
-                          src={
-                            course.image
-                              ? `${API}${course.image}`
-                              : "/images/a1.jpeg"
-                          }
-                          alt={course.title}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    </div>
+              // State 1: Modern Course Overview Card
+              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden transform transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl">
+                {/* Course Header with Gradient */}
+                <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 p-6 text-white relative overflow-hidden">
+                  <div className="absolute inset-0 bg-black opacity-10"></div>
+                  <div className="relative z-10">
+                    <h2 className="text-2xl font-bold mb-2">{course.title}</h2>
+                    <p className="text-blue-100 text-sm opacity-90">
+                      Master the fundamentals and advance your skills
+                    </p>
                   </div>
+                  {/* Decorative elements */}
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full -translate-y-16 translate-x-16"></div>
+                  <div className="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-5 rounded-full translate-y-12 -translate-x-12"></div>
+                </div>
 
-                  {/* Right Side - Course Stats */}
-                  <div className="bg-gray-50 rounded-lg p-6">
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-600">Overall Progress:</span>
-                        <span className="font-semibold text-green-600">
-                          {course.overallProgress || 0}%
-                        </span>
-                      </div>
-
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-600">Level:</span>
-                        <span className="font-semibold text-blue-600">
-                          {course.level}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-600">Status:</span>
-                        <span className="font-semibold text-green-600">
-                          {course.status}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-600">Price:</span>
-                        <span className="font-semibold text-purple-600">
-                          ₹{course.price}
-                        </span>
+                <div className="p-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Left Side - Course Image with Modern Styling */}
+                    <div className="lg:col-span-1">
+                      <div className="relative group">
+                        <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-100 to-gray-200">
+                          <img
+                            src={
+                              course.image
+                                ? `${API}${course.image}`
+                                : "/images/a1.jpeg"
+                            }
+                            alt={course.title}
+                            className="w-full h-64 object-cover transform transition-transform duration-500 group-hover:scale-110"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                        </div>
+                        {/* Progress overlay */}
+                        <div className="absolute bottom-4 left-4 right-4">
+                          <div className="bg-white/90 backdrop-blur-sm rounded-lg p-3">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-sm font-medium text-gray-700">
+                                Progress
+                              </span>
+                              <span className="text-sm font-bold text-blue-600">
+                                {course.overallProgress || 0}%
+                              </span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div
+                                className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-500"
+                                style={{
+                                  width: `${course.overallProgress || 0}%`,
+                                }}
+                              ></div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
-                    {/* Detailed Button */}
-                    <button
-                      onClick={() => handleDetailedToggle(course._id)}
-                      className="w-full mt-6 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
-                    >
-                      Detailed
-                    </button>
+                    {/* Right Side - Course Stats with Modern Cards */}
+                    <div className="lg:col-span-2">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        {/* Status Card */}
+                        <div className="bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200 rounded-xl p-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
+                              <FaCheckCircle className="text-emerald-600 text-lg" />
+                            </div>
+                            <div>
+                              <p className="text-sm text-gray-600 font-medium">
+                                Status
+                              </p>
+                              <p className="text-lg font-bold text-emerald-700">
+                                {course.status}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Level Card */}
+                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                              <FaGraduationCap className="text-blue-600 text-lg" />
+                            </div>
+                            <div>
+                              <p className="text-sm text-gray-600 font-medium">
+                                Level
+                              </p>
+                              <p className="text-lg font-bold text-blue-700">
+                                {course.level}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Price Card */}
+                        <div className="bg-gradient-to-br from-purple-50 to-violet-50 border border-purple-200 rounded-xl p-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                              <FaStar className="text-purple-600 text-lg" />
+                            </div>
+                            <div>
+                              <p className="text-sm text-gray-600 font-medium">
+                                Price
+                              </p>
+                              <p className="text-lg font-bold text-purple-700">
+                                ₹{course.price}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Duration Card */}
+                        <div className="bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-200 rounded-xl p-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                              <FaClock className="text-orange-600 text-lg" />
+                            </div>
+                            <div>
+                              <p className="text-sm text-gray-600 font-medium">
+                                Duration
+                              </p>
+                              <p className="text-lg font-bold text-orange-700">
+                                8 Weeks
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Action Button */}
+                      <button
+                        onClick={() => handleDetailedToggle(course._id)}
+                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-6 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-105 hover:from-blue-700 hover:to-purple-700"
+                      >
+                        <span className="flex items-center justify-center gap-2">
+                          <Book className="text-xl" />
+                          View Course Details
+                        </span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
             ) : (
-              // State 2: Course Detailed View
-              <div className="p-6">
-                {/* Course Name at Top of White Card */}
-                <h2 className="text-xl font-bold text-gray-800 mb-6 text-center w-full">
-                  {course.title}
-                </h2>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Left Side - Course Image Only */}
-                  <div className="bg-gray-50 rounded-lg p-6 flex items-center justify-center">
-                    <div className="w-96 h-64 rounded-lg overflow-hidden bg-gray-200">
-                      <img
-                        src={
-                          course.image
-                            ? `${API}${course.image}`
-                            : "/images/a1.jpeg"
-                        }
-                        alt={course.title}
-                        className="w-full h-full object-cover"
-                      />
+              // State 2: Course Detailed View with Modern Design
+              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+                {/* Course Header with Gradient */}
+                <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 p-6 text-white relative overflow-hidden">
+                  <div className="absolute inset-0 bg-black opacity-10"></div>
+                  <div className="relative z-10 flex items-center justify-between">
+                    <div>
+                      <h2 className="text-2xl font-bold mb-2">
+                        {course.title}
+                      </h2>
+                      <p className="text-indigo-100 text-sm opacity-90">
+                        Explore chapters, assignments, and assessments
+                      </p>
                     </div>
+                    {/* Small Back Arrow Icon */}
+                    <button
+                      onClick={() =>
+                        setViewModes((prev) => ({
+                          ...prev,
+                          [course._id]: "overview",
+                        }))
+                      }
+                      className="bg-white/20 backdrop-blur-sm hover:bg-white/30 p-3 rounded-full transition-all duration-300 hover:scale-110 border border-white/30"
+                    >
+                      <ArrowBack className="text-white text-xl" />
+                    </button>
                   </div>
+                  {/* Decorative elements */}
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full -translate-y-16 translate-x-16"></div>
+                  <div className="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-5 rounded-full translate-y-12 -translate-x-12"></div>
+                </div>
 
-                  {/* Right Side - Tabs + Content */}
-                  <div className="bg-gray-50 rounded-lg p-6">
-                    {/* Tab Navigation */}
-                    <div className="flex gap-2 bg-gray-200 p-2 rounded-lg mb-6">
-                      {["chapters", "assignments", "experiments", "tests"].map(
-                        (tab) => (
+                <div className="p-6">
+                  {/* Full Width Content Area - No Image */}
+                  <div className="w-full">
+                    {/* Modern Tab Navigation - Full Width */}
+                    <div className="bg-gradient-to-r from-gray-50 to-blue-50 p-3 rounded-xl mb-6 border border-gray-200">
+                      <div className="flex gap-3 justify-center">
+                        {[
+                          "chapters",
+                          "assignments",
+                          "experiments",
+                          "tests",
+                        ].map((tab) => (
                           <div
                             key={tab}
                             onClick={() => setActiveTab(tab)}
-                            className={`flex items-center gap-2 px-4 py-3 rounded-lg cursor-pointer transition-all duration-200 min-w-[100px] justify-center border-2 ${
+                            className={`flex items-center gap-3 px-6 py-4 rounded-xl cursor-pointer transition-all duration-300 min-w-[120px] justify-center border-2 font-semibold text-lg ${
                               activeTab === tab
-                                ? "bg-blue-600 shadow-md text-white font-semibold border-blue-600"
-                                : "bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900 border-transparent"
+                                ? "bg-gradient-to-r from-blue-600 to-purple-600 shadow-lg text-white border-transparent transform scale-105"
+                                : "bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900 border-gray-200 hover:border-gray-300 hover:shadow-md"
                             }`}
                           >
                             {getTabIcon(tab)}
-                            <span
-                              className={`font-medium ${
-                                activeTab === tab
-                                  ? "text-white"
-                                  : "text-gray-700"
-                              }`}
-                            >
+                            <span className="font-semibold">
                               {getTabLabel(tab)}
                             </span>
                           </div>
-                        )
-                      )}
+                        ))}
+                      </div>
                     </div>
 
-                    {/* Tab Content */}
-                    <div className="bg-white rounded-lg p-6 h-[300px] overflow-y-auto">
+                    {/* Tab Content with Modern Styling - Full Width */}
+                    <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl p-6 h-[500px] overflow-y-auto border border-gray-200 shadow-inner">
                       {activeTab === "chapters" ? (
-                        <div className="space-y-3">
+                        <div className="space-y-4">
                           {courseChapters[course._id] &&
                           courseChapters[course._id].length > 0 ? (
                             courseChapters[course._id].map((chapter, index) => (
                               <div
                                 key={chapter._id || index}
-                                className="bg-gradient-to-r from-gray-100 to-gray-150 border border-gray-300 rounded-lg p-4 hover:shadow-md transition-all duration-200 cursor-pointer"
+                                className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all duration-300 cursor-pointer transform hover:scale-[1.02] hover:border-blue-300"
                                 onClick={() =>
                                   router.push(
                                     `/digital-hub?courseId=${course._id}&chapterId=${chapter._id}`
@@ -788,34 +891,34 @@ export default function CourseTab() {
                                 }
                               >
                                 <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                                      <span className="font-bold text-blue-600 text-sm">
+                                  <div className="flex items-center gap-6">
+                                    <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                                      <span className="font-bold text-white text-lg">
                                         {index + 1}
                                       </span>
                                     </div>
-                                    <div>
-                                      <p className="font-semibold text-gray-800">
+                                    <div className="flex-1">
+                                      <p className="font-bold text-gray-800 text-xl mb-2">
                                         {chapter.title || chapter.name}
                                       </p>
                                       {chapter.description && (
-                                        <p className="text-sm text-gray-600">
+                                        <p className="text-gray-600 text-base leading-relaxed">
                                           {chapter.description}
                                         </p>
                                       )}
                                     </div>
                                   </div>
-                                  <div className="flex items-center gap-2">
-                                    <div className="w-24 bg-gray-200 rounded-full h-2">
+                                  <div className="flex items-center gap-4">
+                                    <div className="w-32 bg-gray-200 rounded-full h-4">
                                       <div
-                                        className={`h-2 rounded-full transition-all duration-300 ${
+                                        className={`h-4 rounded-full transition-all duration-500 ${
                                           chapter.completion === 100
-                                            ? "bg-green-500"
+                                            ? "bg-gradient-to-r from-green-500 to-emerald-500"
                                             : chapter.completion >= 70
-                                            ? "bg-blue-500"
+                                            ? "bg-gradient-to-r from-blue-500 to-purple-500"
                                             : chapter.completion >= 40
-                                            ? "bg-yellow-500"
-                                            : "bg-gray-400"
+                                            ? "bg-gradient-to-r from-yellow-500 to-orange-500"
+                                            : "bg-gradient-to-r from-gray-400 to-gray-500"
                                         }`}
                                         style={{
                                           width: `${chapter.completion || 0}%`,
@@ -823,10 +926,10 @@ export default function CourseTab() {
                                       />
                                     </div>
                                     <span
-                                      className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                                      className={`px-4 py-2 rounded-full text-sm font-bold ${
                                         (chapter.completion || 0) === 100
-                                          ? "bg-green-100 text-green-800"
-                                          : "bg-blue-100 text-blue-800"
+                                          ? "bg-gradient-to-r from-green-100 to-emerald-100 text-green-800"
+                                          : "bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800"
                                       }`}
                                     >
                                       {chapter.completion || 0}%
@@ -836,9 +939,11 @@ export default function CourseTab() {
                               </div>
                             ))
                           ) : (
-                            <div className="text-center py-8 text-gray-500">
-                              <Book className="mx-auto mb-4 text-4xl text-gray-300" />
-                              <p>No chapters available for this course.</p>
+                            <div className="text-center py-12 text-gray-500">
+                              <Book className="mx-auto mb-4 text-6xl text-gray-300" />
+                              <p className="text-lg font-medium">
+                                No chapters available for this course.
+                              </p>
                             </div>
                           )}
                         </div>
@@ -847,7 +952,7 @@ export default function CourseTab() {
                       )}
                     </div>
 
-                    {/* Back Button */}
+                    {/* Back Button with Modern Styling */}
                     <button
                       onClick={() =>
                         setViewModes((prev) => ({
@@ -855,10 +960,10 @@ export default function CourseTab() {
                           [course._id]: "overview",
                         }))
                       }
-                      className="w-full mt-6 bg-gray-600 text-white py-3 px-4 rounded-lg hover:bg-gray-700 transition-colors font-semibold flex items-center justify-center gap-2"
+                      className="w-full mt-6 bg-gradient-to-r from-gray-600 to-gray-700 text-white py-4 px-6 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-105 hover:from-gray-700 hover:to-gray-800 flex items-center justify-center gap-3"
                     >
                       <ArrowBack />
-                      Back to Course Preview
+                      Back to Course Overview
                     </button>
                   </div>
                 </div>
