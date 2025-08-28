@@ -786,12 +786,10 @@ function DigitalHubContent() {
         <div
           className={`w-16 transition-colors duration-300 ${
             isDarkMode
-              ? "bg-blue-800 border-blue-700"
+              ? "bg-orange-500 border-orange-400"
               : "bg-blue-50 border-blue-200"
           } border-r min-h-screen flex flex-col items-center py-4`}
         >
-          {/* Logo */}
-          <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-green-500 rounded-lg mb-8"></div>
 
           {/* Navigation Icons */}
           <div className="flex flex-col items-center space-y-6">
@@ -868,16 +866,14 @@ function DigitalHubContent() {
           className={`transition-all duration-300 ease-in-out ${
             hamburgerOpen ? "w-80" : "w-0"
           } overflow-hidden ${
-            isDarkMode
-              ? "bg-blue-800 border-blue-700"
-              : "bg-white border-gray-200"
+            isDarkMode ? "bg-white border-gray-600" : "bg-white border-gray-200"
           } border-r`}
         >
           <div className="w-80 p-4">
             <div className="flex items-center justify-between mb-4">
               <h2
                 className={`text-lg font-semibold ${
-                  isDarkMode ? "text-white" : "text-gray-800"
+                  isDarkMode ? "text-black" : "text-gray-800"
                 }`}
               >
                 Chapters
@@ -886,7 +882,11 @@ function DigitalHubContent() {
                 onClick={() => setHamburgerOpen(false)}
                 className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
               >
-                <X className="w-5 h-5" />
+                <X
+                  className={`w-5 h-5 ${
+                    isDarkMode ? "text-black" : "text-gray-500"
+                  }`}
+                />
               </button>
             </div>
             <div className="space-y-2">
@@ -899,11 +899,11 @@ function DigitalHubContent() {
                         setHamburgerOpen(false);
                         handleTopicSelect(topic);
                       }}
-                      className={`w-full text-left p-3 rounded-lg hover:bg-green-50 hover:text-black transition-colors border border-gray-200 ${
+                      className={`w-full text-left p-3 rounded-lg hover:bg-green-50 hover:text-black transition-colors border border-gray-600 ${
                         selectedTopic?._id === topic._id
-                          ? "bg-green-100 border-green-300"
+                          ? "bg-gray-100 border-gray-600"
                           : ""
-                      } ${isDarkMode ? "text-white" : "text-gray-700"}`}
+                      } ${isDarkMode ? "text-black" : "text-gray-700"}`}
                     >
                       <div className="flex items-center space-x-3">
                         <div className="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-medium">
@@ -921,8 +921,8 @@ function DigitalHubContent() {
                         setHamburgerOpen(false);
                         handleChapterSelect(chapter);
                       }}
-                      className={`w-full text-left p-3 rounded-lg hover:bg-green-50 hover:text-black transition-colors border border-gray-200 ${
-                        isDarkMode ? "text-white" : "text-gray-700"
+                      className={`w-full text-left p-3 rounded-lg hover:bg-green-50 hover:text-black transition-colors border border-gray-600 ${
+                        isDarkMode ? "text-black" : "text-gray-700"
                       }`}
                     >
                       <div className="flex items-center space-x-3">
