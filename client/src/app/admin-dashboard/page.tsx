@@ -62,7 +62,7 @@ import CourseArea from "./CourseBuilder";
 import CourseCategory from "./Course/CourseCategory";
 import LiveSessionAdmin from "./Course/LiveSesionAdmin";
 import TicketTab from "../components/TicketTab";
-import RevisionQuizTable from "../code/page";
+import RevisionTestsTab from "./RevisionTestsTab";
 import Header from "../components/Header";
 import CourseDisplayTab from "./CourseDisplayTab";
 import IPLogsTab from "./IPLogsTab";
@@ -88,7 +88,7 @@ const ALL_MODULES = [
   { id: "topics", label: "Training Topics", icon: <FaBook /> },
   { id: "guides", label: "Guides & Resources", icon: <FaFileAlt /> },
   { id: "kits", label: "Kit Stock", icon: <FaBoxes /> },
-  { id: "revision", label: "Revision", icon: <FaSyncAlt /> },
+  { id: "revision-tests", label: "Revision Tests", icon: <FaSyncAlt /> },
   { id: "support", label: "Support Requests", icon: <FaEnvelope /> },
   { id: "audit", label: "IP Logs", icon: <FaShieldAlt /> },
 ];
@@ -385,8 +385,8 @@ function AdminDashboardContent() {
           <CourseArea />
         ) : activeTab === "course-display" ? (
           <CourseDisplayTab />
-        ) : activeTab === "revision" ? (
-          <RevisionQuizTable />
+        ) : activeTab === "revision-tests" ? (
+          <RevisionTestsTab />
         ) : activeTab === "topics" ? (
           <TopicsManager />
         ) : activeTab === "guides" ? (

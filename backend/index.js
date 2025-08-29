@@ -23,6 +23,7 @@ import courseRoutes from "./routes/Content/courseRoutes.js";
 import chapterRoutes from "./routes/Content/chapterRoutes.js";
 import topicRoutes from "./routes/Content/topicRoutes.js";
 import quizRoutes from "./routes/Content/quizRoutes.js";
+import revisionTestRoutes from "./routes/Content/revisionTestRoutes.js";
 import categoryRoutes from "./routes/Content/categoryRoutes.js";
 import LiveSessionRoutes from "./routes/LiveSessionRoutes/LiveSessionRoutes.js";
 
@@ -118,6 +119,7 @@ app.use("/api/courses", courseRoutes);
 app.use("/api/chapters", chapterRoutes);
 app.use("/api/topics", topicRoutes);
 app.use("/api/quizzes", quizRoutes);
+app.use("/api/revision-tests", revisionTestRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/metatags", metaTagRoutes);
 app.use("/api/tickets", ticketRoutes);

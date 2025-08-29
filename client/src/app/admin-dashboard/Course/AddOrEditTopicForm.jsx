@@ -14,8 +14,15 @@ import {
 import * as XLSX from "xlsx";
 import axios from "axios";
 import Swal from "sweetalert2";
-import { Delete, Visibility, Close } from "@mui/icons-material";
+import {
+  Delete,
+  Visibility,
+  Close,
+  Add,
+  DragIndicator,
+} from "@mui/icons-material";
 import dynamic from "next/dynamic";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -119,28 +126,185 @@ export default function AddOrEditTopicForm({
   const [scrollPosition, setScrollPosition] = useState(0);
   const [quizPreviewOpen, setQuizPreviewOpen] = useState(false);
   const [editorReady, setEditorReady] = useState(false);
+  const [quizEditorOpen, setQuizEditorOpen] = useState(false);
+  const [editingQuestion, setEditingQuestion] = useState(null);
+  const [editingQuestionIndex, setEditingQuestionIndex] = useState(-1);
+
+  // Quiz editing functions
+  const openQuizEditor = () => {
+    setQuizEditorOpen(true);
+  };
+
+  const closeQuizEditor = () => {
+    setQuizEditorOpen(false);
+    setEditingQuestion(null);
+    setEditingQuestionIndex(-1);
+  };
+
+  const addNewQuestion = () => {
+    setEditingQuestion({
+      question: "",
+      options: ["", "", "", ""],
+      answer: "",
+    });
+    setEditingQuestionIndex(-1); // -1 means new question
+    setQuizEditorOpen(true);
+  };
+
+  const editQuestion = (question, index) => {
+    setEditingQuestion({ ...question });
+    setEditingQuestionIndex(index);
+    setQuizEditorOpen(true);
+  };
+
+  const deleteQuestion = (index) => {
+    const newQuizData = [...quizData];
+    newQuizData.splice(index, 1);
+    setQuizData(newQuizData);
+    Swal.fire(
+      "Question Deleted",
+      "Question has been removed from the quiz.",
+      "success"
+    );
+  };
+
+  const saveQuestion = () => {
+    if (!editingQuestion.question.trim()) {
+      Swal.fire("Error", "Question text is required", "error");
+      return;
+    }
+
+    const validOptions = editingQuestion.options.filter((opt) => opt.trim());
+    if (validOptions.length < 2) {
+      Swal.fire("Error", "At least 2 options are required", "error");
+      return;
+    }
+
+    if (!editingQuestion.answer.trim()) {
+      Swal.fire("Error", "Correct answer is required", "error");
+      return;
+    }
+
+    if (!validOptions.includes(editingQuestion.answer)) {
+      Swal.fire(
+        "Error",
+        "Correct answer must match one of the options",
+        "error"
+      );
+      return;
+    }
+
+    const newQuizData = [...quizData];
+    if (editingQuestionIndex >= 0) {
+      // Update existing question
+      newQuizData[editingQuestionIndex] = {
+        ...editingQuestion,
+        options: validOptions,
+      };
+    } else {
+      // Add new question
+      newQuizData.push({
+        ...editingQuestion,
+        options: validOptions,
+      });
+    }
+
+    setQuizData(newQuizData);
+    closeQuizEditor();
+    Swal.fire(
+      "Success",
+      editingQuestionIndex >= 0 ? "Question updated!" : "Question added!",
+      "success"
+    );
+  };
+
+  // Drag and drop handler for reordering questions
+  const handleDragEnd = (result) => {
+    if (!result.destination) {
+      return;
+    }
+
+    const items = Array.from(quizData);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+
+    setQuizData(items);
+    Swal.fire(
+      "Question Reordered",
+      "Question order has been updated!",
+      "success"
+    );
+  };
 
   useEffect(() => {
     if (topic) {
+      console.log("Topic data received:", topic);
       setTitle(topic.title || "");
       setContent(topic.content || "");
       setVideoLinks(topic.videos || []);
 
       // Load existing quiz data if available
       if (topic.quiz) {
+        console.log("Topic has quiz:", topic.quiz);
         loadExistingQuiz(topic.quiz);
+      } else {
+        console.log("Topic has no quiz");
       }
     }
   }, [topic]);
 
   const loadExistingQuiz = async (quizId) => {
     try {
-      const response = await axios.get(`${API_BASE}/quizzes/${quizId}`);
-      if (response.data && response.data.questions) {
-        setQuizData(response.data.questions);
+      console.log("loadExistingQuiz called with:", quizId, typeof quizId);
+
+      // Ensure quizId is a string
+      const id = typeof quizId === "object" ? quizId._id || quizId : quizId;
+      console.log("Processed quiz ID:", id);
+
+      if (!id) {
+        console.log("No quiz ID found, skipping quiz load");
+        return;
+      }
+
+      const response = await axios.get(`${API_BASE}/quizzes/${id}`);
+      console.log("Quiz API response:", response.data);
+
+      if (
+        response.data &&
+        response.data.success &&
+        response.data.quiz &&
+        response.data.quiz.questions
+      ) {
+        setQuizData(response.data.quiz.questions);
+        console.log("Loaded existing quiz:", response.data.quiz.questions);
       }
     } catch (error) {
       console.error("Error loading existing quiz:", error);
+      // Try to load quiz by topic ID as fallback
+      if (topic && topic._id) {
+        try {
+          console.log("Trying to load quiz by topic ID:", topic._id);
+          const topicResponse = await axios.get(
+            `${API_BASE}/quizzes/topic/${topic._id}`
+          );
+          console.log("Topic quiz response:", topicResponse.data);
+
+          if (
+            topicResponse.data &&
+            topicResponse.data.success &&
+            topicResponse.data.quiz &&
+            topicResponse.data.quiz.questions
+          ) {
+            setQuizData(topicResponse.data.quiz.questions);
+            console.log(
+              "Loaded quiz by topic:",
+              topicResponse.data.quiz.questions
+            );
+          }
+        } catch (topicError) {
+          console.error("Error loading quiz by topic:", topicError);
+        }
+      }
     }
   };
 
@@ -553,48 +717,43 @@ export default function AddOrEditTopicForm({
     }
     setSaving(true);
     try {
-      if (topic?._id) {
+      let topicId;
+      if (topic) {
         // Update existing topic
         await axios.put(`${API_BASE}/topics/${topic._id}`, {
-          title,
+          title: title.trim(),
           content,
-          videos: videoLinks,
         });
-
-        // Handle quiz update for existing topic
-        if (quizData?.length > 0) {
-          if (topic.quiz) {
-            // Update existing quiz
-            await axios.put(`${API_BASE}/quizzes/${topic.quiz}`, {
-              questions: quizData,
-            });
-          } else {
-            // Create new quiz for existing topic
-            await axios.post(`${API_BASE}/quizzes`, {
-              topic: topic._id,
-              questions: quizData,
-            });
-          }
-        }
+        topicId = topic._id;
       } else {
         // Create new topic
         const topicRes = await axios.post(
           `${API_BASE}/topics/by-chapter/${chapterId}`,
           {
-            chapterId,
-            title,
+            title: title.trim(),
             content,
-            videos: videoLinks,
           }
         );
-        const topicId = topicRes.data._id;
-        if (quizData?.length > 0) {
-          await axios.post(`${API_BASE}/quizzes`, {
-            topic: topicId,
+        topicId = topicRes.data._id;
+      }
+
+      // Handle quiz creation/update
+      if (quizData && quizData.length > 0) {
+        try {
+          await axios.post(`${API_BASE}/quizzes/topic/${topicId}`, {
             questions: quizData,
           });
+        } catch (quizError) {
+          console.error("Error saving quiz:", quizError);
+          // Don't fail the entire operation if quiz fails
+          Swal.fire(
+            "Warning",
+            "Topic saved but quiz update failed. Please try again.",
+            "warning"
+          );
         }
       }
+
       setTitle("");
       setContent("");
       setQuizFile(null);
@@ -609,6 +768,7 @@ export default function AddOrEditTopicForm({
         "success"
       );
     } catch (err) {
+      console.error("Error saving topic:", err);
       Swal.fire("Error", "Failed to save topic.", "error");
     }
     setSaving(false);
@@ -964,9 +1124,37 @@ export default function AddOrEditTopicForm({
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                 {topic
-                  ? "Upload a new Excel file to replace the existing quiz, or keep the current quiz."
+                  ? "Upload a new Excel file to replace the existing quiz, or edit the current quiz manually."
                   : "Upload an Excel file with quiz questions. The file should have columns: question, option1, option2, option3, option4, answer"}
               </Typography>
+
+              {/* Display existing quiz info */}
+              {topic && quizData && quizData.length > 0 && (
+                <Box
+                  sx={{
+                    background: "#e8f5e8",
+                    p: 2,
+                    borderRadius: 2,
+                    border: "1px solid #4caf50",
+                    mb: 2,
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 1, fontWeight: 600 }}
+                  >
+                    📝 Current Quiz: {quizData.length} questions
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    fontSize="0.8rem"
+                    color="text.secondary"
+                  >
+                    First question: "{quizData[0].question.substring(0, 50)}..."
+                  </Typography>
+                </Box>
+              )}
 
               <Button
                 variant="outlined"
@@ -1006,6 +1194,13 @@ export default function AddOrEditTopicForm({
                       onClick={() => setQuizPreviewOpen(true)}
                     >
                       Preview Quiz ({quizData.length} questions)
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      color="success"
+                      onClick={openQuizEditor}
+                    >
+                      Edit Quiz Manually
                     </Button>
                     <Button
                       variant="outlined"
@@ -1051,6 +1246,28 @@ export default function AddOrEditTopicForm({
                     color="text.secondary"
                   >
                     First question: "{quizData[0].question.substring(0, 50)}..."
+                  </Typography>
+                </Box>
+              )}
+
+              {/* Show message if no quiz exists */}
+              {topic && (!quizData || quizData.length === 0) && (
+                <Box
+                  sx={{
+                    background: "#fff3cd",
+                    p: 2,
+                    borderRadius: 2,
+                    border: "1px solid #ffeaa7",
+                    mb: 2,
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 1 }}
+                  >
+                    ℹ️ No quiz exists for this topic yet. Upload an Excel file
+                    or create one manually.
                   </Typography>
                 </Box>
               )}
@@ -1380,6 +1597,351 @@ export default function AddOrEditTopicForm({
                 </Stack>
               </Box>
             ))}
+          </Stack>
+        </Paper>
+      </Modal>
+
+      {/* Quiz Editor Modal */}
+      <Modal
+        open={quizEditorOpen && editingQuestion}
+        onClose={closeQuizEditor}
+        aria-labelledby="quiz-editor-modal-title"
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          p: 2,
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 1300,
+        }}
+      >
+        <Paper
+          sx={{
+            width: "90vw",
+            maxWidth: "800px",
+            maxHeight: "90vh",
+            overflow: "auto",
+            p: 4,
+            position: "relative",
+            margin: "auto",
+            boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+            borderRadius: 3,
+            backgroundColor: "#ffffff",
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              mb: 3,
+              pb: 2,
+              borderBottom: "2px solid #e2e8f0",
+            }}
+          >
+            <Typography
+              variant="h4"
+              component="h1"
+              id="quiz-editor-modal-title"
+              sx={{
+                fontWeight: 700,
+                color: "#1a202c",
+                fontSize: "1.5rem",
+              }}
+            >
+              {editingQuestionIndex >= 0 ? "Edit Question" : "Add New Question"}
+            </Typography>
+            <IconButton
+              onClick={closeQuizEditor}
+              sx={{
+                color: "#666",
+                "&:hover": {
+                  backgroundColor: "#f5f5f5",
+                },
+              }}
+            >
+              <Close />
+            </IconButton>
+          </Box>
+
+          {editingQuestion && (
+            <Stack spacing={3}>
+              {/* Question Text */}
+              <TextField
+                label="Question Text *"
+                value={editingQuestion.question}
+                onChange={(e) =>
+                  setEditingQuestion({
+                    ...editingQuestion,
+                    question: e.target.value,
+                  })
+                }
+                multiline
+                rows={3}
+                fullWidth
+                required
+              />
+
+              {/* Options */}
+              <Typography
+                variant="h6"
+                sx={{ fontWeight: 600, color: "#1a202c" }}
+              >
+                Answer Options *
+              </Typography>
+              {editingQuestion.options.map((option, index) => (
+                <TextField
+                  key={index}
+                  label={`Option ${index + 1}`}
+                  value={option}
+                  onChange={(e) => {
+                    const newOptions = [...editingQuestion.options];
+                    newOptions[index] = e.target.value;
+                    setEditingQuestion({
+                      ...editingQuestion,
+                      options: newOptions,
+                    });
+                  }}
+                  fullWidth
+                  required
+                />
+              ))}
+
+              {/* Correct Answer */}
+              <TextField
+                label="Correct Answer *"
+                value={editingQuestion.answer}
+                onChange={(e) =>
+                  setEditingQuestion({
+                    ...editingQuestion,
+                    answer: e.target.value,
+                  })
+                }
+                fullWidth
+                required
+                helperText="Must match one of the options exactly"
+              />
+
+              {/* Action Buttons */}
+              <Stack direction="row" spacing={2} justifyContent="flex-end">
+                <Button variant="outlined" onClick={closeQuizEditor}>
+                  Cancel
+                </Button>
+                <Button variant="contained" onClick={saveQuestion}>
+                  {editingQuestionIndex >= 0
+                    ? "Update Question"
+                    : "Add Question"}
+                </Button>
+              </Stack>
+            </Stack>
+          )}
+        </Paper>
+      </Modal>
+
+      {/* Quiz Questions List Modal */}
+      <Modal
+        open={quizEditorOpen && !editingQuestion}
+        onClose={closeQuizEditor}
+        aria-labelledby="quiz-questions-modal-title"
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          p: 2,
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 1300,
+        }}
+      >
+        <Paper
+          sx={{
+            width: "90vw",
+            maxWidth: "800px",
+            maxHeight: "90vh",
+            overflow: "auto",
+            p: 4,
+            position: "relative",
+            margin: "auto",
+            boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+            borderRadius: 3,
+            backgroundColor: "#ffffff",
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              mb: 3,
+              pb: 2,
+              borderBottom: "2px solid #e2e8f0",
+            }}
+          >
+            <Typography
+              variant="h4"
+              component="h1"
+              id="quiz-questions-modal-title"
+              sx={{
+                fontWeight: 700,
+                color: "#1a202c",
+                fontSize: "1.5rem",
+              }}
+            >
+              Quiz Questions ({quizData?.length || 0})
+            </Typography>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ mb: 2, fontStyle: "italic" }}
+            >
+              💡 Drag the questions to reorder them
+            </Typography>
+            <Stack direction="row" spacing={1}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={addNewQuestion}
+                startIcon={<Add />}
+              >
+                Add Question
+              </Button>
+              <IconButton
+                onClick={closeQuizEditor}
+                sx={{
+                  color: "#666",
+                  "&:hover": {
+                    backgroundColor: "#f5f5f5",
+                  },
+                }}
+              >
+                <Close />
+              </IconButton>
+            </Stack>
+          </Box>
+
+          <Stack spacing={2}>
+            {quizData?.map((question, index) => (
+              <Box
+                key={index}
+                sx={{
+                  p: 3,
+                  border: "1px solid #e2e8f0",
+                  borderRadius: 2,
+                  backgroundColor: "#f8f9fa",
+                }}
+              >
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                    mb: 2,
+                  }}
+                >
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: 600,
+                      color: "#1a202c",
+                    }}
+                  >
+                    Question {index + 1}
+                  </Typography>
+                  <Stack direction="row" spacing={1}>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() => editQuestion(question, index)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      color="error"
+                      onClick={() => deleteQuestion(index)}
+                    >
+                      Delete
+                    </Button>
+                  </Stack>
+                </Box>
+
+                <Typography
+                  variant="body1"
+                  sx={{
+                    mb: 2,
+                    fontWeight: 500,
+                    color: "#2d3748",
+                  }}
+                >
+                  {question.question}
+                </Typography>
+
+                <Stack spacing={1}>
+                  {question.options.map((option, optionIndex) => (
+                    <Box
+                      key={optionIndex}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        p: 1,
+                        borderRadius: 1,
+                        backgroundColor:
+                          option === question.answer ? "#e6fffa" : "#ffffff",
+                        border:
+                          option === question.answer
+                            ? "2px solid #38b2ac"
+                            : "1px solid #e2e8f0",
+                      }}
+                    >
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontWeight: option === question.answer ? 600 : 400,
+                          color:
+                            option === question.answer ? "#2c7a7b" : "#4a5568",
+                        }}
+                      >
+                        {String.fromCharCode(65 + optionIndex)}. {option}
+                        {option === question.answer && " ✓"}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Stack>
+              </Box>
+            ))}
+
+            {(!quizData || quizData.length === 0) && (
+              <Box
+                sx={{
+                  p: 4,
+                  textAlign: "center",
+                  color: "#666",
+                }}
+              >
+                <Typography variant="h6" sx={{ mb: 2 }}>
+                  No questions yet
+                </Typography>
+                <Typography variant="body2" sx={{ mb: 3 }}>
+                  Click "Add Question" to create your first quiz question.
+                </Typography>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={addNewQuestion}
+                  startIcon={<Add />}
+                >
+                  Add First Question
+                </Button>
+              </Box>
+            )}
           </Stack>
         </Paper>
       </Modal>

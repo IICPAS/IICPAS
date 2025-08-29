@@ -80,6 +80,21 @@ interface TopicData {
   updatedAt: string;
 }
 
+interface QuizQuestion {
+  _id: string;
+  question: string;
+  options: string[];
+  answer: string;
+}
+
+interface QuizData {
+  _id: string;
+  topic: string;
+  questions: QuizQuestion[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 function DigitalHubContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -117,6 +132,15 @@ function DigitalHubContent() {
   const [selectedTopic, setSelectedTopic] = useState<TopicData | null>(null);
   const [topicContent, setTopicContent] = useState("");
   const [loading, setLoading] = useState(true);
+
+  // Quiz state
+  const [quizLoading, setQuizLoading] = useState(false);
+  const [quizData, setQuizData] = useState<QuizData | null>(null);
+  const [selectedAnswers, setSelectedAnswers] = useState<{
+    [key: string]: string;
+  }>({});
+  const [showQuizResults, setShowQuizResults] = useState(false);
+  const [quizSubmitted, setQuizSubmitted] = useState(false);
 
   // Ticket submission functions
   const handleTicketSubmit = async (e: React.FormEvent) => {
@@ -202,6 +226,7 @@ function DigitalHubContent() {
 
   // Handle topic selection
   const handleTopicSelect = (topic: TopicData) => {
+    console.log("Topic selected:", topic);
     setSelectedTopic(topic);
 
     // Decode and set topic content
@@ -214,6 +239,60 @@ function DigitalHubContent() {
         setTopicContent(topic.content || "Content not available");
       }
     }
+
+    // Load quiz for the selected topic
+    console.log("Calling loadQuizForTopic with topic ID:", topic._id);
+    loadQuizForTopic(topic._id);
+  };
+
+  // Load quiz for a specific topic
+  const loadQuizForTopic = async (topicId: string) => {
+    try {
+      console.log("Loading quiz for topic:", topicId);
+      setQuizLoading(true);
+      setQuizData(null);
+      setSelectedAnswers({});
+      setShowQuizResults(false);
+      setQuizSubmitted(false);
+
+      const response = await axios.get(`${API}/api/quizzes/topic/${topicId}`);
+      console.log("Quiz API response:", response.data);
+
+      if (response.data.success && response.data.quiz) {
+        console.log("Quiz loaded successfully:", response.data.quiz);
+        setQuizData(response.data.quiz);
+      } else {
+        console.log("No quiz found or invalid response");
+      }
+    } catch (error) {
+      console.error("Error loading quiz:", error);
+      // Quiz might not exist for this topic, which is fine
+    } finally {
+      setQuizLoading(false);
+    }
+  };
+
+  // Handle answer selection
+  const handleAnswerSelect = (questionId: string, selectedAnswer: string) => {
+    if (quizSubmitted) return; // Don't allow changes after submission
+
+    setSelectedAnswers((prev) => ({
+      ...prev,
+      [questionId]: selectedAnswer,
+    }));
+  };
+
+  // Submit quiz
+  const submitQuiz = () => {
+    setQuizSubmitted(true);
+    setShowQuizResults(true);
+  };
+
+  // Reset quiz
+  const resetQuiz = () => {
+    setSelectedAnswers({});
+    setShowQuizResults(false);
+    setQuizSubmitted(false);
   };
 
   // Handle language selection
@@ -235,6 +314,7 @@ function DigitalHubContent() {
   // Fetch course data when courseId is available
   useEffect(() => {
     const fetchCourseData = async () => {
+      console.log("Current courseId:", courseId);
       if (!courseId) {
         setLoading(false);
         return;
@@ -247,6 +327,7 @@ function DigitalHubContent() {
         const chaptersResponse = await axios.get(
           `${API}/api/chapters/course/${courseId}`
         );
+        console.log("Chapters response:", chaptersResponse.data);
 
         if (
           chaptersResponse.data.success &&
@@ -281,6 +362,10 @@ function DigitalHubContent() {
                     );
                   }
                 }
+
+                // Load quiz for the first topic
+                console.log("Loading quiz for topic:", firstTopic._id);
+                loadQuizForTopic(firstTopic._id);
               }
             } else {
               // Fallback to first chapter if specific chapter not found
@@ -303,10 +388,14 @@ function DigitalHubContent() {
                     );
                   }
                 }
+
+                // Load quiz for the first topic
+                console.log("Loading quiz for topic:", firstTopic._id);
+                loadQuizForTopic(firstTopic._id);
               }
             }
           } else {
-            // No chapterId provided, auto-select first chapter
+            // No chapterId provided, select first chapter
             const firstChapter = chaptersResponse.data.chapters[0];
             setSelectedChapter(firstChapter);
 
@@ -326,19 +415,24 @@ function DigitalHubContent() {
                   );
                 }
               }
+
+              // Load quiz for the first topic
+              console.log("Loading quiz for topic:", firstTopic._id);
+              loadQuizForTopic(firstTopic._id);
             }
           }
+        } else {
+          console.log("No chapters found for course");
         }
       } catch (error) {
         console.error("Error fetching course data:", error);
-        setTopicContent("Error loading course content. Please try again.");
       } finally {
         setLoading(false);
       }
     };
 
     fetchCourseData();
-  }, [courseId, chapterId, API]);
+  }, [courseId, chapterId]);
 
   // Initialize Google Translate with enhanced styling
   useEffect(() => {
@@ -1235,12 +1329,100 @@ function DigitalHubContent() {
                   <h1 className="text-4xl font-bold text-green-600 mb-8">
                     {selectedTopic.title}
                   </h1>
-                  <div
-                    className="text-lg leading-relaxed bg-white border border-gray-200 rounded-lg p-8 shadow-sm text-gray-900"
-                    dangerouslySetInnerHTML={{
-                      __html: topicContent,
-                    }}
-                  />
+                  <div className="text-lg leading-relaxed bg-white border border-gray-200 rounded-lg p-8 shadow-sm text-gray-900">
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html: topicContent,
+                      }}
+                    />
+
+                    {/* Quiz Questions - Directly in main content */}
+                    {quizLoading ? (
+                      <div className="mt-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
+                        <div className="text-center text-gray-600">
+                          Loading questions...
+                        </div>
+                      </div>
+                    ) : quizData &&
+                      quizData.questions &&
+                      quizData.questions.length > 0 ? (
+                      <div className="mt-8">
+                        <div className="space-y-6">
+                          {quizData.questions.map(
+                            (question: QuizQuestion, questionIndex: number) => (
+                              <div
+                                key={question._id}
+                                className="bg-gray-50 rounded-lg p-6 border border-gray-200"
+                              >
+                                <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                                  Question {questionIndex + 1}:{" "}
+                                  {question.question}
+                                </h3>
+
+                                <div className="space-y-3">
+                                  {question.options.map(
+                                    (option: string, optionIndex: number) => {
+                                      const isSelected =
+                                        selectedAnswers[question._id] ===
+                                        option;
+                                      const isCorrect =
+                                        option === question.answer;
+                                      const hasAnswered =
+                                        selectedAnswers[question._id];
+
+                                      return (
+                                        <div
+                                          key={optionIndex}
+                                          className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                                            isSelected
+                                              ? isCorrect
+                                                ? "bg-green-100 border-green-500"
+                                                : "bg-red-100 border-red-500"
+                                              : hasAnswered && isCorrect
+                                              ? "bg-green-100 border-green-500"
+                                              : "bg-white border-gray-300 hover:border-gray-400"
+                                          }`}
+                                          onClick={() => {
+                                            handleAnswerSelect(
+                                              question._id,
+                                              option
+                                            );
+                                          }}
+                                        >
+                                          <div className="flex items-center justify-between">
+                                            <span className="text-gray-800">
+                                              {String.fromCharCode(
+                                                65 + optionIndex
+                                              )}
+                                              . {option}
+                                            </span>
+                                            {(isSelected ||
+                                              (hasAnswered && isCorrect)) && (
+                                              <span className="text-xl font-bold">
+                                                {isCorrect ? (
+                                                  <span className="text-green-600">
+                                                    ✓
+                                                  </span>
+                                                ) : (
+                                                  <span className="text-red-600">
+                                                    ✗
+                                                  </span>
+                                                )}
+                                              </span>
+                                            )}
+                                          </div>
+                                        </div>
+                                      );
+                                    }
+                                  )}
+                                </div>
+                              </div>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
                 </>
               ) : (
                 <div className="text-center py-12">
