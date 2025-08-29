@@ -42,6 +42,8 @@ import {
   ChevronRight,
   BookOpen,
   ChevronDown,
+  Globe,
+  Languages,
 } from "lucide-react";
 
 type ContentKey =
@@ -101,6 +103,10 @@ function DigitalHubContent() {
     phone: "",
     message: "",
   });
+
+  // Language dropdown state
+  const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState("English");
 
   // New state for dynamic content
   const [courseChapters, setCourseChapters] = useState<ChapterData[]>([]);
@@ -208,6 +214,22 @@ function DigitalHubContent() {
         setTopicContent(topic.content || "Content not available");
       }
     }
+  };
+
+  // Handle language selection
+  const handleLanguageSelect = (language: {
+    code: string;
+    name: string;
+    flag: string;
+  }) => {
+    setSelectedLanguage(language.name);
+    setLanguageDropdownOpen(false);
+
+    // Here you can add logic to actually translate the content
+    // For now, we'll just show a toast message
+    setToastMessage(`Language changed to ${language.name}`);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
   };
 
   // Fetch course data when courseId is available
@@ -318,7 +340,7 @@ function DigitalHubContent() {
     fetchCourseData();
   }, [courseId, chapterId, API]);
 
-  // Initialize Google Translate
+  // Initialize Google Translate with enhanced styling
   useEffect(() => {
     // Initialize Google Translate
     const script = document.createElement("script");
@@ -337,42 +359,213 @@ function DigitalHubContent() {
       );
     };
 
-    // Add custom CSS for Google Translate styling
+    // Add enhanced CSS for Google Translate styling
     const style = document.createElement("style");
     style.textContent = `
       .goog-te-banner-frame {
         display: none !important;
       }
-      .goog-te-gadget {
-        color: black !important;
+      
+      /* Enhanced Google Translate Container */
+      #google_translate_element {
+        position: relative;
+        display: inline-block;
       }
-      .goog-te-gadget .goog-te-combo {
-        color: black !important;
-        background-color: white !important;
-        border: 1px solid #ccc !important;
-      }
-      .goog-te-gadget .goog-te-combo option {
-        color: black !important;
-        background-color: white !important;
-      }
+      
+      /* Hide default Google Translate elements */
       .goog-te-banner {
         display: none !important;
       }
-      .goog-te-menu-value {
-        color: black !important;
+      
+      /* Enhanced dropdown styling */
+      .goog-te-gadget {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+        font-size: 14px !important;
+        color: #374151 !important;
       }
-      .goog-te-menu-value span {
-        color: black !important;
-      }
-      .goog-te-menu-value span:first-child {
-        color: black !important;
-      }
+      
       .goog-te-gadget-simple {
-        color: black !important;
-        background-color: white !important;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 8px 16px !important;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3) !important;
+        transition: all 0.3s ease !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        min-width: 180px !important;
       }
+      
+      .goog-te-gadget-simple:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4) !important;
+      }
+      
       .goog-te-gadget-simple .goog-te-menu-value {
-        color: black !important;
+        color: white !important;
+        font-weight: 500 !important;
+        font-size: 14px !important;
+        text-decoration: none !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+      }
+      
+      .goog-te-gadget-simple .goog-te-menu-value span {
+        color: white !important;
+        font-weight: 500 !important;
+      }
+      
+      .goog-te-gadget-simple .goog-te-menu-value span:first-child {
+        color: white !important;
+        font-weight: 500 !important;
+      }
+      
+      /* Custom dropdown arrow */
+      .goog-te-gadget-simple .goog-te-menu-value::after {
+        content: '▼' !important;
+        color: white !important;
+        font-size: 10px !important;
+        margin-left: auto !important;
+        transition: transform 0.2s ease !important;
+      }
+      
+      .goog-te-gadget-simple:hover .goog-te-menu-value::after {
+        transform: rotate(180deg) !important;
+      }
+      
+      /* Dropdown options styling */
+      .goog-te-menu-frame {
+        border-radius: 8px !important;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+        border: none !important;
+        background: white !important;
+      }
+      
+      .goog-te-menu2 {
+        border-radius: 8px !important;
+        overflow: hidden !important;
+      }
+      
+      .goog-te-menu2-item {
+        padding: 12px 16px !important;
+        color: #374151 !important;
+        font-weight: 500 !important;
+        transition: background-color 0.2s ease !important;
+      }
+      
+      .goog-te-menu2-item:hover {
+        background-color: #f3f4f6 !important;
+        color: #1f2937 !important;
+      }
+      
+      /* Hide Google Translate attribution */
+      .goog-te-gadget img {
+        display: none !important;
+      }
+      
+      /* Progress indicator */
+      .goog-te-gadget-simple::before {
+        content: '🌐' !important;
+        font-size: 16px !important;
+        margin-right: 6px !important;
+      }
+      
+      /* Enhanced Simple Dropdown Styling */
+      .goog-te-combo {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 10px 16px !important;
+        color: white !important;
+        font-weight: 500 !important;
+        font-size: 14px !important;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3) !important;
+        transition: all 0.3s ease !important;
+        cursor: pointer !important;
+        outline: none !important;
+        min-width: 160px !important;
+        appearance: none !important;
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e") !important;
+        background-repeat: no-repeat !important;
+        background-position: right 12px center !important;
+        background-size: 16px !important;
+        padding-right: 40px !important;
+      }
+      
+      .goog-te-combo:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4) !important;
+        background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%) !important;
+      }
+      
+      .goog-te-combo:focus {
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3) !important;
+      }
+      
+      .goog-te-combo option {
+        background: white !important;
+        color: #374151 !important;
+        font-weight: 500 !important;
+        padding: 12px 16px !important;
+        border: none !important;
+      }
+      
+      .goog-te-combo option:hover {
+        background: #f3f4f6 !important;
+        color: #1f2937 !important;
+      }
+      
+      /* Alternative simple styling for different Google Translate versions */
+      .goog-te-gadget .goog-te-combo {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 10px 16px !important;
+        color: white !important;
+        font-weight: 500 !important;
+        font-size: 14px !important;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3) !important;
+        transition: all 0.3s ease !important;
+        cursor: pointer !important;
+        outline: none !important;
+        min-width: 160px !important;
+        appearance: none !important;
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e") !important;
+        background-repeat: no-repeat !important;
+        background-position: right 12px center !important;
+        background-size: 16px !important;
+        padding-right: 40px !important;
+      }
+      
+      .goog-te-gadget .goog-te-combo:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4) !important;
+        background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%) !important;
+      }
+      
+      .goog-te-gadget .goog-te-combo:focus {
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3) !important;
+      }
+      
+      .goog-te-gadget .goog-te-combo option {
+        background: white !important;
+        color: #374151 !important;
+        font-weight: 500 !important;
+        padding: 12px 16px !important;
+        border: none !important;
+      }
+      
+      .goog-te-gadget .goog-te-combo option:hover {
+        background: #f3f4f6 !important;
+        color: #1f2937 !important;
       }
     `;
     document.head.appendChild(style);
@@ -732,13 +925,37 @@ function DigitalHubContent() {
     },
   ];
 
+  // Language options
+  const languages = [
+    { code: "en", name: "English", flag: "🇺🇸" },
+    { code: "es", name: "Spanish", flag: "🇪🇸" },
+    { code: "fr", name: "French", flag: "🇫🇷" },
+    { code: "de", name: "German", flag: "🇩🇪" },
+    { code: "it", name: "Italian", flag: "🇮🇹" },
+    { code: "pt", name: "Portuguese", flag: "🇵🇹" },
+    { code: "ru", name: "Russian", flag: "🇷🇺" },
+    { code: "ja", name: "Japanese", flag: "🇯🇵" },
+    { code: "ko", name: "Korean", flag: "🇰🇷" },
+    { code: "zh", name: "Chinese", flag: "🇨🇳" },
+    { code: "ar", name: "Arabic", flag: "🇸🇦" },
+    { code: "hi", name: "Hindi", flag: "🇮🇳" },
+    { code: "bn", name: "Bengali", flag: "🇧🇩" },
+    { code: "ur", name: "Urdu", flag: "🇵🇰" },
+    { code: "tr", name: "Turkish", flag: "🇹🇷" },
+    { code: "nl", name: "Dutch", flag: "🇳🇱" },
+    { code: "sv", name: "Swedish", flag: "🇸🇪" },
+    { code: "no", name: "Norwegian", flag: "🇳🇴" },
+    { code: "da", name: "Danish", flag: "🇩🇰" },
+    { code: "fi", name: "Finnish", flag: "🇫🇮" },
+  ];
+
   return (
     <div
       className={`min-h-screen transition-colors duration-300 ${
         isDarkMode ? "bg-gray-900 text-white" : "bg-white text-gray-900"
       }`}
     >
-      {/* Header */}
+      {/* Enhanced Header with Chapters Dropdown */}
       <div
         className={`border-b transition-colors duration-300 ${
           isDarkMode
@@ -755,7 +972,8 @@ function DigitalHubContent() {
             </div>
           </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-6">
+            {/* Progress Bar */}
             <div className="flex items-center space-x-2">
               <div className="w-32 bg-gray-200 rounded-full h-2">
                 <div
@@ -766,11 +984,86 @@ function DigitalHubContent() {
               <span className="text-sm font-medium">{progress}%</span>
             </div>
 
-            {/* Google Translate Widget */}
-            <div id="google_translate_element"></div>
+            {/* Custom Language Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setLanguageDropdownOpen(!languageDropdownOpen)}
+                className="flex items-center justify-between bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-md hover:shadow-lg min-w-[160px]"
+              >
+                <div className="flex items-center space-x-3">
+                  <Globe className="w-4 h-4 text-white" />
+                  <span className="truncate">{selectedLanguage}</span>
+                </div>
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform duration-200 ${
+                    languageDropdownOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
 
-            <span className="text-sm font-medium">Introduction</span>
+              {languageDropdownOpen && (
+                <div className="absolute top-full left-0 w-full bg-white border border-gray-300 rounded-lg shadow-xl z-50 mt-1 max-h-60 overflow-y-auto">
+                  {languages.map((language) => (
+                    <button
+                      key={language.code}
+                      onClick={() => handleLanguageSelect(language)}
+                      className="w-full text-left px-4 py-3 hover:bg-blue-50 transition-colors text-gray-700 border-b border-gray-200 last:border-b-0 flex items-center space-x-3"
+                    >
+                      <span className="text-lg">{language.flag}</span>
+                      <span className="font-medium">{language.name}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
+            {/* Chapters Dropdown - Moved to Header */}
+            <div className="relative">
+              <button
+                onClick={() => setChapterDropdownOpen(!chapterDropdownOpen)}
+                className="flex items-center justify-between bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg font-medium hover:from-green-600 hover:to-green-700 transition-all duration-300 shadow-md hover:shadow-lg min-w-[200px]"
+              >
+                <div className="flex items-center space-x-3">
+                  <BookOpen className="w-4 h-4 text-white" />
+                  <span className="truncate">
+                    {selectedChapter ? selectedChapter.title : "Select Chapter"}
+                  </span>
+                </div>
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform duration-200 ${
+                    chapterDropdownOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+
+              {chapterDropdownOpen && (
+                <div className="absolute top-full left-0 w-full bg-white border border-gray-300 rounded-lg shadow-xl z-50 mt-1 max-h-60 overflow-y-auto">
+                  {courseChapters.length > 0 ? (
+                    courseChapters.map((chapter: ChapterData, index) => (
+                      <button
+                        key={chapter._id}
+                        onClick={() => {
+                          setChapterDropdownOpen(false);
+                          handleChapterSelect(chapter);
+                        }}
+                        className="w-full text-left px-4 py-3 hover:bg-green-50 transition-colors text-gray-700 border-b border-gray-200 last:border-b-0 flex items-center space-x-3"
+                      >
+                        <div className="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-medium">
+                          {index + 1}
+                        </div>
+                        <span className="font-medium">{chapter.title}</span>
+                      </button>
+                    ))
+                  ) : (
+                    <div className="px-4 py-3 text-gray-500 text-center">
+                      No chapters available
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Points Badge */}
             <div className="flex items-center space-x-1 bg-yellow-100 px-3 py-1 rounded-full">
               <div className="w-4 h-4 bg-yellow-400 rounded-full"></div>
               <span className="text-sm font-semibold text-yellow-800">
@@ -790,7 +1083,6 @@ function DigitalHubContent() {
               : "bg-blue-50 border-blue-200"
           } border-r min-h-screen flex flex-col items-center py-4`}
         >
-
           {/* Navigation Icons */}
           <div className="flex flex-col items-center space-y-6">
             <button
@@ -876,7 +1168,7 @@ function DigitalHubContent() {
                   isDarkMode ? "text-black" : "text-gray-800"
                 }`}
               >
-                Chapters
+                Topics
               </h2>
               <button
                 onClick={() => setHamburgerOpen(false)}
@@ -890,49 +1182,35 @@ function DigitalHubContent() {
               </button>
             </div>
             <div className="space-y-2">
-              {selectedChapter
-                ? // Show topics for selected chapter
-                  topics.map((topic: TopicData, index) => (
-                    <button
-                      key={topic._id}
-                      onClick={() => {
-                        setHamburgerOpen(false);
-                        handleTopicSelect(topic);
-                      }}
-                      className={`w-full text-left p-3 rounded-lg hover:bg-green-50 hover:text-black transition-colors border border-gray-600 ${
-                        selectedTopic?._id === topic._id
-                          ? "bg-gray-100 border-gray-600"
-                          : ""
-                      } ${isDarkMode ? "text-black" : "text-gray-700"}`}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-medium">
-                          {index + 1}
-                        </div>
-                        <span className="font-medium">{topic.title}</span>
+              {selectedChapter && topics.length > 0 ? (
+                // Show topics for selected chapter
+                topics.map((topic: TopicData, index) => (
+                  <button
+                    key={topic._id}
+                    onClick={() => {
+                      setHamburgerOpen(false);
+                      handleTopicSelect(topic);
+                    }}
+                    className={`w-full text-left p-3 rounded-lg hover:bg-green-50 hover:text-black transition-colors border border-gray-600 ${
+                      selectedTopic?._id === topic._id
+                        ? "bg-gray-100 border-gray-600"
+                        : ""
+                    } ${isDarkMode ? "text-black" : "text-gray-700"}`}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <div className="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-medium">
+                        {index + 1}
                       </div>
-                    </button>
-                  ))
-                : // Show chapters if no chapter is selected
-                  courseChapters.map((chapter: ChapterData, index) => (
-                    <button
-                      key={chapter._id}
-                      onClick={() => {
-                        setHamburgerOpen(false);
-                        handleChapterSelect(chapter);
-                      }}
-                      className={`w-full text-left p-3 rounded-lg hover:bg-green-50 hover:text-black transition-colors border border-gray-600 ${
-                        isDarkMode ? "text-black" : "text-gray-700"
-                      }`}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-medium">
-                          {index + 1}
-                        </div>
-                        <span className="font-medium">{chapter.title}</span>
-                      </div>
-                    </button>
-                  ))}
+                      <span className="font-medium">{topic.title}</span>
+                    </div>
+                  </button>
+                ))
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <BookOpen className="mx-auto mb-2 w-8 h-8 text-gray-300" />
+                  <p className="text-sm">Select a chapter to view topics</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -944,47 +1222,6 @@ function DigitalHubContent() {
           }`}
         >
           <div className="w-full">
-            {/* Chapter Selection Dropdown */}
-            <div className="mb-8">
-              <div className="relative">
-                <button
-                  onClick={() => setChapterDropdownOpen(!chapterDropdownOpen)}
-                  className="flex items-center justify-between w-80 bg-green-500 text-white px-4 py-3 rounded-lg font-medium hover:bg-green-600 transition-colors"
-                >
-                  <div className="flex items-center space-x-3">
-                    <CheckCircle className="w-5 h-5 text-white" />
-                    <span>
-                      {selectedChapter
-                        ? selectedChapter.title
-                        : "Select a chapter"}
-                    </span>
-                  </div>
-                  <ChevronDown
-                    className={`w-5 h-5 transition-transform ${
-                      chapterDropdownOpen ? "rotate-180" : ""
-                    }`}
-                  />
-                </button>
-
-                {chapterDropdownOpen && (
-                  <div className="absolute top-full left-0 w-80 bg-white border border-gray-300 rounded-lg shadow-xl z-50 mt-1">
-                    {courseChapters.map((chapter: ChapterData, index) => (
-                      <button
-                        key={chapter._id}
-                        onClick={() => {
-                          setChapterDropdownOpen(false);
-                          handleChapterSelect(chapter);
-                        }}
-                        className="w-full text-left px-4 py-3 hover:bg-green-50 transition-colors text-gray-700 border-b border-gray-200 last:border-b-0"
-                      >
-                        {chapter.title}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
             {/* Content Display */}
             <div className="prose max-w-none">
               {loading ? (
@@ -1008,7 +1245,7 @@ function DigitalHubContent() {
               ) : (
                 <div className="text-center py-12">
                   <div className="text-lg text-gray-600">
-                    No content available
+                    Select a chapter and topic to view content
                   </div>
                 </div>
               )}
