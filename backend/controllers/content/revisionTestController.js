@@ -5,9 +5,9 @@ import Course from "../../models/Content/Course.js";
 const getAllRevisionTests = async (req, res) => {
   try {
     const revisionTests = await RevisionTest.find()
-      .populate("course", "name category level")
+      .populate("course", "title category level")
       .sort({ createdAt: -1 });
-
+    
     res.json({ success: true, data: revisionTests });
   } catch (error) {
     console.error("Error fetching revision tests:", error);
@@ -22,7 +22,7 @@ const getRevisionTestsByCourse = async (req, res) => {
     const revisionTests = await RevisionTest.find({
       course: courseId,
       status: "active",
-    }).populate("course", "name category level");
+    }).populate("course", "title category level");
 
     res.json({ success: true, data: revisionTests });
   } catch (error) {
@@ -37,7 +37,7 @@ const getRevisionTest = async (req, res) => {
     const { id } = req.params;
     const revisionTest = await RevisionTest.findById(id).populate(
       "course",
-      "name category level"
+      "title category level"
     );
 
     if (!revisionTest) {
@@ -71,7 +71,7 @@ const createRevisionTest = async (req, res) => {
 
     const populatedTest = await RevisionTest.findById(
       revisionTest._id
-    ).populate("course", "name category level");
+    ).populate("course", "title category level");
 
     res.status(201).json({ success: true, data: populatedTest });
   } catch (error) {
@@ -94,7 +94,7 @@ const updateRevisionTest = async (req, res) => {
 
     const revisionTest = await RevisionTest.findByIdAndUpdate(id, updateData, {
       new: true,
-    }).populate("course", "name category level");
+    }).populate("course", "title category level");
 
     if (!revisionTest) {
       return res
@@ -147,7 +147,7 @@ const toggleRevisionTestStatus = async (req, res) => {
 
     const populatedTest = await RevisionTest.findById(id).populate(
       "course",
-      "name category level"
+      "title category level"
     );
 
     res.json({ success: true, data: populatedTest });
@@ -161,31 +161,25 @@ const toggleRevisionTestStatus = async (req, res) => {
 const getAvailableCourses = async (req, res) => {
   try {
     console.log("Fetching courses...");
-    console.log("Course model:", Course);
-
-    // Test if we can find any documents
-    const count = await Course.countDocuments();
-    console.log("Total course count:", count);
-
+    
+    // Simple approach - get all courses and filter in memory
     const allCourses = await Course.find({});
-    console.log("All courses:", allCourses.length);
-    console.log("Sample course status:", allCourses[0]?.status);
-
-    // Try different status values
-    const activeCourses = await Course.find({ status: "Active" });
-    console.log("Active courses (exact):", activeCourses.length);
-
-    const activeCoursesLower = await Course.find({ status: "active" });
-    console.log("Active courses (lowercase):", activeCoursesLower.length);
-
-    // Get all courses regardless of status for now
-    const courses = await Course.find({})
-      .select("title category level status")
-      .sort({ title: 1 });
-
-    console.log("Final courses:", courses.length);
+    console.log("All courses found:", allCourses.length);
+    
+    // Filter active courses and select only needed fields
+    const courses = allCourses
+      .filter(course => course.status === "Active")
+      .map(course => ({
+        _id: course._id,
+        title: course.title,
+        category: course.category,
+        level: course.level
+      }))
+      .sort((a, b) => a.title.localeCompare(b.title));
+    
+    console.log("Active courses:", courses.length);
     console.log("Courses data:", courses);
-
+    
     res.json({ success: true, data: courses });
   } catch (error) {
     console.error("Error fetching available courses:", error);

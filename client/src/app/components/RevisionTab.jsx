@@ -19,7 +19,7 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import TimerIcon from "@mui/icons-material/Timer";
 import axios from "axios";
 
-const API = process.env.NEXT_PUBLIC_API_URL;
+const API = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
 
 export default function RevisionTab() {
   const [revisionTests, setRevisionTests] = useState([]);
@@ -57,17 +57,20 @@ export default function RevisionTab() {
   const fetchRevisionTests = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API}/api/revision-tests`);
+      const response = await axios.get(`${API}/revision-tests`);
       if (response.data.success) {
         const tests = response.data.data;
         setRevisionTests(tests);
-
+        
         // Group tests by course
         const courseMap = {};
         tests.forEach((test) => {
           if (!courseMap[test.course._id]) {
             courseMap[test.course._id] = {
-              ...test.course,
+              _id: test.course._id,
+              title: test.course.title || `Course ${test.course._id.slice(-4)}`, // Fallback if title is missing
+              category: test.course.category || "General",
+              level: test.course.level || "Foundation",
               tests: [],
             };
           }
@@ -254,7 +257,7 @@ export default function RevisionTab() {
           <Card key={course._id} sx={{ border: "1px solid #e5e7eb" }}>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                {course.name}
+                {course.title}
               </Typography>
 
               {/* Level Badges */}
