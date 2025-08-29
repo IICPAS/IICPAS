@@ -33,7 +33,7 @@ import DownloadIcon from "@mui/icons-material/Download";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import * as XLSX from "xlsx";
 
-const API = process.env.NEXT_PUBLIC_API_URL;
+const API = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
 
 export default function RevisionTestsTab() {
   const [revisionTests, setRevisionTests] = useState([]);
@@ -62,7 +62,7 @@ export default function RevisionTestsTab() {
 
   const fetchRevisionTests = async () => {
     try {
-      const response = await fetch(`${API}/api/revision-tests`);
+      const response = await fetch(`${API}/revision-tests`);
       const data = await response.json();
       if (data.success) {
         setRevisionTests(data.data);
@@ -74,10 +74,19 @@ export default function RevisionTestsTab() {
 
   const fetchCourses = async () => {
     try {
-      const response = await fetch(`${API}/api/revision-tests/courses`);
+      const response = await fetch(`${API}/courses`);
       const data = await response.json();
-      if (data.success) {
-        setCourses(data.data);
+      if (Array.isArray(data)) {
+        // Filter active courses and format them
+        const activeCourses = data
+          .filter((course) => course.status === "Active")
+          .map((course) => ({
+            _id: course._id,
+            title: course.title,
+            category: course.category,
+            level: course.level,
+          }));
+        setCourses(activeCourses);
       }
     } catch (error) {
       console.error("Error fetching courses:", error);
@@ -102,20 +111,32 @@ export default function RevisionTestsTab() {
         const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
         // Skip header row and parse questions
-        const parsedQuestions = data.slice(1).map((row, index) => {
-          if (row.length >= 5) {
-            return {
-              question: row[0] || "",
-              options: [row[1] || "", row[2] || "", row[3] || "", row[4] || ""],
-              correctAnswer: row[5] || "",
-              explanation: row[6] || "",
-            };
-          }
-          return null;
-        }).filter(q => q && q.question);
+        const parsedQuestions = data
+          .slice(1)
+          .map((row, index) => {
+            if (row.length >= 5) {
+              return {
+                question: row[0] || "",
+                options: [
+                  row[1] || "",
+                  row[2] || "",
+                  row[3] || "",
+                  row[4] || "",
+                ],
+                correctAnswer: row[5] || "",
+                explanation: row[6] || "",
+              };
+            }
+            return null;
+          })
+          .filter((q) => q && q.question);
 
         setQuestions(parsedQuestions);
-        Swal.fire("Success", `${parsedQuestions.length} questions parsed successfully!`, "success");
+        Swal.fire(
+          "Success",
+          `${parsedQuestions.length} questions parsed successfully!`,
+          "success"
+        );
       } catch (error) {
         console.error("Error parsing Excel:", error);
         Swal.fire("Error", "Failed to parse Excel file", "error");
@@ -126,8 +147,18 @@ export default function RevisionTestsTab() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.course || !form.level || !form.title || !form.timeLimit || questions.length === 0) {
-      Swal.fire("Error", "Please fill all fields and upload questions", "error");
+    if (
+      !form.course ||
+      !form.level ||
+      !form.title ||
+      !form.timeLimit ||
+      questions.length === 0
+    ) {
+      Swal.fire(
+        "Error",
+        "Please fill all fields and upload questions",
+        "error"
+      );
       return;
     }
 
@@ -139,10 +170,10 @@ export default function RevisionTestsTab() {
         questions,
       };
 
-      const url = editId 
-        ? `${API}/api/revision-tests/${editId}`
-        : `${API}/api/revision-tests`;
-      
+      const url = editId
+        ? `${API}/revision-tests/${editId}`
+        : `${API}/revision-tests`;
+
       const method = editId ? "PUT" : "POST";
 
       const response = await fetch(url, {
@@ -153,11 +184,19 @@ export default function RevisionTestsTab() {
 
       const data = await response.json();
       if (data.success) {
-        Swal.fire("Success", editId ? "Revision test updated!" : "Revision test created!", "success");
+        Swal.fire(
+          "Success",
+          editId ? "Revision test updated!" : "Revision test created!",
+          "success"
+        );
         resetForm();
         fetchRevisionTests();
       } else {
-        Swal.fire("Error", data.message || "Failed to save revision test", "error");
+        Swal.fire(
+          "Error",
+          data.message || "Failed to save revision test",
+          "error"
+        );
       }
     } catch (error) {
       console.error("Error saving revision test:", error);
@@ -188,11 +227,15 @@ export default function RevisionTestsTab() {
 
     if (confirm.isConfirmed) {
       try {
-        const response = await fetch(`${API}/api/revision-tests/${id}`, {
+        const response = await fetch(`${API}/revision-tests/${id}`, {
           method: "DELETE",
         });
         if (response.ok) {
-          Swal.fire("Deleted!", "Revision test deleted successfully.", "success");
+          Swal.fire(
+            "Deleted!",
+            "Revision test deleted successfully.",
+            "success"
+          );
           fetchRevisionTests();
         }
       } catch (error) {
@@ -203,7 +246,7 @@ export default function RevisionTestsTab() {
 
   const toggleStatus = async (id) => {
     try {
-      const response = await fetch(`${API}/api/revision-tests/toggle/${id}`, {
+      const response = await fetch(`${API}/revision-tests/toggle/${id}`, {
         method: "PATCH",
       });
       if (response.ok) {
@@ -234,16 +277,16 @@ export default function RevisionTestsTab() {
 
   const handleSelectAll = (event) => {
     if (event.target.checked) {
-      setSelectedTests(revisionTests.map(t => t._id));
+      setSelectedTests(revisionTests.map((t) => t._id));
     } else {
       setSelectedTests([]);
     }
   };
 
   const handleSelectTest = (testId) => {
-    setSelectedTests(prev => 
-      prev.includes(testId) 
-        ? prev.filter(id => id !== testId)
+    setSelectedTests((prev) =>
+      prev.includes(testId)
+        ? prev.filter((id) => id !== testId)
         : [...prev, testId]
     );
   };
@@ -254,26 +297,37 @@ export default function RevisionTestsTab() {
       return;
     }
 
-    const selectedData = revisionTests.filter(t => selectedTests.includes(t._id));
-    
-    const headers = ["Course", "Level", "Title", "Time Limit", "Questions", "Status"];
+    const selectedData = revisionTests.filter((t) =>
+      selectedTests.includes(t._id)
+    );
+
+    const headers = [
+      "Course",
+      "Level",
+      "Title",
+      "Time Limit",
+      "Questions",
+      "Status",
+    ];
     const csvContent = [
       headers.join(","),
-      ...selectedData.map(test => [
-        `"${test.course.title}"`,
-        `"${test.level}"`,
-        `"${test.title}"`,
-        test.timeLimit,
-        test.totalQuestions,
-        test.status
-      ].join(","))
+      ...selectedData.map((test) =>
+        [
+          `"${test.course.title}"`,
+          `"${test.level}"`,
+          `"${test.title}"`,
+          test.timeLimit,
+          test.totalQuestions,
+          test.status,
+        ].join(",")
+      ),
     ].join("\n");
 
     const blob = new Blob([csvContent], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `revision-tests-${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `revision-tests-${new Date().toISOString().split("T")[0]}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -297,14 +351,18 @@ export default function RevisionTestsTab() {
 
     if (confirm.isConfirmed) {
       try {
-        const deletePromises = selectedTests.map(id =>
-          fetch(`${API}/api/revision-tests/${id}`, { method: "DELETE" })
+        const deletePromises = selectedTests.map((id) =>
+          fetch(`${API}/revision-tests/${id}`, { method: "DELETE" })
         );
-        
+
         await Promise.all(deletePromises);
         await fetchRevisionTests();
         setSelectedTests([]);
-        Swal.fire("Deleted!", `${selectedTests.length} test(s) deleted.`, "success");
+        Swal.fire(
+          "Deleted!",
+          `${selectedTests.length} test(s) deleted.`,
+          "success"
+        );
       } catch (error) {
         Swal.fire("Error", "Failed to delete some tests", "error");
       }
@@ -358,8 +416,14 @@ export default function RevisionTestsTab() {
             <TableRow sx={{ bgcolor: "#f5f5f5" }}>
               <TableCell padding="checkbox">
                 <Checkbox
-                  checked={selectedTests.length === revisionTests.length && revisionTests.length > 0}
-                  indeterminate={selectedTests.length > 0 && selectedTests.length < revisionTests.length}
+                  checked={
+                    selectedTests.length === revisionTests.length &&
+                    revisionTests.length > 0
+                  }
+                  indeterminate={
+                    selectedTests.length > 0 &&
+                    selectedTests.length < revisionTests.length
+                  }
                   onChange={handleSelectAll}
                 />
               </TableCell>
@@ -400,7 +464,10 @@ export default function RevisionTestsTab() {
                 <TableCell>
                   <div className="flex gap-1">
                     <Tooltip title="View">
-                      <IconButton size="small" onClick={() => handlePreview(test)}>
+                      <IconButton
+                        size="small"
+                        onClick={() => handlePreview(test)}
+                      >
                         <VisibilityIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
@@ -410,7 +477,10 @@ export default function RevisionTestsTab() {
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Delete">
-                      <IconButton size="small" onClick={() => handleDelete(test._id)}>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleDelete(test._id)}
+                      >
                         <DeleteIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
@@ -424,23 +494,25 @@ export default function RevisionTestsTab() {
 
       {/* Add/Edit Modal */}
       <Modal open={modalOpen} onClose={resetForm}>
-        <Box sx={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: 600,
-          bgcolor: "background.paper",
-          borderRadius: 2,
-          boxShadow: 24,
-          p: 4,
-          maxHeight: "90vh",
-          overflow: "auto"
-        }}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 600,
+            bgcolor: "background.paper",
+            borderRadius: 2,
+            boxShadow: 24,
+            p: 4,
+            maxHeight: "90vh",
+            overflow: "auto",
+          }}
+        >
           <Typography variant="h6" component="h2" mb={3}>
             {editId ? "Edit Revision Test" : "Add Revision Test"}
           </Typography>
-          
+
           <form onSubmit={handleSubmit}>
             <Stack spacing={3}>
               <FormControl fullWidth>
@@ -485,7 +557,9 @@ export default function RevisionTestsTab() {
                 label="Time Limit (minutes)"
                 type="number"
                 value={form.timeLimit}
-                onChange={(e) => setForm({ ...form, timeLimit: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, timeLimit: e.target.value })
+                }
               />
 
               <div>
@@ -518,7 +592,15 @@ export default function RevisionTestsTab() {
                   <Typography variant="subtitle1" mb={2}>
                     Parsed Questions ({questions.length})
                   </Typography>
-                  <Box sx={{ maxHeight: 200, overflow: "auto", border: 1, borderColor: "grey.300", p: 2 }}>
+                  <Box
+                    sx={{
+                      maxHeight: 200,
+                      overflow: "auto",
+                      border: 1,
+                      borderColor: "grey.300",
+                      p: 2,
+                    }}
+                  >
                     {questions.map((q, index) => (
                       <Typography key={index} variant="body2" mb={1}>
                         {index + 1}. {q.question}
@@ -535,13 +617,15 @@ export default function RevisionTestsTab() {
                   disabled={loading}
                   sx={{ bgcolor: "#0f265c", flex: 1 }}
                 >
-                  {loading ? <CircularProgress size={24} /> : (editId ? "Update" : "Create")}
+                  {loading ? (
+                    <CircularProgress size={24} />
+                  ) : editId ? (
+                    "Update"
+                  ) : (
+                    "Create"
+                  )}
                 </Button>
-                <Button
-                  variant="outlined"
-                  onClick={resetForm}
-                  sx={{ flex: 1 }}
-                >
+                <Button variant="outlined" onClick={resetForm} sx={{ flex: 1 }}>
                   Cancel
                 </Button>
               </div>
@@ -552,25 +636,27 @@ export default function RevisionTestsTab() {
 
       {/* Preview Modal */}
       <Modal open={previewOpen} onClose={() => setPreviewOpen(false)}>
-        <Box sx={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: 800,
-          bgcolor: "background.paper",
-          borderRadius: 2,
-          boxShadow: 24,
-          p: 4,
-          maxHeight: "90vh",
-          overflow: "auto"
-        }}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 800,
+            bgcolor: "background.paper",
+            borderRadius: 2,
+            boxShadow: 24,
+            p: 4,
+            maxHeight: "90vh",
+            overflow: "auto",
+          }}
+        >
           {previewTest && (
             <>
               <Typography variant="h6" component="h2" mb={3}>
                 {previewTest.title}
               </Typography>
-              
+
               <Typography variant="body1" mb={2}>
                 <strong>Course:</strong> {previewTest.course?.title}
               </Typography>
@@ -587,15 +673,28 @@ export default function RevisionTestsTab() {
               <Typography variant="h6" mt={3} mb={2}>
                 Questions Preview:
               </Typography>
-              
+
               {previewTest.questions.map((q, index) => (
-                <Box key={index} sx={{ mb: 3, p: 2, border: 1, borderColor: "grey.300", borderRadius: 1 }}>
+                <Box
+                  key={index}
+                  sx={{
+                    mb: 3,
+                    p: 2,
+                    border: 1,
+                    borderColor: "grey.300",
+                    borderRadius: 1,
+                  }}
+                >
                   <Typography variant="subtitle1" mb={1}>
                     {index + 1}. {q.question}
                   </Typography>
                   <Box sx={{ ml: 2 }}>
                     {q.options.map((option, optIndex) => (
-                      <Typography key={optIndex} variant="body2" color="text.secondary">
+                      <Typography
+                        key={optIndex}
+                        variant="body2"
+                        color="text.secondary"
+                      >
                         {String.fromCharCode(65 + optIndex)}. {option}
                       </Typography>
                     ))}
