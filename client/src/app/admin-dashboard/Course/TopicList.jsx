@@ -27,11 +27,41 @@ export default function TopicList({
   onViewChapters,
   onAddTopic,
   onEditTopic, // <-- NEW!
+  onAddCaseStudy, // NEW!
+  onAddAssignment, // NEW!
 }) {
   const [topics, setTopics] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const { hasPermission } = useAuth();
+
+  // Handle case study button click
+  const handleAddCaseStudy = () => {
+    if (onAddCaseStudy) {
+      onAddCaseStudy();
+    } else {
+      // Fallback if function not provided
+      MySwal.fire({
+        title: "Case Study Builder",
+        text: "Case Study functionality coming soon!",
+        icon: "info",
+      });
+    }
+  };
+
+  // Handle assignment button click
+  const handleAddAssignment = () => {
+    if (onAddAssignment) {
+      onAddAssignment();
+    } else {
+      // Fallback if function not provided
+      MySwal.fire({
+        title: "Assignment Builder",
+        text: "Assignment functionality coming soon!",
+        icon: "info",
+      });
+    }
+  };
 
   const fetchTopics = useCallback(() => {
     setLoading(true);
@@ -128,6 +158,31 @@ export default function TopicList({
           {hasPermission("course", "add") && (
             <Button variant="contained" onClick={onAddTopic}>
               Add Topic
+            </Button>
+          )}
+          {/* NEW BUTTONS */}
+          {hasPermission("course", "add") && (
+            <Button
+              variant="contained"
+              onClick={handleAddCaseStudy}
+              sx={{
+                bgcolor: "#22c55e",
+                "&:hover": { bgcolor: "#16a34a" },
+              }}
+            >
+              Add Case Study
+            </Button>
+          )}
+          {hasPermission("course", "add") && (
+            <Button
+              variant="contained"
+              onClick={handleAddAssignment}
+              sx={{
+                bgcolor: "#a855f7",
+                "&:hover": { bgcolor: "#9333ea" },
+              }}
+            >
+              Add Assignment
             </Button>
           )}
         </Stack>
