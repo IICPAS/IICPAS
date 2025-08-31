@@ -2,31 +2,25 @@
 
 import React, { useState, useEffect } from "react";
 import {
+  Typography,
   Card,
   CardContent,
-  Typography,
   Button,
-  Modal,
-  Box,
+  FormControl,
+  FormControlLabel,
   Radio,
   RadioGroup,
-  FormControlLabel,
-  FormControl,
-  Chip,
-  CircularProgress,
 } from "@mui/material";
-import { FaPlay, FaClock, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import { FaClock, FaArrowLeft } from "react-icons/fa";
 import axios from "axios";
 import Swal from "sweetalert2";
-
-const API = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
 
 interface Question {
   _id: string;
   question: string;
   options: string[];
   correctAnswer: string;
-  explanation: string;
+  explanation?: string;
 }
 
 interface RevisionTest {
@@ -41,11 +35,10 @@ interface RevisionTest {
   title: string;
   timeLimit: number;
   questions: Question[];
-  status: string;
   totalQuestions: number;
 }
 
-interface Course {
+interface CourseWithTests {
   _id: string;
   title: string;
   category: string;
@@ -53,81 +46,140 @@ interface Course {
   tests: RevisionTest[];
 }
 
-export default function RevisionTab() {
-  const [revisionTests, setRevisionTests] = useState<RevisionTest[]>([]);
-  const [courses, setCourses] = useState<Course[]>([]);
+const RevisionTab: React.FC = () => {
+  const [courses, setCourses] = useState<CourseWithTests[]>([]);
   const [loading, setLoading] = useState(true);
-  const [quizModalOpen, setQuizModalOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [currentTest, setCurrentTest] = useState<RevisionTest | null>(null);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<{
     [key: number]: string;
   }>({});
   const [timeLeft, setTimeLeft] = useState(0);
-  const [quizStarted, setQuizStarted] = useState(false);
   const [totalMarks, setTotalMarks] = useState(0);
-  const [showResults, setShowResults] = useState(false);
+  const [timerInterval, setTimerInterval] = useState<NodeJS.Timeout | null>(
+    null
+  );
+  const [quizStarted, setQuizStarted] = useState(false);
+
+  const API = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
 
   useEffect(() => {
     fetchRevisionTests();
   }, []);
 
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (quizStarted && timeLeft > 0) {
-      timer = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            handleSubmitQuiz();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-    return () => clearInterval(timer);
-  }, [quizStarted, timeLeft]);
-
   const fetchRevisionTests = async () => {
     try {
       setLoading(true);
       const response = await axios.get(`${API}/revision-tests`);
-      if (response.data.success) {
-        const tests = response.data.data;
-        setRevisionTests(tests);
+      const tests = response.data.data;
 
-        // Group tests by course
-        const courseMap: { [key: string]: Course } = {};
-        tests.forEach((test: RevisionTest) => {
-          if (!courseMap[test.course._id]) {
-            courseMap[test.course._id] = {
-              _id: test.course._id,
-              title: test.course.title || `Course ${test.course._id.slice(-4)}`, // Fallback if title is missing
-              category: test.course.category || "General",
-              level: test.course.level || "Foundation",
-              tests: [],
-            };
-          }
-          courseMap[test.course._id].tests.push(test);
-        });
-        setCourses(Object.values(courseMap));
-      }
-    } catch (error) {
-      console.error("Error fetching revision tests:", error);
+      // Group tests by course
+      const courseMap = new Map<string, CourseWithTests>();
+      tests.forEach((test: RevisionTest) => {
+        const courseId = test.course._id;
+        if (!courseMap.has(courseId)) {
+          courseMap.set(courseId, {
+            _id: courseId,
+            title: test.course.title || "Unknown Course",
+            category: test.course.category || "General",
+            level: test.course.level || "Beginner",
+            tests: [],
+          });
+        }
+        courseMap.get(courseId)!.tests.push(test);
+      });
+
+      setCourses(Array.from(courseMap.values()));
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching revision tests:", err);
+      setError("Failed to load revision tests");
     } finally {
       setLoading(false);
     }
   };
 
+  const getLevelColor = (level: string) => {
+    switch (level.toLowerCase()) {
+      case "level 1":
+        return "bg-red-500";
+      case "level 2":
+        return "bg-orange-500";
+      case "level 3":
+        return "bg-green-500";
+      case "pro":
+        return "bg-blue-500";
+      default:
+        return "bg-gray-500";
+    }
+  };
+
+  const getLevelNumber = (level: string) => {
+    switch (level.toLowerCase()) {
+      case "level 1":
+        return "1";
+      case "level 2":
+        return "2";
+      case "level 3":
+        return "3";
+      case "pro":
+        return "pro";
+      default:
+        return "?";
+    }
+  };
+
+  const sortTestsByLevel = (tests: RevisionTest[]) => {
+    return [...tests].sort((a, b) => {
+      const levelOrder = {
+        "level 1": 1,
+        "level 2": 2,
+        "level 3": 3,
+        pro: 4,
+      };
+      const aLevel = a.level.toLowerCase() as keyof typeof levelOrder;
+      const bLevel = b.level.toLowerCase() as keyof typeof levelOrder;
+      return (levelOrder[aLevel] || 0) - (levelOrder[bLevel] || 0);
+    });
+  };
+
   const startQuiz = (test: RevisionTest) => {
     setCurrentTest(test);
-    setCurrentQuestionIndex(0);
     setSelectedAnswers({});
-    setTimeLeft(test.timeLimit * 60); // Convert minutes to seconds
-    setQuizStarted(true);
-    setShowResults(false);
     setTotalMarks(0);
-    setQuizModalOpen(true);
+    setTimeLeft(test.timeLimit * 60);
+    setQuizStarted(true);
+
+    // Start timer
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          handleSubmitQuiz();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    setTimerInterval(interval);
+  };
+
+  const closeQuiz = () => {
+    if (timerInterval) {
+      clearInterval(timerInterval);
+    }
+    setQuizStarted(false);
+    setCurrentTest(null);
+    setSelectedAnswers({});
+    setTotalMarks(0);
+    setTimeLeft(0);
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
   const handleAnswerSelect = (
@@ -145,349 +197,224 @@ export default function RevisionTab() {
     if (isCorrect) {
       setTotalMarks((prev) => prev + 10);
     }
-    // No immediate feedback - results will be shown at the end
   };
 
   const handleSubmitQuiz = () => {
-    setQuizStarted(false);
-    setShowResults(true);
+    if (timerInterval) {
+      clearInterval(timerInterval);
+    }
 
-    // Calculate score based on correct answers
+    // Calculate final score
     let calculatedScore = 0;
     currentTest!.questions.forEach((question, index) => {
-      const selectedAnswer = selectedAnswers[index];
-      if (selectedAnswer && selectedAnswer === question.correctAnswer) {
+      if (selectedAnswers[index] === question.correctAnswer) {
         calculatedScore += 10;
       }
     });
 
-    const totalPossibleMarks = currentTest!.questions.length * 10;
-    const percentage = Math.round((calculatedScore / totalPossibleMarks) * 100);
+    setQuizStarted(false);
 
-    // Close the quiz modal first to avoid z-index issues
-    setQuizModalOpen(false);
-
-    // Show result after a small delay to ensure modal is closed
     setTimeout(() => {
       Swal.fire({
         title: "Quiz Completed!",
         html: `
-          <div>
-            <div style="font-size: 48px; color: #10B981; margin-bottom: 16px;">✓</div>
-            <h3>Your Score: ${calculatedScore}/${totalPossibleMarks}</h3>
-            <p>Percentage: ${percentage}%</p>
-            <p>${
-              percentage >= 70
-                ? "🎉 Congratulations! You passed!"
-                : "Keep practicing to improve!"
-            }</p>
+          <div class="text-center">
+            <div class="text-6xl text-green-500 mb-4">✓</div>
+            <div class="text-2xl font-bold text-gray-800 mb-2">Your Score</div>
+            <div class="text-4xl font-bold text-blue-600">${calculatedScore}/${
+          currentTest!.questions.length * 10
+        }</div>
+            <div class="text-gray-600 mt-2">Great job! Keep practicing to improve your skills.</div>
           </div>
         `,
         icon: undefined,
         confirmButtonText: "Close",
+        confirmButtonColor: "#3B82F6",
         customClass: {
-          popup: "swal2-popup-high-z-index",
+          popup: "rounded-xl",
+          confirmButton: "px-8 py-3 rounded-lg font-semibold",
         },
       });
     }, 100);
-  };
 
-  const closeQuiz = () => {
-    setQuizModalOpen(false);
-    setCurrentTest(null);
-    setCurrentQuestionIndex(0);
-    setSelectedAnswers({});
-    setTimeLeft(0);
-    setQuizStarted(false);
-    setShowResults(false);
-    setTotalMarks(0);
-  };
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
-
-  const getLevelColor = (level: string) => {
-    switch (level) {
-      case "Level 1":
-        return "bg-red-500";
-      case "Level 2":
-        return "bg-orange-500";
-      case "Level 3":
-        return "bg-green-500";
-      case "Pro":
-        return "bg-blue-500";
-      default:
-        return "bg-gray-500";
-    }
-  };
-
-  const getLevelText = (level: string) => {
-    return level; // Return the full level text like "Level 1", "Level 2", etc.
-  };
-
-  const getLevelIcon = (level: string) => {
-    return level === "Pro" ? "✓" : level.split(" ")[1];
+    closeQuiz();
   };
 
   if (loading) {
     return (
-      <div className="bg-white min-h-screen px-6 py-12 text-gray-800">
-        <div className="max-w-3xl mx-auto text-center">
-          {/* Header CTA */}
-          <div className="bg-blue-100 border border-blue-400 rounded-xl p-6 shadow-md mb-10">
-            <h2 className="text-xl font-semibold text-blue-700 mb-2">
-              Upgrade your Soft Skills!
-            </h2>
-            <div className="flex items-center justify-center space-x-3">
-              <button className="bg-blue-600 text-white px-4 py-2 rounded-full flex items-center space-x-2 hover:bg-blue-700 transition-all">
-                <FaPlay className="text-sm" />
-                <span>Watch our Videos on Skill Development</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Description */}
-          <p className="text-gray-700 mb-6 text-lg">
-            Choose a topic and take tests. <em>Measure</em> your skills and get
-            detailed information on improving your skills.
-          </p>
-
-          {/* Loading Spinner */}
-          <div className="flex justify-center mt-10">
-            <CircularProgress size={40} />
-          </div>
-        </div>
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
-  return (
-    <div className="bg-white min-h-screen px-6 py-12 text-gray-800">
-      <style jsx>{`
-        .swal2-popup-high-z-index {
-          z-index: 9999 !important;
-        }
-      `}</style>
-      <div className="max-w-6xl mx-auto">
-        {/* Header CTA */}
-        <div className="bg-blue-100 border border-blue-400 rounded-xl p-6 shadow-md mb-10">
-          <h2 className="text-xl font-semibold text-blue-700 mb-2">
-            Upgrade your Soft Skills!
-          </h2>
-          <div className="flex items-center justify-center space-x-3">
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-full flex items-center space-x-2 hover:bg-blue-700 transition-all">
-              <FaPlay className="text-sm" />
-              <span>Watch our Videos on Skill Development</span>
-            </button>
+  if (error) {
+    return (
+      <div className="text-center text-red-600 p-8">
+        <Typography variant="h6">{error}</Typography>
+        <Button onClick={fetchRevisionTests} className="mt-4">
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
+  // Show full-screen quiz interface
+  if (quizStarted && currentTest) {
+    return (
+      <div className="min-h-screen bg-white text-gray-800 p-6 pt-12">
+        {/* Quiz Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={closeQuiz}
+                className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
+              >
+                <FaArrowLeft />
+                <span>Back to Tests</span>
+              </button>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 bg-red-600 px-4 py-2 rounded-lg">
+                <FaClock className="text-white" />
+                <span className="font-bold text-white">
+                  Time Left: {formatTime(timeLeft)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <Typography variant="h3" className="font-bold text-gray-800 mb-2">
+              {currentTest.course.title}
+            </Typography>
           </div>
         </div>
 
-        {/* Description */}
-        <p className="text-gray-700 mb-8 text-lg text-center">
-          Choose a topic and take tests. <em>Measure</em> your skills and get
-          detailed information on improving your skills.
-        </p>
-
-        {/* Courses Grid */}
+        {/* Questions */}
         <div className="space-y-6">
-          {courses.map((course) => (
+          {currentTest.questions.map((question, questionIndex) => (
             <Card
-              key={course._id}
-              className="hover:shadow-lg transition-shadow w-full"
+              key={questionIndex}
+              className="bg-gray-50 border border-gray-300 rounded-xl shadow-sm"
             >
               <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <Typography variant="h5" className="font-semibold">
-                    {course.title}
-                  </Typography>
-                  <div className="text-sm text-gray-600">
-                    <span className="mr-4">Category: {course.category}</span>
-                    <span className="mr-4">Level: {course.level}</span>
-                    <span>Tests Available: {course.tests.length}</span>
-                  </div>
-                </div>
+                <Typography
+                  variant="h6"
+                  className="text-gray-800 font-semibold mb-8"
+                >
+                  {questionIndex + 1}. {question.question}
+                </Typography>
 
-                <div className="flex flex-wrap gap-3">
-                  {course.tests.map((test) => (
-                    <button
-                      key={test._id}
-                      onClick={() => startQuiz(test)}
-                      className={`${getLevelColor(
-                        test.level
-                      )} text-white px-3 py-2 rounded-lg text-sm font-semibold hover:opacity-80 transition-opacity flex items-center gap-2 min-w-[100px] justify-center`}
+                <div className="mt-8 pl-4">
+                  <FormControl component="fieldset" className="w-full">
+                    <RadioGroup
+                      value={selectedAnswers[questionIndex] || ""}
+                      onChange={(e) =>
+                        handleAnswerSelect(questionIndex, e.target.value)
+                      }
+                      className="grid grid-cols-2 gap-4"
                     >
-                      <span className="text-base">
-                        {getLevelIcon(test.level)}
-                      </span>
-                      <span>{test.level}</span>
-                    </button>
-                  ))}
+                      {question.options.map((option, optionIndex) => (
+                        <FormControlLabel
+                          key={optionIndex}
+                          value={option}
+                          control={<Radio className="text-blue-600" />}
+                          label={option}
+                          className={`p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer ${
+                            selectedAnswers[questionIndex] === option
+                              ? "border-blue-500 bg-blue-50"
+                              : "border-gray-300 hover:border-gray-400 bg-white"
+                          }`}
+                        />
+                      ))}
+                    </RadioGroup>
+                  </FormControl>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
 
-        {/* Quiz Modal */}
-        <Modal open={quizModalOpen} onClose={closeQuiz}>
-          <Box className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl p-8 w-11/12 max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-100">
-            {currentTest && (
-              <>
-                <div className="flex justify-between items-center mb-8 border-b border-gray-200 pb-6">
-                  <div>
-                    <Typography
-                      variant="h4"
-                      component="h2"
-                      className="font-bold text-gray-800 mb-2"
-                    >
-                      {currentTest.title}
-                    </Typography>
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-2 bg-red-50 px-4 py-2 rounded-full border border-red-200">
-                        <FaClock className="text-red-500 text-lg" />
-                        <span className="font-semibold text-red-600 text-lg">
-                          {formatTime(timeLeft)}
-                        </span>
-                      </div>
-                      <div className="text-sm text-gray-500 bg-gray-50 px-3 py-1 rounded-full">
-                        Question {currentQuestionIndex + 1} of{" "}
-                        {currentTest.questions.length}
-                      </div>
-                    </div>
-                  </div>
-                  <button
-                    onClick={closeQuiz}
-                    className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-3 rounded-full transition-all duration-200"
-                  >
-                    <svg
-                      className="w-6 h-6"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
-                </div>
+        {/* Submit Button */}
+        <div className="mt-8 text-center">
+          <Button
+            variant="contained"
+            onClick={handleSubmitQuiz}
+            className="px-8 py-3 bg-green-600 hover:bg-green-700 text-white font-bold text-lg rounded-lg"
+          >
+            Submit Quiz
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
-                {currentQuestionIndex < currentTest.questions.length ? (
-                  <div>
-                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl mb-8 border border-blue-100 shadow-sm">
-                      <Typography
-                        variant="h5"
-                        className="text-gray-800 font-semibold mb-4 leading-relaxed"
+  // Show course selection interface
+  return (
+    <div className="min-h-screen bg-white text-gray-800 p-6 pt-12">
+      {/* Header */}
+      <div className="mb-8">
+        <Typography variant="h3" className="font-bold text-gray-800 mb-4">
+          Prepare
+        </Typography>
+        <Typography variant="body1" className="text-gray-600 text-lg">
+          Choose a topic and take tests. Measure your skills and get detailed
+          information on improving your skills.
+        </Typography>
+      </div>
+
+      {/* Revision Tests Grid */}
+      <div className="grid gap-6">
+        {courses.map((course) => (
+          <Card
+            key={course._id}
+            className="bg-white border-2 border-black rounded-xl overflow-hidden shadow-sm"
+          >
+            <CardContent className="p-6">
+              <div className="mb-6">
+                <Typography
+                  variant="h5"
+                  className="font-bold text-gray-800 mb-4"
+                >
+                  {course.title}
+                </Typography>
+                <div className="flex items-center gap-4 text-sm text-gray-600 mt-2">
+                  <span>Category: {course.category}</span>
+                  <span>Level: {course.level}</span>
+                  <span>Tests Available: {course.tests.length}</span>
+                </div>
+              </div>
+
+              <div className="border-t-2 border-gray-300 pt-6">
+                <div className="grid grid-cols-4 gap-4">
+                  {sortTestsByLevel(course.tests).map((test) => (
+                    <div key={test._id} className="text-center">
+                      <button
+                        onClick={() => startQuiz(test)}
+                        className={`w-20 h-20 rounded-full ${getLevelColor(
+                          test.level
+                        )} text-white font-bold text-xl flex items-center justify-center hover:opacity-80 transition-opacity mb-2 mx-auto`}
                       >
-                        {currentTest.questions[currentQuestionIndex].question}
+                        {getLevelNumber(test.level)}
+                      </button>
+                      <Typography
+                        variant="body2"
+                        className="text-gray-700 font-medium"
+                      >
+                        {test.level}
                       </Typography>
                     </div>
-
-                    <FormControl component="fieldset" className="w-full">
-                      <RadioGroup
-                        value={selectedAnswers[currentQuestionIndex] || ""}
-                        onChange={(e) =>
-                          handleAnswerSelect(
-                            currentQuestionIndex,
-                            e.target.value
-                          )
-                        }
-                      >
-                        {currentTest.questions[
-                          currentQuestionIndex
-                        ].options.map((option, index) => (
-                          <FormControlLabel
-                            key={index}
-                            value={option}
-                            control={<Radio />}
-                            label={option}
-                            className={`p-5 rounded-xl border-2 transition-all duration-200 mb-4 cursor-pointer ${
-                              selectedAnswers[currentQuestionIndex] === option
-                                ? "border-blue-500 bg-blue-50 shadow-md"
-                                : "border-gray-200 hover:border-blue-300 hover:bg-blue-50"
-                            }`}
-                          />
-                        ))}
-                      </RadioGroup>
-                    </FormControl>
-
-                    <div className="flex justify-between mt-8 pt-6 border-t border-gray-200">
-                      <Button
-                        variant="outlined"
-                        onClick={() =>
-                          setCurrentQuestionIndex(
-                            Math.max(0, currentQuestionIndex - 1)
-                          )
-                        }
-                        disabled={currentQuestionIndex === 0}
-                        className="px-6 py-3 rounded-lg font-semibold"
-                      >
-                        ← Previous
-                      </Button>
-
-                      <div className="flex gap-3">
-                        <Button
-                          variant="contained"
-                          onClick={() =>
-                            setCurrentQuestionIndex(
-                              Math.min(
-                                currentTest.questions.length - 1,
-                                currentQuestionIndex + 1
-                              )
-                            )
-                          }
-                          disabled={
-                            currentQuestionIndex ===
-                            currentTest.questions.length - 1
-                          }
-                          className="px-6 py-3 rounded-lg font-semibold bg-blue-600 hover:bg-blue-700"
-                        >
-                          Next →
-                        </Button>
-
-                        {currentQuestionIndex ===
-                          currentTest.questions.length - 1 && (
-                          <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={handleSubmitQuiz}
-                            className="px-8 py-3 rounded-lg font-semibold bg-green-600 hover:bg-green-700"
-                          >
-                            Submit Quiz
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center">
-                    <Typography variant="h6" gutterBottom>
-                      Quiz Completed!
-                    </Typography>
-                    <Typography variant="body1">
-                      Total Marks: {totalMarks}/
-                      {currentTest.questions.length * 10}
-                    </Typography>
-                    <Button
-                      variant="contained"
-                      onClick={closeQuiz}
-                      className="mt-4"
-                    >
-                      Close
-                    </Button>
-                  </div>
-                )}
-              </>
-            )}
-          </Box>
-        </Modal>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
     </div>
   );
-}
+};
+
+export default RevisionTab;

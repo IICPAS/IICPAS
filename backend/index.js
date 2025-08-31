@@ -36,6 +36,7 @@ import bookingRoutes from "./routes/bookingRoutes.js";
 //TicketRoutes
 import ticketRoutes from "./routes/TicketRoutes.js";
 import certificationRoutes from "./routes/certificationRoutes.js";
+import ipWhitelistRoutes from "./routes/ipWhitelistRoutes.js";
 
 //Individual Routes
 import individualRoutes from "./routes/individualRoutes.js";
@@ -67,21 +68,21 @@ import teacherRoutes from "./routes/teacherRoutes.js";
 //Import employee routes
 import employeeRoutes from "./routes/employeeRoutes.js";
 
-
-
 //App Configuration
 dotenv.config();
 connectDB();
 
 const app = express();
 
-
-
 // CORS configuration
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:3000", // your frontend URL
+    origin: [
+      process.env.CLIENT_URL || "http://localhost:3000",
+      "http://localhost:3001",
+      "http://localhost:3002",
+    ], // your frontend URL
     credentials: true,
   })
 );
@@ -96,8 +97,6 @@ app.use("/uploads", express.static("uploads")); // Make uploaded images accessib
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-
-
 
 // Routes
 app.use("/api/college", collegeRoutes);
@@ -133,6 +132,9 @@ app.use("/api/about", aboutRoutes);
 //Ticket Routes
 app.use("/api/tickets", ticketRoutes);
 app.use("/api/bookings", bookingRoutes);
+
+//IP Whitelist Routes
+app.use("/api/ip-whitelist", ipWhitelistRoutes);
 
 //Certification Requestsimport messageRoutes from "./routes/messageRoutes.js";
 app.use("/api/certification-requests", certificationRoutes);
@@ -174,8 +176,6 @@ app.use("/api/v1/teachers", teacherRoutes);
 
 // Use employee routes
 app.use("/api/employees", employeeRoutes);
-
-
 
 // Server
 const PORT = process.env.PORT || 8080;
