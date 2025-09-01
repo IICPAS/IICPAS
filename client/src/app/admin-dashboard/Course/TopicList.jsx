@@ -17,6 +17,8 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import { useAuth } from "@/contexts/AuthContext";
+import CaseStudyBuilder from "../../components/CaseStudyBuilder";
+import AssignmentBuilder from "../../components/AssignmentBuilder";
 
 const MySwal = withReactContent(Swal);
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
@@ -33,34 +35,22 @@ export default function TopicList({
   const [topics, setTopics] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
+  const [viewMode, setViewMode] = useState("topics"); // 'topics', 'caseStudy', 'assignment'
   const { hasPermission } = useAuth();
 
   // Handle case study button click
   const handleAddCaseStudy = () => {
-    if (onAddCaseStudy) {
-      onAddCaseStudy();
-    } else {
-      // Fallback if function not provided
-      MySwal.fire({
-        title: "Case Study Builder",
-        text: "Case Study functionality coming soon!",
-        icon: "info",
-      });
-    }
+    setViewMode("caseStudy");
   };
 
   // Handle assignment button click
   const handleAddAssignment = () => {
-    if (onAddAssignment) {
-      onAddAssignment();
-    } else {
-      // Fallback if function not provided
-      MySwal.fire({
-        title: "Assignment Builder",
-        text: "Assignment functionality coming soon!",
-        icon: "info",
-      });
-    }
+    setViewMode("assignment");
+  };
+
+  // Handle back to topics
+  const handleBackToTopics = () => {
+    setViewMode("topics");
   };
 
   const fetchTopics = useCallback(() => {
@@ -140,6 +130,28 @@ export default function TopicList({
     },
   ];
 
+  // Render different views based on viewMode
+  if (viewMode === "caseStudy") {
+    return (
+      <CaseStudyBuilder
+        chapterId={chapterId}
+        chapterName={chapterName}
+        onBack={handleBackToTopics}
+      />
+    );
+  }
+
+  if (viewMode === "assignment") {
+    return (
+      <AssignmentBuilder
+        chapterId={chapterId}
+        chapterName={chapterName}
+        onBack={handleBackToTopics}
+      />
+    );
+  }
+
+  // Default topics view
   return (
     <Box sx={{ p: 3 }}>
       <Stack

@@ -5,7 +5,11 @@ import dynamic from "next/dynamic";
 // Dynamically import Jodit editor to avoid SSR issues
 const JoditEditor = dynamic(() => import("jodit-react"), {
   ssr: false,
-  loading: () => <p>Loading editor...</p>,
+  loading: () => (
+    <div className="p-4 border border-gray-300 rounded-md bg-gray-50">
+      Loading Jodit Editor...
+    </div>
+  ),
 });
 
 interface CaseStudyBuilderProps {
@@ -56,14 +60,71 @@ export default function CaseStudyBuilder({
   const [content, setContent] = useState<Content[]>([]);
   const [simulations, setSimulations] = useState<Simulation[]>([]);
   const [questionSets, setQuestionSets] = useState<QuestionSet[]>([]);
-  const [activeTab, setActiveTab] = useState<"tasks" | "content" | "simulations" | "questionSets">("tasks");
+  const [activeTab, setActiveTab] = useState<
+    "tasks" | "content" | "simulations" | "questionSets"
+  >("tasks");
 
   // Jodit editor config
   const editorConfig = {
     readonly: false,
-    height: 300,
+    height: 400,
     theme: "default",
     placeholder: "Start writing your content...",
+    toolbar: true,
+    spellcheck: true,
+    language: "en",
+    colorPickerDefaultTab: "background",
+    imageDefaultWidth: 300,
+    removeButtons: ["source", "about"],
+    showCharsCounter: true,
+    showWordsCounter: true,
+    showXPathInStatusbar: false,
+    askBeforePasteHTML: true,
+    askBeforePasteFromWord: true,
+    defaultActionOnPaste: "insert_clear_html",
+    buttons: [
+      "source",
+      "|",
+      "bold",
+      "strikethrough",
+      "underline",
+      "italic",
+      "|",
+      "ul",
+      "ol",
+      "|",
+      "outdent",
+      "indent",
+      "|",
+      "font",
+      "fontsize",
+      "brush",
+      "paragraph",
+      "|",
+      "image",
+      "link",
+      "table",
+      "|",
+      "align",
+      "undo",
+      "redo",
+      "|",
+      "hr",
+      "eraser",
+      "copyformat",
+      "|",
+      "fullsize",
+    ],
+    uploader: {
+      insertImageAsBase64URI: true,
+    },
+    filebrowser: {
+      ajax: {
+        headers: {
+          "X-CSRF-TOKEN": "your-csrf-token",
+        },
+      },
+    },
   };
 
   const addTask = () => {
@@ -77,9 +138,7 @@ export default function CaseStudyBuilder({
 
   const updateTask = (id: string, field: keyof Task, value: string) => {
     setTasks(
-      tasks.map((task) =>
-        task.id === id ? { ...task, [field]: value } : task
-      )
+      tasks.map((task) => (task.id === id ? { ...task, [field]: value } : task))
     );
   };
 
@@ -90,8 +149,8 @@ export default function CaseStudyBuilder({
   const addContent = () => {
     const newContent: Content = {
       id: Date.now().toString(),
-      type: "text",
-      textContent: "",
+      type: "rich", // Default to rich text for better editing
+      richTextContent: "",
     };
     setContent([...content, newContent]);
   };
@@ -124,7 +183,11 @@ export default function CaseStudyBuilder({
     setSimulations([...simulations, newSimulation]);
   };
 
-  const updateSimulation = (id: string, field: keyof Simulation, value: any) => {
+  const updateSimulation = (
+    id: string,
+    field: keyof Simulation,
+    value: any
+  ) => {
     setSimulations(
       simulations.map((sim) =>
         sim.id === id ? { ...sim, [field]: value } : sim
@@ -146,11 +209,13 @@ export default function CaseStudyBuilder({
     setQuestionSets([...questionSets, newQuestionSet]);
   };
 
-  const updateQuestionSet = (id: string, field: keyof QuestionSet, value: any) => {
+  const updateQuestionSet = (
+    id: string,
+    field: keyof QuestionSet,
+    value: any
+  ) => {
     setQuestionSets(
-      questionSets.map((qs) =>
-        qs.id === id ? { ...qs, [field]: value } : qs
-      )
+      questionSets.map((qs) => (qs.id === id ? { ...qs, [field]: value } : qs))
     );
   };
 
@@ -179,7 +244,10 @@ export default function CaseStudyBuilder({
           <h2 className="text-2xl font-bold text-gray-800">
             Create New Case Study for '{chapterName}'
           </h2>
-          <p className="text-gray-600">Build your case study with tasks, content, simulations, and questions</p>
+          <p className="text-gray-600">
+            Build your case study with tasks, content, simulations, and
+            questions
+          </p>
         </div>
         <button
           onClick={onBack}
@@ -191,7 +259,9 @@ export default function CaseStudyBuilder({
 
       {/* Basic Information */}
       <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Basic Information</h3>
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">
+          Basic Information
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -272,7 +342,9 @@ export default function CaseStudyBuilder({
           {activeTab === "tasks" && (
             <div>
               <div className="flex justify-between items-center mb-4">
-                <h4 className="text-lg font-semibold text-gray-800">Task Instructions (Pink Banners)</h4>
+                <h4 className="text-lg font-semibold text-gray-800">
+                  Task Instructions (Pink Banners)
+                </h4>
                 <button
                   onClick={addTask}
                   className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"
@@ -282,15 +354,28 @@ export default function CaseStudyBuilder({
               </div>
               <div className="space-y-4">
                 {tasks.map((task, index) => (
-                  <div key={task.id} className="border border-gray-200 rounded-lg p-4">
+                  <div
+                    key={task.id}
+                    className="border border-gray-200 rounded-lg p-4"
+                  >
                     <div className="flex justify-between items-start mb-3">
-                      <h5 className="text-md font-medium text-gray-800">Task {index + 1}</h5>
+                      <h5 className="text-md font-medium text-gray-800">
+                        Task {index + 1}
+                      </h5>
                       <button
                         onClick={() => removeTask(task.id)}
                         className="text-red-600 hover:text-red-800"
                       >
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                        <svg
+                          className="w-5 h-5"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                            clipRule="evenodd"
+                          />
                         </svg>
                       </button>
                     </div>
@@ -302,7 +387,9 @@ export default function CaseStudyBuilder({
                         <input
                           type="text"
                           value={task.taskName}
-                          onChange={(e) => updateTask(task.id, "taskName", e.target.value)}
+                          onChange={(e) =>
+                            updateTask(task.id, "taskName", e.target.value)
+                          }
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                           placeholder="e.g., Pass journal entries"
                         />
@@ -313,7 +400,9 @@ export default function CaseStudyBuilder({
                         </label>
                         <textarea
                           value={task.instructions}
-                          onChange={(e) => updateTask(task.id, "instructions", e.target.value)}
+                          onChange={(e) =>
+                            updateTask(task.id, "instructions", e.target.value)
+                          }
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                           rows={3}
                           placeholder="Enter task instructions"
@@ -335,7 +424,9 @@ export default function CaseStudyBuilder({
           {activeTab === "content" && (
             <div>
               <div className="flex justify-between items-center mb-4">
-                <h4 className="text-lg font-semibold text-gray-800">Learning Content</h4>
+                <h4 className="text-lg font-semibold text-gray-800">
+                  Learning Content
+                </h4>
                 <button
                   onClick={addContent}
                   className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"
@@ -345,15 +436,28 @@ export default function CaseStudyBuilder({
               </div>
               <div className="space-y-4">
                 {content.map((item, index) => (
-                  <div key={item.id} className="border border-gray-200 rounded-lg p-4">
+                  <div
+                    key={item.id}
+                    className="border border-gray-200 rounded-lg p-4"
+                  >
                     <div className="flex justify-between items-start mb-3">
-                      <h5 className="text-md font-medium text-gray-800">Content {index + 1}</h5>
+                      <h5 className="text-md font-medium text-gray-800">
+                        Content {index + 1}
+                      </h5>
                       <button
                         onClick={() => removeContent(item.id)}
                         className="text-red-600 hover:text-red-800"
                       >
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                        <svg
+                          className="w-5 h-5"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                            clipRule="evenodd"
+                          />
                         </svg>
                       </button>
                     </div>
@@ -364,7 +468,9 @@ export default function CaseStudyBuilder({
                         </label>
                         <select
                           value={item.type}
-                          onChange={(e) => updateContent(item.id, "type", e.target.value)}
+                          onChange={(e) =>
+                            updateContent(item.id, "type", e.target.value)
+                          }
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                         >
                           <option value="text">Text</option>
@@ -372,7 +478,7 @@ export default function CaseStudyBuilder({
                           <option value="video">Video</option>
                         </select>
                       </div>
-                      
+
                       {item.type === "text" && (
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -380,7 +486,13 @@ export default function CaseStudyBuilder({
                           </label>
                           <textarea
                             value={item.textContent || ""}
-                            onChange={(e) => updateContent(item.id, "textContent", e.target.value)}
+                            onChange={(e) =>
+                              updateContent(
+                                item.id,
+                                "textContent",
+                                e.target.value
+                              )
+                            }
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                             rows={6}
                             placeholder="Enter your text content..."
@@ -391,13 +503,35 @@ export default function CaseStudyBuilder({
                       {item.type === "rich" && (
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Rich Text Content
+                            Rich Text Content (Jodit Editor)
                           </label>
-                          <JoditEditor
-                            value={item.richTextContent || ""}
-                            config={editorConfig}
-                            onBlur={(newContent) => updateContent(item.id, "richTextContent", newContent)}
-                          />
+                          <div
+                            className="border border-gray-300 rounded-md overflow-hidden"
+                            style={{ minHeight: "400px" }}
+                          >
+                            <JoditEditor
+                              value={item.richTextContent || ""}
+                              config={editorConfig}
+                              onBlur={(newContent) =>
+                                updateContent(
+                                  item.id,
+                                  "richTextContent",
+                                  newContent
+                                )
+                              }
+                              onChange={(newContent) =>
+                                updateContent(
+                                  item.id,
+                                  "richTextContent",
+                                  newContent
+                                )
+                              }
+                            />
+                          </div>
+                          <p className="text-xs text-gray-500 mt-2">
+                            Use the toolbar above to format your content with
+                            bold, italic, lists, tables, and more.
+                          </p>
                         </div>
                       )}
 
@@ -425,7 +559,10 @@ export default function CaseStudyBuilder({
                           {item.videoBase64 && (
                             <div className="mt-2">
                               <video controls className="w-full max-w-md">
-                                <source src={item.videoBase64} type="video/mp4" />
+                                <source
+                                  src={item.videoBase64}
+                                  type="video/mp4"
+                                />
                                 Your browser does not support the video tag.
                               </video>
                             </div>
@@ -448,7 +585,9 @@ export default function CaseStudyBuilder({
           {activeTab === "simulations" && (
             <div>
               <div className="flex justify-between items-center mb-4">
-                <h4 className="text-lg font-semibold text-gray-800">Interactive Simulations (Optional)</h4>
+                <h4 className="text-lg font-semibold text-gray-800">
+                  Interactive Simulations (Optional)
+                </h4>
                 <button
                   onClick={addSimulation}
                   className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"
@@ -458,15 +597,28 @@ export default function CaseStudyBuilder({
               </div>
               <div className="space-y-4">
                 {simulations.map((sim, index) => (
-                  <div key={sim.id} className="border border-gray-200 rounded-lg p-4">
+                  <div
+                    key={sim.id}
+                    className="border border-gray-200 rounded-lg p-4"
+                  >
                     <div className="flex justify-between items-start mb-3">
-                      <h5 className="text-md font-medium text-gray-800">Simulation {index + 1}</h5>
+                      <h5 className="text-md font-medium text-gray-800">
+                        Simulation {index + 1}
+                      </h5>
                       <button
                         onClick={() => removeSimulation(sim.id)}
                         className="text-red-600 hover:text-red-800"
                       >
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                        <svg
+                          className="w-5 h-5"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                            clipRule="evenodd"
+                          />
                         </svg>
                       </button>
                     </div>
@@ -477,7 +629,9 @@ export default function CaseStudyBuilder({
                         </label>
                         <select
                           value={sim.type}
-                          onChange={(e) => updateSimulation(sim.id, "type", e.target.value)}
+                          onChange={(e) =>
+                            updateSimulation(sim.id, "type", e.target.value)
+                          }
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                         >
                           <option value="accounting">Accounting</option>
@@ -492,7 +646,9 @@ export default function CaseStudyBuilder({
                         <input
                           type="text"
                           value={sim.title}
-                          onChange={(e) => updateSimulation(sim.id, "title", e.target.value)}
+                          onChange={(e) =>
+                            updateSimulation(sim.id, "title", e.target.value)
+                          }
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                           placeholder="Enter simulation title"
                         />
@@ -504,7 +660,13 @@ export default function CaseStudyBuilder({
                       </label>
                       <textarea
                         value={sim.description}
-                        onChange={(e) => updateSimulation(sim.id, "description", e.target.value)}
+                        onChange={(e) =>
+                          updateSimulation(
+                            sim.id,
+                            "description",
+                            e.target.value
+                          )
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                         rows={3}
                         placeholder="Enter simulation description"
@@ -515,17 +677,26 @@ export default function CaseStudyBuilder({
                         <input
                           type="checkbox"
                           checked={sim.isOptional}
-                          onChange={(e) => updateSimulation(sim.id, "isOptional", e.target.checked)}
+                          onChange={(e) =>
+                            updateSimulation(
+                              sim.id,
+                              "isOptional",
+                              e.target.checked
+                            )
+                          }
                           className="mr-2"
                         />
-                        <span className="text-sm text-gray-700">Optional (students can skip)</span>
+                        <span className="text-sm text-gray-700">
+                          Optional (students can skip)
+                        </span>
                       </label>
                     </div>
                   </div>
                 ))}
                 {simulations.length === 0 && (
                   <div className="text-center py-8 text-gray-500">
-                    No simulations added yet. Click "Add Simulation" to get started.
+                    No simulations added yet. Click "Add Simulation" to get
+                    started.
                   </div>
                 )}
               </div>
@@ -536,7 +707,9 @@ export default function CaseStudyBuilder({
           {activeTab === "questionSets" && (
             <div>
               <div className="flex justify-between items-center mb-4">
-                <h4 className="text-lg font-semibold text-gray-800">Assessment Questions (Excel Upload)</h4>
+                <h4 className="text-lg font-semibold text-gray-800">
+                  Assessment Questions (Excel Upload)
+                </h4>
                 <button
                   onClick={addQuestionSet}
                   className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"
@@ -546,15 +719,28 @@ export default function CaseStudyBuilder({
               </div>
               <div className="space-y-4">
                 {questionSets.map((qs, index) => (
-                  <div key={qs.id} className="border border-gray-200 rounded-lg p-4">
+                  <div
+                    key={qs.id}
+                    className="border border-gray-200 rounded-lg p-4"
+                  >
                     <div className="flex justify-between items-start mb-3">
-                      <h5 className="text-md font-medium text-gray-800">Question Set {index + 1}</h5>
+                      <h5 className="text-md font-medium text-gray-800">
+                        Question Set {index + 1}
+                      </h5>
                       <button
                         onClick={() => removeQuestionSet(qs.id)}
                         className="text-red-600 hover:text-red-800"
                       >
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                        <svg
+                          className="w-5 h-5"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                            clipRule="evenodd"
+                          />
                         </svg>
                       </button>
                     </div>
@@ -566,7 +752,9 @@ export default function CaseStudyBuilder({
                         <input
                           type="text"
                           value={qs.name}
-                          onChange={(e) => updateQuestionSet(qs.id, "name", e.target.value)}
+                          onChange={(e) =>
+                            updateQuestionSet(qs.id, "name", e.target.value)
+                          }
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                           placeholder="Enter question set name"
                         />
@@ -578,7 +766,13 @@ export default function CaseStudyBuilder({
                         <input
                           type="text"
                           value={qs.description}
-                          onChange={(e) => updateQuestionSet(qs.id, "description", e.target.value)}
+                          onChange={(e) =>
+                            updateQuestionSet(
+                              qs.id,
+                              "description",
+                              e.target.value
+                            )
+                          }
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                           placeholder="Enter description"
                         />
@@ -609,7 +803,8 @@ export default function CaseStudyBuilder({
                 ))}
                 {questionSets.length === 0 && (
                   <div className="text-center py-8 text-gray-500">
-                    No question sets added yet. Click "Add Question Set" to get started.
+                    No question sets added yet. Click "Add Question Set" to get
+                    started.
                   </div>
                 )}
               </div>
