@@ -1,140 +1,136 @@
 "use client";
+import React, { useState } from "react";
+import TopicsList from "./TopicsList";
+import CaseStudiesList from "./CaseStudiesList";
+import AssignmentsList from "./AssignmentsList";
+import CaseStudyBuilder from "./CaseStudyBuilder";
+import AssignmentBuilder from "./AssignmentBuilder";
 
-import { useState } from "react";
-import Drawer from "react-modern-drawer";
-import "react-modern-drawer/dist/index.css";
-import {
-  FaBars,
-  FaBook,
-  FaChalkboardTeacher,
-  FaUserGraduate,
-  FaClipboardList,
-  FaCog,
-} from "react-icons/fa";
+interface AdminDashboardProps {
+  chapterId: string;
+  chapterName: string;
+}
 
-const tabs = [
-  { id: "dashboard", label: "Dashboard", icon: <FaClipboardList /> },
-  { id: "course-category", label: "Course Category", icon: <FaBook /> },
-  { id: "teachers", label: "Teachers", icon: <FaChalkboardTeacher /> },
-  { id: "students", label: "Students", icon: <FaUserGraduate /> },
-  { id: "settings", label: "Settings", icon: <FaCog /> },
-];
+type ViewMode = "default" | "caseStudyBuilder" | "assignmentBuilder";
 
-export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState("dashboard");
-  const [isOpen, setIsOpen] = useState(false);
+export default function AdminDashboard({
+  chapterId,
+  chapterName,
+}: AdminDashboardProps) {
+  const [viewMode, setViewMode] = useState<ViewMode>("default");
 
-  const toggleDrawer = () => setIsOpen(!isOpen);
+  const handleAddCaseStudy = () => {
+    setViewMode("caseStudyBuilder");
+  };
 
-  const renderContent = () => {
-    switch (activeTab) {
-      case "dashboard":
-        return <div>Welcome to the IICPA Admin Dashboard 👋</div>;
-      case "course-category":
+  const handleAddAssignment = () => {
+    setViewMode("assignmentBuilder");
+  };
+
+  const handleBackToDefault = () => {
+    setViewMode("default");
+  };
+
+  const renderMainArea = () => {
+    switch (viewMode) {
+      case "caseStudyBuilder":
         return (
-          <div>
-            <h2 className="text-xl font-semibold mb-4">Course Categories</h2>
-            <table className="w-full text-sm border">
-              <thead>
-                <tr className="bg-gray-100 text-left">
-                  <th className="p-2">Sr. No.</th>
-                  <th className="p-2">Category Name</th>
-                  <th className="p-2">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {["Accounting", "Taxation", "HR", "Finance", "US CMA"].map(
-                  (cat, i) => (
-                    <tr key={i} className="border-t">
-                      <td className="p-2">{i + 1}</td>
-                      <td className="p-2">{cat}</td>
-                      <td className="p-2">
-                        <span className="px-2 py-1 text-xs bg-green-100 text-green-600 rounded">
-                          Active
-                        </span>
-                      </td>
-                    </tr>
-                  )
-                )}
-              </tbody>
-            </table>
-          </div>
+          <CaseStudyBuilder
+            chapterId={chapterId}
+            chapterName={chapterName}
+            onBack={handleBackToDefault}
+          />
         );
-      case "teachers":
-        return <div>Manage Teachers: Add, Edit, Remove Teachers.</div>;
-      case "students":
-        return <div>Student List, Verification, and Reports.</div>;
-      case "settings":
+      case "assignmentBuilder":
         return (
-          <div>Theme, Notifications & General Settings Coming Soon...</div>
+          <AssignmentBuilder
+            chapterId={chapterId}
+            chapterName={chapterName}
+            onBack={handleBackToDefault}
+          />
         );
       default:
-        return null;
+        return (
+          <div className="space-y-8">
+            {/* Topics Section */}
+            <div>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold text-gray-800">Topics</h2>
+                <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                  ADD TOPIC
+                </button>
+              </div>
+              <TopicsList chapterId={chapterId} />
+            </div>
+
+            {/* Case Studies Section */}
+            <div>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold text-gray-800">Case Studies</h2>
+                <button
+                  onClick={handleAddCaseStudy}
+                  className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"
+                >
+                  ADD CASE STUDY
+                </button>
+              </div>
+              <CaseStudiesList chapterId={chapterId} />
+            </div>
+
+            {/* Assignments Section */}
+            <div>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold text-gray-800">Assignments</h2>
+                <button
+                  onClick={handleAddAssignment}
+                  className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors"
+                >
+                  ADD ASSIGNMENT
+                </button>
+              </div>
+              <AssignmentsList chapterId={chapterId} />
+            </div>
+          </div>
+        );
     }
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar */}
-      <div className="hidden lg:block w-64 bg-white border-r p-4 space-y-4">
-        <img src="/images/iicpa-logo.png" alt="logo" className="h-12 mb-4" />
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`w-full flex items-center gap-2 px-4 py-2 rounded-lg text-left ${
-              activeTab === tab.id
-                ? "bg-blue-100 text-blue-700 font-semibold"
-                : "hover:bg-gray-100"
-            }`}
-          >
-            {tab.icon}
-            {tab.label}
-          </button>
-        ))}
+    <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-800 mb-2">
+          Topics for '{chapterName}'
+        </h1>
+        <p className="text-gray-600">
+          Manage topics, case studies, and assignments for this chapter
+        </p>
       </div>
 
-      {/* Mobile Topbar */}
-      <div className="lg:hidden absolute top-4 left-4">
+      {/* Action Buttons */}
+      <div className="flex flex-wrap gap-3 mb-6">
+        <button className="bg-blue-100 text-blue-700 px-6 py-3 rounded-lg font-semibold hover:bg-blue-200 transition-colors">
+          VIEW CHAPTERS
+        </button>
+        <button className="bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-600 transition-colors">
+          ADD TOPIC
+        </button>
         <button
-          onClick={toggleDrawer}
-          className="text-blue-900 bg-white p-2 rounded-full shadow"
+          onClick={handleAddCaseStudy}
+          className="bg-green-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-600 transition-colors"
         >
-          <FaBars size={20} />
+          ADD CASE STUDY
+        </button>
+        <button
+          onClick={handleAddAssignment}
+          className="bg-purple-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-600 transition-colors"
+        >
+          ADD ASSIGNMENT
         </button>
       </div>
 
-      {/* Drawer for Mobile */}
-      <Drawer
-        open={isOpen}
-        onClose={toggleDrawer}
-        direction="left"
-        className="bg-white p-4 w-64"
-      >
-        <img src="/images/iicpa-logo.png" alt="logo" className="h-12 mb-4" />
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => {
-              setActiveTab(tab.id);
-              toggleDrawer();
-            }}
-            className={`w-full flex items-center gap-2 px-4 py-2 rounded-lg text-left ${
-              activeTab === tab.id
-                ? "bg-blue-100 text-blue-700 font-semibold"
-                : "hover:bg-gray-100"
-            }`}
-          >
-            {tab.icon}
-            {tab.label}
-          </button>
-        ))}
-      </Drawer>
-
-      {/* Content */}
-      <main className="flex-1 p-6 lg:ml-64 mt-10 lg:mt-0">
-        <div className="bg-white p-6 rounded-xl shadow">{renderContent()}</div>
-      </main>
+      {/* Main Content Area */}
+      <div className="min-h-[600px]">{renderMainArea()}</div>
     </div>
   );
 }

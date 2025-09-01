@@ -12,10 +12,10 @@ import {
   FaUser,
   FaHeadset,
   FaCertificate,
-  FaMoon,
-  FaSignOutAlt,
   FaBars,
+  FaTimes,
 } from "react-icons/fa";
+import toast from "react-hot-toast";
 
 import CertificatesTab from "../components/CertificateTab";
 import CoursesTab from "../components/CourseTab";
@@ -25,43 +25,71 @@ import NewsTab from "./NewsTab";
 import LiveClassTab from "../components/LiveClassTab";
 import ProfileTab from "../components/ProfileTab";
 
-// Sidebar tabs (as before)
-const tabs = [
-  { id: "courses", icon: <FaBook />, label: "Courses" },
-  { id: "revision", icon: <FaBook />, label: "Revision" },
-  { id: "live", icon: <FaVideo />, label: "Live Class", dot: true },
-  { id: "news", icon: <FaNewspaper />, label: "News" },
-  { id: "profile", icon: <FaUser />, label: "Profile" },
-  { id: "support", icon: <FaHeadset />, label: "Support" },
-  {
-    id: "certificates",
-    icon: <FaCertificate />,
-    label: "Certificates",
-    dot: true,
-    dotColor: "green",
-  },
-];
-
 export default function StudentDashboard() {
-  const [darkMode, setDarkMode] = useState(false);
   const [activeTab, setActiveTab] = useState("courses");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [student, setStudent] = useState(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  // Ticket modal state
+  const [showTicketModal, setShowTicketModal] = useState(false);
+  const [ticketForm, setTicketForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    message: "",
+  });
+  const [submitting, setSubmitting] = useState(false);
+
   const router = useRouter();
+  const API = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+
+  // Debug environment variable
+  console.log("NEXT_PUBLIC_API_BASE:", process.env.NEXT_PUBLIC_API_BASE);
+  console.log("API variable:", API);
+
+  // Sidebar tabs
+  const tabs = [
+    { id: "courses", icon: <FaBook />, label: "Courses" },
+    { id: "revision", icon: <FaBook />, label: "Revision" },
+    { id: "live", icon: <FaVideo />, label: "Live Class", dot: true },
+    { id: "news", icon: <FaNewspaper />, label: "News" },
+    { id: "profile", icon: <FaUser />, label: "Profile" },
+    { id: "support", icon: <FaHeadset />, label: "Support" },
+    {
+      id: "certificates",
+      icon: <FaCertificate />,
+      label: "Certificates",
+      dot: true,
+      dotColor: "green",
+    },
+    {
+      id: "collapse",
+      icon: <span>{sidebarCollapsed ? "→" : "←"}</span>,
+      label: sidebarCollapsed ? "Expand" : "Collapse",
+    },
+  ];
 
   // Student auth check
   useEffect(() => {
     const fetchStudent = async () => {
       try {
         const res = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/students/isstudent`,
+          `${process.env.NEXT_PUBLIC_API_BASE}/v1/students/isstudent`,
           { withCredentials: true }
         );
         // Authenticated: set student
         if (res.data && res.data.student) {
           setStudent(res.data.student);
+
+          // Update ticket form with student data
+          setTicketForm({
+            name: res.data.student.name || "",
+            email: res.data.student.email || "",
+            phone: res.data.student.phone || "",
+            message: "",
+          });
         } else {
           router.replace("/student-login");
         }
@@ -74,18 +102,37 @@ export default function StudentDashboard() {
     fetchStudent();
   }, []);
 
-  // Logout handler
-  const handleLogout = async () => {
+  // Handle ticket submission
+  const handleTicketSubmit = async (e) => {
+    e.preventDefault();
+    const { name, email, phone, message } = ticketForm;
+
+    if (!phone.trim() || !message.trim()) {
+      return toast.error("Phone and Message are required.");
+    }
+
+    setSubmitting(true);
     try {
-      await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/students/logout`,
-        {
-          withCredentials: true,
-        }
+      console.log("API URL:", `${process.env.NEXT_PUBLIC_API_BASE}/tickets`);
+      console.log("Ticket data:", { name, email, phone, message });
+
+      await axios.post(`${process.env.NEXT_PUBLIC_API_BASE}/tickets`, {
+        name,
+        email,
+        phone,
+        message,
+      });
+      toast.success("Ticket submitted successfully!");
+      setTicketForm((prev) => ({ ...prev, phone: "", message: "" }));
+      setShowTicketModal(false);
+    } catch (error) {
+      console.error(
+        "Error submitting ticket:",
+        error.response?.data || error.message
       );
-      router.replace("/student-login");
-    } catch (err) {
-      alert("Failed to logout");
+      toast.error("Failed to submit ticket.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -101,11 +148,16 @@ export default function StudentDashboard() {
       case "news":
         return <NewsTab />;
       case "profile":
-        return <ProfileTab />;
+        return <ProfileTab student={student} />;
       case "support":
         return <TicketTab />;
       case "certificates":
         return <CertificatesTab />;
+      case "collapse":
+        // Handle collapse action
+        setSidebarCollapsed(!sidebarCollapsed);
+        setActiveTab("courses"); // Switch back to courses tab
+        return <CoursesTab />;
       default:
         return null;
     }
@@ -130,24 +182,6 @@ export default function StudentDashboard() {
           >
             {sidebarCollapsed ? "IICPA" : "IICPA INSTITUTE"}
           </h2>
-          {!sidebarCollapsed && (
-            <button
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="p-1 rounded hover:bg-gray-100"
-              title="Collapse sidebar"
-            >
-              ←
-            </button>
-          )}
-          {sidebarCollapsed && (
-            <button
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="p-1 rounded hover:bg-gray-100"
-              title="Expand sidebar"
-            >
-              →
-            </button>
-          )}
         </div>
         {student && !sidebarCollapsed && (
           <div className="mb-6">
@@ -172,20 +206,6 @@ export default function StudentDashboard() {
             />
           ))}
         </nav>
-      </div>
-      <div className="flex items-center justify-between mt-10">
-        <button
-          onClick={() => setDarkMode(!darkMode)}
-          className="p-2 rounded bg-gray-100"
-        >
-          <FaMoon />
-        </button>
-        <button
-          onClick={handleLogout}
-          className="text-red-600 flex items-center gap-1"
-        >
-          <FaSignOutAlt /> Exit
-        </button>
       </div>
     </div>
   );
@@ -246,6 +266,109 @@ export default function StudentDashboard() {
         {/* (optional: banners and prompts) */}
         {renderTabContent()}
       </main>
+
+      {/* Floating Add Ticket Button */}
+      <div className="fixed bottom-8 right-8 z-50">
+        <button
+          onClick={() => setShowTicketModal(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-105"
+          title="Submit a Ticket"
+        >
+          <FaHeadset size={24} />
+        </button>
+      </div>
+
+      {/* Ticket Modal */}
+      {showTicketModal && (
+        <div className="fixed inset-0 bg-transparent bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+            <div className="flex justify-between items-center p-6 border-b">
+              <h3 className="text-xl font-bold text-gray-800">
+                Submit a Ticket
+              </h3>
+              <button
+                onClick={() => setShowTicketModal(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <FaTimes size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleTicketSubmit} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Name</label>
+                <input
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
+                  value={ticketForm.name}
+                  readOnly
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Email</label>
+                <input
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
+                  value={ticketForm.email}
+                  readOnly
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Phone</label>
+                <input
+                  type="tel"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  placeholder="Enter your phone number"
+                  value={ticketForm.phone}
+                  onChange={(e) =>
+                    setTicketForm((prev) => ({
+                      ...prev,
+                      phone: e.target.value,
+                    }))
+                  }
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Message
+                </label>
+                <textarea
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  rows={4}
+                  placeholder="Describe your issue or request..."
+                  value={ticketForm.message}
+                  onChange={(e) =>
+                    setTicketForm((prev) => ({
+                      ...prev,
+                      message: e.target.value,
+                    }))
+                  }
+                  required
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowTicketModal(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50"
+                  disabled={submitting}
+                >
+                  {submitting ? "Submitting..." : "Submit Ticket"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

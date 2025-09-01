@@ -17,6 +17,8 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import { useAuth } from "@/contexts/AuthContext";
+import CaseStudyBuilder from "../../components/CaseStudyBuilder";
+import AssignmentBuilder from "../../components/AssignmentBuilder";
 
 const MySwal = withReactContent(Swal);
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
@@ -27,11 +29,29 @@ export default function TopicList({
   onViewChapters,
   onAddTopic,
   onEditTopic, // <-- NEW!
+  onAddCaseStudy, // NEW!
+  onAddAssignment, // NEW!
 }) {
   const [topics, setTopics] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
+  const [viewMode, setViewMode] = useState("topics"); // 'topics', 'caseStudy', 'assignment'
   const { hasPermission } = useAuth();
+
+  // Handle case study button click
+  const handleAddCaseStudy = () => {
+    setViewMode("caseStudy");
+  };
+
+  // Handle assignment button click
+  const handleAddAssignment = () => {
+    setViewMode("assignment");
+  };
+
+  // Handle back to topics
+  const handleBackToTopics = () => {
+    setViewMode("topics");
+  };
 
   const fetchTopics = useCallback(() => {
     setLoading(true);
@@ -110,6 +130,28 @@ export default function TopicList({
     },
   ];
 
+  // Render different views based on viewMode
+  if (viewMode === "caseStudy") {
+    return (
+      <CaseStudyBuilder
+        chapterId={chapterId}
+        chapterName={chapterName}
+        onBack={handleBackToTopics}
+      />
+    );
+  }
+
+  if (viewMode === "assignment") {
+    return (
+      <AssignmentBuilder
+        chapterId={chapterId}
+        chapterName={chapterName}
+        onBack={handleBackToTopics}
+      />
+    );
+  }
+
+  // Default topics view
   return (
     <Box sx={{ p: 3 }}>
       <Stack
@@ -128,6 +170,31 @@ export default function TopicList({
           {hasPermission("course", "add") && (
             <Button variant="contained" onClick={onAddTopic}>
               Add Topic
+            </Button>
+          )}
+          {/* NEW BUTTONS */}
+          {hasPermission("course", "add") && (
+            <Button
+              variant="contained"
+              onClick={handleAddCaseStudy}
+              sx={{
+                bgcolor: "#22c55e",
+                "&:hover": { bgcolor: "#16a34a" },
+              }}
+            >
+              Add Case Study
+            </Button>
+          )}
+          {hasPermission("course", "add") && (
+            <Button
+              variant="contained"
+              onClick={handleAddAssignment}
+              sx={{
+                bgcolor: "#a855f7",
+                "&:hover": { bgcolor: "#9333ea" },
+              }}
+            >
+              Add Assignment
             </Button>
           )}
         </Stack>

@@ -66,6 +66,7 @@ import RevisionTestsTab from "./RevisionTestsTab";
 import Header from "../components/Header";
 import CourseDisplayTab from "./CourseDisplayTab";
 import IPLogsTab from "./IPLogsTab";
+import IPWhitelistTab from "./IPWhitelistTab";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 
@@ -100,6 +101,7 @@ const WEBSITE_SETTINGS_MODULES = [
   { id: "about", label: "About Us", icon: <FaBook /> },
   { id: "meta", label: "Manage Metatags", icon: <FaTags /> },
   { id: "alert", label: "Alert", icon: <FaBell /> },
+  { id: "ip-whitelist", label: "IP Whitelisting", icon: <FaShieldAlt /> },
 ];
 
 function AdminDashboardContent() {
@@ -377,6 +379,8 @@ function AdminDashboardContent() {
           <StaffManagementTab />
         ) : activeTab === "alert" ? (
           <AlertsTab />
+        ) : activeTab === "ip-whitelist" ? (
+          <IPWhitelistTab />
         ) : activeTab === "news" ? (
           <NewsTab />
         ) : activeTab === "testimonials" ? (
