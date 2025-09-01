@@ -1,7 +1,22 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import dynamic from "next/dynamic";
+import axios from "axios";
+import { ChevronLeft, Plus, X } from "lucide-react";
+
+// Add debounce utility
+const debounce = (func: (...args: any[]) => void, wait: number) => {
+  let timeout: NodeJS.Timeout;
+  return function executedFunction(...args: any[]) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+};
 
 // Dynamically import Jodit editor to avoid SSR issues
 const JoditEditor = dynamic(() => import("jodit-react"), {
@@ -17,6 +32,7 @@ interface CaseStudyBuilderProps {
   chapterId: string;
   chapterName: string;
   onBack: () => void;
+  editingItem?: any | null; // Add edit mode support
 }
 
 interface Task {
@@ -54,6 +70,7 @@ export default function CaseStudyBuilder({
   chapterId,
   chapterName,
   onBack,
+  editingItem,
 }: CaseStudyBuilderProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -64,25 +81,41 @@ export default function CaseStudyBuilder({
   const [activeTab, setActiveTab] = useState<
     "tasks" | "content" | "simulations" | "questionSets"
   >("tasks");
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Initialize form with editing data if available
+  useEffect(() => {
+    if (editingItem) {
+      setTitle(editingItem.title || "");
+      setDescription(editingItem.description || "");
+      setTasks(editingItem.tasks || []);
+      setContent(editingItem.content || []);
+      setSimulations(editingItem.simulations || []);
+      setQuestionSets(editingItem.questionSets || []);
+    }
+  }, [editingItem]);
 
   // Jodit editor config
   const editorConfig = {
     readonly: false,
     height: 400,
     theme: "default",
-    placeholder: "Start writing your content...",
+    placeholder: "Start writing your case study content...",
     toolbar: true,
     spellcheck: true,
     language: "en",
     colorPickerDefaultTab: "background",
     imageDefaultWidth: 300,
-    removeButtons: ["source", "about"],
-    showCharsCounter: true,
-    showWordsCounter: true,
-    showXPathInStatusbar: false,
+    removeButtons: [],
     askBeforePasteHTML: true,
     askBeforePasteFromWord: true,
-    defaultActionOnPaste: "insert_clear_html",
+    defaultActionOnPaste: "insert_clear_html" as any,
+    // Fix typing performance issues
+    autoHeight: false,
+    saveModeInStorage: false,
+    // Disable problematic features that cause typing issues
+    useSearch: false,
+    // Optimize for smooth typing
     buttons: [
       "source",
       "|",
@@ -115,18 +148,129 @@ export default function CaseStudyBuilder({
       "copyformat",
       "|",
       "fullsize",
+      "print",
+      "about",
     ],
-    uploader: {
-      insertImageAsBase64URI: true,
-    },
-    filebrowser: {
-      ajax: {
-        headers: {
-          "X-CSRF-TOKEN": "your-csrf-token",
-        },
+    buttonsMD: [
+      "bold",
+      "italic",
+      "underline",
+      "|",
+      "ul",
+      "ol",
+      "|",
+      "font",
+      "fontsize",
+      "brush",
+      "|",
+      "image",
+      "link",
+      "|",
+      "align",
+      "undo",
+      "redo",
+    ],
+    buttonsSM: [
+      "bold",
+      "italic",
+      "underline",
+      "|",
+      "ul",
+      "ol",
+      "|",
+      "image",
+      "link",
+      "|",
+      "undo",
+      "redo",
+    ],
+    buttonsXS: ["bold", "italic", "|", "image", "link"],
+    events: {
+      afterInit: function (editor: any) {
+        // Add custom styling for the editor
+        const editorElement = editor.container.querySelector(".jodit-wysiwyg");
+        if (editorElement) {
+          editorElement.style.minHeight = "400px";
+        }
+
+        // Optimize typing performance
+        editor.workplace.style.fontSize = "16px";
+        editor.workplace.style.lineHeight = "1.6";
+
+        // Disable auto-save and other performance-heavy features
+        editor.options.saveModeInStorage = false;
+        editor.options.autoHeight = false;
+
+        // Critical: Disable features that cause typing interruptions
+        editor.options.useSearch = false;
+        editor.options.showCharsCounter = false;
+        editor.options.showWordsCounter = false;
+        editor.options.showXPathInStatusbar = false;
+
+        // Optimize the editor container for better performance
+        const container = editor.container;
+        if (container) {
+          container.style.willChange = "auto";
+          container.style.transform = "translateZ(0)";
+        }
+
+        // Optimize the workplace for smooth typing
+        const workplace = editor.workplace;
+        if (workplace) {
+          workplace.style.willChange = "auto";
+          workplace.style.transform = "translateZ(0)";
+          workplace.style.backfaceVisibility = "hidden";
+        }
+      },
+      // Optimize typing events
+      beforeSetValueToEditor: function (value: string) {
+        return value;
+      },
+      afterSetValueToEditor: function () {
+        // Ensure smooth typing after value changes
+      },
+      // Add typing optimization events
+      keydown: function (event: any) {
+        // Prevent unnecessary re-renders during typing
+        if (event.key.length === 1) {
+          // Single character input - optimize
+          event.stopPropagation();
+        }
+      },
+      input: function () {
+        // Debounce input events to prevent excessive processing
+        debounce(() => {
+          // Handle input changes smoothly
+        }, 100)();
       },
     },
-  };
+    // Performance optimizations
+    uploader: {
+      insertImageAsBase64URI: true,
+      url: `${process.env.NEXT_PUBLIC_API_BASE}/upload/image`,
+      pathVariableName: "path",
+      withCredentials: false,
+      headers: {},
+      data: {},
+      method: "POST",
+      name: "files[]",
+      multiple: false,
+      accept: "image/*",
+      process: function (resp: any) {
+        return {
+          files: resp.files || [],
+          error: resp.error || false,
+          message: resp.message || "",
+        };
+      },
+      error: function (e: any) {
+        console.error("Upload error:", e);
+      },
+      success: function (resp: any) {
+        console.log("Upload success:", resp);
+      },
+    },
+  } as any;
 
   const addTask = () => {
     const newTask: Task = {
@@ -225,16 +369,76 @@ export default function CaseStudyBuilder({
   };
 
   const handleSave = async () => {
-    // TODO: Implement save to backend
-    console.log("Saving case study:", {
-      title,
-      description,
-      chapterId,
-      tasks,
-      content,
-      simulations,
-      questionSets,
-    });
+    try {
+      setIsSaving(true);
+
+      // Validate required fields
+      if (!title.trim()) {
+        alert("Please enter a case study title");
+        return;
+      }
+
+      if (!description.trim()) {
+        alert("Please enter a case study description");
+        return;
+      }
+
+      // Prepare case study data
+      const caseStudyData = {
+        title: title.trim(),
+        description: description.trim(),
+        chapterId,
+        tasks: tasks.map((task, index) => ({
+          taskName: task.taskName.trim(),
+          instructions: task.instructions.trim(),
+          order: index,
+        })),
+        content: content.map((item, index) => ({
+          type: item.type,
+          videoBase64: item.videoBase64,
+          textContent: item.textContent,
+          richTextContent: item.richTextContent,
+          order: index,
+        })),
+        simulations: simulations.map((sim, index) => ({
+          type: sim.type,
+          title: sim.title.trim(),
+          description: sim.description.trim(),
+          config: sim.config,
+          isOptional: sim.isOptional,
+          order: index,
+        })),
+        questionSets: questionSets.map((qs, index) => ({
+          name: qs.name.trim(),
+          description: qs.description.trim(),
+          excelBase64: qs.excelBase64,
+          questions: qs.questions,
+          order: index,
+        })),
+      };
+
+      // Save to backend
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_BASE}/case-studies`,
+        caseStudyData
+      );
+
+      if (response.data.success) {
+        alert("Case Study saved successfully!");
+        // Reset form or redirect
+        onBack();
+      } else {
+        alert("Failed to save case study: " + response.data.error);
+      }
+    } catch (error: any) {
+      console.error("Error saving case study:", error);
+      alert(
+        "Error saving case study: " +
+          (error.response?.data?.error || error.message)
+      );
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -243,11 +447,13 @@ export default function CaseStudyBuilder({
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold text-gray-800">
-            Create New Case Study for &lsquo;{chapterName}&lsquo;
+            {editingItem ? "Edit Case Study" : "Create New Case Study"} for
+            &lsquo;{chapterName}&lsquo;
           </h2>
           <p className="text-gray-600">
-            Build your case study with tasks, content, simulations, and
-            questions
+            {editingItem
+              ? "Update your case study with tasks, content, simulations, and questions"
+              : "Build your case study with tasks, content, simulations, and questions"}
           </p>
         </div>
         <button
@@ -534,10 +740,15 @@ export default function CaseStudyBuilder({
                               }
                             />
                           </div>
-                          <p className="text-xs text-gray-500 mt-2">
-                            Use the toolbar above to format your content with
-                            bold, italic, lists, tables, and more.
-                          </p>
+                          <div className="flex justify-between items-center mt-2">
+                            <p className="text-xs text-gray-500">
+                              Use the toolbar above to format your content with
+                              bold, italic, lists, tables, and more.
+                            </p>
+                            <p className="text-xs text-gray-400 italic">
+                              POWERED BY JODIT
+                            </p>
+                          </div>
                         </div>
                       )}
 
@@ -831,8 +1042,15 @@ export default function CaseStudyBuilder({
         <button
           onClick={handleSave}
           className="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors"
+          disabled={isSaving}
         >
-          Save Case Study
+          {isSaving
+            ? editingItem
+              ? "Updating..."
+              : "Saving..."
+            : editingItem
+            ? "Update Case Study"
+            : "Save Case Study"}
         </button>
       </div>
     </div>

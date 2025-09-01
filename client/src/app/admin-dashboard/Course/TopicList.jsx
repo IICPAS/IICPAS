@@ -19,6 +19,8 @@ import withReactContent from "sweetalert2-react-content";
 import { useAuth } from "@/contexts/AuthContext";
 import CaseStudyBuilder from "../../components/CaseStudyBuilder";
 import AssignmentBuilder from "../../components/AssignmentBuilder";
+import AssignmentsList from "../../components/AssignmentsList";
+import CaseStudiesList from "../../components/CaseStudiesList";
 
 const MySwal = withReactContent(Swal);
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
@@ -36,21 +38,37 @@ export default function TopicList({
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [viewMode, setViewMode] = useState("topics"); // 'topics', 'caseStudy', 'assignment'
+  const [editingItem, setEditingItem] = useState(null); // Track what we're editing
   const { hasPermission } = useAuth();
 
   // Handle case study button click
   const handleAddCaseStudy = () => {
+    setEditingItem(null); // Reset editing state
     setViewMode("caseStudy");
   };
 
   // Handle assignment button click
   const handleAddAssignment = () => {
+    setEditingItem(null); // Reset editing state
     setViewMode("assignment");
+  };
+
+  // Handle edit assignment
+  const handleEditAssignment = (assignment) => {
+    setEditingItem(assignment);
+    setViewMode("assignment");
+  };
+
+  // Handle edit case study
+  const handleEditCaseStudy = (caseStudy) => {
+    setEditingItem(caseStudy);
+    setViewMode("caseStudy");
   };
 
   // Handle back to topics
   const handleBackToTopics = () => {
     setViewMode("topics");
+    setEditingItem(null); // Reset editing state
   };
 
   const fetchTopics = useCallback(() => {
@@ -137,6 +155,8 @@ export default function TopicList({
         chapterId={chapterId}
         chapterName={chapterName}
         onBack={handleBackToTopics}
+        editingItem={editingItem}
+        onEdit={handleEditCaseStudy}
       />
     );
   }
@@ -147,6 +167,8 @@ export default function TopicList({
         chapterId={chapterId}
         chapterName={chapterName}
         onBack={handleBackToTopics}
+        editingItem={editingItem}
+        onEdit={handleEditAssignment}
       />
     );
   }
@@ -210,6 +232,23 @@ export default function TopicList({
         onChange={(e) => setSearch(e.target.value)}
       />
 
+      {/* Topics Section */}
+      <Box sx={{ mb: 2 }}>
+        <Typography
+          variant="h6"
+          sx={{
+            mb: 2,
+            color: "#1e40af",
+            fontWeight: 600,
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+          }}
+        >
+          🎯 Topics
+        </Typography>
+      </Box>
+
       <Box sx={{ bgcolor: "white", borderRadius: 3, boxShadow: 2, p: 2 }}>
         <DataGrid
           autoHeight
@@ -233,6 +272,50 @@ export default function TopicList({
               fontSize: 15,
             },
           }}
+        />
+      </Box>
+
+      {/* Enhanced Assignments List */}
+      <Box sx={{ mt: 4 }}>
+        <Typography
+          variant="h6"
+          sx={{
+            mb: 2,
+            color: "#6b21a8",
+            fontWeight: 600,
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+          }}
+        >
+          📚 Assignments
+        </Typography>
+        <AssignmentsList
+          chapterId={chapterId}
+          onEdit={handleEditAssignment}
+          onAdd={handleAddAssignment}
+        />
+      </Box>
+
+      {/* Enhanced Case Studies List */}
+      <Box sx={{ mt: 4 }}>
+        <Typography
+          variant="h6"
+          sx={{
+            mb: 2,
+            color: "#16a34a",
+            fontWeight: 600,
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+          }}
+        >
+          📖 Case Studies
+        </Typography>
+        <CaseStudiesList
+          chapterId={chapterId}
+          onEdit={handleEditCaseStudy}
+          onAdd={handleAddCaseStudy}
         />
       </Box>
     </Box>

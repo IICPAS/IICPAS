@@ -1,26 +1,26 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 const taskSchema = new mongoose.Schema({
   taskName: {
     type: String,
     required: true,
-    trim: true
+    trim: true,
   },
   instructions: {
     type: String,
-    required: true
+    required: true,
   },
   order: {
     type: Number,
-    default: 0
-  }
+    default: 0,
+  },
 });
 
 const contentSchema = new mongoose.Schema({
   type: {
     type: String,
-    enum: ['video', 'text', 'rich'],
-    default: 'text'
+    enum: ["video", "text", "rich"],
+    default: "text",
   },
   videoUrl: String,
   videoBase64: String,
@@ -28,15 +28,15 @@ const contentSchema = new mongoose.Schema({
   richTextContent: String,
   order: {
     type: Number,
-    default: 0
-  }
+    default: 0,
+  },
 });
 
 const simulationSchema = new mongoose.Schema({
   type: {
     type: String,
-    enum: ['accounting', 'financial', 'custom'],
-    default: 'accounting'
+    enum: ["accounting", "financial", "custom"],
+    default: "accounting",
   },
   title: String,
   description: String,
@@ -44,16 +44,16 @@ const simulationSchema = new mongoose.Schema({
     accountTypes: [String],
     accountOptions: [String],
     columns: [String],
-    validationRules: Object
+    validationRules: Object,
   },
   isOptional: {
     type: Boolean,
-    default: true
+    default: true,
   },
   order: {
     type: Number,
-    default: 0
-  }
+    default: 0,
+  },
 });
 
 const questionSetSchema = new mongoose.Schema({
@@ -61,42 +61,44 @@ const questionSetSchema = new mongoose.Schema({
   description: String,
   excelFile: String,
   excelBase64: String,
-  questions: [{
-    question: String,
-    context: String,
-    type: String,
-    options: [String],
-    correctAnswer: String,
-    explanation: String
-  }],
+  questions: [
+    {
+      question: String,
+      context: String,
+      type: String,
+      options: [String],
+      correctAnswer: String,
+      explanation: String,
+    },
+  ],
   totalQuestions: Number,
   timeLimit: Number,
   passingScore: Number,
   order: {
     type: Number,
-    default: 0
-  }
+    default: 0,
+  },
 });
 
 const assignmentSchema = new mongoose.Schema({
   title: {
     type: String,
     required: true,
-    trim: true
+    trim: true,
   },
   description: String,
   chapterId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Chapter',
-    required: true
+    ref: "Chapter",
+    required: true,
   },
   order: {
     type: Number,
-    default: 0
+    default: 0,
   },
   isActive: {
     type: Boolean,
-    default: true
+    default: true,
   },
   tasks: [taskSchema],
   content: [contentSchema],
@@ -104,17 +106,17 @@ const assignmentSchema = new mongoose.Schema({
   questionSets: [questionSetSchema],
   createdAt: {
     type: Date,
-    default: Date.now
+    default: Date.now,
   },
   updatedAt: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
-assignmentSchema.pre('save', function(next) {
+assignmentSchema.pre("save", function (next) {
   this.updatedAt = Date.now();
   next();
 });
 
-module.exports = mongoose.model('Assignment', assignmentSchema);
+export default mongoose.model("Assignment", assignmentSchema);

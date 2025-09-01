@@ -1,7 +1,7 @@
-const Assignment = require('../models/Assignment');
+import Assignment from '../models/Assignment.js';
 
 // Create new assignment
-exports.createAssignment = async (req, res) => {
+export const createAssignment = async (req, res) => {
   try {
     const { title, description, chapterId, tasks, content, simulations, questionSets } = req.body;
     
@@ -23,7 +23,7 @@ exports.createAssignment = async (req, res) => {
 };
 
 // Get all assignments for a chapter
-exports.getAssignmentsByChapter = async (req, res) => {
+export const getAssignmentsByChapter = async (req, res) => {
   try {
     const { chapterId } = req.params;
     const assignments = await Assignment.find({ chapterId, isActive: true })
@@ -35,7 +35,7 @@ exports.getAssignmentsByChapter = async (req, res) => {
 };
 
 // Get single assignment
-exports.getAssignment = async (req, res) => {
+export const getAssignment = async (req, res) => {
   try {
     const assignment = await Assignment.findById(req.params.id);
     if (!assignment) {
@@ -48,7 +48,7 @@ exports.getAssignment = async (req, res) => {
 };
 
 // Update assignment
-exports.updateAssignment = async (req, res) => {
+export const updateAssignment = async (req, res) => {
   try {
     const assignment = await Assignment.findByIdAndUpdate(
       req.params.id,
@@ -65,11 +65,11 @@ exports.updateAssignment = async (req, res) => {
 };
 
 // Delete assignment
-exports.deleteAssignment = async (req, res) => {
+export const deleteAssignment = async (req, res) => {
   try {
     const assignment = await Assignment.findByIdAndDelete(req.params.id);
     if (!assignment) {
-      return res.status(404).json({ success: false, error: 'Assignment not found' });
+      return res.status(500).json({ success: false, error: 'Assignment not found' });
     }
     res.status(200).json({ success: true, data: {} });
   } catch (error) {
@@ -78,7 +78,7 @@ exports.deleteAssignment = async (req, res) => {
 };
 
 // Add task to assignment
-exports.addTask = async (req, res) => {
+export const addTask = async (req, res) => {
   try {
     const { taskName, instructions } = req.body;
     const assignment = await Assignment.findById(req.params.id);
@@ -103,7 +103,7 @@ exports.addTask = async (req, res) => {
 };
 
 // Add content to assignment
-exports.addContent = async (req, res) => {
+export const addContent = async (req, res) => {
   try {
     const { type, videoBase64, textContent, richTextContent } = req.body;
     const assignment = await Assignment.findById(req.params.id);
@@ -130,7 +130,7 @@ exports.addContent = async (req, res) => {
 };
 
 // Add simulation to assignment
-exports.addSimulation = async (req, res) => {
+export const addSimulation = async (req, res) => {
   try {
     const { type, title, description, config, isOptional } = req.body;
     const assignment = await Assignment.findById(req.params.id);
@@ -158,13 +158,13 @@ exports.addSimulation = async (req, res) => {
 };
 
 // Add question set to assignment
-exports.addQuestionSet = async (req, res) => {
+export const addQuestionSet = async (req, res) => {
   try {
     const { name, description, excelBase64, questions, totalQuestions, timeLimit, passingScore } = req.body;
     const assignment = await Assignment.findById(req.params.id);
     
     if (!assignment) {
-      return res.status(404).json({ success: false, error: 'Assignment not found' });
+      return res.status(500).json({ success: false, error: 'Assignment not found' });
     }
 
     const newQuestionSet = {
