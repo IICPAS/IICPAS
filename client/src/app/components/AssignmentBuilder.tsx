@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useState } from "react";
 import dynamic from "next/dynamic";
@@ -125,7 +126,7 @@ export default function AssignmentBuilder({
         },
       },
     },
-  };
+  } as any;
 
   const addTask = () => {
     const newTask: Task = {
@@ -242,7 +243,7 @@ export default function AssignmentBuilder({
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold text-gray-800">
-            Create New Assignment for '{chapterName}'
+            Create New Assignment for &lsquo;{chapterName}&lsquo;
           </h2>
           <p className="text-gray-600">
             Build your assignment with tasks, content, simulations, and
@@ -413,7 +414,8 @@ export default function AssignmentBuilder({
                 ))}
                 {tasks.length === 0 && (
                   <div className="text-center py-8 text-gray-500">
-                    No tasks added yet. Click "Add Task" to get started.
+                    No tasks added yet. Click &quot;Add Task&quot; to get
+                    started.
                   </div>
                 )}
               </div>
@@ -512,14 +514,14 @@ export default function AssignmentBuilder({
                             <JoditEditor
                               value={item.richTextContent || ""}
                               config={editorConfig}
-                              onBlur={(newContent) =>
+                              onBlur={(newContent: string) =>
                                 updateContent(
                                   item.id,
                                   "richTextContent",
                                   newContent
                                 )
                               }
-                              onChange={(newContent) =>
+                              onChange={(newContent: string) =>
                                 updateContent(
                                   item.id,
                                   "richTextContent",
@@ -574,7 +576,8 @@ export default function AssignmentBuilder({
                 ))}
                 {content.length === 0 && (
                   <div className="text-center py-8 text-gray-500">
-                    No content added yet. Click "Add Content" to get started.
+                    No content added yet. Click &quot;Add Content&quot; to get
+                    started.
                   </div>
                 )}
               </div>
@@ -695,8 +698,8 @@ export default function AssignmentBuilder({
                 ))}
                 {simulations.length === 0 && (
                   <div className="text-center py-8 text-gray-500">
-                    No simulations added yet. Click "Add Simulation" to get
-                    started.
+                    No simulations added yet. Click &ldquo;Add Simulation&rdquo;
+                    to get started.
                   </div>
                 )}
               </div>
@@ -803,8 +806,8 @@ export default function AssignmentBuilder({
                 ))}
                 {questionSets.length === 0 && (
                   <div className="text-center py-8 text-gray-500">
-                    No question sets added yet. Click "Add Question Set" to get
-                    started.
+                    No question sets added yet. Click &quot;Add Question
+                    Set&quot; to get started.
                   </div>
                 )}
               </div>

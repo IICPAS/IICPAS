@@ -32,7 +32,7 @@ export default function AssignmentsList({ chapterId }: AssignmentsListProps) {
           </div>
           <p className="text-gray-500 text-sm">No assignments created yet</p>
           <p className="text-gray-400 text-xs">
-            Click "ADD ASSIGNMENT" to create your first assignment
+            Click &rdquo;ADD ASSIGNMENT&ldquo; to create your first assignment
           </p>
         </div>
       ) : (
