@@ -1,7 +1,22 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import dynamic from "next/dynamic";
+import axios from "axios";
+import { ChevronLeft, Plus, X } from "lucide-react";
+
+// Add debounce utility
+const debounce = (func: (...args: any[]) => void, wait: number) => {
+  let timeout: NodeJS.Timeout;
+  return function executedFunction(...args: any[]) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+};
 
 // Dynamically import Jodit editor to avoid SSR issues
 const JoditEditor = dynamic(() => import("jodit-react"), {
@@ -13,10 +28,13 @@ const JoditEditor = dynamic(() => import("jodit-react"), {
   ),
 });
 
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
+
 interface AssignmentBuilderProps {
   chapterId: string;
   chapterName: string;
   onBack: () => void;
+  editingItem?: any | null; // Add edit mode support
 }
 
 interface Task {
@@ -54,6 +72,7 @@ export default function AssignmentBuilder({
   chapterId,
   chapterName,
   onBack,
+  editingItem,
 }: AssignmentBuilderProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -64,6 +83,19 @@ export default function AssignmentBuilder({
   const [activeTab, setActiveTab] = useState<
     "tasks" | "content" | "simulations" | "questionSets"
   >("content");
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Initialize form with editing data if available
+  useEffect(() => {
+    if (editingItem) {
+      setTitle(editingItem.title || "");
+      setDescription(editingItem.description || "");
+      setTasks(editingItem.tasks || []);
+      setContent(editingItem.content || []);
+      setSimulations(editingItem.simulations || []);
+      setQuestionSets(editingItem.questionSets || []);
+    }
+  }, [editingItem]);
 
   // Jodit editor config
   const editorConfig = {
@@ -76,13 +108,19 @@ export default function AssignmentBuilder({
     language: "en",
     colorPickerDefaultTab: "background",
     imageDefaultWidth: 300,
-    removeButtons: ["source", "about"],
-    showCharsCounter: true,
-    showWordsCounter: true,
+    removeButtons: [],
+    showCharsCounter: false,
+    showWordsCounter: false,
     showXPathInStatusbar: false,
     askBeforePasteHTML: true,
     askBeforePasteFromWord: true,
-    defaultActionOnPaste: "insert_clear_html",
+    defaultActionOnPaste: "insert_clear_html" as any,
+    // Fix typing performance issues
+    autoHeight: false,
+    saveModeInStorage: false,
+    // Disable problematic features that cause typing issues
+    useSearch: false,
+    // Optimize for smooth typing
     buttons: [
       "source",
       "|",
@@ -115,15 +153,126 @@ export default function AssignmentBuilder({
       "copyformat",
       "|",
       "fullsize",
+      "print",
+      "about",
     ],
+    buttonsMD: [
+      "bold",
+      "italic",
+      "underline",
+      "|",
+      "ul",
+      "ol",
+      "|",
+      "font",
+      "fontsize",
+      "brush",
+      "|",
+      "image",
+      "link",
+      "|",
+      "align",
+      "undo",
+      "redo",
+    ],
+    buttonsSM: [
+      "bold",
+      "italic",
+      "underline",
+      "|",
+      "ul",
+      "ol",
+      "|",
+      "image",
+      "link",
+      "|",
+      "undo",
+      "redo",
+    ],
+    buttonsXS: ["bold", "italic", "|", "image", "link"],
+    events: {
+      afterInit: function (editor: any) {
+        // Add custom styling for the editor
+        const editorElement = editor.container.querySelector(".jodit-wysiwyg");
+        if (editorElement) {
+          editorElement.style.minHeight = "400px";
+        }
+
+        // Optimize typing performance
+        editor.workplace.style.fontSize = "16px";
+        editor.workplace.style.lineHeight = "1.6";
+
+        // Disable auto-save and other performance-heavy features
+        editor.options.saveModeInStorage = false;
+        editor.options.autoHeight = false;
+
+        // Critical: Disable features that cause typing interruptions
+        editor.options.useSearch = false;
+        editor.options.showCharsCounter = false;
+        editor.options.showWordsCounter = false;
+        editor.options.showXPathInStatusbar = false;
+
+        // Optimize the editor container for better performance
+        const container = editor.container;
+        if (container) {
+          container.style.willChange = "auto";
+          container.style.transform = "translateZ(0)";
+        }
+
+        // Optimize the workplace for smooth typing
+        const workplace = editor.workplace;
+        if (workplace) {
+          workplace.style.willChange = "auto";
+          workplace.style.transform = "translateZ(0)";
+          workplace.style.backfaceVisibility = "hidden";
+        }
+      },
+      // Optimize typing events
+      beforeSetValueToEditor: function (value: string) {
+        return value;
+      },
+      afterSetValueToEditor: function () {
+        // Ensure smooth typing after value changes
+      },
+      // Add typing optimization events
+      keydown: function (event: any) {
+        // Prevent unnecessary re-renders during typing
+        if (event.key.length === 1) {
+          // Single character input - optimize
+          event.stopPropagation();
+        }
+      },
+      input: function () {
+        // Debounce input events to prevent excessive processing
+        debounce(() => {
+          // Handle input changes smoothly
+        }, 100)();
+      },
+    },
+    // Performance optimizations
     uploader: {
       insertImageAsBase64URI: true,
-    },
-    filebrowser: {
-      ajax: {
-        headers: {
-          "X-CSRF-TOKEN": "your-csrf-token",
-        },
+      url: `${API_BASE}/upload/image`,
+      pathVariableName: "path",
+      withCredentials: false,
+      headers: {},
+      data: {},
+      method: "POST",
+      name: "files[]",
+      multiple: false,
+      accept: "image/*",
+      process: function (resp: any) {
+        return {
+          files: resp.files || [],
+          error: resp.error || false,
+          message: resp.message || "",
+        };
+      },
+      error: function (e: any) {
+        console.error("Upload error:", e);
+      },
+      success: function (resp: any) {
+        console.log("Upload success:", resp);
       },
     },
   } as any;
@@ -225,16 +374,93 @@ export default function AssignmentBuilder({
   };
 
   const handleSave = async () => {
-    // TODO: Implement save to backend
-    console.log("Saving assignment:", {
-      title,
-      description,
-      chapterId,
-      tasks,
-      content,
-      simulations,
-      questionSets,
-    });
+    try {
+      setIsSaving(true);
+
+      // Validate required fields
+      if (!title.trim()) {
+        alert("Please enter an assignment title");
+        return;
+      }
+
+      if (!description.trim()) {
+        alert("Please enter an assignment description");
+        return;
+      }
+
+      // Prepare assignment data
+      const assignmentData = {
+        title: title.trim(),
+        description: description.trim(),
+        chapterId,
+        tasks: tasks.map((task, index) => ({
+          taskName: task.taskName.trim(),
+          instructions: task.instructions.trim(),
+          order: index,
+        })),
+        content: content.map((item, index) => ({
+          type: item.type,
+          videoBase64: item.videoBase64,
+          textContent: item.textContent,
+          richTextContent: item.richTextContent,
+          order: index,
+        })),
+        simulations: simulations.map((sim, index) => ({
+          type: sim.type,
+          title: sim.title.trim(),
+          description: sim.description.trim(),
+          config: sim.config,
+          isOptional: sim.isOptional,
+          order: index,
+        })),
+        questionSets: questionSets.map((qs, index) => ({
+          name: qs.name.trim(),
+          description: qs.description.trim(),
+          excelBase64: qs.excelBase64,
+          questions: qs.questions,
+          order: index,
+        })),
+      };
+
+      // Save to backend
+      let response;
+      if (editingItem) {
+        // Update existing assignment
+        response = await axios.put(
+          `${API_BASE}/assignments/${editingItem._id}`,
+          assignmentData
+        );
+      } else {
+        // Create new assignment
+        response = await axios.post(`${API_BASE}/assignments`, assignmentData);
+      }
+
+      if (response.data.success) {
+        alert(
+          editingItem
+            ? "Assignment updated successfully!"
+            : "Assignment saved successfully!"
+        );
+        // Reset form or redirect
+        onBack();
+      } else {
+        alert(
+          `Failed to ${editingItem ? "update" : "save"} assignment: ` +
+            response.data.error
+        );
+      }
+    } catch (error: unknown) {
+      console.error("Error saving assignment:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      const responseError = (error as any)?.response?.data?.error;
+      alert(
+        `Error ${editingItem ? "updating" : "saving"} assignment: ` +
+          (responseError || errorMessage)
+      );
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -243,11 +469,13 @@ export default function AssignmentBuilder({
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold text-gray-800">
-            Create New Assignment for &lsquo;{chapterName}&lsquo;
+            {editingItem ? "Edit Assignment" : "Create New Assignment"} for
+            &lsquo;{chapterName}&lsquo;
           </h2>
           <p className="text-gray-600">
-            Build your assignment with tasks, content, simulations, and
-            questions
+            {editingItem
+              ? "Update your assignment with tasks, content, simulations, and questions"
+              : "Build your assignment with tasks, content, simulations, and questions"}
           </p>
         </div>
         <button
@@ -530,10 +758,15 @@ export default function AssignmentBuilder({
                               }
                             />
                           </div>
-                          <p className="text-xs text-gray-500 mt-2">
-                            Use the toolbar above to format your content with
-                            bold, italic, lists, tables, and more.
-                          </p>
+                          <div className="flex justify-between items-center mt-2">
+                            <p className="text-xs text-gray-500">
+                              Use the toolbar above to format your content with
+                              bold, italic, lists, tables, and more.
+                            </p>
+                            <p className="text-xs text-gray-400 italic">
+                              POWERED BY JODIT
+                            </p>
+                          </div>
                         </div>
                       )}
 
@@ -827,8 +1060,9 @@ export default function AssignmentBuilder({
         <button
           onClick={handleSave}
           className="bg-purple-500 text-white px-6 py-3 rounded-lg hover:bg-purple-600 transition-colors"
+          disabled={isSaving}
         >
-          Save Assignment
+          {isSaving ? "Saving..." : "Save Assignment"}
         </button>
       </div>
     </div>

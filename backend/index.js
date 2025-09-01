@@ -120,6 +120,13 @@ app.use("/api/topics", topicRoutes);
 app.use("/api/quizzes", quizRoutes);
 app.use("/api/revision-tests", revisionTestRoutes);
 app.use("/api/categories", categoryRoutes);
+
+// Assignment and Case Study Routes
+import assignmentRoutes from "./routes/assignmentRoutes.js";
+import caseStudyRoutes from "./routes/caseStudyRoutes.js";
+app.use("/api/assignments", assignmentRoutes);
+app.use("/api/case-studies", caseStudyRoutes);
+
 app.use("/metatags", metaTagRoutes);
 app.use("/api/tickets", ticketRoutes);
 

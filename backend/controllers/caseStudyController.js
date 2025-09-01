@@ -1,7 +1,7 @@
-const CaseStudy = require("../models/CaseStudy");
+import CaseStudy from "../models/CaseStudy.js";
 
 // Create new case study
-exports.createCaseStudy = async (req, res) => {
+export const createCaseStudy = async (req, res) => {
   try {
     const {
       title,
@@ -31,7 +31,7 @@ exports.createCaseStudy = async (req, res) => {
 };
 
 // Get all case studies for a chapter
-exports.getCaseStudiesByChapter = async (req, res) => {
+export const getCaseStudiesByChapter = async (req, res) => {
   try {
     const { chapterId } = req.params;
     const caseStudies = await CaseStudy.find({
@@ -45,7 +45,7 @@ exports.getCaseStudiesByChapter = async (req, res) => {
 };
 
 // Get single case study
-exports.getCaseStudy = async (req, res) => {
+export const getCaseStudy = async (req, res) => {
   try {
     const caseStudy = await CaseStudy.findById(req.params.id);
     if (!caseStudy) {
@@ -60,7 +60,7 @@ exports.getCaseStudy = async (req, res) => {
 };
 
 // Update case study
-exports.updateCaseStudy = async (req, res) => {
+export const updateCaseStudy = async (req, res) => {
   try {
     const caseStudy = await CaseStudy.findByIdAndUpdate(
       req.params.id,
@@ -79,7 +79,7 @@ exports.updateCaseStudy = async (req, res) => {
 };
 
 // Delete case study
-exports.deleteCaseStudy = async (req, res) => {
+export const deleteCaseStudy = async (req, res) => {
   try {
     const caseStudy = await CaseStudy.findByIdAndDelete(req.params.id);
     if (!caseStudy) {
@@ -94,7 +94,7 @@ exports.deleteCaseStudy = async (req, res) => {
 };
 
 // Add task to case study
-exports.addTask = async (req, res) => {
+export const addTask = async (req, res) => {
   try {
     const { taskName, instructions } = req.body;
     const caseStudy = await CaseStudy.findById(req.params.id);
@@ -121,7 +121,7 @@ exports.addTask = async (req, res) => {
 };
 
 // Add content to case study
-exports.addContent = async (req, res) => {
+export const addContent = async (req, res) => {
   try {
     const { type, videoBase64, textContent, richTextContent } = req.body;
     const caseStudy = await CaseStudy.findById(req.params.id);
@@ -150,7 +150,7 @@ exports.addContent = async (req, res) => {
 };
 
 // Add simulation to case study
-exports.addSimulation = async (req, res) => {
+export const addSimulation = async (req, res) => {
   try {
     const { type, title, description, config, isOptional } = req.body;
     const caseStudy = await CaseStudy.findById(req.params.id);
@@ -180,7 +180,7 @@ exports.addSimulation = async (req, res) => {
 };
 
 // Add question set to case study
-exports.addQuestionSet = async (req, res) => {
+export const addQuestionSet = async (req, res) => {
   try {
     const {
       name,

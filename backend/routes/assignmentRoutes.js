@@ -1,6 +1,7 @@
-const express = require("express");
+import express from "express";
+import * as assignmentController from "../controllers/assignmentController.js";
+
 const router = express.Router();
-const assignmentController = require("../controllers/assignmentController");
 
 // Create new assignment
 router.post("/", assignmentController.createAssignment);
@@ -29,4 +30,4 @@ router.post("/:id/simulations", assignmentController.addSimulation);
 // Add question set to assignment
 router.post("/:id/question-sets", assignmentController.addQuestionSet);
 
-module.exports = router;
+export default router;

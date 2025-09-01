@@ -1,6 +1,7 @@
-const express = require("express");
+import express from "express";
+import * as caseStudyController from "../controllers/caseStudyController.js";
+
 const router = express.Router();
-const caseStudyController = require("../controllers/caseStudyController");
 
 // Create new case study
 router.post("/", caseStudyController.createCaseStudy);
@@ -29,4 +30,4 @@ router.post("/:id/simulations", caseStudyController.addSimulation);
 // Add question set to case study
 router.post("/:id/question-sets", caseStudyController.addQuestionSet);
 
-module.exports = router;
+export default router;
