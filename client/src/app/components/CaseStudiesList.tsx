@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React from "react";
 
@@ -7,7 +8,7 @@ interface CaseStudiesListProps {
 
 export default function CaseStudiesList({ chapterId }: CaseStudiesListProps) {
   // Mock data - replace with actual API call
-  const caseStudies = [
+  const caseStudies: any[] = [
     // Empty initially
   ];
 
@@ -32,7 +33,7 @@ export default function CaseStudiesList({ chapterId }: CaseStudiesListProps) {
           </div>
           <p className="text-gray-500 text-sm">No case studies created yet</p>
           <p className="text-gray-400 text-xs">
-            Click "ADD CASE STUDY" to create your first case study
+            Click &ldquo;ADD CASE STUDY&#34; to create your first case study
           </p>
         </div>
       ) : (

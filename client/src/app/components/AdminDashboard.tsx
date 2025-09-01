@@ -66,7 +66,9 @@ export default function AdminDashboard({
             {/* Case Studies Section */}
             <div>
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold text-gray-800">Case Studies</h2>
+                <h2 className="text-xl font-semibold text-gray-800">
+                  Case Studies
+                </h2>
                 <button
                   onClick={handleAddCaseStudy}
                   className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"
@@ -80,7 +82,9 @@ export default function AdminDashboard({
             {/* Assignments Section */}
             <div>
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold text-gray-800">Assignments</h2>
+                <h2 className="text-xl font-semibold text-gray-800">
+                  Assignments
+                </h2>
                 <button
                   onClick={handleAddAssignment}
                   className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors"
@@ -100,7 +104,7 @@ export default function AdminDashboard({
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-800 mb-2">
-          Topics for '{chapterName}'
+          Topics for &#39;{chapterName}&lsquo;
         </h1>
         <p className="text-gray-600">
           Manage topics, case studies, and assignments for this chapter

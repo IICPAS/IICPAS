@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useState } from "react";
 import dynamic from "next/dynamic";
@@ -242,7 +243,7 @@ export default function CaseStudyBuilder({
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold text-gray-800">
-            Create New Case Study for '{chapterName}'
+            Create New Case Study for &lsquo;{chapterName}&lsquo;
           </h2>
           <p className="text-gray-600">
             Build your case study with tasks, content, simulations, and
@@ -413,7 +414,8 @@ export default function CaseStudyBuilder({
                 ))}
                 {tasks.length === 0 && (
                   <div className="text-center py-8 text-gray-500">
-                    No tasks added yet. Click "Add Task" to get started.
+                    No tasks added yet. Click &ldquo;Add Task&quot; to get
+                    started.
                   </div>
                 )}
               </div>
@@ -511,8 +513,12 @@ export default function CaseStudyBuilder({
                           >
                             <JoditEditor
                               value={item.richTextContent || ""}
-                              config={editorConfig}
-                              onBlur={(newContent) =>
+                              config={{
+                                ...editorConfig,
+                                defaultActionOnPaste: "insert_as_html",
+                                colorPickerDefaultTab: "color", // Fix type error: must be "color" or "background"
+                              }}
+                              onBlur={(newContent: string) =>
                                 updateContent(
                                   item.id,
                                   "richTextContent",
@@ -574,7 +580,8 @@ export default function CaseStudyBuilder({
                 ))}
                 {content.length === 0 && (
                   <div className="text-center py-8 text-gray-500">
-                    No content added yet. Click "Add Content" to get started.
+                    No content added yet. Click &rdquo;Add Content&#34; to get
+                    started.
                   </div>
                 )}
               </div>
@@ -695,8 +702,8 @@ export default function CaseStudyBuilder({
                 ))}
                 {simulations.length === 0 && (
                   <div className="text-center py-8 text-gray-500">
-                    No simulations added yet. Click "Add Simulation" to get
-                    started.
+                    No simulations added yet. Click &#34;Add Simulation&#34; to
+                    get started.
                   </div>
                 )}
               </div>
@@ -803,8 +810,8 @@ export default function CaseStudyBuilder({
                 ))}
                 {questionSets.length === 0 && (
                   <div className="text-center py-8 text-gray-500">
-                    No question sets added yet. Click "Add Question Set" to get
-                    started.
+                    No question sets added yet. Click &ldquo;Add Question
+                    Set&ldquo; to get started.
                   </div>
                 )}
               </div>
