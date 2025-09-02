@@ -26,8 +26,9 @@ import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-const STATIC_CDN_BASE =
-  process.env.NEXT_PUBLIC_STATIC_CDN_BASE || "https://cdn.iicpa.in";
+const STATIC_CDN_BASE = "https://cdn.iicpa.in";
+
+console.log(STATIC_CDN_BASE);
 const joditConfig = {
   readonly: false,
   height: 300,
@@ -707,10 +708,13 @@ export default function AddOrEditTopicForm({
     }
 
     const formData = new FormData();
+
+    console.log("11", STATIC_CDN_BASE);
     formData.append("video", file);
 
     try {
       // Upload to static-backend microservice
+
       const res = await axios.post(
         `${STATIC_CDN_BASE}/upload/video`,
         formData,

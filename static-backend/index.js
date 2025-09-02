@@ -9,8 +9,31 @@ require("dotenv").config({ path: path.join(__dirname, ".env") });
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Ensure upload directories exist
+const ensureUploadDirectories = () => {
+  const dirs = ["uploads", "uploads/images", "uploads/videos"];
+
+  dirs.forEach((dir) => {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+      console.log(`Created directory: ${dir}`);
+    }
+  });
+};
+
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "https://iicpa.in",
+      "http://localhost:3000",
+      "https://localhost:3000",
+    ],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+  })
+);
 app.use(express.json());
 app.use(express.static("uploads"));
 
@@ -523,7 +546,12 @@ app.delete("/files/:id", async (req, res) => {
 
     // Delete file from filesystem
     try {
-      fs.unlinkSync(file.file_path);
+      if (fs.existsSync(file.file_path)) {
+        fs.unlinkSync(file.file_path);
+        console.log(`File deleted from filesystem: ${file.file_path}`);
+      } else {
+        console.log(`File not found on filesystem: ${file.file_path}`);
+      }
     } catch (unlinkErr) {
       console.error("Error deleting file from filesystem:", unlinkErr);
     }
@@ -565,6 +593,9 @@ const startServer = async () => {
   try {
     // Connect to MongoDB first
     await connectToMongoDB();
+
+    // Ensure upload directories exist
+    ensureUploadDirectories();
 
     // Start the server
     app.listen(PORT, () => {

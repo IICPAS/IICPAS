@@ -7,6 +7,38 @@
 - Access to deploy at `cdn.iicpa.in`
 - Proper file permissions for uploads directory
 
+## Quick Setup (Recommended)
+
+### Automated Deployment Setup
+1. **Clone and navigate to the project:**
+   ```bash
+   cd static-backend
+   ```
+
+2. **Run the deployment setup script:**
+   ```bash
+   ./deploy-setup.sh
+   ```
+
+3. **Update .env with your actual values:**
+   ```bash
+   nano .env
+   # Update MongoDB URI, CDN URL, etc.
+   ```
+
+4. **Start the service:**
+   ```bash
+   npm start
+   ```
+
+### What the Setup Script Does
+- ✅ Creates required upload directories (`uploads/images`, `uploads/videos`)
+- ✅ Sets proper file permissions
+- ✅ Creates `.env` file with default configuration
+- ✅ Installs npm dependencies
+- ✅ Sets up MongoDB indexes
+- ✅ Provides deployment checklist
+
 ## Step 1: Server Setup
 
 ### 1.1 Install MongoDB
@@ -309,6 +341,26 @@ Add this line:
 ## Troubleshooting
 
 ### Common Issues
+
+#### ENOENT: no such file or directory error
+**Error:** `Error: ENOENT: no such file or directory, open 'uploads/videos/filename.mp4'`
+
+**Cause:** Upload directories don't exist on the server
+
+**Solution:**
+```bash
+# Run the automated setup
+./deploy-setup.sh
+
+# Or manually create directories
+mkdir -p uploads/images uploads/videos
+chmod 755 uploads uploads/images uploads/videos
+
+# Restart the service
+npm start
+```
+
+**Prevention:** The service now automatically creates directories on startup
 
 1. **Permission Denied**: Check file permissions and ownership
 2. **Port Already in Use**: Check if another service is using port 3001
