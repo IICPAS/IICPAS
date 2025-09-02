@@ -1,0 +1,35 @@
+{
+  "name": "static-backend",
+  "version": "1.0.0",
+  "description": "Microservice for handling file uploads (images and videos)",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "setup": "node setup-mongodb.js",
+    "test": "node test-upload.js",
+    "test-multi": "node test-multi-upload.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "fs": "^0.0.1-security",
+    "mongodb": "^6.3.0",
+    "multer": "^1.4.5-lts.1",
+    "path": "^0.12.7"
+  },
+  "devDependencies": {
+    "axios": "^1.11.0",
+    "nodemon": "^3.0.1"
+  },
+  "keywords": [
+    "file-upload",
+    "microservice",
+    "cdn",
+    "images",
+    "videos"
+  ],
+  "author": "IICPA Institute",
+  "license": "MIT"
+}

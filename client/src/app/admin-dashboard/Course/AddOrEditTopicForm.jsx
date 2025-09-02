@@ -26,6 +26,9 @@ import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const STATIC_CDN_BASE = "https://cdn.iicpa.in";
+
+console.log(STATIC_CDN_BASE);
 const joditConfig = {
   readonly: false,
   height: 300,
@@ -129,6 +132,11 @@ export default function AddOrEditTopicForm({
   const [quizEditorOpen, setQuizEditorOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState(null);
   const [editingQuestionIndex, setEditingQuestionIndex] = useState(-1);
+  const [uploadedFiles, setUploadedFiles] = useState({
+    images: [],
+    videos: [],
+  });
+  const [loadingFiles, setLoadingFiles] = useState(false);
 
   // Quiz editing functions
   const openQuizEditor = () => {
@@ -251,7 +259,63 @@ export default function AddOrEditTopicForm({
         console.log("Topic has no quiz");
       }
     }
+
+    // Fetch uploaded files when component mounts
+    fetchUploadedFiles();
   }, [topic]);
+
+  // Fetch uploaded files from static-backend
+  const fetchUploadedFiles = async () => {
+    setLoadingFiles(true);
+    try {
+      // Fetch images and videos in parallel
+      const [imagesRes, videosRes] = await Promise.all([
+        axios.get(`${STATIC_CDN_BASE}/files/images`),
+        axios.get(`${STATIC_CDN_BASE}/files/videos`),
+      ]);
+
+      if (imagesRes.data.success && videosRes.data.success) {
+        setUploadedFiles({
+          images: imagesRes.data.data || [],
+          videos: videosRes.data.data || [],
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching uploaded files:", error);
+      // Don't show error to user as this is not critical
+    } finally {
+      setLoadingFiles(false);
+    }
+  };
+
+  // Delete uploaded file
+  const handleDeleteFile = async (fileId, fileType) => {
+    try {
+      await axios.delete(`${STATIC_CDN_BASE}/files/${fileId}`);
+
+      // Remove from local state
+      setUploadedFiles((prev) => ({
+        ...prev,
+        [fileType]: prev[fileType].filter((file) => file.id !== fileId),
+      }));
+
+      // Also remove from links if present
+      if (fileType === "videos") {
+        setVideoLinks((prev) =>
+          prev.filter((link) => !link.includes(fileId.toString()))
+        );
+      } else if (fileType === "images") {
+        setImageLinks((prev) =>
+          prev.filter((link) => !link.includes(fileId.toString()))
+        );
+      }
+
+      Swal.fire("Success", "File deleted successfully", "success");
+    } catch (error) {
+      console.error("Error deleting file:", error);
+      Swal.fire("Error", "Failed to delete file", "error");
+    }
+  };
 
   const loadExistingQuiz = async (quizId) => {
     try {
@@ -631,9 +695,9 @@ export default function AddOrEditTopicForm({
     const file = e.target.files[0];
     if (!file) return;
 
-    // Check file size (100MB limit for videos)
-    if (file.size > 100 * 1024 * 1024) {
-      Swal.fire("Error", "Video size must be less than 100MB", "error");
+    // Check file size (300MB limit for videos)
+    if (file.size > 300 * 1024 * 1024) {
+      Swal.fire("Error", "Video size must be less than 300MB", "error");
       return;
     }
 
@@ -644,16 +708,24 @@ export default function AddOrEditTopicForm({
     }
 
     const formData = new FormData();
+
+    console.log("11", STATIC_CDN_BASE);
     formData.append("video", file);
 
     try {
-      const res = await axios.post(`${API_BASE}/upload/video`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      // Upload to static-backend microservice
 
-      if (res.data.videoUrl) {
+      const res = await axios.post(
+        `${STATIC_CDN_BASE}/upload/video`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+
+      if (res.data.success && res.data.data.cdnUrl) {
         // Add the video URL to the list
-        setVideoLinks((prev) => [...prev, res.data.videoUrl]);
+        setVideoLinks((prev) => [...prev, res.data.data.cdnUrl]);
         Swal.fire({
           title: "Video Uploaded Successfully!",
           text: "Video URL is now available below. You can copy and use it in the editor.",
@@ -664,6 +736,77 @@ export default function AddOrEditTopicForm({
         Swal.fire("Error", "Failed to get video URL", "error");
       }
     } catch (err) {
+      console.error("Video upload error:", err);
+      Swal.fire("Error", err.response?.data?.error || "Upload failed", "error");
+    }
+  };
+
+  // Handle multiple video uploads
+  const handleMultipleVideoUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    // Check if too many files
+    if (files.length > 5) {
+      Swal.fire("Error", "Maximum 5 videos allowed per upload", "error");
+      return;
+    }
+
+    // Validate files
+    const validFiles = [];
+    const invalidFiles = [];
+
+    files.forEach((file) => {
+      if (file.size > 300 * 1024 * 1024) {
+        invalidFiles.push(`${file.name} (too large)`);
+      } else if (!file.type.startsWith("video/")) {
+        invalidFiles.push(`${file.name} (invalid type)`);
+      } else {
+        validFiles.push(file);
+      }
+    });
+
+    if (invalidFiles.length > 0) {
+      Swal.fire("Error", `Invalid files: ${invalidFiles.join(", ")}`, "error");
+      return;
+    }
+
+    if (validFiles.length === 0) return;
+
+    const formData = new FormData();
+    validFiles.forEach((file) => {
+      formData.append("videos", file);
+    });
+
+    try {
+      // Upload to static-backend microservice
+      const res = await axios.post(
+        `${STATIC_CDN_BASE}/upload/videos`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+
+      if (res.data.success) {
+        // Add all video URLs to the list
+        const newUrls = res.data.data.uploaded.map((file) => file.cdnUrl);
+        setVideoLinks((prev) => [...prev, ...newUrls]);
+
+        Swal.fire({
+          title: "Videos Uploaded Successfully!",
+          text: `${res.data.data.successful} videos uploaded. URLs are now available below.`,
+          icon: "success",
+          confirmButtonText: "OK",
+        });
+
+        // Refresh the uploaded files list
+        fetchUploadedFiles();
+      } else {
+        Swal.fire("Error", "Failed to upload videos", "error");
+      }
+    } catch (err) {
+      console.error("Multiple videos upload error:", err);
       Swal.fire("Error", err.response?.data?.error || "Upload failed", "error");
     }
   };
@@ -672,9 +815,9 @@ export default function AddOrEditTopicForm({
     const file = e.target.files[0];
     if (!file) return;
 
-    // Check file size (10MB limit)
-    if (file.size > 10 * 1024 * 1024) {
-      Swal.fire("Error", "Image size must be less than 10MB", "error");
+    // Check file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      Swal.fire("Error", "Image size must be less than 5MB", "error");
       return;
     }
 
@@ -688,13 +831,18 @@ export default function AddOrEditTopicForm({
     formData.append("image", file);
 
     try {
-      const res = await axios.post(`${API_BASE}/upload/image`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      // Upload to static-backend microservice
+      const res = await axios.post(
+        `${STATIC_CDN_BASE}/upload/image`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
 
-      if (res.data.imageUrl) {
+      if (res.data.success && res.data.data.cdnUrl) {
         // Add the image URL to the list
-        setImageLinks((prev) => [...prev, res.data.imageUrl]);
+        setImageLinks((prev) => [...prev, res.data.data.cdnUrl]);
         Swal.fire({
           title: "Image Uploaded Successfully!",
           text: "Image URL is now available below. You can copy and use it in the editor.",
@@ -705,6 +853,77 @@ export default function AddOrEditTopicForm({
         Swal.fire("Error", "Failed to get image URL", "error");
       }
     } catch (err) {
+      console.error("Image upload error:", err);
+      Swal.fire("Error", err.response?.data?.error || "Upload failed", "error");
+    }
+  };
+
+  // Handle multiple image uploads
+  const handleMultipleImageUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    // Check if too many files
+    if (files.length > 10) {
+      Swal.fire("Error", "Maximum 10 images allowed per upload", "error");
+      return;
+    }
+
+    // Validate files
+    const validFiles = [];
+    const invalidFiles = [];
+
+    files.forEach((file) => {
+      if (file.size > 5 * 1024 * 1024) {
+        invalidFiles.push(`${file.name} (too large)`);
+      } else if (!file.type.startsWith("image/")) {
+        invalidFiles.push(`${file.name} (invalid type)`);
+      } else {
+        validFiles.push(file);
+      }
+    });
+
+    if (invalidFiles.length > 0) {
+      Swal.fire("Error", `Invalid files: ${invalidFiles.join(", ")}`, "error");
+      return;
+    }
+
+    if (validFiles.length === 0) return;
+
+    const formData = new FormData();
+    validFiles.forEach((file) => {
+      formData.append("images", file);
+    });
+
+    try {
+      // Upload to static-backend microservice
+      const res = await axios.post(
+        `${STATIC_CDN_BASE}/upload/images`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+
+      if (res.data.success) {
+        // Add all image URLs to the list
+        const newUrls = res.data.data.uploaded.map((file) => file.cdnUrl);
+        setImageLinks((prev) => [...prev, ...newUrls]);
+
+        Swal.fire({
+          title: "Images Uploaded Successfully!",
+          text: `${res.data.data.successful} images uploaded. URLs are now available below.`,
+          icon: "success",
+          confirmButtonText: "OK",
+        });
+
+        // Refresh the uploaded files list
+        fetchUploadedFiles();
+      } else {
+        Swal.fire("Error", "Failed to upload images", "error");
+      }
+    } catch (err) {
+      console.error("Multiple images upload error:", err);
       Swal.fire("Error", err.response?.data?.error || "Upload failed", "error");
     }
   };
@@ -797,22 +1016,152 @@ export default function AddOrEditTopicForm({
 
           {/* Upload and show video links */}
           <Box>
-            <Typography fontWeight={600} fontSize={15}>
-              Upload Videos
-            </Typography>
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
+              mb={1}
+            >
+              <Typography fontWeight={600} fontSize={15}>
+                Upload Videos
+              </Typography>
+              <Button
+                size="small"
+                variant="outlined"
+                onClick={fetchUploadedFiles}
+                disabled={loadingFiles}
+              >
+                {loadingFiles ? "Loading..." : "Refresh Files"}
+              </Button>
+            </Stack>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
               Upload videos to get a direct link. Copy the link below and use it
               in the editor.
             </Typography>
-            <Button component="label" variant="contained" sx={{ mt: 1 }}>
-              Upload Video
-              <input
-                type="file"
-                accept="video/*"
-                hidden
-                onChange={handleVideoUpload}
-              />
-            </Button>
+            <Stack direction="row" spacing={2} sx={{ mt: 1 }}>
+              <Button component="label" variant="contained">
+                Upload Single Video
+                <input
+                  type="file"
+                  accept="video/*"
+                  hidden
+                  onChange={handleVideoUpload}
+                />
+              </Button>
+              <Button component="label" variant="outlined" color="primary">
+                Upload Multiple Videos
+                <input
+                  type="file"
+                  accept="video/*"
+                  multiple
+                  hidden
+                  onChange={handleMultipleVideoUpload}
+                />
+              </Button>
+            </Stack>
+
+            {/* Display existing uploaded videos */}
+            {uploadedFiles.videos.length > 0 && (
+              <Box mt={2} mb={2}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 1, fontWeight: 500 }}
+                >
+                  📁 Previously Uploaded Videos:
+                </Typography>
+                <Stack spacing={1}>
+                  {uploadedFiles.videos.map((file) => (
+                    <Box
+                      key={file.id}
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        background: "#f0f9ff",
+                        p: 2,
+                        borderRadius: 1,
+                        border: "1px solid #bae6fd",
+                      }}
+                    >
+                      <Box sx={{ flex: 1, mr: 2 }}>
+                        <Typography
+                          variant="body2"
+                          sx={{ fontWeight: 500, mb: 0.5 }}
+                        >
+                          {file.original_name}
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            wordBreak: "break-all",
+                            fontFamily: "monospace",
+                            fontSize: "0.8rem",
+                            color: "#0369a1",
+                          }}
+                        >
+                          {file.cdn_url}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Size: {(file.file_size / (1024 * 1024)).toFixed(2)} MB
+                          • Uploaded:{" "}
+                          {new Date(file.upload_date).toLocaleDateString()}
+                        </Typography>
+                      </Box>
+                      <Stack direction="row" spacing={1}>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={() => {
+                            navigator.clipboard.writeText(file.cdn_url);
+                            Swal.fire(
+                              "Copied!",
+                              "Video URL copied to clipboard",
+                              "success"
+                            );
+                          }}
+                        >
+                          Copy
+                        </Button>
+                        <Button
+                          size="small"
+                          variant="contained"
+                          color="primary"
+                          onClick={() => {
+                            if (editor.current) {
+                              const videoHtml = `<div style="text-align: center; margin: 2rem 0;">
+                                <video controls style="max-width: 80%; min-width: 500px; height: auto; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.15); border: 2px solid #f0f0f0;">
+                                  <source src="${file.cdn_url}" type="video/mp4">
+                                  <source src="${file.cdn_url}" type="video/webm">
+                                  <source src="${file.cdn_url}" type="video/ogg">
+                                  Your browser does not support the video tag.
+                                </video>
+                              </div>`;
+                              editor.current.selection.insertHTML(videoHtml);
+                              Swal.fire(
+                                "Video Inserted!",
+                                "Video has been inserted into the editor",
+                                "success"
+                              );
+                            }
+                          }}
+                        >
+                          Insert
+                        </Button>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          color="error"
+                          onClick={() => handleDeleteFile(file.id, "videos")}
+                        >
+                          Delete
+                        </Button>
+                      </Stack>
+                    </Box>
+                  ))}
+                </Stack>
+              </Box>
+            )}
 
             {/* Display uploaded video links */}
             <Stack mt={2} spacing={1}>
@@ -953,27 +1302,166 @@ export default function AddOrEditTopicForm({
 
           {/* Upload Images */}
           <Box>
-            <Typography fontWeight={600} fontSize={15}>
-              Upload Images
-            </Typography>
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
+              mb={1}
+            >
+              <Typography fontWeight={600} fontSize={15}>
+                Upload Images
+              </Typography>
+              <Button
+                size="small"
+                variant="outlined"
+                onClick={fetchUploadedFiles}
+                disabled={loadingFiles}
+              >
+                {loadingFiles ? "Loading..." : "Refresh Files"}
+              </Button>
+            </Stack>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
               Upload images to get a direct link. Copy the link below and use it
               in the editor.
             </Typography>
-            <Button
-              component="label"
-              variant="contained"
-              color="secondary"
-              sx={{ mt: 1 }}
-            >
-              Upload Image
-              <input
-                type="file"
-                accept="image/*"
-                hidden
-                onChange={handleImageUpload}
-              />
-            </Button>
+            <Stack direction="row" spacing={2} sx={{ mt: 1 }}>
+              <Button component="label" variant="contained" color="secondary">
+                Upload Single Image
+                <input
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={handleImageUpload}
+                />
+              </Button>
+              <Button component="label" variant="outlined" color="secondary">
+                Upload Multiple Images
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  hidden
+                  onChange={handleMultipleImageUpload}
+                />
+              </Button>
+            </Stack>
+
+            {/* Display existing uploaded images */}
+            {uploadedFiles.images.length > 0 && (
+              <Box mt={2} mb={2}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 1, fontWeight: 500 }}
+                >
+                  🖼️ Previously Uploaded Images:
+                </Typography>
+                <Stack spacing={1}>
+                  {uploadedFiles.images.map((file) => (
+                    <Box
+                      key={file.id}
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        background: "#fef3c7",
+                        p: 2,
+                        borderRadius: 1,
+                        border: "1px solid #fcd34d",
+                      }}
+                    >
+                      <Box sx={{ flex: 1, mr: 2 }}>
+                        <Stack direction="row" spacing={2} alignItems="center">
+                          <img
+                            src={file.cdn_url}
+                            alt={file.original_name}
+                            style={{
+                              width: 60,
+                              height: 60,
+                              objectFit: "cover",
+                              borderRadius: 8,
+                              border: "2px solid #f59e0b",
+                            }}
+                          />
+                          <Box>
+                            <Typography
+                              variant="body2"
+                              sx={{ fontWeight: 500, mb: 0.5 }}
+                            >
+                              {file.original_name}
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                wordBreak: "break-all",
+                                fontFamily: "monospace",
+                                fontSize: "0.8rem",
+                                color: "#92400e",
+                              }}
+                            >
+                              {file.cdn_url}
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
+                              Size:{" "}
+                              {(file.file_size / (1024 * 1024)).toFixed(2)} MB •
+                              Uploaded:{" "}
+                              {new Date(file.upload_date).toLocaleDateString()}
+                            </Typography>
+                          </Box>
+                        </Stack>
+                      </Box>
+                      <Stack direction="row" spacing={1}>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={() => {
+                            navigator.clipboard.writeText(file.cdn_url);
+                            Swal.fire(
+                              "Copied!",
+                              "Image URL copied to clipboard",
+                              "success"
+                            );
+                          }}
+                        >
+                          Copy
+                        </Button>
+                        <Button
+                          size="small"
+                          variant="contained"
+                          color="primary"
+                          onClick={() => {
+                            if (editor.current) {
+                              const imageHtml = `<div style="text-align: center; margin: 2rem 0;">
+                                <img src="${file.cdn_url}" alt="${file.original_name}" style="max-width: 90%; min-width: 400px; height: auto; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.15); border: 2px solid #f0f0f0;">
+                              </div>`;
+                              editor.current.selection.insertHTML(imageHtml);
+                              Swal.fire(
+                                "Image Inserted!",
+                                "Image has been inserted into the editor",
+                                "success"
+                              );
+                            }
+                          }}
+                        >
+                          Insert
+                        </Button>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          color="error"
+                          onClick={() => handleDeleteFile(file.id, "images")}
+                        >
+                          Delete
+                        </Button>
+                      </Stack>
+                    </Box>
+                  ))}
+                </Stack>
+              </Box>
+            )}
 
             {/* Display uploaded image links */}
             <Stack mt={2} spacing={1}>
