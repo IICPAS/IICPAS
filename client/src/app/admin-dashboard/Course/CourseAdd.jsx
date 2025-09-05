@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Select from "react-select";
 import axios from "axios";
 import { FaArrowLeft, FaPlus } from "react-icons/fa";
@@ -46,6 +46,12 @@ export default function CourseAddTab({ onBack }) {
     showCharsCounter: false,
     showWordsCounter: false,
     spellcheck: true,
+    askBeforePasteHTML: false,
+    askBeforePasteFromWord: false,
+    defaultActionOnPaste: "insert_clear_html",
+    enterMode: "BR",
+    useSearch: false,
+    showXPathInStatusbar: false,
   };
 
   useEffect(() => {
@@ -74,6 +80,14 @@ export default function CourseAddTab({ onBack }) {
       [name]: files ? files[0] : value,
     }));
   };
+
+  // Debounced change handler to prevent typing interruption
+  const debouncedJoditChange = useCallback(
+    (field) => (value) => {
+      setForm((f) => ({ ...f, [field]: value }));
+    },
+    []
+  );
 
   const handleJoditChange = (field) => (value) => {
     setForm((f) => ({ ...f, [field]: value }));
@@ -292,8 +306,8 @@ export default function CourseAddTab({ onBack }) {
           <JoditEditor
             value={form.description}
             config={joditConfig}
+            onChange={debouncedJoditChange("description")}
             onBlur={handleJoditChange("description")}
-            onChange={() => {}}
           />
         </div>
 
@@ -305,8 +319,8 @@ export default function CourseAddTab({ onBack }) {
           <JoditEditor
             value={form.examCert}
             config={joditConfig}
+            onChange={debouncedJoditChange("examCert")}
             onBlur={handleJoditChange("examCert")}
-            onChange={() => {}}
           />
         </div>
 
@@ -318,8 +332,8 @@ export default function CourseAddTab({ onBack }) {
           <JoditEditor
             value={form.caseStudy}
             config={joditConfig}
+            onChange={debouncedJoditChange("caseStudy")}
             onBlur={handleJoditChange("caseStudy")}
-            onChange={() => {}}
           />
         </div>
 
@@ -342,8 +356,8 @@ export default function CourseAddTab({ onBack }) {
               <JoditEditor
                 value={form.seoDescription}
                 config={{ ...joditConfig, height: 120 }}
+                onChange={debouncedJoditChange("seoDescription")}
                 onBlur={handleJoditChange("seoDescription")}
-                onChange={() => {}}
               />
             </div>
           </div>

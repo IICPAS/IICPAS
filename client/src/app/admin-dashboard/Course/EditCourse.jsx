@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Select from "react-select";
 import axios from "axios";
 import dynamic from "next/dynamic";
@@ -38,6 +38,12 @@ export default function EditCourse({ courseId, onBack }) {
     showCharsCounter: false,
     showWordsCounter: false,
     spellcheck: true,
+    askBeforePasteHTML: false,
+    askBeforePasteFromWord: false,
+    defaultActionOnPaste: 'insert_clear_html',
+    enterMode: 'BR',
+    useSearch: false,
+    showXPathInStatusbar: false,
   };
 
   useEffect(() => {
@@ -82,6 +88,14 @@ export default function EditCourse({ courseId, onBack }) {
       setForm((f) => ({ ...f, [name]: val }));
     }
   };
+
+  // Debounced change handler to prevent typing interruption
+  const debouncedJoditChange = useCallback(
+    (field) => (value) => {
+      setForm((f) => ({ ...f, [field]: value }));
+    },
+    []
+  );
 
   const handleJoditChange = (field) => (value) => {
     setForm((f) => ({ ...f, [field]: value }));
@@ -255,6 +269,7 @@ export default function EditCourse({ courseId, onBack }) {
           <JoditEditor
             value={form.description}
             config={joditConfig}
+            onChange={debouncedJoditChange("description")}
             onBlur={handleJoditChange("description")}
           />
         </div>
@@ -265,6 +280,7 @@ export default function EditCourse({ courseId, onBack }) {
           <JoditEditor
             value={form.examCert}
             config={joditConfig}
+            onChange={debouncedJoditChange("examCert")}
             onBlur={handleJoditChange("examCert")}
           />
         </div>
@@ -273,6 +289,7 @@ export default function EditCourse({ courseId, onBack }) {
           <JoditEditor
             value={form.caseStudy}
             config={joditConfig}
+            onChange={debouncedJoditChange("caseStudy")}
             onBlur={handleJoditChange("caseStudy")}
           />
         </div>
@@ -291,6 +308,7 @@ export default function EditCourse({ courseId, onBack }) {
           <JoditEditor
             value={form.seoDescription}
             config={joditConfig}
+            onChange={debouncedJoditChange("seoDescription")}
             onBlur={handleJoditChange("seoDescription")}
           />
           <label>SEO Keywords</label>

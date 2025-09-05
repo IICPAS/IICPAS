@@ -26,6 +26,7 @@ app.use(
   cors({
     origin: [
       "https://iicpa.in",
+      "https://www.iicpa.in",
       "http://localhost:3000",
       "https://localhost:3000",
     ],
