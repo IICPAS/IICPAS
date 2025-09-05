@@ -1,7 +1,8 @@
 "use client";
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import axios from "axios";
+import AccountingExperimentCard from "../components/AccountingExperimentCard";
 
 // Add Google Translate types
 declare global {
@@ -133,6 +134,12 @@ function DigitalHubContent() {
   const [topicContent, setTopicContent] = useState("");
   const [loading, setLoading] = useState(true);
 
+  // New state for case studies and assignments
+  const [caseStudies, setCaseStudies] = useState<any[]>([]);
+  const [assignments, setAssignments] = useState<any[]>([]);
+  const [selectedCaseStudy, setSelectedCaseStudy] = useState<any>(null);
+  const [selectedAssignment, setSelectedAssignment] = useState<any>(null);
+
   // Quiz state
   const [quizLoading, setQuizLoading] = useState(false);
   const [quizData, setQuizData] = useState<QuizData | null>(null);
@@ -198,36 +205,81 @@ function DigitalHubContent() {
     setIsDarkMode(!isDarkMode);
   };
 
-  // Handle chapter selection
-  const handleChapterSelect = (chapter: ChapterData) => {
-    setSelectedChapter(chapter);
-    setTopics(chapter.topics || []);
-
-    // Auto-select first topic of selected chapter
-    if (chapter.topics && chapter.topics.length > 0) {
-      const firstTopic = chapter.topics[0];
-      setSelectedTopic(firstTopic);
-
-      // Decode and set topic content
-      if (firstTopic.content) {
-        try {
-          const decodedContent = atob(firstTopic.content);
-          setTopicContent(decodedContent);
-        } catch (error) {
-          console.error("Error decoding topic content:", error);
-          setTopicContent(firstTopic.content || "Content not available");
+  // Fetch case studies for a chapter
+  const fetchCaseStudies = useCallback(
+    async (chapterId: string) => {
+      try {
+        const response = await axios.get(
+          `${API}/api/case-studies/chapter/${chapterId}`
+        );
+        if (response.data.success) {
+          setCaseStudies(response.data.data || []);
         }
+      } catch (error) {
+        console.error("Error fetching case studies:", error);
+        setCaseStudies([]);
       }
-    } else {
-      setSelectedTopic(null);
-      setTopicContent("No topics available for this chapter.");
-    }
-  };
+    },
+    [API]
+  );
+
+  // Fetch assignments for a chapter
+  const fetchAssignments = useCallback(
+    async (chapterId: string) => {
+      try {
+        const response = await axios.get(
+          `${API}/api/assignments/chapter/${chapterId}`
+        );
+        if (response.data.success) {
+          setAssignments(response.data.data || []);
+        }
+      } catch (error) {
+        console.error("Error fetching assignments:", error);
+        setAssignments([]);
+      }
+    },
+    [API]
+  );
+
+  // Handle chapter selection
+  const handleChapterSelect = useCallback(
+    (chapter: ChapterData) => {
+      setSelectedChapter(chapter);
+      setTopics(chapter.topics || []);
+
+      // Fetch case studies and assignments for this chapter
+      fetchCaseStudies(chapter._id);
+      fetchAssignments(chapter._id);
+
+      // Auto-select first topic of selected chapter
+      if (chapter.topics && chapter.topics.length > 0) {
+        const firstTopic = chapter.topics[0];
+        setSelectedTopic(firstTopic);
+
+        // Decode and set topic content
+        if (firstTopic.content) {
+          try {
+            const decodedContent = atob(firstTopic.content);
+            setTopicContent(decodedContent);
+          } catch (error) {
+            console.error("Error decoding topic content:", error);
+            setTopicContent(firstTopic.content || "Content not available");
+          }
+        }
+      } else {
+        setSelectedTopic(null);
+        setTopicContent("No topics available for this chapter.");
+      }
+    },
+    [fetchCaseStudies, fetchAssignments]
+  );
 
   // Handle topic selection
   const handleTopicSelect = (topic: TopicData) => {
     console.log("Topic selected:", topic);
     setSelectedTopic(topic);
+    setSelectedCaseStudy(null);
+    setSelectedAssignment(null);
 
     // Decode and set topic content
     if (topic.content) {
@@ -245,32 +297,53 @@ function DigitalHubContent() {
     loadQuizForTopic(topic._id);
   };
 
-  // Load quiz for a specific topic
-  const loadQuizForTopic = async (topicId: string) => {
-    try {
-      console.log("Loading quiz for topic:", topicId);
-      setQuizLoading(true);
-      setQuizData(null);
-      setSelectedAnswers({});
-      setShowQuizResults(false);
-      setQuizSubmitted(false);
-
-      const response = await axios.get(`${API}/api/quizzes/topic/${topicId}`);
-      console.log("Quiz API response:", response.data);
-
-      if (response.data.success && response.data.quiz) {
-        console.log("Quiz loaded successfully:", response.data.quiz);
-        setQuizData(response.data.quiz);
-      } else {
-        console.log("No quiz found or invalid response");
-      }
-    } catch (error) {
-      console.error("Error loading quiz:", error);
-      // Quiz might not exist for this topic, which is fine
-    } finally {
-      setQuizLoading(false);
-    }
+  // Handle case study selection
+  const handleCaseStudySelect = (caseStudy: any) => {
+    console.log("Case study selected:", caseStudy);
+    setSelectedCaseStudy(caseStudy);
+    setSelectedTopic(null);
+    setSelectedAssignment(null);
+    setTopicContent("");
   };
+
+  // Handle assignment selection
+  const handleAssignmentSelect = (assignment: any) => {
+    console.log("Assignment selected:", assignment);
+    setSelectedAssignment(assignment);
+    setSelectedTopic(null);
+    setSelectedCaseStudy(null);
+    setTopicContent("");
+  };
+
+  // Load quiz for a specific topic
+  const loadQuizForTopic = useCallback(
+    async (topicId: string) => {
+      try {
+        console.log("Loading quiz for topic:", topicId);
+        setQuizLoading(true);
+        setQuizData(null);
+        setSelectedAnswers({});
+        setShowQuizResults(false);
+        setQuizSubmitted(false);
+
+        const response = await axios.get(`${API}/api/quizzes/topic/${topicId}`);
+        console.log("Quiz API response:", response.data);
+
+        if (response.data.success && response.data.quiz) {
+          console.log("Quiz loaded successfully:", response.data.quiz);
+          setQuizData(response.data.quiz);
+        } else {
+          console.log("No quiz found or invalid response");
+        }
+      } catch (error) {
+        console.error("Error loading quiz:", error);
+        // Quiz might not exist for this topic, which is fine
+      } finally {
+        setQuizLoading(false);
+      }
+    },
+    [API]
+  );
 
   // Handle answer selection
   const handleAnswerSelect = (questionId: string, selectedAnswer: string) => {
@@ -344,6 +417,10 @@ function DigitalHubContent() {
             if (specificChapter) {
               setSelectedChapter(specificChapter);
 
+              // Fetch case studies and assignments for this chapter
+              fetchCaseStudies(specificChapter._id);
+              fetchAssignments(specificChapter._id);
+
               // Auto-select first topic of the specific chapter
               if (specificChapter.topics && specificChapter.topics.length > 0) {
                 const firstTopic = specificChapter.topics[0];
@@ -372,6 +449,10 @@ function DigitalHubContent() {
               const firstChapter = chaptersResponse.data.chapters[0];
               setSelectedChapter(firstChapter);
 
+              // Fetch case studies and assignments for this chapter
+              fetchCaseStudies(firstChapter._id);
+              fetchAssignments(firstChapter._id);
+
               if (firstChapter.topics && firstChapter.topics.length > 0) {
                 const firstTopic = firstChapter.topics[0];
                 setSelectedTopic(firstTopic);
@@ -398,6 +479,10 @@ function DigitalHubContent() {
             // No chapterId provided, select first chapter
             const firstChapter = chaptersResponse.data.chapters[0];
             setSelectedChapter(firstChapter);
+
+            // Fetch case studies and assignments for this chapter
+            fetchCaseStudies(firstChapter._id);
+            fetchAssignments(firstChapter._id);
 
             if (firstChapter.topics && firstChapter.topics.length > 0) {
               const firstTopic = firstChapter.topics[0];
@@ -432,7 +517,14 @@ function DigitalHubContent() {
     };
 
     fetchCourseData();
-  }, [courseId, chapterId]);
+  }, [
+    courseId,
+    chapterId,
+    API,
+    fetchAssignments,
+    fetchCaseStudies,
+    loadQuizForTopic,
+  ]);
 
   // Initialize Google Translate with enhanced styling
   useEffect(() => {
@@ -1276,33 +1368,117 @@ function DigitalHubContent() {
               </button>
             </div>
             <div className="space-y-2">
-              {selectedChapter && topics.length > 0 ? (
-                // Show topics for selected chapter
-                topics.map((topic: TopicData, index) => (
-                  <button
-                    key={topic._id}
-                    onClick={() => {
-                      setHamburgerOpen(false);
-                      handleTopicSelect(topic);
-                    }}
-                    className={`w-full text-left p-3 rounded-lg hover:bg-green-50 hover:text-black transition-colors border border-gray-600 ${
-                      selectedTopic?._id === topic._id
-                        ? "bg-gray-100 border-gray-600"
-                        : ""
-                    } ${isDarkMode ? "text-black" : "text-gray-700"}`}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div className="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-medium">
-                        {index + 1}
+              {selectedChapter ? (
+                <>
+                  {/* Topics Section */}
+                  {topics.length > 0 && (
+                    <>
+                      <h3 className="text-sm font-semibold text-gray-600 mb-2">
+                        Topics
+                      </h3>
+                      {topics.map((topic: TopicData, index) => (
+                        <button
+                          key={topic._id}
+                          onClick={() => {
+                            setHamburgerOpen(false);
+                            handleTopicSelect(topic);
+                          }}
+                          className={`w-full text-left p-3 rounded-lg hover:bg-green-50 hover:text-black transition-colors border border-gray-600 ${
+                            selectedTopic?._id === topic._id
+                              ? "bg-gray-100 border-gray-600"
+                              : ""
+                          } ${isDarkMode ? "text-black" : "text-gray-700"}`}
+                        >
+                          <div className="flex items-center space-x-3">
+                            <div className="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-medium">
+                              {index + 1}
+                            </div>
+                            <span className="font-medium">{topic.title}</span>
+                          </div>
+                        </button>
+                      ))}
+                    </>
+                  )}
+
+                  {/* Case Studies Section */}
+                  {caseStudies.length > 0 && (
+                    <>
+                      <h3 className="text-sm font-semibold text-gray-600 mb-2 mt-4">
+                        Simulations
+                      </h3>
+                      {caseStudies.slice(0, 2).map((caseStudy: any, index) => (
+                        <button
+                          key={caseStudy._id}
+                          onClick={() => {
+                            setHamburgerOpen(false);
+                            handleCaseStudySelect(caseStudy);
+                          }}
+                          className={`w-full text-left p-3 rounded-lg hover:bg-blue-50 hover:text-black transition-colors border border-gray-600 ${
+                            selectedCaseStudy?._id === caseStudy._id
+                              ? "bg-gray-100 border-gray-600"
+                              : ""
+                          } ${isDarkMode ? "text-black" : "text-gray-700"}`}
+                        >
+                          <div className="flex items-center space-x-3">
+                            <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-medium">
+                              S{index + 1}
+                            </div>
+                            <span className="font-medium">
+                              Simulation {index + 1}
+                            </span>
+                          </div>
+                        </button>
+                      ))}
+                    </>
+                  )}
+
+                  {/* Assignments Section */}
+                  {assignments.length > 0 && (
+                    <>
+                      <h3 className="text-sm font-semibold text-gray-600 mb-2 mt-4">
+                        Assessments
+                      </h3>
+                      {assignments.slice(0, 2).map((assignment: any, index) => (
+                        <button
+                          key={assignment._id}
+                          onClick={() => {
+                            setHamburgerOpen(false);
+                            handleAssignmentSelect(assignment);
+                          }}
+                          className={`w-full text-left p-3 rounded-lg hover:bg-purple-50 hover:text-black transition-colors border border-gray-600 ${
+                            selectedAssignment?._id === assignment._id
+                              ? "bg-gray-100 border-gray-600"
+                              : ""
+                          } ${isDarkMode ? "text-black" : "text-gray-700"}`}
+                        >
+                          <div className="flex items-center space-x-3">
+                            <div className="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-sm font-medium">
+                              A{index + 1}
+                            </div>
+                            <span className="font-medium">
+                              Assessment {index + 1}
+                            </span>
+                          </div>
+                        </button>
+                      ))}
+                    </>
+                  )}
+
+                  {topics.length === 0 &&
+                    caseStudies.length === 0 &&
+                    assignments.length === 0 && (
+                      <div className="text-center py-8 text-gray-500">
+                        <BookOpen className="mx-auto mb-2 w-8 h-8 text-gray-300" />
+                        <p className="text-sm">
+                          No content available for this chapter
+                        </p>
                       </div>
-                      <span className="font-medium">{topic.title}</span>
-                    </div>
-                  </button>
-                ))
+                    )}
+                </>
               ) : (
                 <div className="text-center py-8 text-gray-500">
                   <BookOpen className="mx-auto mb-2 w-8 h-8 text-gray-300" />
-                  <p className="text-sm">Select a chapter to view topics</p>
+                  <p className="text-sm">Select a chapter to view content</p>
                 </div>
               )}
             </div>
@@ -1422,6 +1598,694 @@ function DigitalHubContent() {
                         </div>
                       </div>
                     ) : null}
+                  </div>
+                </>
+              ) : selectedCaseStudy ? (
+                <>
+                  <div className="text-lg leading-relaxed bg-white border border-gray-200 rounded-lg p-8 shadow-sm text-gray-900">
+                    <div className="mb-6">
+                      <p className="text-gray-700">
+                        {selectedCaseStudy.description}
+                      </p>
+                    </div>
+
+                    {/* Task Instructions */}
+                    {selectedCaseStudy.tasks &&
+                      selectedCaseStudy.tasks.length > 0 && (
+                        <div className="mb-8 p-6 bg-pink-50 border border-pink-200 rounded-lg">
+                          <p className="text-pink-700">
+                            {selectedCaseStudy.tasks[0].instructions}
+                          </p>
+                        </div>
+                      )}
+
+                    {/* Simulations */}
+                    <div className="space-y-6">
+                      {selectedCaseStudy.simulations &&
+                      selectedCaseStudy.simulations.length > 0 ? (
+                        selectedCaseStudy.simulations.map(
+                          (simulation: any, index: number) => (
+                            <div
+                              key={simulation._id}
+                              className="bg-blue-50 border border-blue-200 rounded-lg p-6"
+                            >
+                              <h3 className="text-lg font-semibold text-blue-800 mb-4">
+                                {simulation.title}
+                              </h3>
+                              <p className="text-blue-700 mb-4">
+                                {simulation.description}
+                              </p>
+
+                              {/* Render AccountingExperimentCard */}
+                              <AccountingExperimentCard
+                                experimentNumber={index + 1}
+                                statement={
+                                  simulation.description ||
+                                  "Mock transaction: Paid wages to employees for the first two weeks of January, aggregating Rs.25000."
+                                }
+                                correctEntries={
+                                  simulation.correctEntries || [
+                                    {
+                                      id: "1",
+                                      date: "15/01/2025",
+                                      type: "Debit",
+                                      particulars: "Salary A/c",
+                                      debit: "25000",
+                                      credit: "",
+                                    },
+                                    {
+                                      id: "2",
+                                      date: "15/01/2025",
+                                      type: "Credit",
+                                      particulars: "Cash A/c",
+                                      debit: "",
+                                      credit: "25000",
+                                    },
+                                  ]
+                                }
+                                onComplete={(isCorrect) => {
+                                  console.log(
+                                    `Experiment ${index + 1} completed:`,
+                                    isCorrect
+                                  );
+                                }}
+                              />
+                            </div>
+                          )
+                        )
+                      ) : (
+                        /* Mock Simulation when no simulations exist */
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                          <h3 className="text-lg font-semibold text-blue-800 mb-4">
+                            Mock Simulation
+                          </h3>
+                          <p className="text-blue-700 mb-4">
+                            This is a mock simulation to demonstrate the
+                            AccountingExperimentCard component.
+                          </p>
+
+                          {/* Render AccountingExperimentCard with mock data */}
+                          <AccountingExperimentCard
+                            experimentNumber={1}
+                            statement="Mock transaction: Paid wages to employees for the first two weeks of January, aggregating Rs.25000."
+                            correctEntries={[
+                              {
+                                id: "1",
+                                date: "15/01/2025",
+                                type: "Debit",
+                                particulars: "Salary A/c",
+                                debit: "25000",
+                                credit: "",
+                              },
+                              {
+                                id: "2",
+                                date: "15/01/2025",
+                                type: "Credit",
+                                particulars: "Cash A/c",
+                                debit: "",
+                                credit: "25000",
+                              },
+                            ]}
+                            onComplete={(isCorrect) => {
+                              console.log(
+                                "Mock experiment completed:",
+                                isCorrect
+                              );
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Debug: Always show AccountingExperimentCard */}
+                    <div className="mt-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <h3 className="text-lg font-semibold text-yellow-800 mb-4">
+                        🚀 Debug: AccountingExperimentCard Test
+                      </h3>
+                      <p className="text-yellow-700 mb-4">
+                        This section always shows the AccountingExperimentCard
+                        component for testing.
+                      </p>
+                      <AccountingExperimentCard
+                        experimentNumber={999}
+                        statement="Debug transaction: Cash sale of goods worth Rs.50000 to Mr. Test Customer."
+                        correctEntries={[
+                          {
+                            id: "debug1",
+                            date: "01/01/2025",
+                            type: "Debit",
+                            particulars: "Cash A/c",
+                            debit: "50000",
+                            credit: "",
+                          },
+                          {
+                            id: "debug2",
+                            date: "01/01/2025",
+                            type: "Credit",
+                            particulars: "Sales A/c",
+                            debit: "",
+                            credit: "50000",
+                          },
+                        ]}
+                        onComplete={(isCorrect) => {
+                          console.log("Debug experiment completed:", isCorrect);
+                          alert(
+                            `Debug experiment completed: ${
+                              isCorrect ? "Correct!" : "Incorrect!"
+                            }`
+                          );
+                        }}
+                      />
+                    </div>
+                  </div>
+                </>
+              ) : selectedAssignment ? (
+                <>
+                  <h1 className="text-4xl font-bold text-purple-600 mb-8">
+                    {selectedAssignment.title}
+                  </h1>
+                  <div className="text-lg leading-relaxed bg-white border border-gray-200 rounded-lg p-8 shadow-sm text-gray-900">
+                    <div className="mb-6">
+                      <p className="text-gray-700">
+                        {selectedAssignment.description}
+                      </p>
+                    </div>
+
+                    {/* Task Instructions */}
+                    {selectedAssignment.tasks &&
+                      selectedAssignment.tasks.length > 0 && (
+                        <div className="mb-8 p-6 bg-purple-50 border border-purple-200 rounded-lg">
+                          <p className="text-purple-700">
+                            {selectedAssignment.tasks[0].instructions}
+                          </p>
+                        </div>
+                      )}
+
+                    {/* Assessment Questions */}
+                    {selectedAssignment.questionSets &&
+                    selectedAssignment.questionSets.length > 0 ? (
+                      <div className="space-y-6">
+                        {selectedAssignment.questionSets.map(
+                          (questionSet: any, index: number) => (
+                            <div
+                              key={questionSet._id}
+                              className="bg-purple-50 border border-purple-200 rounded-lg p-6"
+                            >
+                              <h3 className="text-lg font-semibold text-purple-800 mb-4">
+                                {questionSet.name}
+                              </h3>
+                              <p className="text-purple-700 mb-4">
+                                {questionSet.description}
+                              </p>
+
+                              {/* Render AssessmentCard */}
+                              <div className="bg-white border border-gray-200 rounded-lg p-6">
+                                <h4 className="text-lg font-semibold text-purple-800 mb-6">
+                                  Assessment Questions
+                                </h4>
+
+                                {/* Question 1 */}
+                                <div className="mb-8 p-4 bg-gray-50 rounded-lg">
+                                  <h5 className="text-md font-semibold text-gray-800 mb-3">
+                                    1. What financial element increased as a
+                                    result of the investment made by Ms.
+                                    Kousalya and Mr. Raghuram on 2nd April?
+                                  </h5>
+                                  <div className="space-y-2">
+                                    <label className="flex items-center space-x-3 cursor-pointer">
+                                      <input
+                                        type="checkbox"
+                                        className="w-4 h-4 text-purple-600 rounded"
+                                      />
+                                      <span className="text-gray-700">
+                                        Assets & Liability
+                                      </span>
+                                    </label>
+                                    <label className="flex items-center space-x-3 cursor-pointer">
+                                      <input
+                                        type="checkbox"
+                                        className="w-4 h-4 text-purple-600 rounded"
+                                      />
+                                      <span className="text-gray-700">
+                                        Liabilities
+                                      </span>
+                                    </label>
+                                    <label className="flex items-center space-x-3 cursor-pointer">
+                                      <input
+                                        type="checkbox"
+                                        className="w-4 h-4 text-purple-600 rounded"
+                                      />
+                                      <span className="text-gray-700">
+                                        Asset
+                                      </span>
+                                    </label>
+                                    <label className="flex items-center space-x-3 cursor-pointer">
+                                      <input
+                                        type="checkbox"
+                                        className="w-4 h-4 text-purple-600 rounded"
+                                      />
+                                      <span className="text-gray-700">
+                                        Expenses
+                                      </span>
+                                    </label>
+                                  </div>
+                                </div>
+
+                                {/* Question 2 */}
+                                <div className="mb-8 p-4 bg-gray-50 rounded-lg">
+                                  <h5 className="text-md font-semibold text-gray-800 mb-3">
+                                    2. Which ledger to be recognised for the
+                                    payment made through SBI bank account?
+                                  </h5>
+                                  <div className="space-y-2">
+                                    <label className="flex items-center space-x-3 cursor-pointer">
+                                      <input
+                                        type="checkbox"
+                                        className="w-4 h-4 text-purple-600 rounded"
+                                      />
+                                      <span className="text-gray-700">
+                                        Cash
+                                      </span>
+                                    </label>
+                                    <label className="flex items-center space-x-3 cursor-pointer">
+                                      <input
+                                        type="checkbox"
+                                        className="w-4 h-4 text-purple-600 rounded"
+                                      />
+                                      <span className="text-gray-700">
+                                        Party
+                                      </span>
+                                    </label>
+                                    <label className="flex items-center space-x-3 cursor-pointer">
+                                      <input
+                                        type="checkbox"
+                                        className="w-4 h-4 text-purple-600 rounded"
+                                      />
+                                      <span className="text-gray-700">
+                                        Bank
+                                      </span>
+                                    </label>
+                                    <label className="flex items-center space-x-3 cursor-pointer">
+                                      <input
+                                        type="checkbox"
+                                        className="w-4 h-4 text-purple-600 rounded"
+                                      />
+                                      <span className="text-gray-700">
+                                        None of the above
+                                      </span>
+                                    </label>
+                                  </div>
+                                </div>
+
+                                {/* Question 3 */}
+                                <div className="mb-8 p-4 bg-gray-50 rounded-lg">
+                                  <h5 className="text-md font-semibold text-gray-800 mb-3">
+                                    3. When equipment is purchased on credit,
+                                    which accounts are affected?
+                                  </h5>
+                                  <div className="space-y-2">
+                                    <label className="flex items-center space-x-3 cursor-pointer">
+                                      <input
+                                        type="checkbox"
+                                        className="w-4 h-4 text-purple-600 rounded"
+                                      />
+                                      <span className="text-gray-700">
+                                        Equipment (Debit) & Cash (Credit)
+                                      </span>
+                                    </label>
+                                    <label className="flex items-center space-x-3 cursor-pointer">
+                                      <input
+                                        type="checkbox"
+                                        className="w-4 h-4 text-purple-600 rounded"
+                                      />
+                                      <span className="text-gray-700">
+                                        Equipment (Debit) & Accounts Payable
+                                        (Credit)
+                                      </span>
+                                    </label>
+                                    <label className="flex items-center space-x-3 cursor-pointer">
+                                      <input
+                                        type="checkbox"
+                                        className="w-4 h-4 text-purple-600 rounded"
+                                      />
+                                      <span className="text-gray-700">
+                                        Cash (Debit) & Equipment (Credit)
+                                      </span>
+                                    </label>
+                                    <label className="flex items-center space-x-3 cursor-pointer">
+                                      <input
+                                        type="checkbox"
+                                        className="w-4 h-4 text-purple-600 rounded"
+                                      />
+                                      <span className="text-gray-700">
+                                        Accounts Payable (Debit) & Equipment
+                                        (Credit)
+                                      </span>
+                                    </label>
+                                  </div>
+                                </div>
+
+                                {/* Question 4 */}
+                                <div className="mb-8 p-4 bg-gray-50 rounded-lg">
+                                  <h5 className="text-md font-semibold text-gray-800 mb-3">
+                                    4. What is the correct journal entry for
+                                    paying salary advance to an employee?
+                                  </h5>
+                                  <div className="space-y-2">
+                                    <label className="flex items-center space-x-3 cursor-pointer">
+                                      <input
+                                        type="checkbox"
+                                        className="w-4 h-4 text-purple-600 rounded"
+                                      />
+                                      <span className="text-gray-700">
+                                        Salary Advance (Debit) & Cash (Credit)
+                                      </span>
+                                    </label>
+                                    <label className="flex items-center space-x-3 cursor-pointer">
+                                      <input
+                                        type="checkbox"
+                                        className="w-4 h-4 text-purple-600 rounded"
+                                      />
+                                      <span className="text-gray-700">
+                                        Cash (Debit) & Salary Advance (Credit)
+                                      </span>
+                                    </label>
+                                    <label className="flex items-center space-x-3 cursor-pointer">
+                                      <input
+                                        type="checkbox"
+                                        className="w-4 h-4 text-purple-600 rounded"
+                                      />
+                                      <span className="text-gray-700">
+                                        Salary Expense (Debit) & Cash (Credit)
+                                      </span>
+                                    </label>
+                                    <label className="flex items-center space-x-3 cursor-pointer">
+                                      <input
+                                        type="checkbox"
+                                        className="w-4 h-4 text-purple-600 rounded"
+                                      />
+                                      <span className="text-gray-700">
+                                        Employee Advance (Debit) & Bank (Credit)
+                                      </span>
+                                    </label>
+                                  </div>
+                                </div>
+
+                                {/* Question 5 */}
+                                <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                                  <h5 className="text-md font-semibold text-gray-800 mb-3">
+                                    5. When services are provided and partial
+                                    payment is received, which accounts are
+                                    involved?
+                                  </h5>
+                                  <div className="space-y-2">
+                                    <label className="flex items-center space-x-3 cursor-pointer">
+                                      <input
+                                        type="checkbox"
+                                        className="w-4 h-4 text-purple-600 rounded"
+                                      />
+                                      <span className="text-gray-700">
+                                        Service Revenue (Credit) & Cash (Debit)
+                                        & Accounts Receivable (Debit)
+                                      </span>
+                                    </label>
+                                    <label className="flex items-center space-x-3 cursor-pointer">
+                                      <input
+                                        type="checkbox"
+                                        className="w-4 h-4 text-purple-600 rounded"
+                                      />
+                                      <span className="text-gray-700">
+                                        Cash (Credit) & Service Revenue (Debit)
+                                      </span>
+                                    </label>
+                                    <label className="flex items-center space-x-3 cursor-pointer">
+                                      <input
+                                        type="checkbox"
+                                        className="w-4 h-4 text-purple-600 rounded"
+                                      />
+                                      <span className="text-gray-700">
+                                        Accounts Receivable (Credit) & Service
+                                        Revenue (Debit)
+                                      </span>
+                                    </label>
+                                    <label className="flex items-center space-x-3 cursor-pointer">
+                                      <input
+                                        type="checkbox"
+                                        className="w-4 h-4 text-purple-600 rounded"
+                                      />
+                                      <span className="text-gray-700">
+                                        Service Expense (Debit) & Cash (Credit)
+                                      </span>
+                                    </label>
+                                  </div>
+                                </div>
+
+                                {/* Submit Button */}
+                                <div className="text-center">
+                                  <button className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                                    Submit Assessment
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    ) : (
+                      <div className="bg-white border border-gray-200 rounded-lg p-6">
+                        <h4 className="text-lg font-semibold text-purple-800 mb-6">
+                          Assessment Questions
+                        </h4>
+
+                        {/* Question 1 */}
+                        <div className="mb-8 p-4 bg-gray-50 rounded-lg">
+                          <h5 className="text-md font-semibold text-gray-800 mb-3">
+                            1. What financial element increased as a result of
+                            the investment made by Ms. Kousalya and Mr. Raghuram
+                            on 2nd April?
+                          </h5>
+                          <div className="space-y-2">
+                            <label className="flex items-center space-x-3 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                className="w-4 h-4 text-purple-600 rounded"
+                              />
+                              <span className="text-gray-700">
+                                Assets & Liability
+                              </span>
+                            </label>
+                            <label className="flex items-center space-x-3 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                className="w-4 h-4 text-purple-600 rounded"
+                              />
+                              <span className="text-gray-700">Liabilities</span>
+                            </label>
+                            <label className="flex items-center space-x-3 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                className="w-4 h-4 text-purple-600 rounded"
+                              />
+                              <span className="text-gray-700">Asset</span>
+                            </label>
+                            <label className="flex items-center space-x-3 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                className="w-4 h-4 text-purple-600 rounded"
+                              />
+                              <span className="text-gray-700">Expenses</span>
+                            </label>
+                          </div>
+                        </div>
+
+                        {/* Question 2 */}
+                        <div className="mb-8 p-4 bg-gray-50 rounded-lg">
+                          <h5 className="text-md font-semibold text-gray-800 mb-3">
+                            2. Which ledger to be recognised for the payment
+                            made through SBI bank account?
+                          </h5>
+                          <div className="space-y-2">
+                            <label className="flex items-center space-x-3 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                className="w-4 h-4 text-purple-600 rounded"
+                              />
+                              <span className="text-gray-700">Cash</span>
+                            </label>
+                            <label className="flex items-center space-x-3 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                className="w-4 h-4 text-purple-600 rounded"
+                              />
+                              <span className="text-gray-700">Party</span>
+                            </label>
+                            <label className="flex items-center space-x-3 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                className="w-4 h-4 text-purple-600 rounded"
+                              />
+                              <span className="text-gray-700">Bank</span>
+                            </label>
+                            <label className="flex items-center space-x-3 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                className="w-4 h-4 text-purple-600 rounded"
+                              />
+                              <span className="text-gray-700">
+                                None of the above
+                              </span>
+                            </label>
+                          </div>
+                        </div>
+
+                        {/* Question 3 */}
+                        <div className="mb-8 p-4 bg-gray-50 rounded-lg">
+                          <h5 className="text-md font-semibold text-gray-800 mb-3">
+                            3. When equipment is purchased on credit, which
+                            accounts are affected?
+                          </h5>
+                          <div className="space-y-2">
+                            <label className="flex items-center space-x-3 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                className="w-4 h-4 text-purple-600 rounded"
+                              />
+                              <span className="text-gray-700">
+                                Equipment (Debit) & Cash (Credit)
+                              </span>
+                            </label>
+                            <label className="flex items-center space-x-3 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                className="w-4 h-4 text-purple-600 rounded"
+                              />
+                              <span className="text-gray-700">
+                                Equipment (Debit) & Accounts Payable (Credit)
+                              </span>
+                            </label>
+                            <label className="flex items-center space-x-3 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                className="w-4 h-4 text-purple-600 rounded"
+                              />
+                              <span className="text-gray-700">
+                                Cash (Debit) & Equipment (Credit)
+                              </span>
+                            </label>
+                            <label className="flex items-center space-x-3 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                className="w-4 h-4 text-purple-600 rounded"
+                              />
+                              <span className="text-gray-700">
+                                Accounts Payable (Debit) & Equipment (Credit)
+                              </span>
+                            </label>
+                          </div>
+                        </div>
+
+                        {/* Question 4 */}
+                        <div className="mb-8 p-4 bg-gray-50 rounded-lg">
+                          <h5 className="text-md font-semibold text-gray-800 mb-3">
+                            4. What is the correct journal entry for paying
+                            salary advance to an employee?
+                          </h5>
+                          <div className="space-y-2">
+                            <label className="flex items-center space-x-3 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                className="w-4 h-4 text-purple-600 rounded"
+                              />
+                              <span className="text-gray-700">
+                                Salary Advance (Debit) & Cash (Credit)
+                              </span>
+                            </label>
+                            <label className="flex items-center space-x-3 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                className="w-4 h-4 text-purple-600 rounded"
+                              />
+                              <span className="text-gray-700">
+                                Cash (Debit) & Salary Advance (Credit)
+                              </span>
+                            </label>
+                            <label className="flex items-center space-x-3 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                className="w-4 h-4 text-purple-600 rounded"
+                              />
+                              <span className="text-gray-700">
+                                Salary Expense (Debit) & Cash (Credit)
+                              </span>
+                            </label>
+                            <label className="flex items-center space-x-3 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                className="w-4 h-4 text-purple-600 rounded"
+                              />
+                              <span className="text-gray-700">
+                                Employee Advance (Debit) & Bank (Credit)
+                              </span>
+                            </label>
+                          </div>
+                        </div>
+
+                        {/* Question 5 */}
+                        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                          <h5 className="text-md font-semibold text-gray-800 mb-3">
+                            5. When services are provided and partial payment is
+                            received, which accounts are involved?
+                          </h5>
+                          <div className="space-y-2">
+                            <label className="flex items-center space-x-3 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                className="w-4 h-4 text-purple-600 rounded"
+                              />
+                              <span className="text-gray-700">
+                                Service Revenue (Credit) & Cash (Debit) &
+                                Accounts Receivable (Debit)
+                              </span>
+                            </label>
+                            <label className="flex items-center space-x-3 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                className="w-4 h-4 text-purple-600 rounded"
+                              />
+                              <span className="text-gray-700">
+                                Cash (Credit) & Service Revenue (Debit)
+                              </span>
+                            </label>
+                            <label className="flex items-center space-x-3 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                className="w-4 h-4 text-purple-600 rounded"
+                              />
+                              <span className="text-gray-700">
+                                Accounts Receivable (Credit) & Service Revenue
+                                (Debit)
+                              </span>
+                            </label>
+                            <label className="flex items-center space-x-3 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                className="w-4 h-4 text-purple-600 rounded"
+                              />
+                              <span className="text-gray-700">
+                                Service Expense (Debit) & Cash (Credit)
+                              </span>
+                            </label>
+                          </div>
+                        </div>
+
+                        {/* Submit Button */}
+                        <div className="text-center">
+                          <button className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                            Submit Assessment
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </>
               ) : (

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   Box,
   Button,
@@ -24,6 +24,19 @@ import {
 import dynamic from "next/dynamic";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
+// Debounce utility function
+const debounce = (func, wait) => {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+};
+
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 const STATIC_CDN_BASE = "https://cdn.iicpa.in";
@@ -37,6 +50,12 @@ const joditConfig = {
   showCharsCounter: false,
   showWordsCounter: false,
   spellcheck: true,
+  askBeforePasteHTML: false,
+  askBeforePasteFromWord: false,
+  defaultActionOnPaste: "insert_clear_html",
+  enterMode: "BR",
+  useSearch: false,
+  showXPathInStatusbar: false,
   toolbar: [
     "source",
     "|",
@@ -100,7 +119,7 @@ const joditConfig = {
             selection.insertHTML(`<ol>${listItems}</ol>`);
           } else {
             // If no text selected, insert a numbered point
-            selection.insertHTML("<ol><li>1. </li></ol>");
+            selection.insertHTML("<ol><li>1. </li></ul>");
           }
           return true;
         }
@@ -137,6 +156,8 @@ export default function AddOrEditTopicForm({
     videos: [],
   });
   const [loadingFiles, setLoadingFiles] = useState(false);
+
+  // Debounced content update to prevent typing interruption
 
   // Quiz editing functions
   const openQuizEditor = () => {
@@ -1586,6 +1607,7 @@ export default function AddOrEditTopicForm({
               value={content}
               config={joditConfig}
               tabIndex={1}
+              onChange={(newContent) => debouncedSetContent(newContent)}
               onBlur={(newContent) => setContent(newContent)}
               onLoad={handleEditorReady}
             />

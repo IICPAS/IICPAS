@@ -1,32 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
-import dynamic from "next/dynamic";
 import axios from "axios";
 import { ChevronLeft, Plus, X } from "lucide-react";
 
-// Add debounce utility
-const debounce = (func: (...args: any[]) => void, wait: number) => {
-  let timeout: NodeJS.Timeout;
-  return function executedFunction(...args: any[]) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
-};
-
-// Dynamically import Jodit editor to avoid SSR issues
-const JoditEditor = dynamic(() => import("jodit-react"), {
-  ssr: false,
-  loading: () => (
-    <div className="p-4 border border-gray-300 rounded-md bg-gray-50">
-      Loading Jodit Editor...
-    </div>
-  ),
-});
+import OptimizedJoditEditor from "./OptimizedJoditEditor";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 
@@ -58,6 +36,18 @@ interface Simulation {
   description: string;
   config: any;
   isOptional: boolean;
+  // Accounting simulation specific fields
+  statement?: string;
+  correctEntries?: Array<{
+    id: string;
+    date: string;
+    type: string;
+    particulars: string;
+    debit: string;
+    credit: string;
+  }>;
+  accountTypes?: string[];
+  accountOptions?: string[];
 }
 
 interface QuestionSet {
@@ -65,7 +55,15 @@ interface QuestionSet {
   name: string;
   description: string;
   excelBase64?: string;
-  questions: any[];
+  questions: Array<{
+    id: string;
+    question: string;
+    option1: string;
+    option2: string;
+    option3: string;
+    option4: string;
+    correct: string;
+  }>;
 }
 
 export default function AssignmentBuilder({
@@ -96,186 +94,6 @@ export default function AssignmentBuilder({
       setQuestionSets(editingItem.questionSets || []);
     }
   }, [editingItem]);
-
-  // Jodit editor config
-  const editorConfig = {
-    readonly: false,
-    height: 400,
-    theme: "default",
-    placeholder: "Start writing your assignment content...",
-    toolbar: true,
-    spellcheck: true,
-    language: "en",
-    colorPickerDefaultTab: "background",
-    imageDefaultWidth: 300,
-    removeButtons: [],
-    showCharsCounter: false,
-    showWordsCounter: false,
-    showXPathInStatusbar: false,
-    askBeforePasteHTML: true,
-    askBeforePasteFromWord: true,
-    defaultActionOnPaste: "insert_clear_html" as any,
-    // Fix typing performance issues
-    autoHeight: false,
-    saveModeInStorage: false,
-    // Disable problematic features that cause typing issues
-    useSearch: false,
-    // Optimize for smooth typing
-    buttons: [
-      "source",
-      "|",
-      "bold",
-      "strikethrough",
-      "underline",
-      "italic",
-      "|",
-      "ul",
-      "ol",
-      "|",
-      "outdent",
-      "indent",
-      "|",
-      "font",
-      "fontsize",
-      "brush",
-      "paragraph",
-      "|",
-      "image",
-      "link",
-      "table",
-      "|",
-      "align",
-      "undo",
-      "redo",
-      "|",
-      "hr",
-      "eraser",
-      "copyformat",
-      "|",
-      "fullsize",
-      "print",
-      "about",
-    ],
-    buttonsMD: [
-      "bold",
-      "italic",
-      "underline",
-      "|",
-      "ul",
-      "ol",
-      "|",
-      "font",
-      "fontsize",
-      "brush",
-      "|",
-      "image",
-      "link",
-      "|",
-      "align",
-      "undo",
-      "redo",
-    ],
-    buttonsSM: [
-      "bold",
-      "italic",
-      "underline",
-      "|",
-      "ul",
-      "ol",
-      "|",
-      "image",
-      "link",
-      "|",
-      "undo",
-      "redo",
-    ],
-    buttonsXS: ["bold", "italic", "|", "image", "link"],
-    events: {
-      afterInit: function (editor: any) {
-        // Add custom styling for the editor
-        const editorElement = editor.container.querySelector(".jodit-wysiwyg");
-        if (editorElement) {
-          editorElement.style.minHeight = "400px";
-        }
-
-        // Optimize typing performance
-        editor.workplace.style.fontSize = "16px";
-        editor.workplace.style.lineHeight = "1.6";
-
-        // Disable auto-save and other performance-heavy features
-        editor.options.saveModeInStorage = false;
-        editor.options.autoHeight = false;
-
-        // Critical: Disable features that cause typing interruptions
-        editor.options.useSearch = false;
-        editor.options.showCharsCounter = false;
-        editor.options.showWordsCounter = false;
-        editor.options.showXPathInStatusbar = false;
-
-        // Optimize the editor container for better performance
-        const container = editor.container;
-        if (container) {
-          container.style.willChange = "auto";
-          container.style.transform = "translateZ(0)";
-        }
-
-        // Optimize the workplace for smooth typing
-        const workplace = editor.workplace;
-        if (workplace) {
-          workplace.style.willChange = "auto";
-          workplace.style.transform = "translateZ(0)";
-          workplace.style.backfaceVisibility = "hidden";
-        }
-      },
-      // Optimize typing events
-      beforeSetValueToEditor: function (value: string) {
-        return value;
-      },
-      afterSetValueToEditor: function () {
-        // Ensure smooth typing after value changes
-      },
-      // Add typing optimization events
-      keydown: function (event: any) {
-        // Prevent unnecessary re-renders during typing
-        if (event.key.length === 1) {
-          // Single character input - optimize
-          event.stopPropagation();
-        }
-      },
-      input: function () {
-        // Debounce input events to prevent excessive processing
-        debounce(() => {
-          // Handle input changes smoothly
-        }, 100)();
-      },
-    },
-    // Performance optimizations
-    uploader: {
-      insertImageAsBase64URI: true,
-      url: `${API_BASE}/upload/image`,
-      pathVariableName: "path",
-      withCredentials: false,
-      headers: {},
-      data: {},
-      method: "POST",
-      name: "files[]",
-      multiple: false,
-      accept: "image/*",
-      process: function (resp: any) {
-        return {
-          files: resp.files || [],
-          error: resp.error || false,
-          message: resp.message || "",
-        };
-      },
-      error: function (e: any) {
-        console.error("Upload error:", e);
-      },
-      success: function (resp: any) {
-        console.log("Upload success:", resp);
-      },
-    },
-  } as any;
 
   const addTask = () => {
     const newTask: Task = {
@@ -329,6 +147,28 @@ export default function AssignmentBuilder({
         columns: ["Date", "Type", "Particulars", "Debit", "Credit"],
       },
       isOptional: true,
+      statement: "",
+      correctEntries: [
+        {
+          id: "1",
+          date: "",
+          type: "",
+          particulars: "",
+          debit: "",
+          credit: "",
+        },
+      ],
+      accountTypes: ["Debit", "Credit"],
+      accountOptions: [
+        "Cash A/c",
+        "Bank A/c",
+        "Furniture A/c",
+        "Capital A/c",
+        "Purchase A/c",
+        "Sales A/c",
+        "Creditors A/c",
+        "Debtors A/c",
+      ],
     };
     setSimulations([...simulations, newSimulation]);
   };
@@ -354,9 +194,36 @@ export default function AssignmentBuilder({
       id: Date.now().toString(),
       name: "",
       description: "",
-      questions: [],
+      questions: [
+        {
+          id: Date.now().toString(),
+          question: "",
+          option1: "",
+          option2: "",
+          option3: "",
+          option4: "",
+          correct: "",
+        },
+      ],
     };
     setQuestionSets([...questionSets, newQuestionSet]);
+  };
+
+  const addQuestion = (questionSetId: string) => {
+    const newQuestion = {
+      id: Date.now().toString(),
+      question: "",
+      option1: "",
+      option2: "",
+      option3: "",
+      option4: "",
+      correct: "",
+    };
+    const questionSet = questionSets.find((qs) => qs.id === questionSetId);
+    if (questionSet) {
+      const updatedQuestions = [...(questionSet.questions || []), newQuestion];
+      updateQuestionSet(questionSetId, "questions", updatedQuestions);
+    }
   };
 
   const updateQuestionSet = (
@@ -373,6 +240,66 @@ export default function AssignmentBuilder({
     setQuestionSets(questionSets.filter((qs) => qs.id !== id));
   };
 
+  // Excel parsing function
+  const parseExcelFile = async (file: File, questionSetId: string) => {
+    try {
+      // Read file as base64
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const base64 = e.target?.result as string;
+
+        // For now, we'll use a simple CSV-like approach
+        // In production, you might want to use a library like xlsx
+        const text = await file.text();
+        const lines = text.split("\n");
+        const questions: Array<{
+          id: string;
+          question: string;
+          option1: string;
+          option2: string;
+          option3: string;
+          option4: string;
+          correct: string;
+        }> = [];
+
+        // Skip header row and parse each line
+        for (let i = 1; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (line) {
+            const columns = line
+              .split(",")
+              .map((col) => col.trim().replace(/^"|"$/g, ""));
+            if (columns.length >= 6) {
+              questions.push({
+                id: Date.now().toString() + i,
+                question: columns[0] || "",
+                option1: columns[1] || "",
+                option2: columns[2] || "",
+                option3: columns[3] || "",
+                option4: columns[4] || "",
+                correct: columns[5] || "",
+              });
+            }
+          }
+        }
+
+        // Update the question set with parsed questions
+        updateQuestionSet(questionSetId, "questions", questions);
+        updateQuestionSet(questionSetId, "excelBase64", base64);
+
+        alert(
+          `Successfully parsed ${questions.length} questions from Excel file!`
+        );
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error("Error parsing Excel file:", error);
+      alert(
+        "Error parsing Excel file. Please ensure it's in the correct format."
+      );
+    }
+  };
+
   const handleSave = async () => {
     try {
       setIsSaving(true);
@@ -386,6 +313,60 @@ export default function AssignmentBuilder({
       if (!description.trim()) {
         alert("Please enter an assignment description");
         return;
+      }
+
+      // Validate simulations
+      for (const sim of simulations) {
+        if (sim.type === "accounting") {
+          if (!sim.statement?.trim()) {
+            alert(
+              `Please enter a problem statement for simulation: ${sim.title}`
+            );
+            return;
+          }
+          if (!sim.correctEntries || sim.correctEntries.length === 0) {
+            alert(
+              `Please add at least one correct journal entry for simulation: ${sim.title}`
+            );
+            return;
+          }
+          // Validate each entry has required fields
+          for (const entry of sim.correctEntries) {
+            if (
+              !entry.date ||
+              !entry.type ||
+              !entry.particulars ||
+              (entry.type === "Debit" && !entry.debit) ||
+              (entry.type === "Credit" && !entry.credit)
+            ) {
+              alert(
+                `Please complete all fields for journal entries in simulation: ${sim.title}`
+              );
+              return;
+            }
+          }
+        }
+      }
+
+      // Validate question sets
+      for (const qs of questionSets) {
+        if (qs.questions && qs.questions.length > 0) {
+          for (const q of qs.questions) {
+            if (
+              !q.question.trim() ||
+              !q.option1.trim() ||
+              !q.option2.trim() ||
+              !q.option3.trim() ||
+              !q.option4.trim() ||
+              !q.correct.trim()
+            ) {
+              alert(
+                `Please complete all fields for questions in question set: ${qs.name}`
+              );
+              return;
+            }
+          }
+        }
       }
 
       // Prepare assignment data
@@ -412,12 +393,25 @@ export default function AssignmentBuilder({
           config: sim.config,
           isOptional: sim.isOptional,
           order: index,
+          // Include accounting simulation specific fields
+          statement: sim.statement,
+          correctEntries: sim.correctEntries,
+          accountTypes: sim.accountTypes,
+          accountOptions: sim.accountOptions,
         })),
         questionSets: questionSets.map((qs, index) => ({
           name: qs.name.trim(),
           description: qs.description.trim(),
           excelBase64: qs.excelBase64,
-          questions: qs.questions,
+          questions: qs.questions.map((q) => ({
+            id: q.id,
+            question: q.question.trim(),
+            option1: q.option1.trim(),
+            option2: q.option2.trim(),
+            option3: q.option3.trim(),
+            option4: q.option4.trim(),
+            correct: q.correct.trim(),
+          })),
           order: index,
         })),
       };
@@ -739,16 +733,8 @@ export default function AssignmentBuilder({
                             className="border border-gray-300 rounded-md overflow-hidden"
                             style={{ minHeight: "400px" }}
                           >
-                            <JoditEditor
+                            <OptimizedJoditEditor
                               value={item.richTextContent || ""}
-                              config={editorConfig}
-                              onBlur={(newContent: string) =>
-                                updateContent(
-                                  item.id,
-                                  "richTextContent",
-                                  newContent
-                                )
-                              }
                               onChange={(newContent: string) =>
                                 updateContent(
                                   item.id,
@@ -756,6 +742,9 @@ export default function AssignmentBuilder({
                                   newContent
                                 )
                               }
+                              placeholder="Start writing your assignment content..."
+                              height={400}
+                              className="border border-gray-300 rounded-md"
                             />
                           </div>
                           <div className="flex justify-between items-center mt-2">
@@ -908,6 +897,200 @@ export default function AssignmentBuilder({
                         placeholder="Enter simulation description"
                       />
                     </div>
+
+                    {/* Accounting Simulation Specific Fields */}
+                    {sim.type === "accounting" && (
+                      <>
+                        <div className="mt-4">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Problem Statement *
+                          </label>
+                          <textarea
+                            value={sim.statement || ""}
+                            onChange={(e) =>
+                              updateSimulation(
+                                sim.id,
+                                "statement",
+                                e.target.value
+                              )
+                            }
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            rows={4}
+                            placeholder="Enter the accounting problem statement (e.g., 'On 15th January, Mr. A started business with cash Rs. 50,000...')"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">
+                            This statement will be displayed to students in the
+                            AccountingExperimentCard component
+                          </p>
+                        </div>
+
+                        <div className="mt-4">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Correct Journal Entries
+                          </label>
+                          <div className="space-y-3">
+                            {(sim.correctEntries || []).map((entry, index) => (
+                              <div
+                                key={entry.id}
+                                className="border border-gray-200 rounded-lg p-3 bg-gray-50"
+                              >
+                                <div className="flex justify-between items-center mb-2">
+                                  <span className="text-sm font-medium text-gray-700">
+                                    Entry {index + 1}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const updatedEntries =
+                                        sim.correctEntries?.filter(
+                                          (e) => e.id !== entry.id
+                                        ) || [];
+                                      updateSimulation(
+                                        sim.id,
+                                        "correctEntries",
+                                        updatedEntries
+                                      );
+                                    }}
+                                    className="text-red-600 hover:text-red-800 text-sm"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                                <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                                  <input
+                                    type="text"
+                                    placeholder="Date"
+                                    value={entry.date}
+                                    onChange={(e) => {
+                                      const updatedEntries =
+                                        sim.correctEntries?.map((ent) =>
+                                          ent.id === entry.id
+                                            ? { ...ent, date: e.target.value }
+                                            : ent
+                                        ) || [];
+                                      updateSimulation(
+                                        sim.id,
+                                        "correctEntries",
+                                        updatedEntries
+                                      );
+                                    }}
+                                    className="px-2 py-1 border border-gray-300 rounded text-sm"
+                                  />
+                                  <select
+                                    value={entry.type}
+                                    onChange={(e) => {
+                                      const updatedEntries =
+                                        sim.correctEntries?.map((ent) =>
+                                          ent.id === entry.id
+                                            ? { ...ent, type: e.target.value }
+                                            : ent
+                                        ) || [];
+                                      updateSimulation(
+                                        sim.id,
+                                        "correctEntries",
+                                        updatedEntries
+                                      );
+                                    }}
+                                    className="px-2 py-1 border border-gray-300 rounded text-sm"
+                                  >
+                                    <option value="">Type</option>
+                                    <option value="Debit">Debit</option>
+                                    <option value="Credit">Credit</option>
+                                  </select>
+                                  <input
+                                    type="text"
+                                    placeholder="Particulars"
+                                    value={entry.particulars}
+                                    onChange={(e) => {
+                                      const updatedEntries =
+                                        sim.correctEntries?.map((ent) =>
+                                          ent.id === entry.id
+                                            ? {
+                                                ...ent,
+                                                particulars: e.target.value,
+                                              }
+                                            : ent
+                                        ) || [];
+                                      updateSimulation(
+                                        sim.id,
+                                        "correctEntries",
+                                        updatedEntries
+                                      );
+                                    }}
+                                    className="px-2 py-1 border border-gray-300 rounded text-sm"
+                                  />
+                                  <input
+                                    type="number"
+                                    placeholder="Debit"
+                                    value={entry.debit}
+                                    onChange={(e) => {
+                                      const updatedEntries =
+                                        sim.correctEntries?.map((ent) =>
+                                          ent.id === entry.id
+                                            ? { ...ent, debit: e.target.value }
+                                            : ent
+                                        ) || [];
+                                      updateSimulation(
+                                        sim.id,
+                                        "correctEntries",
+                                        updatedEntries
+                                      );
+                                    }}
+                                    className="px-2 py-1 border border-gray-300 rounded text-sm"
+                                    disabled={entry.type === "Credit"}
+                                  />
+                                  <input
+                                    type="number"
+                                    placeholder="Credit"
+                                    value={entry.credit}
+                                    onChange={(e) => {
+                                      const updatedEntries =
+                                        sim.correctEntries?.map((ent) =>
+                                          ent.id === entry.id
+                                            ? { ...ent, credit: e.target.value }
+                                            : ent
+                                        ) || [];
+                                      updateSimulation(
+                                        sim.id,
+                                        "correctEntries",
+                                        updatedEntries
+                                      );
+                                    }}
+                                    className="px-2 py-1 border border-gray-300 rounded text-sm"
+                                    disabled={entry.type === "Debit"}
+                                  />
+                                </div>
+                              </div>
+                            ))}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newEntry = {
+                                  id: Date.now().toString(),
+                                  date: "",
+                                  type: "",
+                                  particulars: "",
+                                  debit: "",
+                                  credit: "",
+                                };
+                                const updatedEntries = [
+                                  ...(sim.correctEntries || []),
+                                  newEntry,
+                                ];
+                                updateSimulation(
+                                  sim.id,
+                                  "correctEntries",
+                                  updatedEntries
+                                );
+                              }}
+                              className="bg-blue-500 text-white px-3 py-2 rounded text-sm hover:bg-blue-600"
+                            >
+                              + Add Entry
+                            </button>
+                          </div>
+                        </div>
+                      </>
+                    )}
                     <div className="mt-4">
                       <label className="flex items-center">
                         <input
@@ -1016,25 +1199,226 @@ export default function AssignmentBuilder({
                     </div>
                     <div className="mt-4">
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Excel File Upload
+                        Excel File Upload (CSV format)
                       </label>
-                      <input
-                        type="file"
-                        accept=".xlsx,.xls"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            const reader = new FileReader();
-                            reader.onload = () => {
-                              const base64 = reader.result as string;
-                              updateQuestionSet(qs.id, "excelBase64", base64);
-                            };
-                            reader.readAsDataURL(file);
-                          }
-                        }}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      />
+                      <div className="space-y-2">
+                        <input
+                          type="file"
+                          accept=".csv,.xlsx,.xls"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              parseExcelFile(file, qs.id);
+                            }
+                          }}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        />
+                        <p className="text-xs text-gray-500">
+                          Expected CSV format:
+                          Question,Option1,Option2,Option3,Option4,CorrectAnswer
+                        </p>
+                        <div className="flex gap-2 mt-2">
+                          <button
+                            type="button"
+                            onClick={() => addQuestion(qs.id)}
+                            className="bg-green-500 text-white px-3 py-2 rounded text-sm hover:bg-green-600"
+                          >
+                            + Add Question Manually
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const sampleData =
+                                "Question,Option1,Option2,Option3,Option4,CorrectAnswer\nWhat is the capital of France?,Paris,London,Berlin,Madrid,Paris\nWhat is 2+2?,3,4,5,6,4";
+                              const blob = new Blob([sampleData], {
+                                type: "text/csv",
+                              });
+                              const url = window.URL.createObjectURL(blob);
+                              const a = document.createElement("a");
+                              a.href = url;
+                              a.download = "sample_questions.csv";
+                              a.click();
+                              window.URL.revokeObjectURL(url);
+                            }}
+                            className="bg-blue-500 text-white px-3 py-2 rounded text-sm hover:bg-blue-600"
+                          >
+                            Download Sample CSV
+                          </button>
+                        </div>
+                      </div>
                     </div>
+
+                    {/* Display Parsed Questions */}
+                    {qs.questions && qs.questions.length > 0 && (
+                      <div className="mt-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Parsed Questions ({qs.questions.length})
+                        </label>
+                        <div className="space-y-3 max-h-96 overflow-y-auto">
+                          {qs.questions.map((question, qIndex) => (
+                            <div
+                              key={question.id}
+                              className="border border-gray-200 rounded-lg p-3 bg-gray-50"
+                            >
+                              <div className="flex justify-between items-start mb-2">
+                                <span className="text-sm font-medium text-gray-700">
+                                  Question {qIndex + 1}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const updatedQuestions =
+                                      qs.questions.filter(
+                                        (q) => q.id !== question.id
+                                      );
+                                    updateQuestionSet(
+                                      qs.id,
+                                      "questions",
+                                      updatedQuestions
+                                    );
+                                  }}
+                                  className="text-red-600 hover:text-red-800 text-sm"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                              <div className="space-y-2">
+                                <input
+                                  type="text"
+                                  placeholder="Question"
+                                  value={question.question}
+                                  onChange={(e) => {
+                                    const updatedQuestions = qs.questions.map(
+                                      (q) =>
+                                        q.id === question.id
+                                          ? { ...q, question: e.target.value }
+                                          : q
+                                    );
+                                    updateQuestionSet(
+                                      qs.id,
+                                      "questions",
+                                      updatedQuestions
+                                    );
+                                  }}
+                                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                                />
+                                <div className="grid grid-cols-2 gap-2">
+                                  <input
+                                    type="text"
+                                    placeholder="Option 1"
+                                    value={question.option1}
+                                    onChange={(e) => {
+                                      const updatedQuestions = qs.questions.map(
+                                        (q) =>
+                                          q.id === question.id
+                                            ? { ...q, option1: e.target.value }
+                                            : q
+                                      );
+                                      updateQuestionSet(
+                                        qs.id,
+                                        "questions",
+                                        updatedQuestions
+                                      );
+                                    }}
+                                    className="px-2 py-1 border border-gray-300 rounded text-sm"
+                                  />
+                                  <input
+                                    type="text"
+                                    placeholder="Option 2"
+                                    value={question.option2}
+                                    onChange={(e) => {
+                                      const updatedQuestions = qs.questions.map(
+                                        (q) =>
+                                          q.id === question.id
+                                            ? { ...q, option2: e.target.value }
+                                            : q
+                                      );
+                                      updateQuestionSet(
+                                        qs.id,
+                                        "questions",
+                                        updatedQuestions
+                                      );
+                                    }}
+                                    className="px-2 py-1 border border-gray-300 rounded text-sm"
+                                  />
+                                  <input
+                                    type="text"
+                                    placeholder="Option 3"
+                                    value={question.option3}
+                                    onChange={(e) => {
+                                      const updatedQuestions = qs.questions.map(
+                                        (q) =>
+                                          q.id === question.id
+                                            ? { ...q, option3: e.target.value }
+                                            : q
+                                      );
+                                      updateQuestionSet(
+                                        qs.id,
+                                        "questions",
+                                        updatedQuestions
+                                      );
+                                    }}
+                                    className="px-2 py-1 border border-gray-300 rounded text-sm"
+                                  />
+                                  <input
+                                    type="text"
+                                    placeholder="Option 4"
+                                    value={question.option4}
+                                    onChange={(e) => {
+                                      const updatedQuestions = qs.questions.map(
+                                        (q) =>
+                                          q.id === question.id
+                                            ? { ...q, option4: e.target.value }
+                                            : q
+                                      );
+                                      updateQuestionSet(
+                                        qs.id,
+                                        "questions",
+                                        updatedQuestions
+                                      );
+                                    }}
+                                    className="px-2 py-1 border border-gray-300 rounded text-sm"
+                                  />
+                                </div>
+                                <select
+                                  value={question.correct}
+                                  onChange={(e) => {
+                                    const updatedQuestions = qs.questions.map(
+                                      (q) =>
+                                        q.id === question.id
+                                          ? { ...q, correct: e.target.value }
+                                          : q
+                                    );
+                                    updateQuestionSet(
+                                      qs.id,
+                                      "questions",
+                                      updatedQuestions
+                                    );
+                                  }}
+                                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                                >
+                                  <option value="">
+                                    Select Correct Answer
+                                  </option>
+                                  <option value={question.option1}>
+                                    {question.option1 || "Option 1"}
+                                  </option>
+                                  <option value={question.option2}>
+                                    {question.option2 || "Option 2"}
+                                  </option>
+                                  <option value={question.option3}>
+                                    {question.option3 || "Option 3"}
+                                  </option>
+                                  <option value={question.option4}>
+                                    {question.option4 || "Option 4"}
+                                  </option>
+                                </select>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
                 {questionSets.length === 0 && (

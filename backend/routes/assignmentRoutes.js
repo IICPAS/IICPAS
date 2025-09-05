@@ -6,6 +6,15 @@ const router = express.Router();
 // Create new assignment
 router.post("/", assignmentController.createAssignment);
 
+// Get all assignments
+router.get("/", assignmentController.getAllAssignments);
+
+// Get assignments by status (active/inactive)
+router.get("/status/:status", assignmentController.getAssignmentsByStatus);
+
+// Get assignments with advanced filtering
+router.get("/filter", assignmentController.getAssignmentsWithFilter);
+
 // Get all assignments for a chapter
 router.get("/chapter/:chapterId", assignmentController.getAssignmentsByChapter);
 

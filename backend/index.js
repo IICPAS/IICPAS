@@ -82,6 +82,7 @@ app.use(
       process.env.CLIENT_URL || "http://localhost:3000",
       "http://localhost:3001",
       "http://localhost:3002",
+      "https://www.iicpa.in",
     ], // your frontend URL
     credentials: true,
   })

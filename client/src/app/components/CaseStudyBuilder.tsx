@@ -1,32 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
-import dynamic from "next/dynamic";
 import axios from "axios";
 import { ChevronLeft, Plus, X } from "lucide-react";
 
-// Add debounce utility
-const debounce = (func: (...args: any[]) => void, wait: number) => {
-  let timeout: NodeJS.Timeout;
-  return function executedFunction(...args: any[]) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
-};
-
-// Dynamically import Jodit editor to avoid SSR issues
-const JoditEditor = dynamic(() => import("jodit-react"), {
-  ssr: false,
-  loading: () => (
-    <div className="p-4 border border-gray-300 rounded-md bg-gray-50">
-      Loading Jodit Editor...
-    </div>
-  ),
-});
+import OptimizedJoditEditor from "./OptimizedJoditEditor";
 
 interface CaseStudyBuilderProps {
   chapterId: string;
@@ -56,6 +34,18 @@ interface Simulation {
   description: string;
   config: any;
   isOptional: boolean;
+  // Accounting simulation specific fields
+  statement?: string;
+  correctEntries?: Array<{
+    id: string;
+    date: string;
+    type: string;
+    particulars: string;
+    debit: string;
+    credit: string;
+  }>;
+  accountTypes?: string[];
+  accountOptions?: string[];
 }
 
 interface QuestionSet {
@@ -94,183 +84,6 @@ export default function CaseStudyBuilder({
       setQuestionSets(editingItem.questionSets || []);
     }
   }, [editingItem]);
-
-  // Jodit editor config
-  const editorConfig = {
-    readonly: false,
-    height: 400,
-    theme: "default",
-    placeholder: "Start writing your case study content...",
-    toolbar: true,
-    spellcheck: true,
-    language: "en",
-    colorPickerDefaultTab: "background",
-    imageDefaultWidth: 300,
-    removeButtons: [],
-    askBeforePasteHTML: true,
-    askBeforePasteFromWord: true,
-    defaultActionOnPaste: "insert_clear_html" as any,
-    // Fix typing performance issues
-    autoHeight: false,
-    saveModeInStorage: false,
-    // Disable problematic features that cause typing issues
-    useSearch: false,
-    // Optimize for smooth typing
-    buttons: [
-      "source",
-      "|",
-      "bold",
-      "strikethrough",
-      "underline",
-      "italic",
-      "|",
-      "ul",
-      "ol",
-      "|",
-      "outdent",
-      "indent",
-      "|",
-      "font",
-      "fontsize",
-      "brush",
-      "paragraph",
-      "|",
-      "image",
-      "link",
-      "table",
-      "|",
-      "align",
-      "undo",
-      "redo",
-      "|",
-      "hr",
-      "eraser",
-      "copyformat",
-      "|",
-      "fullsize",
-      "print",
-      "about",
-    ],
-    buttonsMD: [
-      "bold",
-      "italic",
-      "underline",
-      "|",
-      "ul",
-      "ol",
-      "|",
-      "font",
-      "fontsize",
-      "brush",
-      "|",
-      "image",
-      "link",
-      "|",
-      "align",
-      "undo",
-      "redo",
-    ],
-    buttonsSM: [
-      "bold",
-      "italic",
-      "underline",
-      "|",
-      "ul",
-      "ol",
-      "|",
-      "image",
-      "link",
-      "|",
-      "undo",
-      "redo",
-    ],
-    buttonsXS: ["bold", "italic", "|", "image", "link"],
-    events: {
-      afterInit: function (editor: any) {
-        // Add custom styling for the editor
-        const editorElement = editor.container.querySelector(".jodit-wysiwyg");
-        if (editorElement) {
-          editorElement.style.minHeight = "400px";
-        }
-
-        // Optimize typing performance
-        editor.workplace.style.fontSize = "16px";
-        editor.workplace.style.lineHeight = "1.6";
-
-        // Disable auto-save and other performance-heavy features
-        editor.options.saveModeInStorage = false;
-        editor.options.autoHeight = false;
-
-        // Critical: Disable features that cause typing interruptions
-        editor.options.useSearch = false;
-        editor.options.showCharsCounter = false;
-        editor.options.showWordsCounter = false;
-        editor.options.showXPathInStatusbar = false;
-
-        // Optimize the editor container for better performance
-        const container = editor.container;
-        if (container) {
-          container.style.willChange = "auto";
-          container.style.transform = "translateZ(0)";
-        }
-
-        // Optimize the workplace for smooth typing
-        const workplace = editor.workplace;
-        if (workplace) {
-          workplace.style.willChange = "auto";
-          workplace.style.transform = "translateZ(0)";
-          workplace.style.backfaceVisibility = "hidden";
-        }
-      },
-      // Optimize typing events
-      beforeSetValueToEditor: function (value: string) {
-        return value;
-      },
-      afterSetValueToEditor: function () {
-        // Ensure smooth typing after value changes
-      },
-      // Add typing optimization events
-      keydown: function (event: any) {
-        // Prevent unnecessary re-renders during typing
-        if (event.key.length === 1) {
-          // Single character input - optimize
-          event.stopPropagation();
-        }
-      },
-      input: function () {
-        // Debounce input events to prevent excessive processing
-        debounce(() => {
-          // Handle input changes smoothly
-        }, 100)();
-      },
-    },
-    // Performance optimizations
-    uploader: {
-      insertImageAsBase64URI: true,
-      url: `${process.env.NEXT_PUBLIC_API_BASE}/upload/image`,
-      pathVariableName: "path",
-      withCredentials: false,
-      headers: {},
-      data: {},
-      method: "POST",
-      name: "files[]",
-      multiple: false,
-      accept: "image/*",
-      process: function (resp: any) {
-        return {
-          files: resp.files || [],
-          error: resp.error || false,
-          message: resp.message || "",
-        };
-      },
-      error: function (e: any) {
-        console.error("Upload error:", e);
-      },
-      success: function (resp: any) {
-        console.log("Upload success:", resp);
-      },
-    },
-  } as any;
 
   const addTask = () => {
     const newTask: Task = {
@@ -324,6 +137,28 @@ export default function CaseStudyBuilder({
         columns: ["Date", "Type", "Particulars", "Debit", "Credit"],
       },
       isOptional: true,
+      statement: "",
+      correctEntries: [
+        {
+          id: "1",
+          date: "",
+          type: "",
+          particulars: "",
+          debit: "",
+          credit: "",
+        },
+      ],
+      accountTypes: ["Debit", "Credit"],
+      accountOptions: [
+        "Cash A/c",
+        "Bank A/c",
+        "Furniture A/c",
+        "Capital A/c",
+        "Purchase A/c",
+        "Sales A/c",
+        "Creditors A/c",
+        "Debtors A/c",
+      ],
     };
     setSimulations([...simulations, newSimulation]);
   };
@@ -406,6 +241,10 @@ export default function CaseStudyBuilder({
           description: sim.description.trim(),
           config: sim.config,
           isOptional: sim.isOptional,
+          statement: sim.statement?.trim() || "",
+          correctEntries: sim.correctEntries || [],
+          accountTypes: sim.accountTypes || [],
+          accountOptions: sim.accountOptions || [],
           order: index,
         })),
         questionSets: questionSets.map((qs, index) => ({
@@ -717,27 +556,19 @@ export default function CaseStudyBuilder({
                             className="border border-gray-300 rounded-md overflow-hidden"
                             style={{ minHeight: "400px" }}
                           >
-                            <JoditEditor
+                            <OptimizedJoditEditor
                               value={item.richTextContent || ""}
-                              config={{
-                                ...editorConfig,
-                                defaultActionOnPaste: "insert_as_html",
-                                colorPickerDefaultTab: "color", // Fix type error: must be "color" or "background"
-                              }}
-                              onBlur={(newContent: string) =>
+                              onChange={(newContent: string) =>
                                 updateContent(
                                   item.id,
                                   "richTextContent",
                                   newContent
                                 )
                               }
-                              onChange={(newContent) =>
-                                updateContent(
-                                  item.id,
-                                  "richTextContent",
-                                  newContent
-                                )
-                              }
+                              placeholder="Start writing your case study content..."
+                              height={400}
+                              enableVideo={true}
+                              className="border border-gray-300 rounded-md"
                             />
                           </div>
                           <div className="flex justify-between items-center mt-2">
@@ -890,6 +721,173 @@ export default function CaseStudyBuilder({
                         placeholder="Enter simulation description"
                       />
                     </div>
+
+                    {/* Accounting Simulation Specific Fields */}
+                    {sim.type === "accounting" && (
+                      <>
+                        <div className="mt-4">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Problem Statement
+                          </label>
+                          <textarea
+                            value={sim.statement || ""}
+                            onChange={(e) =>
+                              updateSimulation(
+                                sim.id,
+                                "statement",
+                                e.target.value
+                              )
+                            }
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                            rows={3}
+                            placeholder="Enter the accounting problem statement for students to solve"
+                          />
+                        </div>
+
+                        <div className="mt-4">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Correct Journal Entries
+                          </label>
+                          <div className="space-y-2">
+                            {(sim.correctEntries || []).map(
+                              (entry, entryIndex) => (
+                                <div
+                                  key={entry.id}
+                                  className="grid grid-cols-5 gap-2 p-3 border border-gray-200 rounded"
+                                >
+                                  <input
+                                    type="text"
+                                    placeholder="Date"
+                                    value={entry.date}
+                                    onChange={(e) => {
+                                      const updatedEntries = [
+                                        ...(sim.correctEntries || []),
+                                      ];
+                                      updatedEntries[entryIndex] = {
+                                        ...entry,
+                                        date: e.target.value,
+                                      };
+                                      updateSimulation(
+                                        sim.id,
+                                        "correctEntries",
+                                        updatedEntries
+                                      );
+                                    }}
+                                    className="px-2 py-1 border border-gray-300 rounded text-sm"
+                                  />
+                                  <input
+                                    type="text"
+                                    placeholder="Type"
+                                    value={entry.type}
+                                    onChange={(e) => {
+                                      const updatedEntries = [
+                                        ...(sim.correctEntries || []),
+                                      ];
+                                      updatedEntries[entryIndex] = {
+                                        ...entry,
+                                        type: e.target.value,
+                                      };
+                                      updateSimulation(
+                                        sim.id,
+                                        "correctEntries",
+                                        updatedEntries
+                                      );
+                                    }}
+                                    className="px-2 py-1 border border-gray-300 rounded text-sm"
+                                  />
+                                  <input
+                                    type="text"
+                                    placeholder="Particulars"
+                                    value={entry.particulars}
+                                    onChange={(e) => {
+                                      const updatedEntries = [
+                                        ...(sim.correctEntries || []),
+                                      ];
+                                      updatedEntries[entryIndex] = {
+                                        ...entry,
+                                        particulars: e.target.value,
+                                      };
+                                      updateSimulation(
+                                        sim.id,
+                                        "correctEntries",
+                                        updatedEntries
+                                      );
+                                    }}
+                                    className="px-2 py-1 border border-gray-300 rounded text-sm"
+                                  />
+                                  <input
+                                    type="text"
+                                    placeholder="Debit"
+                                    value={entry.debit}
+                                    onChange={(e) => {
+                                      const updatedEntries = [
+                                        ...(sim.correctEntries || []),
+                                      ];
+                                      updatedEntries[entryIndex] = {
+                                        ...entry,
+                                        debit: e.target.value,
+                                      };
+                                      updateSimulation(
+                                        sim.id,
+                                        "correctEntries",
+                                        updatedEntries
+                                      );
+                                    }}
+                                    className="px-2 py-1 border border-gray-300 rounded text-sm"
+                                  />
+                                  <input
+                                    type="text"
+                                    placeholder="Credit"
+                                    value={entry.credit}
+                                    onChange={(e) => {
+                                      const updatedEntries = [
+                                        ...(sim.correctEntries || []),
+                                      ];
+                                      updatedEntries[entryIndex] = {
+                                        ...entry,
+                                        credit: e.target.value,
+                                      };
+                                      updateSimulation(
+                                        sim.id,
+                                        "correctEntries",
+                                        updatedEntries
+                                      );
+                                    }}
+                                    className="px-2 py-1 border border-gray-300 rounded text-sm"
+                                  />
+                                </div>
+                              )
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newEntry = {
+                                  id: Date.now().toString(),
+                                  date: "",
+                                  type: "",
+                                  particulars: "",
+                                  debit: "",
+                                  credit: "",
+                                };
+                                const updatedEntries = [
+                                  ...(sim.correctEntries || []),
+                                  newEntry,
+                                ];
+                                updateSimulation(
+                                  sim.id,
+                                  "correctEntries",
+                                  updatedEntries
+                                );
+                              }}
+                              className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
+                            >
+                              + Add Entry
+                            </button>
+                          </div>
+                        </div>
+                      </>
+                    )}
+
                     <div className="mt-4">
                       <label className="flex items-center">
                         <input
