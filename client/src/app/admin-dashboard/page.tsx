@@ -5,14 +5,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import AlertsTab from "./AlertsTab";
 import JobsAdminPanel from "./JobsAdminPanel";
-import CourseBuilder from "./CourseBuilder";
 import TestimonialAdmin from "./Course/TestimonialAdmin";
 import NewsTab from "./NewsTab";
 import StaffManagementTab from "./StaffManagementTab";
 import EnquiriesTab from "./LeadsTab";
-import RoleManager from "./RoleManager";
 import Drawer from "react-modern-drawer";
-import axios from "axios";
 import ManageMetaTags from "./Course/ManageMetaTags";
 import BlogComponent from "./BlogComponent";
 import CollegeTab from "./CollegeTab";
@@ -31,18 +28,14 @@ import {
   FaSignOutAlt,
   FaBell,
   FaCalendarAlt,
-  FaClipboardList,
   FaLayerGroup,
   FaHome,
   FaBook,
   FaSyncAlt,
-  FaChalkboardTeacher,
   FaUserGraduate,
-  FaUserShield,
   FaUsers,
   FaBriefcase,
   FaEnvelope,
-  FaBlog,
   FaQuoteRight,
   FaTags,
   FaUniversity,
@@ -63,12 +56,9 @@ import CourseCategory from "./Course/CourseCategory";
 import LiveSessionAdmin from "./Course/LiveSesionAdmin";
 import TicketTab from "../components/TicketTab";
 import RevisionTestsTab from "./RevisionTestsTab";
-import Header from "../components/Header";
 import CourseDisplayTab from "./CourseDisplayTab";
 import IPLogsTab from "./IPLogsTab";
 import IPWhitelistTab from "./IPWhitelistTab";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 
 // All available modules with their permissions
 const ALL_MODULES = [
@@ -146,13 +136,6 @@ function AdminDashboardContent() {
   const handleLogout = async () => {
     await logout();
     router.push("/admin");
-  };
-
-  // Check if user can perform action on current tab
-  const canPerformAction = (action: string) => {
-    if (!user) return false;
-    if (user.role === "Admin") return true;
-    return hasPermission(activeTab, action);
   };
 
   // SIDEBAR: scrollable, hidden scrollbar

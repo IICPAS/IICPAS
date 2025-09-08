@@ -1,8 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Edit, Trash2, Eye, Plus } from "lucide-react";
+import { Edit, Trash2, Plus } from "lucide-react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 

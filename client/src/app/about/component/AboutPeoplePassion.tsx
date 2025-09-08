@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Image from "next/image";
 
 export default function AboutPeoplePassion() {
   const [tab, setTab] = useState<"mission" | "vision">("mission");
@@ -11,18 +12,22 @@ export default function AboutPeoplePassion() {
         <div className="relative w-fit mx-auto md:mx-0 -ml-1 -mt-10 md:mt-0 md:ml-0">
           {/* Main Large Image */}
           <div className="rounded-3xl overflow-hidden shadow-xl w-[320px] md:w-[490px]">
-            <img
+            <Image
               src="/images/girl-yellow.jpg"
               alt="Student 1"
+              width={490}
+              height={600}
               className="w-full h-auto object-cover"
             />
           </div>
 
           {/* Overlapping Smaller Image */}
           <div className="absolute -bottom-8 -right-8 w-56 rounded-2xl overflow-hidden shadow-2xl border-4 border-white">
-            <img
+            <Image
               src="/images/boy-color.jpg"
               alt="Student 2"
+              width={224}
+              height={280}
               className="w-full h-auto object-cover"
             />
           </div>

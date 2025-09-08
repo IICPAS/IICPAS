@@ -4,7 +4,8 @@ import { useState } from "react";
 import Header from "../components/Header";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
-import { FaUser, FaLock, FaEye, FaEyeSlash, FaEnvelope } from "react-icons/fa";
+import { FaLock, FaEye, FaEyeSlash, FaEnvelope } from "react-icons/fa";
+import Image from "next/image";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("admin@iicpa.com");
@@ -43,9 +44,11 @@ export default function AdminLogin() {
           <div className="bg-white rounded-lg shadow-lg p-8">
             {/* Logo */}
             <div className="flex justify-center mb-6">
-              <img
+              <Image
                 src="/images/logo.png"
                 alt="IICPA Institute"
+                width={64}
+                height={64}
                 className="h-16 w-auto"
               />
             </div>
