@@ -4,13 +4,9 @@ import axios from "axios";
 import Image from "next/image";
 import {
   Users,
-  Calendar,
   Clock,
   CheckCircle2,
-  Award,
   MessageSquare,
-  Building,
-  Briefcase,
   DollarSign,
   GraduationCap,
   BookOpen,

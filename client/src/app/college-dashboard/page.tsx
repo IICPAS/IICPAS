@@ -8,18 +8,13 @@ import toast from "react-hot-toast";
 import Drawer from "react-modern-drawer";
 import "react-modern-drawer/dist/index.css";
 import {
-  FaBriefcase,
-  FaList,
   FaBug,
   FaSignOutAlt,
   FaBars,
   FaCalendarAlt,
-  FaPlusCircle,
   FaChartBar,
   FaUser,
-  FaGraduationCap,
   FaCertificate,
-  FaBell,
 } from "react-icons/fa";
 import { PlusCircle, X } from "lucide-react";
 

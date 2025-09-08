@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { ChevronLeft, Plus, X } from "lucide-react";
 
 import OptimizedJoditEditor from "./OptimizedJoditEditor";
 

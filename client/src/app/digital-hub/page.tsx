@@ -4,6 +4,98 @@ import { useSearchParams, useRouter } from "next/navigation";
 import axios from "axios";
 import AccountingExperimentCard from "../components/AccountingExperimentCard";
 
+// Type definitions
+interface Task {
+  _id: string;
+  taskName: string;
+  instructions: string;
+  order: number;
+}
+
+interface Content {
+  _id: string;
+  type: "video" | "text" | "rich";
+  videoUrl?: string;
+  videoBase64?: string;
+  textContent?: string;
+  richTextContent?: string;
+  order: number;
+}
+
+interface Simulation {
+  _id: string;
+  type: string;
+  title: string;
+  description: string;
+  config: Record<string, unknown>;
+  isOptional: boolean;
+  order: number;
+  // Accounting simulation specific fields
+  statement?: string;
+  correctEntries?: Array<{
+    id: string;
+    date: string;
+    type: string;
+    particulars: string;
+    debit: string;
+    credit: string;
+  }>;
+  accountTypes?: string[];
+  accountOptions?: string[];
+}
+
+interface Question {
+  _id: string;
+  question: string;
+  context: string;
+  type: string;
+  options: string[];
+  correctAnswer: string;
+  explanation: string;
+}
+
+interface QuestionSet {
+  _id: string;
+  name: string;
+  description: string;
+  excelFile?: string;
+  excelBase64?: string;
+  questions: Question[];
+  totalQuestions: number;
+  timeLimit: number;
+  order: number;
+}
+
+interface CaseStudy {
+  _id: string;
+  title: string;
+  description: string;
+  chapterId: string;
+  order: number;
+  isActive: boolean;
+  tasks: Task[];
+  content: Content[];
+  simulations: Simulation[];
+  questionSets: QuestionSet[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Assignment {
+  _id: string;
+  title: string;
+  description: string;
+  chapterId: string;
+  order: number;
+  isActive: boolean;
+  tasks: Task[];
+  content: Content[];
+  simulations: Simulation[];
+  questionSets: QuestionSet[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Add Google Translate types
 declare global {
   interface Window {
@@ -25,26 +117,18 @@ declare global {
 }
 import {
   CheckCircle,
-  Play,
   Moon,
   Sun,
-  Info,
   AlertTriangle,
   ArrowLeft,
   Menu,
   X,
-  Home,
   Target,
   BarChart3,
   FileText,
-  Users,
-  Settings,
-  HelpCircle,
-  ChevronRight,
   BookOpen,
   ChevronDown,
   Globe,
-  Languages,
 } from "lucide-react";
 
 type ContentKey =
@@ -103,10 +187,6 @@ function DigitalHubContent() {
   const chapterId = searchParams.get("chapterId");
   const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
-  const [darkMode, setDarkMode] = useState(false);
-  const [activeContent, setActiveContent] = useState<ContentKey>("intro");
-  const [progress, setProgress] = useState(0);
-  const [points, setPoints] = useState(110);
   const [chapterDropdownOpen, setChapterDropdownOpen] = useState(false);
   const [hamburgerOpen, setHamburgerOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -135,10 +215,13 @@ function DigitalHubContent() {
   const [loading, setLoading] = useState(true);
 
   // New state for case studies and assignments
-  const [caseStudies, setCaseStudies] = useState<any[]>([]);
-  const [assignments, setAssignments] = useState<any[]>([]);
-  const [selectedCaseStudy, setSelectedCaseStudy] = useState<any>(null);
-  const [selectedAssignment, setSelectedAssignment] = useState<any>(null);
+  const [caseStudies, setCaseStudies] = useState<CaseStudy[]>([]);
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [selectedCaseStudy, setSelectedCaseStudy] = useState<CaseStudy | null>(
+    null
+  );
+  const [selectedAssignment, setSelectedAssignment] =
+    useState<Assignment | null>(null);
 
   // Quiz state
   const [quizLoading, setQuizLoading] = useState(false);
@@ -146,8 +229,10 @@ function DigitalHubContent() {
   const [selectedAnswers, setSelectedAnswers] = useState<{
     [key: string]: string;
   }>({});
-  const [showQuizResults, setShowQuizResults] = useState(false);
   const [quizSubmitted, setQuizSubmitted] = useState(false);
+  const [showQuizResults, setShowQuizResults] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [points, setPoints] = useState(110);
 
   // Ticket submission functions
   const handleTicketSubmit = async (e: React.FormEvent) => {
@@ -298,7 +383,7 @@ function DigitalHubContent() {
   };
 
   // Handle case study selection
-  const handleCaseStudySelect = (caseStudy: any) => {
+  const handleCaseStudySelect = (caseStudy: CaseStudy) => {
     console.log("Case study selected:", caseStudy);
     setSelectedCaseStudy(caseStudy);
     setSelectedTopic(null);
@@ -307,7 +392,7 @@ function DigitalHubContent() {
   };
 
   // Handle assignment selection
-  const handleAssignmentSelect = (assignment: any) => {
+  const handleAssignmentSelect = (assignment: Assignment) => {
     console.log("Assignment selected:", assignment);
     setSelectedAssignment(assignment);
     setSelectedTopic(null);
@@ -356,17 +441,6 @@ function DigitalHubContent() {
   };
 
   // Submit quiz
-  const submitQuiz = () => {
-    setQuizSubmitted(true);
-    setShowQuizResults(true);
-  };
-
-  // Reset quiz
-  const resetQuiz = () => {
-    setSelectedAnswers({});
-    setShowQuizResults(false);
-    setQuizSubmitted(false);
-  };
 
   // Handle language selection
   const handleLanguageSelect = (language: {
@@ -1406,29 +1480,31 @@ function DigitalHubContent() {
                       <h3 className="text-sm font-semibold text-gray-600 mb-2 mt-4">
                         Simulations
                       </h3>
-                      {caseStudies.slice(0, 2).map((caseStudy: any, index) => (
-                        <button
-                          key={caseStudy._id}
-                          onClick={() => {
-                            setHamburgerOpen(false);
-                            handleCaseStudySelect(caseStudy);
-                          }}
-                          className={`w-full text-left p-3 rounded-lg hover:bg-blue-50 hover:text-black transition-colors border border-gray-600 ${
-                            selectedCaseStudy?._id === caseStudy._id
-                              ? "bg-gray-100 border-gray-600"
-                              : ""
-                          } ${isDarkMode ? "text-black" : "text-gray-700"}`}
-                        >
-                          <div className="flex items-center space-x-3">
-                            <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-medium">
-                              S{index + 1}
+                      {caseStudies
+                        .slice(0, 2)
+                        .map((caseStudy: CaseStudy, index) => (
+                          <button
+                            key={caseStudy._id}
+                            onClick={() => {
+                              setHamburgerOpen(false);
+                              handleCaseStudySelect(caseStudy);
+                            }}
+                            className={`w-full text-left p-3 rounded-lg hover:bg-blue-50 hover:text-black transition-colors border border-gray-600 ${
+                              selectedCaseStudy?._id === caseStudy._id
+                                ? "bg-gray-100 border-gray-600"
+                                : ""
+                            } ${isDarkMode ? "text-black" : "text-gray-700"}`}
+                          >
+                            <div className="flex items-center space-x-3">
+                              <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-medium">
+                                S{index + 1}
+                              </div>
+                              <span className="font-medium">
+                                Simulation {index + 1}
+                              </span>
                             </div>
-                            <span className="font-medium">
-                              Simulation {index + 1}
-                            </span>
-                          </div>
-                        </button>
-                      ))}
+                          </button>
+                        ))}
                     </>
                   )}
 
@@ -1438,29 +1514,31 @@ function DigitalHubContent() {
                       <h3 className="text-sm font-semibold text-gray-600 mb-2 mt-4">
                         Assessments
                       </h3>
-                      {assignments.slice(0, 2).map((assignment: any, index) => (
-                        <button
-                          key={assignment._id}
-                          onClick={() => {
-                            setHamburgerOpen(false);
-                            handleAssignmentSelect(assignment);
-                          }}
-                          className={`w-full text-left p-3 rounded-lg hover:bg-purple-50 hover:text-black transition-colors border border-gray-600 ${
-                            selectedAssignment?._id === assignment._id
-                              ? "bg-gray-100 border-gray-600"
-                              : ""
-                          } ${isDarkMode ? "text-black" : "text-gray-700"}`}
-                        >
-                          <div className="flex items-center space-x-3">
-                            <div className="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-sm font-medium">
-                              A{index + 1}
+                      {assignments
+                        .slice(0, 2)
+                        .map((assignment: Assignment, index) => (
+                          <button
+                            key={assignment._id}
+                            onClick={() => {
+                              setHamburgerOpen(false);
+                              handleAssignmentSelect(assignment);
+                            }}
+                            className={`w-full text-left p-3 rounded-lg hover:bg-purple-50 hover:text-black transition-colors border border-gray-600 ${
+                              selectedAssignment?._id === assignment._id
+                                ? "bg-gray-100 border-gray-600"
+                                : ""
+                            } ${isDarkMode ? "text-black" : "text-gray-700"}`}
+                          >
+                            <div className="flex items-center space-x-3">
+                              <div className="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-sm font-medium">
+                                A{index + 1}
+                              </div>
+                              <span className="font-medium">
+                                Assessment {index + 1}
+                              </span>
                             </div>
-                            <span className="font-medium">
-                              Assessment {index + 1}
-                            </span>
-                          </div>
-                        </button>
-                      ))}
+                          </button>
+                        ))}
                     </>
                   )}
 
@@ -1624,7 +1702,7 @@ function DigitalHubContent() {
                       {selectedCaseStudy.simulations &&
                       selectedCaseStudy.simulations.length > 0 ? (
                         selectedCaseStudy.simulations.map(
-                          (simulation: any, index: number) => (
+                          (simulation: Simulation, index: number) => (
                             <div
                               key={simulation._id}
                               className="bg-blue-50 border border-blue-200 rounded-lg p-6"
@@ -1786,7 +1864,7 @@ function DigitalHubContent() {
                     selectedAssignment.questionSets.length > 0 ? (
                       <div className="space-y-6">
                         {selectedAssignment.questionSets.map(
-                          (questionSet: any, index: number) => (
+                          (questionSet: QuestionSet, index: number) => (
                             <div
                               key={questionSet._id}
                               className="bg-purple-50 border border-purple-200 rounded-lg p-6"
