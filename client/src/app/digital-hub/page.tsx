@@ -55,6 +55,7 @@ interface Question {
 }
 
 interface QuestionSet {
+  passingScore: React.JSX.Element;
   _id: string;
   name: string;
   description: string;
@@ -1849,13 +1850,125 @@ function DigitalHubContent() {
                       </p>
                     </div>
 
-                    {/* Task Instructions */}
+                    {/* Tasks Section */}
                     {selectedAssignment.tasks &&
                       selectedAssignment.tasks.length > 0 && (
-                        <div className="mb-8 p-6 bg-purple-50 border border-purple-200 rounded-lg">
-                          <p className="text-purple-700">
-                            {selectedAssignment.tasks[0].instructions}
-                          </p>
+                        <div className="mb-8">
+                          <h3 className="text-xl font-semibold text-purple-800 mb-4">
+                            Tasks ({selectedAssignment.tasks.length})
+                          </h3>
+                          <div className="space-y-4">
+                            {selectedAssignment.tasks.map((task, index) => (
+                              <div
+                                key={task._id || index}
+                                className="p-6 bg-purple-50 border border-purple-200 rounded-lg"
+                              >
+                                <h4 className="text-lg font-semibold text-purple-800 mb-2">
+                                  Task {index + 1}: {task.taskName}
+                                </h4>
+                                <p className="text-purple-700">
+                                  {task.instructions}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                    {/* Content Section */}
+                    {selectedAssignment.content &&
+                      selectedAssignment.content.length > 0 && (
+                        <div className="mb-8">
+                          <h3 className="text-xl font-semibold text-purple-800 mb-4">
+                            Content ({selectedAssignment.content.length})
+                          </h3>
+                          <div className="space-y-4">
+                            {selectedAssignment.content.map(
+                              (content, index) => (
+                                <div
+                                  key={content._id || index}
+                                  className="p-6 bg-blue-50 border border-blue-200 rounded-lg"
+                                >
+                                  <h4 className="text-lg font-semibold text-blue-800 mb-2">
+                                    Content {index + 1} - {content.type}
+                                  </h4>
+                                  {content.type === "video" &&
+                                    content.videoUrl && (
+                                      <div className="mb-4">
+                                        <video
+                                          controls
+                                          className="w-full max-w-2xl rounded-lg"
+                                        >
+                                          <source
+                                            src={content.videoUrl}
+                                            type="video/mp4"
+                                          />
+                                          Your browser does not support the
+                                          video tag.
+                                        </video>
+                                      </div>
+                                    )}
+                                  {content.type === "text" &&
+                                    content.textContent && (
+                                      <div className="text-blue-700 whitespace-pre-wrap">
+                                        {content.textContent}
+                                      </div>
+                                    )}
+                                  {content.type === "rich" &&
+                                    content.richTextContent && (
+                                      <div
+                                        className="text-blue-700"
+                                        dangerouslySetInnerHTML={{
+                                          __html: content.richTextContent,
+                                        }}
+                                      />
+                                    )}
+                                </div>
+                              )
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                    {/* Simulations Section */}
+                    {selectedAssignment.simulations &&
+                      selectedAssignment.simulations.length > 0 && (
+                        <div className="mb-8">
+                          <h3 className="text-xl font-semibold text-purple-800 mb-4">
+                            Simulations ({selectedAssignment.simulations.length}
+                            )
+                          </h3>
+                          <div className="space-y-4">
+                            {selectedAssignment.simulations.map(
+                              (simulation, index) => (
+                                <div
+                                  key={simulation._id || index}
+                                  className="p-6 bg-green-50 border border-green-200 rounded-lg"
+                                >
+                                  <h4 className="text-lg font-semibold text-green-800 mb-2">
+                                    Simulation {index + 1}: {simulation.title}
+                                  </h4>
+                                  <p className="text-green-700 mb-2">
+                                    {simulation.description}
+                                  </p>
+                                  <p className="text-sm text-green-600">
+                                    Type: {simulation.type} |
+                                    {simulation.isOptional
+                                      ? " Optional"
+                                      : " Required"}
+                                  </p>
+                                  {simulation.config && (
+                                    <div className="mt-3 p-3 bg-white rounded border">
+                                      <p className="text-sm text-gray-600">
+                                        Configuration available for this
+                                        simulation
+                                      </p>
+                                    </div>
+                                  )}
+                                </div>
+                              )
+                            )}
+                          </div>
                         </div>
                       )}
 
@@ -1876,58 +1989,119 @@ function DigitalHubContent() {
                                 {questionSet.description}
                               </p>
 
-                              {/* Render AssessmentCard */}
+                              {/* Dynamic Questions */}
                               <div className="bg-white border border-gray-200 rounded-lg p-6">
                                 <h4 className="text-lg font-semibold text-purple-800 mb-6">
                                   Assessment Questions
                                 </h4>
 
-                                {/* Question 1 */}
-                                <div className="mb-8 p-4 bg-gray-50 rounded-lg">
-                                  <h5 className="text-md font-semibold text-gray-800 mb-3">
-                                    1. What financial element increased as a
-                                    result of the investment made by Ms.
-                                    Kousalya and Mr. Raghuram on 2nd April?
-                                  </h5>
-                                  <div className="space-y-2">
-                                    <label className="flex items-center space-x-3 cursor-pointer">
-                                      <input
-                                        type="checkbox"
-                                        className="w-4 h-4 text-purple-600 rounded"
-                                      />
-                                      <span className="text-gray-700">
-                                        Assets & Liability
-                                      </span>
-                                    </label>
-                                    <label className="flex items-center space-x-3 cursor-pointer">
-                                      <input
-                                        type="checkbox"
-                                        className="w-4 h-4 text-purple-600 rounded"
-                                      />
-                                      <span className="text-gray-700">
-                                        Liabilities
-                                      </span>
-                                    </label>
-                                    <label className="flex items-center space-x-3 cursor-pointer">
-                                      <input
-                                        type="checkbox"
-                                        className="w-4 h-4 text-purple-600 rounded"
-                                      />
-                                      <span className="text-gray-700">
-                                        Asset
-                                      </span>
-                                    </label>
-                                    <label className="flex items-center space-x-3 cursor-pointer">
-                                      <input
-                                        type="checkbox"
-                                        className="w-4 h-4 text-purple-600 rounded"
-                                      />
-                                      <span className="text-gray-700">
-                                        Expenses
-                                      </span>
-                                    </label>
+                                {questionSet.questions &&
+                                questionSet.questions.length > 0 ? (
+                                  <div className="space-y-6">
+                                    {questionSet.questions.map(
+                                      (question, qIndex) => (
+                                        <div
+                                          key={qIndex}
+                                          className="mb-8 p-4 bg-gray-50 rounded-lg"
+                                        >
+                                          <h5 className="text-md font-semibold text-gray-800 mb-3">
+                                            {qIndex + 1}. {question.question}
+                                          </h5>
+                                          {question.context && (
+                                            <p className="text-sm text-gray-600 mb-3 italic">
+                                              {question.context}
+                                            </p>
+                                          )}
+                                          <div className="space-y-2">
+                                            {question.options &&
+                                              question.options.map(
+                                                (option, oIndex) => (
+                                                  <label
+                                                    key={oIndex}
+                                                    className="flex items-center space-x-3 cursor-pointer"
+                                                  >
+                                                    <input
+                                                      type="checkbox"
+                                                      className="w-4 h-4 text-purple-600 rounded"
+                                                    />
+                                                    <span className="text-gray-700">
+                                                      {option}
+                                                    </span>
+                                                  </label>
+                                                )
+                                              )}
+                                          </div>
+                                          {question.explanation && (
+                                            <div className="mt-3 p-3 bg-blue-50 rounded border-l-4 border-blue-400">
+                                              <p className="text-sm text-blue-800">
+                                                <strong>Explanation:</strong>{" "}
+                                                {question.explanation}
+                                              </p>
+                                            </div>
+                                          )}
+                                        </div>
+                                      )
+                                    )}
+
+                                    {/* Question Set Info */}
+                                    <div className="mt-6 p-4 bg-purple-50 rounded-lg border border-purple-200">
+                                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                        {questionSet.totalQuestions && (
+                                          <div>
+                                            <span className="font-semibold text-purple-800">
+                                              Total Questions:
+                                            </span>
+                                            <span className="ml-2 text-purple-700">
+                                              {questionSet.totalQuestions}
+                                            </span>
+                                          </div>
+                                        )}
+                                        {questionSet.timeLimit && (
+                                          <div>
+                                            <span className="font-semibold text-purple-800">
+                                              Time Limit:
+                                            </span>
+                                            <span className="ml-2 text-purple-700">
+                                              {questionSet.timeLimit} minutes
+                                            </span>
+                                          </div>
+                                        )}
+                                        {questionSet.passingScore && (
+                                          <div>
+                                            <span className="font-semibold text-purple-800">
+                                              Passing Score:
+                                            </span>
+                                            <span className="ml-2 text-purple-700">
+                                              {questionSet.passingScore}%
+                                            </span>
+                                          </div>
+                                        )}
+                                        <div>
+                                          <span className="font-semibold text-purple-800">
+                                            Questions:
+                                          </span>
+                                          <span className="ml-2 text-purple-700">
+                                            {questionSet.questions.length}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {/* Submit Button */}
+                                    <div className="text-center mt-6">
+                                      <button className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                                        Submit Assessment
+                                      </button>
+                                    </div>
                                   </div>
-                                </div>
+                                ) : (
+                                  <div className="text-center py-8 text-gray-500">
+                                    <p>
+                                      No questions available for this question
+                                      set.
+                                    </p>
+                                  </div>
+                                )}
 
                                 {/* Question 2 */}
                                 <div className="mb-8 p-4 bg-gray-50 rounded-lg">
@@ -2134,233 +2308,8 @@ function DigitalHubContent() {
                         <h4 className="text-lg font-semibold text-purple-800 mb-6">
                           Assessment Questions
                         </h4>
-
-                        {/* Question 1 */}
-                        <div className="mb-8 p-4 bg-gray-50 rounded-lg">
-                          <h5 className="text-md font-semibold text-gray-800 mb-3">
-                            1. What financial element increased as a result of
-                            the investment made by Ms. Kousalya and Mr. Raghuram
-                            on 2nd April?
-                          </h5>
-                          <div className="space-y-2">
-                            <label className="flex items-center space-x-3 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                className="w-4 h-4 text-purple-600 rounded"
-                              />
-                              <span className="text-gray-700">
-                                Assets & Liability
-                              </span>
-                            </label>
-                            <label className="flex items-center space-x-3 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                className="w-4 h-4 text-purple-600 rounded"
-                              />
-                              <span className="text-gray-700">Liabilities</span>
-                            </label>
-                            <label className="flex items-center space-x-3 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                className="w-4 h-4 text-purple-600 rounded"
-                              />
-                              <span className="text-gray-700">Asset</span>
-                            </label>
-                            <label className="flex items-center space-x-3 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                className="w-4 h-4 text-purple-600 rounded"
-                              />
-                              <span className="text-gray-700">Expenses</span>
-                            </label>
-                          </div>
-                        </div>
-
-                        {/* Question 2 */}
-                        <div className="mb-8 p-4 bg-gray-50 rounded-lg">
-                          <h5 className="text-md font-semibold text-gray-800 mb-3">
-                            2. Which ledger to be recognised for the payment
-                            made through SBI bank account?
-                          </h5>
-                          <div className="space-y-2">
-                            <label className="flex items-center space-x-3 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                className="w-4 h-4 text-purple-600 rounded"
-                              />
-                              <span className="text-gray-700">Cash</span>
-                            </label>
-                            <label className="flex items-center space-x-3 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                className="w-4 h-4 text-purple-600 rounded"
-                              />
-                              <span className="text-gray-700">Party</span>
-                            </label>
-                            <label className="flex items-center space-x-3 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                className="w-4 h-4 text-purple-600 rounded"
-                              />
-                              <span className="text-gray-700">Bank</span>
-                            </label>
-                            <label className="flex items-center space-x-3 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                className="w-4 h-4 text-purple-600 rounded"
-                              />
-                              <span className="text-gray-700">
-                                None of the above
-                              </span>
-                            </label>
-                          </div>
-                        </div>
-
-                        {/* Question 3 */}
-                        <div className="mb-8 p-4 bg-gray-50 rounded-lg">
-                          <h5 className="text-md font-semibold text-gray-800 mb-3">
-                            3. When equipment is purchased on credit, which
-                            accounts are affected?
-                          </h5>
-                          <div className="space-y-2">
-                            <label className="flex items-center space-x-3 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                className="w-4 h-4 text-purple-600 rounded"
-                              />
-                              <span className="text-gray-700">
-                                Equipment (Debit) & Cash (Credit)
-                              </span>
-                            </label>
-                            <label className="flex items-center space-x-3 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                className="w-4 h-4 text-purple-600 rounded"
-                              />
-                              <span className="text-gray-700">
-                                Equipment (Debit) & Accounts Payable (Credit)
-                              </span>
-                            </label>
-                            <label className="flex items-center space-x-3 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                className="w-4 h-4 text-purple-600 rounded"
-                              />
-                              <span className="text-gray-700">
-                                Cash (Debit) & Equipment (Credit)
-                              </span>
-                            </label>
-                            <label className="flex items-center space-x-3 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                className="w-4 h-4 text-purple-600 rounded"
-                              />
-                              <span className="text-gray-700">
-                                Accounts Payable (Debit) & Equipment (Credit)
-                              </span>
-                            </label>
-                          </div>
-                        </div>
-
-                        {/* Question 4 */}
-                        <div className="mb-8 p-4 bg-gray-50 rounded-lg">
-                          <h5 className="text-md font-semibold text-gray-800 mb-3">
-                            4. What is the correct journal entry for paying
-                            salary advance to an employee?
-                          </h5>
-                          <div className="space-y-2">
-                            <label className="flex items-center space-x-3 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                className="w-4 h-4 text-purple-600 rounded"
-                              />
-                              <span className="text-gray-700">
-                                Salary Advance (Debit) & Cash (Credit)
-                              </span>
-                            </label>
-                            <label className="flex items-center space-x-3 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                className="w-4 h-4 text-purple-600 rounded"
-                              />
-                              <span className="text-gray-700">
-                                Cash (Debit) & Salary Advance (Credit)
-                              </span>
-                            </label>
-                            <label className="flex items-center space-x-3 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                className="w-4 h-4 text-purple-600 rounded"
-                              />
-                              <span className="text-gray-700">
-                                Salary Expense (Debit) & Cash (Credit)
-                              </span>
-                            </label>
-                            <label className="flex items-center space-x-3 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                className="w-4 h-4 text-purple-600 rounded"
-                              />
-                              <span className="text-gray-700">
-                                Employee Advance (Debit) & Bank (Credit)
-                              </span>
-                            </label>
-                          </div>
-                        </div>
-
-                        {/* Question 5 */}
-                        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                          <h5 className="text-md font-semibold text-gray-800 mb-3">
-                            5. When services are provided and partial payment is
-                            received, which accounts are involved?
-                          </h5>
-                          <div className="space-y-2">
-                            <label className="flex items-center space-x-3 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                className="w-4 h-4 text-purple-600 rounded"
-                              />
-                              <span className="text-gray-700">
-                                Service Revenue (Credit) & Cash (Debit) &
-                                Accounts Receivable (Debit)
-                              </span>
-                            </label>
-                            <label className="flex items-center space-x-3 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                className="w-4 h-4 text-purple-600 rounded"
-                              />
-                              <span className="text-gray-700">
-                                Cash (Credit) & Service Revenue (Debit)
-                              </span>
-                            </label>
-                            <label className="flex items-center space-x-3 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                className="w-4 h-4 text-purple-600 rounded"
-                              />
-                              <span className="text-gray-700">
-                                Accounts Receivable (Credit) & Service Revenue
-                                (Debit)
-                              </span>
-                            </label>
-                            <label className="flex items-center space-x-3 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                className="w-4 h-4 text-purple-600 rounded"
-                              />
-                              <span className="text-gray-700">
-                                Service Expense (Debit) & Cash (Credit)
-                              </span>
-                            </label>
-                          </div>
-                        </div>
-
-                        {/* Submit Button */}
-                        <div className="text-center">
-                          <button className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors">
-                            Submit Assessment
-                          </button>
+                        <div className="text-center py-8 text-gray-500">
+                          <p>No question sets available for this assignment.</p>
                         </div>
                       </div>
                     )}
