@@ -55,6 +55,7 @@ interface Question {
 }
 
 interface QuestionSet {
+  passingScore: React.JSX.Element;
   _id: string;
   name: string;
   description: string;
@@ -1988,58 +1989,120 @@ function DigitalHubContent() {
                                 {questionSet.description}
                               </p>
 
-                              {/* Render AssessmentCard */}
+                              {/* Dynamic Questions */}
                               <div className="bg-white border border-gray-200 rounded-lg p-6">
                                 <h4 className="text-lg font-semibold text-purple-800 mb-6">
                                   Assessment Questions
                                 </h4>
 
-                                {/* Question 1 */}
-                                <div className="mb-8 p-4 bg-gray-50 rounded-lg">
-                                  <h5 className="text-md font-semibold text-gray-800 mb-3">
-                                    1. What financial element increased as a
-                                    result of the investment made by Ms.
-                                    Kousalya and Mr. Raghuram on 2nd April?
-                                  </h5>
-                                  <div className="space-y-2">
-                                    <label className="flex items-center space-x-3 cursor-pointer">
-                                      <input
-                                        type="checkbox"
-                                        className="w-4 h-4 text-purple-600 rounded"
-                                      />
-                                      <span className="text-gray-700">
-                                        Assets & Liability
-                                      </span>
-                                    </label>
-                                    <label className="flex items-center space-x-3 cursor-pointer">
-                                      <input
-                                        type="checkbox"
-                                        className="w-4 h-4 text-purple-600 rounded"
-                                      />
-                                      <span className="text-gray-700">
-                                        Liabilities
-                                      </span>
-                                    </label>
-                                    <label className="flex items-center space-x-3 cursor-pointer">
-                                      <input
-                                        type="checkbox"
-                                        className="w-4 h-4 text-purple-600 rounded"
-                                      />
-                                      <span className="text-gray-700">
-                                        Asset
-                                      </span>
-                                    </label>
-                                    <label className="flex items-center space-x-3 cursor-pointer">
-                                      <input
-                                        type="checkbox"
-                                        className="w-4 h-4 text-purple-600 rounded"
-                                      />
-                                      <span className="text-gray-700">
-                                        Expenses
-                                      </span>
-                                    </label>
+                                {questionSet.questions &&
+                                questionSet.questions.length > 0 ? (
+                                  <div className="space-y-6">
+                                    {questionSet.questions.map(
+                                      (question, qIndex) => (
+                                        <div
+                                          key={qIndex}
+                                          className="mb-8 p-4 bg-gray-50 rounded-lg"
+                                        >
+                                          <h5 className="text-md font-semibold text-gray-800 mb-3">
+                                            {qIndex + 1}. {question.question}
+                                          </h5>
+                                          {question.context && (
+                                            <p className="text-sm text-gray-600 mb-3 italic">
+                                              {question.context}
+                                            </p>
+                                          )}
+                                          <div className="space-y-2">
+                                            {question.options &&
+                                              question.options.map(
+                                                (option, oIndex) => (
+                                                  <label
+                                                    key={oIndex}
+                                                    className="flex items-center space-x-3 cursor-pointer"
+                                                  >
+                                                    <input
+                                                      type="checkbox"
+                                                      className="w-4 h-4 text-purple-600 rounded"
+                                                    />
+                                                    <span className="text-gray-700">
+                                                      {option}
+                                                    </span>
+                                                  </label>
+                                                )
+                                              )}
+                                          </div>
+                                          {question.explanation && (
+                                            <div className="mt-3 p-3 bg-blue-50 rounded border-l-4 border-blue-400">
+                                              <p className="text-sm text-blue-800">
+                                                <strong>Explanation:</strong>{" "}
+                                                {question.explanation}
+                                              </p>
+                                            </div>
+                                          )}
+                                        </div>
+                                      )
+                                    )}
+
+                                    {/* Question Set Info */}
+                                    <div className="mt-6 p-4 bg-purple-50 rounded-lg border border-purple-200">
+                                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                        {questionSet.totalQuestions && (
+                                          <div>
+                                            <span className="font-semibold text-purple-800">
+                                              Total Questions:
+                                            </span>
+                                            <span className="ml-2 text-purple-700">
+                                              {questionSet.totalQuestions}
+                                            </span>
+                                          </div>
+                                        )}
+                                        {questionSet.timeLimit && (
+                                          <div>
+                                            <span className="font-semibold text-purple-800">
+                                              Time Limit:
+                                            </span>
+                                            <span className="ml-2 text-purple-700">
+                                              {questionSet.timeLimit} minutes
+                                            </span>
+                                          </div>
+                                        )}
+                                        {questionSet.passingScore && (
+                                          <div>
+                                            <span className="font-semibold text-purple-800">
+                                              Passing Score:
+                                            </span>
+                                            <span className="ml-2 text-purple-700">
+                                              {questionSet.passingScore}%
+                                            </span>
+                                          </div>
+                                        )}
+                                        <div>
+                                          <span className="font-semibold text-purple-800">
+                                            Questions:
+                                          </span>
+                                          <span className="ml-2 text-purple-700">
+                                            {questionSet.questions.length}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {/* Submit Button */}
+                                    <div className="text-center mt-6">
+                                      <button className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                                        Submit Assessment
+                                      </button>
+                                    </div>
                                   </div>
-                                </div>
+                                ) : (
+                                  <div className="text-center py-8 text-gray-500">
+                                    <p>
+                                      No questions available for this question
+                                      set.
+                                    </p>
+                                  </div>
+                                )}
+
 
                                 {/* Question 2 */}
                                 <div className="mb-8 p-4 bg-gray-50 rounded-lg">
@@ -2246,6 +2309,9 @@ function DigitalHubContent() {
                         <h4 className="text-lg font-semibold text-purple-800 mb-6">
                           Assessment Questions
                         </h4>
+                        <div className="text-center py-8 text-gray-500">
+                          <p>No question sets available for this assignment.</p>
+                        </div>
 
                         {/* Question 1 */}
                         <div className="mb-8 p-4 bg-gray-50 rounded-lg">
