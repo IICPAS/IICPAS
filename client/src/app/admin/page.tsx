@@ -29,7 +29,7 @@ export default function AdminLogin() {
         setError(result.message);
       }
     } catch (error) {
-      setError("Login failed. Please try again.");
+      setError("Log failed. Please try again.");
     } finally {
       setLoading(false);
     }
