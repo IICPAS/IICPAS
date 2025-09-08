@@ -1849,13 +1849,125 @@ function DigitalHubContent() {
                       </p>
                     </div>
 
-                    {/* Task Instructions */}
+                    {/* Tasks Section */}
                     {selectedAssignment.tasks &&
                       selectedAssignment.tasks.length > 0 && (
-                        <div className="mb-8 p-6 bg-purple-50 border border-purple-200 rounded-lg">
-                          <p className="text-purple-700">
-                            {selectedAssignment.tasks[0].instructions}
-                          </p>
+                        <div className="mb-8">
+                          <h3 className="text-xl font-semibold text-purple-800 mb-4">
+                            Tasks ({selectedAssignment.tasks.length})
+                          </h3>
+                          <div className="space-y-4">
+                            {selectedAssignment.tasks.map((task, index) => (
+                              <div
+                                key={task._id || index}
+                                className="p-6 bg-purple-50 border border-purple-200 rounded-lg"
+                              >
+                                <h4 className="text-lg font-semibold text-purple-800 mb-2">
+                                  Task {index + 1}: {task.taskName}
+                                </h4>
+                                <p className="text-purple-700">
+                                  {task.instructions}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                    {/* Content Section */}
+                    {selectedAssignment.content &&
+                      selectedAssignment.content.length > 0 && (
+                        <div className="mb-8">
+                          <h3 className="text-xl font-semibold text-purple-800 mb-4">
+                            Content ({selectedAssignment.content.length})
+                          </h3>
+                          <div className="space-y-4">
+                            {selectedAssignment.content.map(
+                              (content, index) => (
+                                <div
+                                  key={content._id || index}
+                                  className="p-6 bg-blue-50 border border-blue-200 rounded-lg"
+                                >
+                                  <h4 className="text-lg font-semibold text-blue-800 mb-2">
+                                    Content {index + 1} - {content.type}
+                                  </h4>
+                                  {content.type === "video" &&
+                                    content.videoUrl && (
+                                      <div className="mb-4">
+                                        <video
+                                          controls
+                                          className="w-full max-w-2xl rounded-lg"
+                                        >
+                                          <source
+                                            src={content.videoUrl}
+                                            type="video/mp4"
+                                          />
+                                          Your browser does not support the
+                                          video tag.
+                                        </video>
+                                      </div>
+                                    )}
+                                  {content.type === "text" &&
+                                    content.textContent && (
+                                      <div className="text-blue-700 whitespace-pre-wrap">
+                                        {content.textContent}
+                                      </div>
+                                    )}
+                                  {content.type === "rich" &&
+                                    content.richTextContent && (
+                                      <div
+                                        className="text-blue-700"
+                                        dangerouslySetInnerHTML={{
+                                          __html: content.richTextContent,
+                                        }}
+                                      />
+                                    )}
+                                </div>
+                              )
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                    {/* Simulations Section */}
+                    {selectedAssignment.simulations &&
+                      selectedAssignment.simulations.length > 0 && (
+                        <div className="mb-8">
+                          <h3 className="text-xl font-semibold text-purple-800 mb-4">
+                            Simulations ({selectedAssignment.simulations.length}
+                            )
+                          </h3>
+                          <div className="space-y-4">
+                            {selectedAssignment.simulations.map(
+                              (simulation, index) => (
+                                <div
+                                  key={simulation._id || index}
+                                  className="p-6 bg-green-50 border border-green-200 rounded-lg"
+                                >
+                                  <h4 className="text-lg font-semibold text-green-800 mb-2">
+                                    Simulation {index + 1}: {simulation.title}
+                                  </h4>
+                                  <p className="text-green-700 mb-2">
+                                    {simulation.description}
+                                  </p>
+                                  <p className="text-sm text-green-600">
+                                    Type: {simulation.type} |
+                                    {simulation.isOptional
+                                      ? " Optional"
+                                      : " Required"}
+                                  </p>
+                                  {simulation.config && (
+                                    <div className="mt-3 p-3 bg-white rounded border">
+                                      <p className="text-sm text-gray-600">
+                                        Configuration available for this
+                                        simulation
+                                      </p>
+                                    </div>
+                                  )}
+                                </div>
+                              )
+                            )}
+                          </div>
                         </div>
                       )}
 
