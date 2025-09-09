@@ -122,8 +122,10 @@ app.use("/api/categories", categoryRoutes);
 // Assignment and Case Study Routes
 import assignmentRoutes from "./routes/assignmentRoutes.js";
 import caseStudyRoutes from "./routes/caseStudyRoutes.js";
+import gstSimulationRoutes from "./routes/gstSimulationRoutes.js";
 app.use("/api/assignments", assignmentRoutes);
 app.use("/api/case-studies", caseStudyRoutes);
+app.use("/api/gst-simulations", gstSimulationRoutes);
 
 app.use("/metatags", metaTagRoutes);
 app.use("/api/tickets", ticketRoutes);
