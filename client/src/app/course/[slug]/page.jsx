@@ -11,12 +11,16 @@ import { Eye, EyeOff } from "lucide-react";
 
 export default function CourseDetailPage() {
   const { slug } = useParams();
-  const API = process.env.NEXT_PUBLIC_API_URL;
+  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
   const [course, setCourse] = useState(null);
   const [activeTab, setActiveTab] = useState("syllabus");
   const [student, setStudent] = useState(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedCartItem, setSelectedCartItem] = useState(null);
+  const [paymentScreenshot, setPaymentScreenshot] = useState(null);
+  const [paymentRecordId, setPaymentRecordId] = useState(null);
   const [authMode, setAuthMode] = useState("login");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -60,17 +64,31 @@ export default function CourseDetailPage() {
     axios.get(`${API}/api/courses`).then((res) => {
       const courses = res.data.courses || res.data;
       const match = courses.find((c) => c.title === title);
+      console.log("Course data:", match);
+      console.log("Course image:", match?.image);
+      console.log("API URL:", API);
+      console.log(
+        "Full image URL:",
+        match?.image ? `${API}${match.image}` : "No image"
+      );
       setCourse(match);
     });
   }, [slug]);
 
   // Check student login
   useEffect(() => {
+    console.log("Checking student login with API:", API);
     axios
       .get(`${API}/api/v1/students/isstudent`, { withCredentials: true })
-      .then((res) => setStudent(res.data.student))
-      .catch(() => setStudent(null));
-  }, []);
+      .then((res) => {
+        console.log("Student login check response:", res.data);
+        setStudent(res.data.student);
+      })
+      .catch((error) => {
+        console.log("Student login check failed:", error);
+        setStudent(null);
+      });
+  }, [API]);
 
   // Add to cart
   const handleAddToCart = async () => {
@@ -91,6 +109,16 @@ export default function CourseDetailPage() {
     }
   };
 
+  // Handle Buy Now
+  const handleBuyNow = (cartItem) => {
+    if (!student) {
+      setShowLoginModal(true);
+      return;
+    }
+    setSelectedCartItem(cartItem);
+    setShowPaymentModal(true);
+  };
+
   const handleLogin = async () => {
     try {
       const res = await axios.post(
@@ -99,29 +127,91 @@ export default function CourseDetailPage() {
           email: formData.email,
           password: formData.password,
         },
-        { withCredentials: true }
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
       );
       setStudent(res.data.student);
       setShowLoginModal(false);
       toast.success("Login successful!");
       setTimeout(() => window.location.reload(), 1500);
-    } catch {
-      toast.error("Login failed. Check credentials.");
+    } catch (error) {
+      console.error("Login error:", error);
+      console.error("Login error response:", error.response?.data);
+      const errorMessage =
+        error.response?.data?.message || "Login failed. Check credentials.";
+      toast.error(errorMessage);
     }
   };
 
   const handleSignup = async () => {
+    // Validate required fields
+    if (
+      !formData.name ||
+      !formData.email ||
+      !formData.phone ||
+      !formData.password
+    ) {
+      return toast.error("Please fill in all required fields");
+    }
+
     if (formData.password !== formData.confirmPassword) {
       return toast.warn("Passwords do not match");
     }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      return toast.error("Please enter a valid email address");
+    }
+
+    // Validate phone number (basic validation)
+    if (formData.phone.length < 10) {
+      return toast.error("Please enter a valid phone number");
+    }
+
+    // Prepare data for registration (remove confirmPassword as it's not needed on backend)
+    const registrationData = {
+      name: formData.name.trim(),
+      email: formData.email.trim().toLowerCase(),
+      phone: formData.phone.trim(),
+      password: formData.password,
+      mode: formData.mode || "Online",
+      location: formData.location || "Greater Noida",
+      center: formData.center || "Greater Noida",
+    };
+
+    console.log("Registration data:", registrationData);
+    console.log("API URL:", API);
+    console.log("Full registration URL:", `${API}/api/v1/students/register`);
+
     try {
-      await axios.post(`${API}/api/v1/students/register`, formData, {
-        withCredentials: true,
-      });
+      const response = await axios.post(
+        `${API}/api/v1/students/register`,
+        registrationData,
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      console.log("Registration response:", response.data);
       setShowLoginModal(false);
-      toast.success("Signup successful!");
-    } catch {
-      toast.error("Signup failed. Try again.");
+      clearFormData();
+      toast.success("Signup successful! Please login to continue.");
+    } catch (error) {
+      console.error("Registration error:", error);
+      console.error("Error response:", error.response?.data);
+      console.error("Error status:", error.response?.status);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        "Signup failed. Try again.";
+      toast.error(errorMessage);
     }
   };
 
@@ -189,13 +279,43 @@ export default function CourseDetailPage() {
             {/* Right Sidebar */}
             <div className="space-y-6">
               <div className="aspect-video rounded-xl overflow-hidden shadow-md">
-                <Image
-                  className="w-full h-full object-cover"
-                  src={API + course.image}
-                  height={80}
-                  width={80}
-                  alt="Course Thumbnail"
-                />
+                {course.image ? (
+                  <Image
+                    className="w-full h-full object-cover"
+                    src={API + course.image}
+                    height={300}
+                    width={400}
+                    alt="Course Thumbnail"
+                    onError={(e) => {
+                      console.error(
+                        "Image failed to load:",
+                        API + course.image
+                      );
+                      e.target.style.display = "none";
+                    }}
+                  />
+                ) : (
+                  <Image
+                    className="w-full h-full object-cover"
+                    src="/images/default-course.jpg"
+                    height={300}
+                    width={400}
+                    alt="Default Course Image"
+                    onError={(e) => {
+                      e.target.style.display = "none";
+                      e.target.nextSibling.style.display = "flex";
+                    }}
+                  />
+                )}
+                <div
+                  className="w-full h-full bg-gray-200 flex items-center justify-center"
+                  style={{ display: "none" }}
+                >
+                  <div className="text-center text-gray-500">
+                    <div className="text-4xl mb-2">📚</div>
+                    <p className="text-sm">No image available</p>
+                  </div>
+                </div>
               </div>
               <p className="text-sm text-gray-600">
                 Get access to this course in <strong>Lab+</strong> &{" "}
@@ -208,12 +328,25 @@ export default function CourseDetailPage() {
                 <p className="text-xl font-semibold text-orange-900 mb-2">
                   ₹{discountedPrice.toLocaleString()}
                 </p>
-                <button
-                  onClick={handleAddToCart}
-                  className="w-full bg-orange-600 text-white py-2 rounded-md hover:bg-orange-700"
-                >
-                  Add To Cart
-                </button>
+                <div className="space-y-2">
+                  <button
+                    onClick={handleAddToCart}
+                    className="w-full bg-orange-600 text-white py-2 rounded-md hover:bg-orange-700"
+                  >
+                    Add To Cart
+                  </button>
+                  <button
+                    onClick={() =>
+                      handleBuyNow({
+                        title: course.title,
+                        price: discountedPrice,
+                      })
+                    }
+                    className="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700"
+                  >
+                    Buy Now
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -388,6 +521,342 @@ export default function CourseDetailPage() {
             >
               Cancel
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Payment Modal */}
+      {showPaymentModal && selectedCartItem && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-2">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-7xl max-h-[95vh] overflow-y-auto">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-t-2xl">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-bold">Complete Your Payment</h2>
+                  <p className="text-blue-100 mt-1">
+                    Secure UPI payment for your course
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowPaymentModal(false)}
+                  className="text-white/80 hover:text-white hover:bg-white/20 p-2 rounded-full transition-all duration-200"
+                >
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Left Column - Course Details & Payment Info */}
+                <div className="space-y-6">
+                  {/* Course Details */}
+                  <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 border border-gray-200">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                        <svg
+                          className="w-8 h-8 text-white"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                          />
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-900">
+                          {selectedCartItem.title}
+                        </h3>
+                        <p className="text-2xl font-bold text-green-600">
+                          ₹{selectedCartItem.price.toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* UPI Payment Details */}
+                  <div className="bg-white rounded-xl p-6 border-2 border-gray-200 shadow-sm">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                      <svg
+                        className="w-5 h-5 text-green-600 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                        />
+                      </svg>
+                      UPI Payment Details
+                    </h3>
+
+                    <div className="space-y-4">
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Account Holder
+                        </label>
+                        <p className="text-lg font-semibold text-gray-900">
+                          Lokesh Gupta
+                        </p>
+                      </div>
+
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          UPI ID
+                        </label>
+                        <div className="flex items-center space-x-2">
+                          <p className="text-lg font-mono bg-white border border-gray-300 rounded px-3 py-2 flex-1">
+                            8810380146@ptaxis
+                          </p>
+                          <button
+                            onClick={() =>
+                              navigator.clipboard.writeText("8810380146@ptaxis")
+                            }
+                            className="bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 transition-colors"
+                          >
+                            Copy
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Payment Instructions */}
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+                    <h4 className="font-bold text-blue-900 mb-3 flex items-center">
+                      <svg
+                        className="w-5 h-5 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      How to Pay
+                    </h4>
+                    <ol className="text-sm text-blue-800 space-y-2">
+                      <li className="flex items-start">
+                        <span className="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                          1
+                        </span>
+                        Open any UPI app (Paytm, PhonePe, Google Pay, BHIM)
+                      </li>
+                      <li className="flex items-start">
+                        <span className="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                          2
+                        </span>
+                        Scan the QR code or enter UPI ID: 8810380146@ptaxis
+                      </li>
+                      <li className="flex items-start">
+                        <span className="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                          3
+                        </span>
+                        Enter amount: ₹{selectedCartItem.price.toLocaleString()}
+                      </li>
+                      <li className="flex items-start">
+                        <span className="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                          4
+                        </span>
+                        Complete the payment and take a screenshot
+                      </li>
+                    </ol>
+                  </div>
+                </div>
+
+                {/* Right Column - QR Code & Upload */}
+                <div className="space-y-6">
+                  {/* QR Code */}
+                  <div className="bg-white rounded-xl p-4 border-2 border-gray-200 shadow-sm text-center">
+                    <h4 className="text-lg font-bold text-gray-900 mb-3">
+                      Scan QR Code
+                    </h4>
+                    <div className="bg-white border-2 border-gray-300 rounded-xl p-3 inline-block shadow-lg">
+                      <Image
+                        src="/images/qr.jpeg"
+                        alt="UPI QR Code"
+                        width={150}
+                        height={150}
+                        className="mx-auto rounded-lg"
+                      />
+                    </div>
+                    <p className="text-sm text-gray-600 mt-3">
+                      Scan with any UPI app to pay instantly
+                    </p>
+                  </div>
+
+                  {/* Payment Screenshot Upload */}
+                  {paymentRecordId && (
+                    <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
+                      <h4 className="font-bold text-green-900 mb-4 flex items-center">
+                        <svg
+                          className="w-5 h-5 mr-2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                          />
+                        </svg>
+                        Upload Payment Proof
+                      </h4>
+                      <div className="space-y-4">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) =>
+                            setPaymentScreenshot(e.target.files[0])
+                          }
+                          className="w-full border-2 border-dashed border-green-300 rounded-lg p-4 text-center hover:border-green-400 transition-colors cursor-pointer"
+                        />
+                        {paymentScreenshot && (
+                          <button
+                            onClick={async () => {
+                              const uploadToast = toast.loading(
+                                "Uploading screenshot...",
+                                {
+                                  duration: 0,
+                                }
+                              );
+
+                              try {
+                                const formData = new FormData();
+                                formData.append(
+                                  "screenshot",
+                                  paymentScreenshot
+                                );
+
+                                await axios.post(
+                                  `${API}/api/v1/payments/upload-screenshot/${paymentRecordId}`,
+                                  formData,
+                                  {
+                                    withCredentials: true,
+                                    headers: {
+                                      "Content-Type": "multipart/form-data",
+                                    },
+                                  }
+                                );
+                                toast.dismiss(uploadToast);
+                                toast.success(
+                                  "Payment screenshot uploaded successfully!",
+                                  { duration: 5000 }
+                                );
+                              } catch (error) {
+                                console.error(
+                                  "Error uploading screenshot:",
+                                  error
+                                );
+                                toast.dismiss(uploadToast);
+                                toast.error(
+                                  "Failed to upload screenshot. Please try again.",
+                                  { duration: 5000 }
+                                );
+                              }
+                            }}
+                            className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold shadow-lg"
+                          >
+                            Upload Screenshot
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Action Buttons */}
+                  <div className="space-y-3">
+                    <button
+                      onClick={async () => {
+                        if (paymentRecordId) return; // Prevent multiple clicks
+
+                        const processingToast = toast.loading(
+                          "Processing payment...",
+                          {
+                            duration: 0, // Keep it until manually dismissed
+                          }
+                        );
+
+                        try {
+                          const response = await axios.post(
+                            `${API}/api/v1/payments/create`,
+                            {
+                              courseId: course._id,
+                              amount: selectedCartItem.price,
+                            },
+                            { withCredentials: true }
+                          );
+                          setPaymentRecordId(response.data.payment._id);
+                          toast.dismiss(processingToast);
+                          toast.success(
+                            "Payment record created! Please upload your payment screenshot.",
+                            { duration: 5000 }
+                          );
+                        } catch (error) {
+                          console.error(
+                            "Error creating payment record:",
+                            error
+                          );
+                          toast.dismiss(processingToast);
+                          toast.error(
+                            "Failed to create payment record. Please try again.",
+                            { duration: 5000 }
+                          );
+                        }
+                      }}
+                      disabled={paymentRecordId}
+                      className={`w-full py-4 rounded-xl transition-all duration-200 font-bold text-lg shadow-lg hover:shadow-xl ${
+                        paymentRecordId
+                          ? "bg-gray-400 cursor-not-allowed"
+                          : "bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                      } text-white`}
+                    >
+                      {paymentRecordId
+                        ? "Payment Record Created ✓"
+                        : "I've Made Payment"}
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setShowPaymentModal(false);
+                        setPaymentRecordId(null);
+                        setPaymentScreenshot(null);
+                      }}
+                      className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl hover:bg-gray-200 transition-colors font-semibold"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

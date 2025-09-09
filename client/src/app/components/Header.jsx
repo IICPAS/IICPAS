@@ -111,39 +111,63 @@ export default function Header() {
   };
 
   const handleBuyNow = async (courseId) => {
+    console.log("Buy Now clicked for courseId:", courseId);
+    console.log("Current student:", student);
+    console.log("Cart courses:", cartCourses);
+
     const selectedCourse = cartCourses.find((c) => c._id === courseId);
-    if (!selectedCourse) return;
+    console.log("Selected course:", selectedCourse);
 
+    if (!selectedCourse) {
+      console.log("No course found with ID:", courseId);
+      return;
+    }
+
+    if (!student) {
+      console.log("No student logged in");
+      Swal.fire(
+        "Login Required",
+        "Please login to proceed with payment.",
+        "warning"
+      );
+      return;
+    }
+
+    console.log("Creating payment record...");
     try {
-      const txnId = `TXN_${Date.now()}_${courseId}`;
-
-      const res = await axios.post(
-        `${API}/api/v1/payment/initiate-payment`,
+      // Create payment record using our new payment system
+      const response = await axios.post(
+        `${API}/api/v1/payments/create`,
         {
-          transactionId: txnId,
+          courseId: courseId,
           amount: selectedCourse.price,
         },
-        {
-          withCredentials: true,
-        }
+        { withCredentials: true }
       );
 
-      if (res.data.success && res.data.redirectUrl) {
-        window.location.href = res.data.redirectUrl;
-      } else {
-        Swal.fire(
-          "Payment Failed",
-          "Unable to redirect to payment page.",
-          "error"
-        );
-      }
+      // Show success message and redirect to course page for UPI payment
+      Swal.fire({
+        title: "Payment Record Created",
+        text: "Please complete UPI payment and upload screenshot for verification.",
+        icon: "success",
+        confirmButtonText: "Go to Course",
+      }).then(() => {
+        // Redirect to course page where user can complete UPI payment
+        window.location.href = `/course/${
+          selectedCourse.slug || selectedCourse.title.replace(/\s+/g, "_")
+        }`;
+      });
     } catch (err) {
+      console.error("Payment error:", err);
+      console.error("Error response:", err.response?.data);
+      console.error("Error status:", err.response?.status);
       Swal.fire(
-        "Error",
-        "Something went wrong while initiating payment.",
+        "Payment Failed",
+        `Something went wrong while creating payment record. ${
+          err.response?.data?.message || ""
+        }`,
         "error"
       );
-      console.error("Payment error:", err);
     }
   };
 

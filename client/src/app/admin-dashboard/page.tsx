@@ -17,6 +17,7 @@ import CenterTab from "./CenterTab";
 import CalendarTab from "./CalendarTab";
 import AboutTab from "./AboutTab";
 import StudentsTab from "./StudentsTab";
+import PaymentsTab from "./PaymentsTab";
 import { useRouter } from "next/navigation";
 import "react-modern-drawer/dist/index.css";
 import TopicsManager from "./Topic/TopicsManager";
@@ -48,6 +49,7 @@ import {
   FaEye,
   FaFileAlt,
   FaBoxes,
+  FaCreditCard,
   FaShieldAlt,
 } from "react-icons/fa";
 import CompanyTab from "./CompanyTab";
@@ -71,6 +73,7 @@ const ALL_MODULES = [
   { id: "news", label: "News", icon: <FaNewspaper /> },
   { id: "center", label: "Center", icon: <FaHome /> },
   { id: "students", label: "Students", icon: <FaUserGraduate /> },
+  { id: "payments", label: "Payments", icon: <FaCreditCard /> },
   { id: "staff", label: "Staff Management", icon: <FaUsers /> },
   { id: "companies", label: "Companies", icon: <FaStarOfDavid /> },
   { id: "colleges", label: "Colleges", icon: <FaUniversity /> },
@@ -356,6 +359,8 @@ function AdminDashboardContent() {
           <CourseCategory />
         ) : activeTab === "students" ? (
           <StudentsTab />
+        ) : activeTab === "payments" ? (
+          <PaymentsTab />
         ) : activeTab === "jobs" ? (
           <JobsAdminPanel />
         ) : activeTab === "staff" ? (
