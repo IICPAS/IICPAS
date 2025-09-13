@@ -40,11 +40,19 @@ export default function EditCourse({ courseId, onBack }) {
     spellcheck: true,
     askBeforePasteHTML: false,
     askBeforePasteFromWord: false,
-    defaultActionOnPaste: 'insert_clear_html',
-    enterMode: 'BR',
+    defaultActionOnPaste: "insert_clear_html",
+    enterMode: "BR",
     useSearch: false,
     showXPathInStatusbar: false,
   };
+
+  // Debounced change handler to prevent typing interruption
+  const debouncedJoditChange = useCallback(
+    (field) => (value) => {
+      setForm((f) => ({ ...f, [field]: value }));
+    },
+    []
+  );
 
   useEffect(() => {
     setMounted(true);
@@ -88,14 +96,6 @@ export default function EditCourse({ courseId, onBack }) {
       setForm((f) => ({ ...f, [name]: val }));
     }
   };
-
-  // Debounced change handler to prevent typing interruption
-  const debouncedJoditChange = useCallback(
-    (field) => (value) => {
-      setForm((f) => ({ ...f, [field]: value }));
-    },
-    []
-  );
 
   const handleJoditChange = (field) => (value) => {
     setForm((f) => ({ ...f, [field]: value }));
@@ -189,15 +189,24 @@ export default function EditCourse({ courseId, onBack }) {
               <div className="mt-2">
                 <p className="text-sm text-gray-600 mb-1">Current Image:</p>
                 <img
-                  src={form.imageUrl.startsWith('http') ? form.imageUrl : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}${form.imageUrl}`}
+                  src={
+                    form.imageUrl.startsWith("http")
+                      ? form.imageUrl
+                      : `${
+                          process.env.NEXT_PUBLIC_API_URL ||
+                          "http://localhost:8080"
+                        }${form.imageUrl}`
+                  }
                   alt="Current Course"
                   className="h-24 rounded shadow border"
                   onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.nextSibling.style.display = 'block';
+                    e.target.style.display = "none";
+                    e.target.nextSibling.style.display = "block";
                   }}
                 />
-                <p className="text-xs text-red-500" style={{display: 'none'}}>Image not found</p>
+                <p className="text-xs text-red-500" style={{ display: "none" }}>
+                  Image not found
+                </p>
               </div>
             )}
             {/* Show preview of newly selected image */}
