@@ -9,7 +9,7 @@ import cors from "cors";
 import contactRoutes from "./routes/contactRoutes.js";
 import connectDB from "./config/db.js";
 import studentRoutes from "./routes/studentRoutes.js";
-import paymentRoutes from "./routes/paymentRoutes.js";
+import paymentRoutes from "./routes/PaymentRoutes/paymentRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import blogRoutes from "./routes/blogRoutes.js";
 import JobAdminRoutes from "./routes/JobAdminRoutes.js";
