@@ -24,7 +24,7 @@
     "next": "15.4.1",
     "pg-sdk-node": "https://phonepe.mycloudrepo.io/public/repositories/phonepe-pg-sdk-node/releases/v2/phonepe-pg-sdk-node.tgz",
     "react": "19.1.0",
-    "react-beautiful-dnd": "^13.1.1",
+    "@hello-pangea/dnd": "^18.0.1",
     "react-calendar": "^6.0.0",
     "react-dom": "19.1.0",
     "react-fast-marquee": "^1.6.5",

@@ -22,7 +22,7 @@ import {
   DragIndicator,
 } from "@mui/icons-material";
 import dynamic from "next/dynamic";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
 // Debounce utility function
 const debounce = (func, wait) => {
