@@ -36,7 +36,6 @@ const navLinks = [
   {
     name: "Resources",
     children: [
-      { name: "Learning Lab", href: "/learning-lab" },
       { name: "Blogs", href: "/blog" },
       { name: "Contact", href: "/contact" },
       { name: "About", href: "/about" },
@@ -216,53 +215,51 @@ export default function Header() {
           </Link>
 
           {/* Navigation - Center */}
-          {!student && (
-            <nav className="hidden lg:flex items-center gap-4 text-base text-gray-800 font-medium flex-1 justify-center">
-              {navLinks.map((item) =>
-                item.children ? (
-                  <div key={item.name} className="relative group">
-                    <button className="flex items-center gap-1 hover:text-green-600 transition-colors duration-200 py-1.5 px-2 rounded-md hover:bg-green-50 text-sm">
-                      {item.name}
-                      <svg
-                        className="w-3 h-3 transition-transform group-hover:rotate-180"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </button>
-                    <div className="absolute left-0 mt-2 w-40 bg-white shadow-xl rounded-lg opacity-0 group-hover:opacity-100 transform -translate-y-2 group-hover:translate-y-0 transition-all duration-200 z-50 border border-gray-100">
-                      {item.children.map((child) => (
-                        <Link
-                          key={child.name}
-                          href={child.href}
-                          className="block px-3 py-2 text-sm hover:bg-green-50 hover:text-green-700 transition-colors duration-200 first:rounded-t-lg last:rounded-b-lg"
-                        >
-                          {child.name}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className={`hover:text-green-600 transition-colors duration-200 py-1.5 px-2 rounded-md hover:bg-green-50 text-sm ${
-                      pathname === item.href ? "text-green-600 bg-green-50" : ""
-                    }`}
-                  >
+          <nav className="hidden lg:flex items-center gap-4 text-base text-gray-800 font-medium flex-1 justify-center">
+            {navLinks.map((item) =>
+              item.children ? (
+                <div key={item.name} className="relative group">
+                  <button className="flex items-center gap-1 hover:text-green-600 transition-colors duration-200 py-1.5 px-2 rounded-md hover:bg-green-50 text-sm">
                     {item.name}
-                  </Link>
-                )
-              )}
-            </nav>
-          )}
+                    <svg
+                      className="w-3 h-3 transition-transform group-hover:rotate-180"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </button>
+                  <div className="absolute left-0 mt-2 w-40 bg-white shadow-xl rounded-lg opacity-0 group-hover:opacity-100 transform -translate-y-2 group-hover:translate-y-0 transition-all duration-200 z-50 border border-gray-100">
+                    {item.children.map((child) => (
+                      <Link
+                        key={child.name}
+                        href={child.href}
+                        className="block px-3 py-2 text-sm hover:bg-green-50 hover:text-green-700 transition-colors duration-200 first:rounded-t-lg last:rounded-b-lg"
+                      >
+                        {child.name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`hover:text-green-600 transition-colors duration-200 py-1.5 px-2 rounded-md hover:bg-green-50 text-sm ${
+                    pathname === item.href ? "text-green-600 bg-green-50" : ""
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              )
+            )}
+          </nav>
 
           {/* Right side - Fixed at end */}
           <div className="hidden lg:flex items-center space-x-3 flex-shrink-0">
@@ -423,6 +420,42 @@ export default function Header() {
             </div>
           </div>
         )}
+        
+        {/* Navigation links for authenticated users */}
+        <div className="space-y-4">
+          {navLinks.map((item) =>
+            item.children ? (
+              <div key={item.name} className="space-y-2">
+                <div className="py-2 px-4 text-lg font-medium text-gray-700">
+                  {item.name}
+                </div>
+                <div className="pl-4 space-y-1">
+                  {item.children.map((child) => (
+                    <Link
+                      key={child.name}
+                      href={child.href}
+                      onClick={() => setDrawerOpen(false)}
+                      className="block py-2 px-4 text-base hover:bg-green-50 hover:text-green-600 rounded-lg transition-colors duration-200"
+                    >
+                      {child.name}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <Link
+                key={item.name}
+                href={item.href}
+                onClick={() => setDrawerOpen(false)}
+                className={`block py-3 px-4 text-lg font-medium hover:bg-green-50 hover:text-green-600 rounded-lg transition-colors duration-200 ${
+                  pathname === item.href ? "text-green-600 bg-green-50" : ""
+                }`}
+              >
+                {item.name}
+              </Link>
+            )
+          )}
+        </div>
       </Drawer>
 
       {/* Cart Drawer */}

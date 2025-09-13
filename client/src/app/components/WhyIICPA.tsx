@@ -2,15 +2,45 @@
 
 import Link from "next/link";
 import { FaGraduationCap, FaUsers, FaPlay } from "react-icons/fa";
+import { useEffect } from "react";
 
 export default function WhyIICPA() {
+  // Add custom movement animation
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes moveLeftRight {
+        0%, 100% { 
+          transform: translateX(0px); 
+        }
+        50% { 
+          transform: translateX(15px); 
+        }
+      }
+      @keyframes moveUpDown {
+        0%, 100% { 
+          transform: translateY(0px); 
+        }
+        50% { 
+          transform: translateY(-10px); 
+        }
+      }
+    `;
+    document.head.appendChild(style);
+    return () => document.head.removeChild(style);
+  }, []);
   return (
     <section className="py-20 bg-gradient-to-br from-gray-50 to-white">
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left Side - Image */}
           <div className="relative">
-            <div className="relative overflow-hidden rounded-2xl shadow-2xl">
+            <div 
+              className="relative overflow-hidden rounded-2xl shadow-2xl transform transition-all duration-1000 ease-out hover:scale-105 hover:-translate-y-2 border-4 border-gray-300 hover:border-blue-500"
+              style={{
+                animation: 'moveLeftRight 4s ease-in-out infinite'
+              }}
+            >
               <img
                 src="/images/img1.jpg"
                 alt="IICPA Students Learning"
@@ -19,12 +49,6 @@ export default function WhyIICPA() {
               {/* Overlay gradient */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
 
-              {/* Floating play button */}
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                <div className="bg-white/20 backdrop-blur-sm rounded-full p-6 border border-white/30">
-                  <FaPlay className="text-white text-2xl ml-1" />
-                </div>
-              </div>
 
               {/* Floating stats card */}
               <div className="absolute bottom-6 left-6 bg-white/95 backdrop-blur-sm rounded-xl p-4 shadow-lg">
