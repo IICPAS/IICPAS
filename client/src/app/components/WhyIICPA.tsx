@@ -27,7 +27,9 @@ export default function WhyIICPA() {
       }
     `;
     document.head.appendChild(style);
-    return () => document.head.removeChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
   }, []);
   return (
     <section className="py-20 bg-gradient-to-br from-gray-50 to-white">
