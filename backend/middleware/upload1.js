@@ -4,7 +4,7 @@ import path from "path";
 import fs from "fs";
 
 // Create upload directory if not exists
-const uploadDir = "uploads/previews";
+const uploadDir = "uploads/payment-screenshots";
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
 const storage = multer.diskStorage({

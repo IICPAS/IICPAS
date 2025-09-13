@@ -9,6 +9,7 @@ import cors from "cors";
 import contactRoutes from "./routes/contactRoutes.js";
 import connectDB from "./config/db.js";
 import studentRoutes from "./routes/studentRoutes.js";
+import paymentRoutes from "./routes/paymentRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import blogRoutes from "./routes/blogRoutes.js";
 import JobAdminRoutes from "./routes/JobAdminRoutes.js";
@@ -46,10 +47,6 @@ import JobsCompanyRoutes from "./routes/jobCompanyRoutes.js";
 import JobApplicationRoute from "./routes/jobApplicationRoutes.js";
 import UploadRoutes from "./routes/uploadRoutes.js";
 import centerRoutes from "./routes/centerRoutes.js";
-
-//Payment Routes
-import paymentRoutes from "./routes/PaymentRoutes/paymentRoutes.js";
-import PaymentRoutes from "./routes/PaymentRoutes.js";
 
 //Topic Routes
 import TopicTrainingRoutes from "./routes/TopicRoutes/TopicRoutes.js";
@@ -125,8 +122,10 @@ app.use("/api/categories", categoryRoutes);
 // Assignment and Case Study Routes
 import assignmentRoutes from "./routes/assignmentRoutes.js";
 import caseStudyRoutes from "./routes/caseStudyRoutes.js";
+import gstSimulationRoutes from "./routes/gstSimulationRoutes.js";
 app.use("/api/assignments", assignmentRoutes);
 app.use("/api/case-studies", caseStudyRoutes);
+app.use("/api/gst-simulations", gstSimulationRoutes);
 
 app.use("/metatags", metaTagRoutes);
 app.use("/api/tickets", ticketRoutes);
@@ -163,8 +162,6 @@ app.use("/api/upload", UploadRoutes);
 
 //Payment Routes
 app.use("/api/v1/payments", paymentRoutes);
-app.use("/api/v1/payment", paymentRoutes); // Add this line to handle singular payment path
-app.use("/api/payments", PaymentRoutes);
 
 //Topic Routes
 app.use("/api/v1/topics-trainings", TopicTrainingRoutes);

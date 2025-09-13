@@ -13,9 +13,13 @@ import express from "express";
 dotenv.config();
 
 const createToken = (student) => {
-  return jwt.sign({ id: student._id }, process.env.JWT_SECRET, {
-    expiresIn: "7d",
-  });
+  return jwt.sign(
+    { id: student._id, role: "student" },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: "7d",
+    }
+  );
 };
 
 const router = express.Router();
