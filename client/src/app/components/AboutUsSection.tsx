@@ -7,6 +7,19 @@ import axios from "axios";
 export default function AboutUsSection() {
   const [aboutContent, setAboutContent] = useState("");
 
+  // Add custom float animation
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes float {
+        0%, 100% { transform: translateY(0px) rotateY(0deg); }
+        50% { transform: translateY(-10px) rotateY(2deg); }
+      }
+    `;
+    document.head.appendChild(style);
+    return () => document.head.removeChild(style);
+  }, []);
+
   useEffect(() => {
     const fetchAbout = async () => {
       try {
@@ -36,7 +49,12 @@ export default function AboutUsSection() {
               alt="Student"
               width={500}
               height={500}
-              className="rounded-3xl shadow-2xl w-full h-auto"
+              className="rounded-3xl shadow-2xl w-full h-auto border-4 border-gray-200 hover:border-blue-400 transform transition-all duration-700 ease-out hover:scale-105 hover:-translate-y-3 hover:shadow-3xl animate-pulse"
+              style={{
+                transformStyle: 'preserve-3d',
+                perspective: '1000px',
+                animation: 'float 3s ease-in-out infinite'
+              }}
             />
 
             {/* Testimonial */}
@@ -48,7 +66,7 @@ export default function AboutUsSection() {
               </p>
               <div className="mt-3 flex items-center gap-2">
                 <Image
-                  src="/user.png"
+                  src="/images/young-woman.jpg"
                   alt="Alisa"
                   width={32}
                   height={32}
