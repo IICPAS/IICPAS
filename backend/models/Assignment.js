@@ -35,7 +35,7 @@ const contentSchema = new mongoose.Schema({
 const simulationSchema = new mongoose.Schema({
   type: {
     type: String,
-    enum: ["accounting", "financial", "custom"],
+    enum: ["accounting", "financial", "custom", "gst"],
     default: "accounting",
   },
   title: String,
@@ -45,6 +45,29 @@ const simulationSchema = new mongoose.Schema({
     accountOptions: [String],
     columns: [String],
     validationRules: Object,
+    // GST specific config
+    gstConfig: {
+      difficulty: {
+        type: String,
+        enum: ["BEGINNER", "INTERMEDIATE", "ADVANCED"],
+        default: "BEGINNER",
+      },
+      hints: [
+        {
+          field: String,
+          hint: String,
+          order: Number,
+        },
+      ],
+      autoCalculate: {
+        type: Boolean,
+        default: true,
+      },
+      showErrors: {
+        type: Boolean,
+        default: true,
+      },
+    },
   },
   isOptional: {
     type: Boolean,
