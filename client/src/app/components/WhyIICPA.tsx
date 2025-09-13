@@ -5,25 +5,14 @@ import { FaGraduationCap, FaUsers, FaPlay } from "react-icons/fa";
 import { useEffect } from "react";
 
 export default function WhyIICPA() {
-  // Add custom movement animation
+  // Add custom left-right animation
   useEffect(() => {
     const style = document.createElement('style');
     style.textContent = `
-      @keyframes moveLeftRight {
-        0%, 100% { 
-          transform: translateX(0px); 
-        }
-        50% { 
-          transform: translateX(15px); 
-        }
-      }
-      @keyframes moveUpDown {
-        0%, 100% { 
-          transform: translateY(0px); 
-        }
-        50% { 
-          transform: translateY(-10px); 
-        }
+      @keyframes leftRight {
+        0%, 100% { transform: translateX(0px) rotateY(0deg); }
+        25% { transform: translateX(-15px) rotateY(-2deg); }
+        75% { transform: translateX(15px) rotateY(2deg); }
       }
     `;
     document.head.appendChild(style);
@@ -40,7 +29,9 @@ export default function WhyIICPA() {
             <div 
               className="relative overflow-hidden rounded-2xl shadow-2xl transform transition-all duration-1000 ease-out hover:scale-105 hover:-translate-y-2 border-4 border-gray-300 hover:border-blue-500"
               style={{
-                animation: 'moveLeftRight 4s ease-in-out infinite'
+                transformStyle: 'preserve-3d',
+                perspective: '1000px',
+                animation: 'leftRight 4s ease-in-out infinite'
               }}
             >
               <img
