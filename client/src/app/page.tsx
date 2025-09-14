@@ -34,6 +34,7 @@ const page = () => {
         <TestimonialSection />
         <NewsletterSection />
         <ContactSection />
+        <Footer />
       </div>
     </>
   );

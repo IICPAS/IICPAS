@@ -85,14 +85,16 @@ export default function CoursesSection() {
             key={index}
             className="relative bg-white rounded-2xl shadow-xl overflow-hidden group transition-all duration-300 hover:shadow-2xl"
           >
-            <div className="relative w-full h-48 md:h-56 overflow-hidden">
-              <Image
-                src={course.image}
-                alt={course.title}
-                fill
-                className="object-cover group-hover:scale-110 transition duration-300"
-              />
-              <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition duration-300" />
+            <div className="relative w-full h-48 md:h-56 p-4 bg-white rounded-xl">
+              <div className="relative w-full h-full overflow-hidden rounded-lg">
+                <Image
+                  src={course.image}
+                  alt={course.title}
+                  fill
+                  className="object-cover group-hover:scale-110 transition duration-300"
+                />
+                <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition duration-300" />
+              </div>
             </div>
 
             <div className="p-5 space-y-3">
@@ -127,7 +129,7 @@ export default function CoursesSection() {
             </div>
 
             <div
-              className="absolute top-4 right-4 text-xl cursor-pointer text-gray-400 hover:text-pink-500 transition"
+              className="absolute top-6 right-6 text-xl cursor-pointer text-red-500 hover:text-white hover:bg-red-500 p-2 rounded-full transition-all duration-300"
               onClick={() => toggleLike(index)}
             >
               {likedIndexes.includes(index) ? <FaHeart /> : <FaRegHeart />}
