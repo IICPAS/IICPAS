@@ -390,7 +390,7 @@ html::-webkit-scrollbar-track {
 html::-webkit-scrollbar-thumb {
   background: #3cd664; /* Green thumb matching your brand color */
   border-radius: 3px;
-  transition: background 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 html::-webkit-scrollbar-thumb:hover {
@@ -414,9 +414,34 @@ body::-webkit-scrollbar-track {
 body::-webkit-scrollbar-thumb {
   background: #3cd664; /* Green thumb matching your brand color */
   border-radius: 3px;
-  transition: background 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 body::-webkit-scrollbar-thumb:hover {
   background: #22c55e; /* Darker green on hover */
+}
+
+/* Dynamic scrollbar colors based on scroll position */
+.scrollbar-light {
+  scrollbar-color: #3cd664 #f1f5f9; /* Light theme */
+}
+
+.scrollbar-light::-webkit-scrollbar-thumb {
+  background: #3cd664 !important;
+}
+
+.scrollbar-light::-webkit-scrollbar-track {
+  background: #f1f5f9 !important;
+}
+
+.scrollbar-dark {
+  scrollbar-color: #3cd664 #1e293b; /* Dark theme for footer */
+}
+
+.scrollbar-dark::-webkit-scrollbar-thumb {
+  background: #3cd664 !important;
+}
+
+.scrollbar-dark::-webkit-scrollbar-track {
+  background: #1e293b !important; /* Dark track matching footer */
 }

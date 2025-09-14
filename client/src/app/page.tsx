@@ -14,10 +14,12 @@ import Header from "./components/Header";
 import AlertMarquee from "./components/AlertMarquee";
 import WhyIICPA from "./components/WhyIICPA";
 import SearchCenter from "./components/SearchCenter";
+import ScrollbarController from "./components/ScrollbarController";
 
 const page = () => {
   return (
     <>
+      <ScrollbarController />
       <AlertMarquee showMarquee={undefined} />
       <div className="pt-10">
         <Header />
