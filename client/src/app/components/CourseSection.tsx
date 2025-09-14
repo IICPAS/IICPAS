@@ -129,7 +129,7 @@ export default function CoursesSection() {
             </div>
 
             <div
-              className="absolute top-6 right-6 text-xl cursor-pointer text-gray-400 hover:text-pink-500 transition"
+              className="absolute top-6 right-6 text-xl cursor-pointer text-red-500 hover:text-white hover:bg-red-500 p-2 rounded-full transition-all duration-300"
               onClick={() => toggleLike(index)}
             >
               {likedIndexes.includes(index) ? <FaHeart /> : <FaRegHeart />}
