@@ -13,10 +13,12 @@ import TestimonialCarousel from "../components/TestimonialSection";
 import NewsletterSection from "../components/Newsletter";
 import ContactSection from "../components/ContactSection";
 import Footer from "../components/Footer";
+import ScrollbarController from "../components/ScrollbarController";
 
 const page = () => {
   return (
     <div>
+      <ScrollbarController />
       <Header />
       <HeroSection />
       <WhyIICPA />

@@ -6,10 +6,12 @@ import NewsletterSection from "../components/Newsletter";
 import ContactSection from "../components/ContactSection";
 import AboutHero from "./component/AboutHero";
 import Footer from "../components/Footer";
+import ScrollbarController from "../components/ScrollbarController";
 
 const page = () => {
   return (
     <div>
+      <ScrollbarController />
       <Header />
       <div className="pt-10">
         <AboutHero />
