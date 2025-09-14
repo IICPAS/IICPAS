@@ -12,6 +12,7 @@ import LiveClassSection from "../components/LiveClassSection";
 import TestimonialCarousel from "../components/TestimonialSection";
 import NewsletterSection from "../components/Newsletter";
 import ContactSection from "../components/ContactSection";
+import Footer from "../components/Footer";
 
 const page = () => {
   return (
@@ -28,6 +29,7 @@ const page = () => {
       <TestimonialCarousel />
       <NewsletterSection />
       <ContactSection />
+      <Footer />
     </div>
   );
 };

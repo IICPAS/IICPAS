@@ -5,6 +5,7 @@ import TestimonialCarousel from "../components/TestimonialSection";
 import NewsletterSection from "../components/Newsletter";
 import ContactSection from "../components/ContactSection";
 import AboutHero from "./component/AboutHero";
+import Footer from "../components/Footer";
 
 const page = () => {
   return (
@@ -17,6 +18,7 @@ const page = () => {
       <TestimonialCarousel />
       <NewsletterSection />
       <ContactSection />
+      <Footer />
     </div>
   );
 };
