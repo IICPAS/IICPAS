@@ -2,21 +2,26 @@
 
 export default function HeroSection() {
   return (
-    <section className="relative overflow-hidden min-h-screen">
+    <section className="relative overflow-hidden h-screen">
       {/* Video Background */}
       <div className="absolute inset-0 w-full h-full">
-        <img
-          src="/videos/homehero.gif"
-          alt="Hero Background - Classroom Scene"
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
           className="w-full h-full object-cover"
-        />
+        >
+          <source src="/videos/homehero.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
         
         {/* Dark overlay for text readability */}
-        <div className="absolute inset-0 bg-black/60"></div>
+        <div className="absolute inset-0 bg-black/30"></div>
       </div>
 
       {/* Text Content Overlay */}
-      <div className="relative z-10 min-h-screen flex items-center justify-center">
+      <div className="relative z-10 h-screen flex items-center justify-center">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 text-center">
           {/* Small green text */}
           <h3 className="text-green-400 font-bold text-lg mb-6 drop-shadow-lg">
