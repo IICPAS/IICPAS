@@ -30,104 +30,326 @@ const classes = [
 
 export default function LiveClassSection() {
   return (
-    <section className="max-w-7xl mx-auto px-6 md:px-10 py-16">
-      <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
-        {/* Left Side */}
-        <div className="w-full lg:w-1/2">
-          <p className="text-green-600 font-semibold text-lg flex items-center gap-2">
-            🎓 Join Live
-          </p>
-          <h2 className="text-3xl md:text-5xl font-extrabold mt-2 leading-tight text-gray-900">
-            Join Our Live Class, <br /> Start Your Online{" "}
-            <span className="text-white bg-[#162955] px-4 py-1 rounded-full">
-              Journey
-            </span>
-          </h2>
-
-          <div className="mt-8 space-y-6">
-            {classes.map((cls, idx) => (
-              <div
-                key={idx}
-                className="bg-white/80 p-4 rounded-2xl shadow hover:shadow-xl transition group cursor-pointer border border-gray-100"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center text-white">
-                    <VideoIcon size={20} />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">
-                      {cls.lessons} Lesson · {cls.duration}
-                    </p>
-                    <h3 className="font-semibold text-base group-hover:text-[#162955] transition">
-                      {cls.title}
-                    </h3>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Right Side - Live Class UI */}
+    <section className="relative py-12 bg-white overflow-hidden">
+      {/* Subtle Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
         <motion.div
-          className="relative hidden lg:block bg-white shadow-2xl rounded-[24px] overflow-hidden lg:ml-16 lg:mt-10 border border-green-300"
-          initial={{ scale: 0.95, rotateY: -15, x: 100, opacity: 0 }}
-          animate={{ 
-            scale: 1, 
-            rotateY: 0, 
-            x: [100, 0, 20, 0, 100],
-            opacity: 1
+          className="absolute top-20 right-20 w-32 h-32 bg-gradient-to-br from-green-100/30 to-blue-100/30 rounded-full blur-3xl"
+          animate={{
+            y: [0, -20, 0],
+            x: [0, 10, 0],
+            scale: [1, 1.1, 1],
           }}
-          whileHover={{ scale: 1.02, rotateY: 0 }}
-          transition={{ 
+          transition={{
             duration: 8,
-            ease: "easeInOut",
             repeat: Infinity,
-            delay: 0.2
+            ease: "easeInOut",
           }}
-          style={{ transformStyle: "preserve-3d" }}
-        >
-          <div className="relative w-[340px] sm:w-[400px] md:w-[460px] lg:w-[680px] aspect-video bg-gradient-to-br from-[#3cd664]/10 to-[#162955]/20">
-            {/* Live Tag */}
-            <div className="absolute top-3 left-3 bg-white text-red-600 text-xs px-3 py-1 rounded-full font-semibold shadow-md z-10">
-              🔴 LIVE · 01:30:56
-            </div>
+        />
+        <motion.div
+          className="absolute bottom-20 left-20 w-40 h-40 bg-gradient-to-br from-blue-100/30 to-green-100/30 rounded-full blur-3xl"
+          animate={{
+            y: [0, 20, 0],
+            x: [0, -10, 0],
+            scale: [1, 0.9, 1],
+          }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+      </div>
 
-            {/* Image with 3D and Animation */}
+      <div className="relative max-w-7xl mx-auto px-6">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
+          {/* Modern Left Side */}
+          <motion.div 
+            className="w-full lg:w-1/2"
+            initial={{ opacity: 0, x: -50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            {/* Modern Header */}
             <motion.div
-              className="relative w-full h-full"
-              initial={{ x: -50, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ 
-                duration: 1.0, 
-                ease: "easeOut",
-                delay: 0.5
-              }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
             >
-              <Image
-                src="/images/live-class.jpg"
-                alt="Live Class Student"
-                fill
-                className="object-cover object-center rounded-lg"
-                style={{ 
-                  transform: "perspective(1000px) rotateX(3deg) rotateY(-3deg)",
-                  transformStyle: "preserve-3d"
-                }}
-              />
-              {/* 3D Shadow Effect */}
-              <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-[#162955]/10 rounded-lg" />
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-1 bg-gradient-to-r from-green-500 to-blue-500 rounded-full"></div>
+                <span className="text-green-600 font-bold text-lg uppercase tracking-wider flex items-center gap-2">
+                  🎓 Join Live
+                </span>
+                <div className="w-12 h-1 bg-gradient-to-r from-blue-500 to-green-500 rounded-full"></div>
+              </div>
             </motion.div>
 
-            {/* Call Control Footer */}
-            <div className="absolute bottom-0 w-full bg-[#3cd664] py-3 px-6 flex items-center justify-center gap-5 rounded-b-[24px] z-10">
-              <MoreHorizontal className="text-white hover:scale-110 transition cursor-pointer" />
-              <PhoneIcon className="text-white hover:scale-110 transition cursor-pointer" />
-              <VideoOffIcon className="text-white hover:scale-110 transition cursor-pointer" />
-              <MicOffIcon className="text-white hover:scale-110 transition cursor-pointer" />
+            <motion.h2 
+              className="text-3xl lg:text-4xl font-bold text-gray-900 leading-tight mb-6"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.1 }}
+            >
+              Join Our Live Class, <br /> Start Your Online{" "}
+              <span className="bg-gradient-to-r from-green-500 to-blue-500 bg-clip-text text-transparent">
+                Journey
+              </span>
+            </motion.h2>
+
+            <motion.p 
+              className="text-base text-gray-600 mb-6 leading-relaxed"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              Experience interactive learning with our expert instructors in real-time sessions
+            </motion.p>
+
+            {/* Modern Course Cards */}
+            <div className="space-y-4">
+              {classes.map((cls, idx) => (
+                <motion.div
+                  key={idx}
+                  className="group bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200/50 p-4 shadow-xl transform-gpu hover:shadow-2xl transition-all duration-500"
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.3 + idx * 0.1 }}
+                  whileHover={{ 
+                    scale: 1.02,
+                    rotateY: 2
+                  }}
+                  style={{
+                    transform: 'translateZ(20px)',
+                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)'
+                  }}
+                >
+                  <div className="flex items-center gap-4">
+                    {/* 3D Icon Container */}
+                    <motion.div 
+                      className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-blue-500 flex items-center justify-center text-white shadow-lg transform-gpu"
+                      whileHover={{ 
+                        scale: 1.1,
+                        rotate: 5
+                      }}
+                      animate={{
+                        y: [0, -3, 0],
+                        rotate: [0, 1, -1, 0]
+                      }}
+                      transition={{
+                        duration: 3,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
+                      style={{
+                        transform: 'translateZ(20px)',
+                        boxShadow: '0 10px 25px -5px rgba(34, 197, 94, 0.4)'
+                      }}
+                    >
+                      <VideoIcon size={16} />
+                    </motion.div>
+
+                    <div className="flex-1">
+                      {/* Course Info Badge */}
+                      <motion.div
+                        className="mb-2"
+                        initial={{ opacity: 0, x: -20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.6, delay: 0.4 + idx * 0.1 }}
+                      >
+                        <div className="inline-flex items-center gap-2 bg-gradient-to-r from-green-50 to-blue-50 text-green-600 text-sm font-semibold px-3 py-1 rounded-full border border-green-200/50">
+                          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                          {cls.lessons} Lesson · {cls.duration}
+                        </div>
+                      </motion.div>
+
+                      {/* Title */}
+                      <motion.h3 
+                        className="font-bold text-base text-gray-900 group-hover:text-green-600 transition-colors duration-300"
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: 0.5 + idx * 0.1 }}
+                      >
+                        {cls.title}
+                      </motion.h3>
+                    </div>
+                  </div>
+
+                  {/* Hover Overlay Effect */}
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-blue-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    initial={{ scale: 0.8 }}
+                    whileHover={{ scale: 1 }}
+                  />
+                </motion.div>
+              ))}
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
+
+          {/* Modern Right Side - Live Class UI */}
+          <motion.div
+            className="relative w-full lg:w-1/2"
+            initial={{ opacity: 0, x: 50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+          >
+            <motion.div
+              className="relative bg-white/90 backdrop-blur-sm shadow-2xl rounded-2xl overflow-hidden border border-gray-200/50 transform-gpu"
+              initial={{ scale: 0.95, rotateY: -15, opacity: 0 }}
+              whileInView={{ 
+                scale: 1, 
+                rotateY: 0, 
+                opacity: 1
+              }}
+              whileHover={{ 
+                scale: 1.02, 
+                rotateY: 2
+              }}
+              transition={{ 
+                duration: 0.8,
+                ease: "easeOut"
+              }}
+              style={{ 
+                transformStyle: "preserve-3d",
+                transform: 'translateZ(30px)',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)'
+              }}
+            >
+              <div className="relative w-full h-64 bg-gradient-to-br from-green-50/50 to-blue-50/50">
+                {/* Modern Live Tag */}
+                <motion.div 
+                  className="absolute top-4 left-4 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm px-4 py-2 rounded-full font-bold shadow-lg z-10 flex items-center gap-2"
+                  animate={{
+                    scale: [1, 1.05, 1],
+                    boxShadow: ['0 0 0 0 rgba(239, 68, 68, 0.4)', '0 0 0 10px rgba(239, 68, 68, 0)', '0 0 0 0 rgba(239, 68, 68, 0)']
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                >
+                  <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                  LIVE · 01:30:56
+                </motion.div>
+
+                {/* Modern Image with 3D Effects */}
+                <motion.div
+                  className="relative w-full h-full"
+                  initial={{ x: -50, opacity: 0 }}
+                  whileInView={{ x: 0, opacity: 1 }}
+                  transition={{ 
+                    duration: 1.0, 
+                    ease: "easeOut",
+                    delay: 0.5
+                  }}
+                >
+                  <Image
+                    src="/images/live-class.jpg"
+                    alt="Live Class Student"
+                    fill
+                    className="object-cover object-center"
+                    style={{ 
+                      transform: "perspective(1000px) rotateX(2deg) rotateY(-2deg)",
+                      transformStyle: "preserve-3d"
+                    }}
+                  />
+                  
+                  {/* Modern Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-black/10" />
+                  
+                  {/* Floating Elements */}
+                  <motion.div
+                    className="absolute top-1/2 right-4 w-3 h-3 bg-green-400 rounded-full"
+                    animate={{
+                      y: [0, -10, 0],
+                      opacity: [0.5, 1, 0.5]
+                    }}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                  />
+                  <motion.div
+                    className="absolute bottom-1/3 right-8 w-2 h-2 bg-blue-400 rounded-full"
+                    animate={{
+                      y: [0, -8, 0],
+                      opacity: [0.3, 0.8, 0.3]
+                    }}
+                    transition={{
+                      duration: 4,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      delay: 1
+                    }}
+                  />
+                </motion.div>
+
+                {/* Modern Call Control Footer */}
+                <motion.div 
+                  className="absolute bottom-0 w-full bg-gradient-to-r from-green-500 to-blue-600 py-3 px-4 flex items-center justify-center gap-4 rounded-b-2xl z-10"
+                  initial={{ y: 50, opacity: 0 }}
+                  whileInView={{ y: 0, opacity: 1 }}
+                  transition={{ duration: 0.6, delay: 0.7 }}
+                >
+                  <motion.div
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    <MoreHorizontal className="text-white cursor-pointer" size={18} />
+                  </motion.div>
+                  <motion.div
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    <PhoneIcon className="text-white cursor-pointer" size={18} />
+                  </motion.div>
+                  <motion.div
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    <VideoOffIcon className="text-white cursor-pointer" size={18} />
+                  </motion.div>
+                  <motion.div
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    <MicOffIcon className="text-white cursor-pointer" size={18} />
+                  </motion.div>
+                </motion.div>
+              </div>
+            </motion.div>
+
+            {/* Join Now Button */}
+            <motion.div 
+              className="text-center mt-6"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.8 }}
+            >
+              <motion.button
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-6 py-3 rounded-xl font-semibold shadow-xl transition-all duration-300 hover:shadow-2xl"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Join Live Class Now
+                <motion.div
+                  animate={{ x: [0, 5, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                >
+                  →
+                </motion.div>
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        </div>
       </div>
+
+      <style jsx>{`
+        .perspective-1000 { perspective: 1000px; }
+        .transform-gpu { transform-style: preserve-3d; }
+      `}</style>
     </section>
   );
 }
