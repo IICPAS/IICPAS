@@ -90,7 +90,7 @@ export default function ContactSection() {
               </div>
               
               <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-6">
-                Let's{" "}
+                Let&apos;s{" "}
                 <span className="bg-gradient-to-r from-green-500 to-blue-500 bg-clip-text text-transparent">
                   Get in Touch
                 </span>
