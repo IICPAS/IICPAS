@@ -22,7 +22,20 @@ import {
   DragIndicator,
 } from "@mui/icons-material";
 import dynamic from "next/dynamic";
-import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+
+// Dynamically import drag and drop components to avoid SSR issues
+const DragDropContext = dynamic(
+  () => import("@hello-pangea/dnd").then((mod) => mod.DragDropContext),
+  { ssr: false }
+);
+const Droppable = dynamic(
+  () => import("@hello-pangea/dnd").then((mod) => mod.Droppable),
+  { ssr: false }
+);
+const Draggable = dynamic(
+  () => import("@hello-pangea/dnd").then((mod) => mod.Draggable),
+  { ssr: false }
+);
 
 // Debounce utility function
 const debounce = (func, wait) => {
