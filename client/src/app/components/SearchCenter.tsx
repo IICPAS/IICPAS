@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import {
   FaSearch,
   FaMapMarkerAlt,
@@ -144,50 +145,137 @@ export default function SearchCenter() {
   };
 
   return (
-    <section className="py-20 bg-gradient-to-br from-gray-50 to-white">
-      <div className="max-w-7xl mx-auto px-6">
+    <section className="relative py-20 bg-white overflow-hidden">
+      {/* Subtle Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <motion.div
+          className="absolute top-20 right-20 w-32 h-32 bg-gradient-to-br from-green-100/30 to-blue-100/30 rounded-full blur-3xl"
+          animate={{
+            y: [0, -20, 0],
+            x: [0, 10, 0],
+            scale: [1, 1.1, 1],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+        <motion.div
+          className="absolute bottom-20 left-20 w-40 h-40 bg-gradient-to-br from-blue-100/30 to-green-100/30 rounded-full blur-3xl"
+          animate={{
+            y: [0, 20, 0],
+            x: [0, -10, 0],
+            scale: [1, 0.9, 1],
+          }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+      </div>
+
+      <div className="relative max-w-7xl mx-auto px-6">
         {/* Section Header */}
-        <div className="text-center mb-12">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="w-12 h-1 bg-green-500 rounded-full"></div>
-            <span className="text-green-600 font-semibold text-sm uppercase tracking-wider">
+        <motion.div 
+          className="text-center mb-12"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          <motion.div 
+            className="flex items-center justify-center gap-3 mb-6"
+            initial={{ opacity: 0, scale: 0.8 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="w-12 h-1 bg-gradient-to-r from-green-500 to-blue-500 rounded-full"></div>
+            <span className="text-green-600 font-bold text-sm uppercase tracking-wider">
               Find Your Nearest Center
             </span>
-            <div className="w-12 h-1 bg-green-500 rounded-full"></div>
-          </div>
-          <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-4">
+            <div className="w-12 h-1 bg-gradient-to-r from-blue-500 to-green-500 rounded-full"></div>
+          </motion.div>
+          
+          <motion.h2 
+            className="text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-6"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.1 }}
+          >
             Search & Book
-            <span className="text-green-500"> Courses</span> at
-            <span className="text-blue-600"> IICPA Centers</span>
-          </h2>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+            <span className="bg-gradient-to-r from-green-500 to-blue-500 bg-clip-text text-transparent"> Courses</span> at
+            <span className="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent"> IICPA Centers</span>
+          </motion.h2>
+          
+          <motion.p 
+            className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          >
             Find the nearest IICPA center, explore available courses, and book
             your preferred training program with just a few clicks.
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
 
-        {/* Search Filters */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 mb-12">
+        {/* 3D Search Filters */}
+        <motion.div 
+          className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl p-8 mb-12 border border-gray-200/50 transform-gpu"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.3 }}
+          whileHover={{ 
+            scale: 1.02,
+            rotateY: 2
+          }}
+          style={{
+            transform: 'translateZ(20px)',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)'
+          }}
+        >
           <div className="grid md:grid-cols-4 gap-6">
-            {/* Search Input */}
-            <div className="relative">
-              <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            {/* 3D Search Input */}
+            <motion.div 
+              className="relative"
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
+              <motion.div
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white bg-green-500 p-3 rounded-xl shadow-lg"
+                animate={{ rotate: [0, 10, -10, 0] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                <FaSearch className="text-xl font-bold" style={{ fontSize: '20px' }} />
+              </motion.div>
               <input
                 type="text"
                 placeholder="Search centers..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full pl-20 pr-4 py-4 border border-gray-300/50 rounded-2xl focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white/90 backdrop-blur-sm transition-all duration-300 hover:bg-white"
               />
-            </div>
+            </motion.div>
 
-            {/* Location Filter */}
-            <div className="relative">
-              <FaMapMarkerAlt className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            {/* 3D Location Filter */}
+            <motion.div 
+              className="relative"
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.5 }}
+            >
+              <motion.div
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white bg-blue-500 p-3 rounded-xl shadow-lg"
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 3, repeat: Infinity }}
+              >
+                <FaMapMarkerAlt className="text-xl font-bold" style={{ fontSize: '20px' }} />
+              </motion.div>
               <select
                 value={selectedLocation}
                 onChange={(e) => setSelectedLocation(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent appearance-none bg-white"
+                className="w-full pl-12 pr-4 py-4 border border-gray-300/50 rounded-2xl focus:ring-2 focus:ring-green-500 focus:border-transparent appearance-none bg-white/90 backdrop-blur-sm transition-all duration-300 hover:bg-white"
               >
                 {locations.map((location) => (
                   <option key={location} value={location}>
@@ -195,15 +283,26 @@ export default function SearchCenter() {
                   </option>
                 ))}
               </select>
-            </div>
+            </motion.div>
 
-            {/* Course Filter */}
-            <div className="relative">
-              <FaBookOpen className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            {/* 3D Course Filter */}
+            <motion.div 
+              className="relative"
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.6 }}
+            >
+              <motion.div
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white bg-purple-500 p-3 rounded-xl shadow-lg"
+                animate={{ rotate: [0, 5, -5, 0] }}
+                transition={{ duration: 4, repeat: Infinity }}
+              >
+                <FaBookOpen className="text-xl font-bold" style={{ fontSize: '20px' }} />
+              </motion.div>
               <select
                 value={selectedCourse}
                 onChange={(e) => setSelectedCourse(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent appearance-none bg-white"
+                className="w-full pl-12 pr-4 py-4 border border-gray-300/50 rounded-2xl focus:ring-2 focus:ring-green-500 focus:border-transparent appearance-none bg-white/90 backdrop-blur-sm transition-all duration-300 hover:bg-white"
               >
                 {courses.map((course) => (
                   <option key={course} value={course}>
@@ -211,17 +310,25 @@ export default function SearchCenter() {
                   </option>
                 ))}
               </select>
-            </div>
+            </motion.div>
 
-            {/* Search Button */}
-            <button
+            {/* 3D Search Button */}
+            <motion.button
               onClick={handleSearch}
-              className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300"
+              className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-8 py-4 rounded-2xl font-semibold shadow-xl transition-all duration-300 transform-gpu hover:scale-105 hover:shadow-green-500/25 border border-white/20"
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.7 }}
+              whileHover={{ 
+                scale: 1.05,
+                rotateY: 5
+              }}
+              whileTap={{ scale: 0.95 }}
             >
               Search Centers
-            </button>
+            </motion.button>
           </div>
-        </div>
+        </motion.div>
 
         {/* Results - Only show if search has been performed */}
         {hasSearched && (
@@ -346,33 +453,110 @@ export default function SearchCenter() {
           </div>
         )}
 
-        {/* CTA Section */}
-        <div className="text-center mt-12">
-          <div className="bg-gradient-to-r from-green-500 to-blue-600 rounded-2xl p-8 text-white">
-            <h3 className="text-3xl font-bold mb-4">
+        {/* Animated CTA Section */}
+        <motion.div 
+          className="text-center mt-12"
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          <motion.div 
+            className="bg-gradient-to-r from-green-500 to-blue-600 rounded-2xl p-8 text-white relative overflow-hidden"
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            whileHover={{ 
+              scale: 1.02,
+              rotateY: 2
+            }}
+            style={{
+              transform: 'translateZ(20px)',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)'
+            }}
+          >
+            {/* Animated Background Elements */}
+            <motion.div
+              className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl"
+              animate={{
+                scale: [1, 1.2, 1],
+                opacity: [0.3, 0.6, 0.3],
+              }}
+              transition={{
+                duration: 4,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
+            <motion.div
+              className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full blur-2xl"
+              animate={{
+                scale: [1, 0.8, 1],
+                opacity: [0.4, 0.7, 0.4],
+              }}
+              transition={{
+                duration: 5,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
+
+            <motion.h3 
+              className="text-3xl font-bold mb-4 relative z-10"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
               Can&apos;t Find Your Location?
-            </h3>
-            <p className="text-lg mb-6 opacity-90">
+            </motion.h3>
+            
+            <motion.p 
+              className="text-lg mb-6 opacity-90 relative z-10"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.5 }}
+            >
               We&apos;re expanding! Contact us to request a new center in your
               area or explore our online learning options.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                href="/contact"
-                className="bg-white text-green-600 hover:bg-gray-100 px-8 py-3 rounded-xl font-semibold transition-colors duration-300"
+            </motion.p>
+            
+            <motion.div 
+              className="flex flex-col sm:flex-row gap-4 justify-center relative z-10"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.6 }}
+            >
+              <motion.div
+                whileHover={{ scale: 1.05, rotateY: 5 }}
+                whileTap={{ scale: 0.95 }}
               >
-                Request New Center
-              </Link>
-              <Link
-                href="/courses"
-                className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-green-600 px-8 py-3 rounded-xl font-semibold transition-all duration-300"
+                <Link
+                  href="/contact"
+                  className="bg-white text-green-600 hover:bg-gray-100 px-8 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
+                >
+                  Request New Center
+                </Link>
+              </motion.div>
+              
+              <motion.div
+                whileHover={{ scale: 1.05, rotateY: -5 }}
+                whileTap={{ scale: 0.95 }}
               >
-                Explore Online Courses
-              </Link>
-            </div>
-          </div>
-        </div>
+                <Link
+                  href="/courses"
+                  className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-green-600 px-8 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
+                >
+                  Explore Online Courses
+                </Link>
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        </motion.div>
       </div>
+
+      <style jsx>{`
+        .perspective-1000 { perspective: 1000px; }
+        .transform-gpu { transform-style: preserve-3d; }
+      `}</style>
     </section>
   );
 }

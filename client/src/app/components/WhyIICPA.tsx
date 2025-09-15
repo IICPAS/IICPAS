@@ -1,193 +1,342 @@
 "use client";
 
 import Link from "next/link";
-import { FaGraduationCap, FaUsers, FaPlay } from "react-icons/fa";
-import { useEffect } from "react";
+import { FaGraduationCap, FaUsers, FaPlay, FaCheckCircle } from "react-icons/fa";
+import { motion } from "framer-motion";
 
 export default function WhyIICPA() {
-  // Add custom movement animation
-  useEffect(() => {
-    const style = document.createElement('style');
-    style.textContent = `
-      @keyframes moveLeftRight {
-        0%, 100% { 
-          transform: translateX(0px); 
-        }
-        50% { 
-          transform: translateX(15px); 
-        }
-      }
-      @keyframes moveUpDown {
-        0%, 100% { 
-          transform: translateY(0px); 
-        }
-        50% { 
-          transform: translateY(-10px); 
-        }
-      }
-    `;
-    document.head.appendChild(style);
-    return () => {
-      document.head.removeChild(style);
-    };
-  }, []);
   return (
-    <section className="py-20 bg-gradient-to-br from-gray-50 to-white">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left Side - Image */}
-          <div className="relative">
-            <div 
-              className="relative overflow-hidden rounded-2xl shadow-2xl transform transition-all duration-1000 ease-out hover:scale-105 hover:-translate-y-2 border-4 border-gray-300 hover:border-blue-500"
-              style={{
-                animation: 'moveLeftRight 4s ease-in-out infinite'
+    <section className="relative py-12 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
+      {/* 3D Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <motion.div
+          className="absolute top-20 left-20 w-32 h-32 bg-gradient-to-br from-green-400/20 to-blue-500/20 rounded-full blur-3xl"
+          animate={{
+            y: [0, -30, 0],
+            x: [0, 20, 0],
+            scale: [1, 1.2, 1],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+        <motion.div
+          className="absolute bottom-20 right-20 w-40 h-40 bg-gradient-to-br from-purple-400/20 to-pink-500/20 rounded-full blur-3xl"
+          animate={{
+            y: [0, 30, 0],
+            x: [0, -20, 0],
+            scale: [1, 0.8, 1],
+          }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+        <motion.div
+          className="absolute top-1/2 left-1/4 w-24 h-24 bg-gradient-to-br from-yellow-400/20 to-orange-500/20 rounded-full blur-2xl"
+          animate={{
+            x: [0, 40, 0],
+            y: [0, -20, 0],
+            rotate: [0, 180, 360],
+          }}
+          transition={{
+            duration: 12,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+      </div>
+
+      <div className="relative max-w-7xl mx-auto px-6">
+        <div className="grid lg:grid-cols-2 gap-8 items-center">
+          {/* Left Side - 3D Image */}
+          <motion.div 
+            className="relative"
+            initial={{ opacity: 0, x: -50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <motion.div 
+              className="relative perspective-1000"
+              animate={{
+                rotateY: [0, 2, -2, 0],
+                rotateX: [0, 1, -1, 0],
+                scale: [1, 1.01, 1],
+                x: [0, 15, -15, 0]
+              }}
+              transition={{
+                duration: 8,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+              whileHover={{ 
+                rotateY: 5,
+                rotateX: 5,
+                scale: 1.02
               }}
             >
-              <img
-                src="/images/img1.jpg"
-                alt="IICPA Students Learning"
-                className="w-full h-[500px] object-cover transform hover:scale-105 transition-transform duration-700"
-              />
-              {/* Overlay gradient */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+              <div className="relative overflow-hidden rounded-3xl shadow-2xl transform-gpu border border-white/20">
+                <motion.img
+                  src="/images/img1.jpg"
+                  alt="IICPA Students Learning"
+                  className="w-full h-[400px] object-cover"
+                  style={{
+                    transform: 'translateZ(20px)',
+                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+                  }}
+                  animate={{
+                    scale: [1, 1.05, 1],
+                    filter: ['brightness(1)', 'brightness(1.1)', 'brightness(1)']
+                  }}
+                  transition={{
+                    duration: 8,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                />
+                
+                {/* 3D Overlay gradient */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
 
-
-              {/* Floating stats card */}
-              <div className="absolute bottom-6 left-6 bg-white/95 backdrop-blur-sm rounded-xl p-4 shadow-lg">
-                <div className="flex items-center gap-3">
-                  <div className="bg-green-500 rounded-full p-2">
-                    <FaGraduationCap className="text-white text-lg" />
+                {/* 3D Floating stats card */}
+                <motion.div 
+                  className="absolute bottom-6 left-6 bg-white/10 backdrop-blur-xl rounded-2xl p-4 shadow-2xl border border-white/20"
+                  animate={{
+                    y: [0, -5, 0],
+                    scale: [1, 1.02, 1]
+                  }}
+                  transition={{
+                    duration: 4,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                  whileHover={{ 
+                    scale: 1.05,
+                    rotateY: 10
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    <motion.div 
+                      className="bg-gradient-to-r from-green-500 to-blue-500 rounded-xl p-3"
+                      animate={{
+                        rotate: [0, 5, -5, 0],
+                        scale: [1, 1.05, 1]
+                      }}
+                      transition={{
+                        duration: 3,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
+                      whileHover={{ rotate: 360 }}
+                    >
+                      <FaGraduationCap className="text-white text-lg" />
+                    </motion.div>
+                    <div>
+                      <p className="text-sm text-white/70">Success Rate</p>
+                      <p className="text-xl font-bold text-white">98%</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Success Rate</p>
-                    <p className="text-xl font-bold text-gray-900">98%</p>
-                  </div>
-                </div>
+                </motion.div>
               </div>
-            </div>
+            </motion.div>
 
-            {/* Courses Button */}
-            <div className="mt-8 text-center">
+            {/* 3D Courses Button */}
+            <motion.div 
+              className="mt-8 text-center"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
               <Link
                 href="/courses"
-                className="inline-flex items-center gap-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-4 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300"
+                className="inline-flex items-center gap-3 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-8 py-4 rounded-full font-semibold text-lg shadow-2xl transition-all duration-300 transform-gpu hover:scale-105 hover:shadow-green-500/25 border border-white/20"
               >
                 <FaGraduationCap className="text-xl" />
                 Explore Our Courses
                 <FaPlay className="text-sm" />
               </Link>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
-          {/* Right Side - Content */}
-          <div className="space-y-8">
+          {/* Right Side - 3D Content */}
+          <motion.div 
+            className="space-y-6"
+            initial={{ opacity: 0, x: 50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
+          >
             {/* Section Title */}
             <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-1 bg-green-500 rounded-full"></div>
-                <span className="text-green-600 font-semibold text-sm uppercase tracking-wider">
+              <motion.div 
+                className="flex items-center gap-3"
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6 }}
+              >
+                <div className="w-12 h-1 bg-gradient-to-r from-green-400 to-blue-500 rounded-full"></div>
+                <span className="text-green-400 font-semibold text-sm uppercase tracking-wider">
                   Why Choose IICPA
                 </span>
-              </div>
-              <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 leading-tight">
+              </motion.div>
+              
+              <motion.h2 
+                className="text-3xl lg:text-4xl font-bold text-white leading-tight"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.1 }}
+              >
                 Empowering Your
-                <span className="text-green-500"> Future</span> with
-                <span className="text-blue-600"> Excellence</span>
-              </h2>
+                <span className="bg-gradient-to-r from-green-400 to-blue-500 bg-clip-text text-transparent"> Future</span> with
+                <span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent"> Excellence</span>
+              </motion.h2>
             </div>
 
             {/* Description */}
-            <p className="text-lg text-gray-600 leading-relaxed">
+            <motion.p 
+              className="text-base text-white/70 leading-relaxed"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
               IICPA Institute stands as a beacon of educational excellence,
               offering cutting-edge courses designed to transform your career
               aspirations into reality. Our comprehensive curriculum, expert
               instructors, and industry-aligned programs ensure you receive
               world-class education that prepares you for the dynamic
               professional landscape.
-            </p>
+            </motion.p>
 
-            {/* Statistics Boxes */}
+            {/* 3D Statistics Boxes */}
             <div className="grid grid-cols-2 gap-6">
               {/* Courses Box */}
-              <div className="group relative overflow-hidden bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 border border-blue-200 hover:shadow-xl transition-all duration-300">
-                <div className="absolute top-0 right-0 w-20 h-20 bg-blue-500/10 rounded-full -translate-y-10 translate-x-10 group-hover:scale-110 transition-transform duration-300"></div>
+              <motion.div 
+                className="group relative overflow-hidden bg-white/5 backdrop-blur-xl rounded-3xl p-6 border border-white/20 shadow-2xl transform-gpu hover:scale-105 transition-all duration-300"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+                whileHover={{ 
+                  rotateY: 5,
+                  rotateX: 5
+                }}
+              >
+                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-full -translate-y-10 translate-x-10 group-hover:scale-110 transition-transform duration-300"></div>
                 <div className="relative z-10">
                   <div className="flex items-center gap-4 mb-4">
-                    <div className="bg-blue-500 rounded-xl p-3">
+                    <motion.div 
+                      className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl p-3"
+                      whileHover={{ rotate: 360 }}
+                      transition={{ duration: 0.6 }}
+                    >
                       <FaGraduationCap className="text-white text-2xl" />
-                    </div>
+                    </motion.div>
                     <div>
-                      <h3 className="text-2xl font-bold text-gray-900">50+</h3>
-                      <p className="text-blue-600 font-semibold">Courses</p>
+                      <h3 className="text-2xl font-bold text-white">50+</h3>
+                      <p className="text-blue-400 font-semibold">Courses</p>
                     </div>
                   </div>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-white/70">
                     Comprehensive courses covering accounting, finance, and
                     professional development
                   </p>
                 </div>
-              </div>
+              </motion.div>
 
               {/* Students Box */}
-              <div className="group relative overflow-hidden bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-6 border border-green-200 hover:shadow-xl transition-all duration-300">
-                <div className="absolute top-0 right-0 w-20 h-20 bg-green-500/10 rounded-full -translate-y-10 translate-x-10 group-hover:scale-110 transition-transform duration-300"></div>
+              <motion.div 
+                className="group relative overflow-hidden bg-white/5 backdrop-blur-xl rounded-3xl p-6 border border-white/20 shadow-2xl transform-gpu hover:scale-105 transition-all duration-300"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                whileHover={{ 
+                  rotateY: 5,
+                  rotateX: 5
+                }}
+              >
+                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-full -translate-y-10 translate-x-10 group-hover:scale-110 transition-transform duration-300"></div>
                 <div className="relative z-10">
                   <div className="flex items-center gap-4 mb-4">
-                    <div className="bg-green-500 rounded-xl p-3">
+                    <motion.div 
+                      className="bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl p-3"
+                      whileHover={{ rotate: 360 }}
+                      transition={{ duration: 0.6 }}
+                    >
                       <FaUsers className="text-white text-2xl" />
-                    </div>
+                    </motion.div>
                     <div>
-                      <h3 className="text-2xl font-bold text-gray-900">10K+</h3>
-                      <p className="text-green-600 font-semibold">Students</p>
+                      <h3 className="text-2xl font-bold text-white">10K+</h3>
+                      <p className="text-green-400 font-semibold">Students</p>
                     </div>
                   </div>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-white/70">
                     Successful graduates building successful careers across
                     industries
                   </p>
                 </div>
-              </div>
+              </motion.div>
             </div>
 
-            {/* Features List */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-gray-700">
-                  Industry-Expert Instructors
-                </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-gray-700">
-                  Flexible Learning Schedule
-                </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-gray-700">
-                  Practical Hands-on Training
-                </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-gray-700">Career Placement Support</span>
-              </div>
-            </div>
+            {/* 3D Features List */}
+            <motion.div 
+              className="grid grid-cols-1 md:grid-cols-2 gap-4"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.5 }}
+            >
+              {[
+                "Industry-Expert Instructors",
+                "Flexible Learning Schedule",
+                "Practical Hands-on Training",
+                "Career Placement Support"
+              ].map((feature, index) => (
+                <motion.div 
+                  key={index}
+                  className="flex items-center gap-3 group"
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.6, delay: 0.6 + index * 0.1 }}
+                >
+                  <motion.div 
+                    className="w-2 h-2 bg-gradient-to-r from-green-400 to-blue-500 rounded-full group-hover:scale-150 transition-transform duration-300"
+                    whileHover={{ scale: 1.5 }}
+                  />
+                  <span className="text-white/80 group-hover:text-white transition-colors duration-300">
+                    {feature}
+                  </span>
+                </motion.div>
+              ))}
+            </motion.div>
 
-            {/* CTA Button */}
-            <div className="pt-4">
+            {/* 3D CTA Button */}
+            <motion.div 
+              className="pt-4"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.7 }}
+            >
               <Link
                 href="/about"
-                className="inline-flex items-center gap-2 text-green-600 hover:text-green-700 font-semibold group"
+                className="inline-flex items-center gap-2 text-green-400 hover:text-green-300 font-semibold group transition-colors duration-300"
               >
                 Learn More About IICPA
-                <FaPlay className="text-sm group-hover:translate-x-1 transition-transform duration-300" />
+                <motion.div
+                  whileHover={{ x: 5 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <FaPlay className="text-sm" />
+                </motion.div>
               </Link>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
       </div>
+
+      <style jsx>{`
+        .perspective-1000 { perspective: 1000px; }
+        .transform-gpu { transform-style: preserve-3d; }
+      `}</style>
     </section>
   );
 }
