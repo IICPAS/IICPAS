@@ -453,32 +453,104 @@ export default function SearchCenter() {
           </div>
         )}
 
-        {/* CTA Section */}
-        <div className="text-center mt-12">
-          <div className="bg-gradient-to-r from-green-500 to-blue-600 rounded-2xl p-8 text-white">
-            <h3 className="text-3xl font-bold mb-4">
+        {/* Animated CTA Section */}
+        <motion.div 
+          className="text-center mt-12"
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          <motion.div 
+            className="bg-gradient-to-r from-green-500 to-blue-600 rounded-2xl p-8 text-white relative overflow-hidden"
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            whileHover={{ 
+              scale: 1.02,
+              rotateY: 2
+            }}
+            style={{
+              transform: 'translateZ(20px)',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)'
+            }}
+          >
+            {/* Animated Background Elements */}
+            <motion.div
+              className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl"
+              animate={{
+                scale: [1, 1.2, 1],
+                opacity: [0.3, 0.6, 0.3],
+              }}
+              transition={{
+                duration: 4,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
+            <motion.div
+              className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full blur-2xl"
+              animate={{
+                scale: [1, 0.8, 1],
+                opacity: [0.4, 0.7, 0.4],
+              }}
+              transition={{
+                duration: 5,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
+
+            <motion.h3 
+              className="text-3xl font-bold mb-4 relative z-10"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
               Can&apos;t Find Your Location?
-            </h3>
-            <p className="text-lg mb-6 opacity-90">
+            </motion.h3>
+            
+            <motion.p 
+              className="text-lg mb-6 opacity-90 relative z-10"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.5 }}
+            >
               We&apos;re expanding! Contact us to request a new center in your
               area or explore our online learning options.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                href="/contact"
-                className="bg-white text-green-600 hover:bg-gray-100 px-8 py-3 rounded-xl font-semibold transition-colors duration-300"
+            </motion.p>
+            
+            <motion.div 
+              className="flex flex-col sm:flex-row gap-4 justify-center relative z-10"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.6 }}
+            >
+              <motion.div
+                whileHover={{ scale: 1.05, rotateY: 5 }}
+                whileTap={{ scale: 0.95 }}
               >
-                Request New Center
-              </Link>
-              <Link
-                href="/courses"
-                className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-green-600 px-8 py-3 rounded-xl font-semibold transition-all duration-300"
+                <Link
+                  href="/contact"
+                  className="bg-white text-green-600 hover:bg-gray-100 px-8 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
+                >
+                  Request New Center
+                </Link>
+              </motion.div>
+              
+              <motion.div
+                whileHover={{ scale: 1.05, rotateY: -5 }}
+                whileTap={{ scale: 0.95 }}
               >
-                Explore Online Courses
-              </Link>
-            </div>
-          </div>
-        </div>
+                <Link
+                  href="/courses"
+                  className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-green-600 px-8 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
+                >
+                  Explore Online Courses
+                </Link>
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        </motion.div>
       </div>
 
       <style jsx>{`
