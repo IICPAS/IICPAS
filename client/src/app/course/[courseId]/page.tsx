@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, use } from "react";
 import { motion } from "framer-motion";
 import { ChevronDown, ChevronUp, Play, Star, Clock, Users, Award, CheckCircle } from "lucide-react";
+import Image from "next/image";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 
@@ -20,7 +21,7 @@ const dummyCourses = {
     type: "Individual Course",
     description: "Tally Foundation Course covers in-depth knowledge to meet all the accounting requirements of the industry with learning exposure on Voucher Entries, Grouping, BRS, etc. We not only teach the concepts but also help you learn how you can practically implement those concepts in your day to day Accounting Process with practical examples and entries in Tally.",
     image: "/images/course-1.jpg",
-    videoThumbnail: "/images/course-video-1.jpg",
+    videoThumbnail: "/images/accounting.webp",
     syllabus: [
       {
         title: "Basic Accounting",
@@ -104,7 +105,7 @@ const dummyCourses = {
     type: "Individual Course",
     description: "Comprehensive HR certification course covering recruitment, employee relations, performance management, and HR analytics. Learn practical HR skills with real-world case studies and industry best practices.",
     image: "/images/course-2.jpg",
-    videoThumbnail: "/images/course-video-2.jpg",
+    videoThumbnail: "/images/young-woman.jpg",
     syllabus: [
       {
         title: "HR Fundamentals",
@@ -169,7 +170,7 @@ const dummyCourses = {
     type: "Individual Course",
     description: "Master Excel from basics to advanced level. Learn formulas, functions, data analysis, pivot tables, and automation. Perfect for accounting professionals and data analysts.",
     image: "/images/course-3.jpg",
-    videoThumbnail: "/images/course-video-3.jpg",
+    videoThumbnail: "/images/course.png",
     syllabus: [
       {
         title: "Excel Basics",
@@ -224,16 +225,21 @@ const dummyCourses = {
   }
 };
 
-export default function CourseDetailPage({ params }: { params: { courseId: string } }) {
+export default function CourseDetailPage({ params }: { params: Promise<{ courseId: string }> }) {
   const [activeTab, setActiveTab] = useState("syllabus");
   const [expandedSections, setExpandedSections] = useState<number[]>([]);
 
-  console.log("CourseDetailPage rendered with params:", params);
-  const course = dummyCourses[params.courseId as keyof typeof dummyCourses];
+  // Unwrap the params Promise using React.use()
+  const resolvedParams = use(params);
+  
+  console.log("CourseDetailPage rendered with params:", resolvedParams);
+  const course = dummyCourses[resolvedParams.courseId as keyof typeof dummyCourses];
   console.log("Found course:", course);
+  console.log("Course videoThumbnail:", course?.videoThumbnail);
+  console.log("Course image:", course?.image);
 
   // Add loading state
-  if (!params.courseId) {
+  if (!resolvedParams.courseId) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -435,12 +441,28 @@ export default function CourseDetailPage({ params }: { params: { courseId: strin
               >
                 {/* Video Section */}
                 <div className="relative">
-                  <div className="aspect-video bg-gray-900 flex items-center justify-center">
-                    <div className="text-center text-white">
-                      <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mb-4 mx-auto">
-                        <Play className="w-8 h-8 ml-1" />
+                  <div className="aspect-video bg-gray-900 relative overflow-hidden">
+                    {/* Course Thumbnail */}
+                    <Image
+                      src={course?.videoThumbnail || course?.image || "/images/accounting.webp"}
+                      alt={`${course?.title} - Course Preview`}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      onError={(e) => {
+                        console.log("Image failed to load:", e);
+                        e.currentTarget.src = "/images/accounting.webp";
+                      }}
+                    />
+                    
+                    {/* Play Button Overlay */}
+                    <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                      <div className="text-center text-white">
+                        <div className="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center mb-4 mx-auto hover:bg-opacity-30 transition-all cursor-pointer">
+                          <Play className="w-10 h-10 ml-1" />
+                        </div>
+                        <p className="text-lg font-semibold">Course Preview Video</p>
                       </div>
-                      <p className="text-sm">Course Preview Video</p>
                     </div>
                   </div>
                   
