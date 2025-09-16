@@ -145,14 +145,9 @@ export default function AboutUsSection() {
               }}
               transition={{
                 duration: 3,
-
-                ease: "easeInOut",
-                delay: 0.01
-
                 repeat: Infinity,
                 ease: "easeInOut",
                 delay: 0.2
-
               }}
               whileHover={{ 
                 scale: 1.05,
@@ -192,14 +187,9 @@ export default function AboutUsSection() {
               }}
               transition={{
                 duration: 3.5,
-
-                ease: "easeInOut",
-    delay: 0.01
-
                 repeat: Infinity,
                 ease: "easeInOut",
                 delay: 0.4
-
               }}
               whileHover={{ 
                 scale: 1.05,
