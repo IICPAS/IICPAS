@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { FaGraduationCap, FaUsers, FaPlay, FaCheckCircle } from "react-icons/fa";
+import { FaGraduationCap, FaUsers, FaPlay } from "react-icons/fa";
 import { motion } from "framer-motion";
 
 export default function WhyIICPA() {

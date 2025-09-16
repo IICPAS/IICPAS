@@ -69,70 +69,31 @@ export default function AboutUsSection() {
 
   return (
     <section className={`relative ${aboutData.colors.background} py-16 px-4 md:px-8 lg:px-12 xl:px-16 text-gray-800 overflow-hidden`}>
-      {/* Subtle Background Elements */}
+      {/* Lightweight Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <motion.div
-          className="absolute top-20 right-20 w-32 h-32 bg-gradient-to-br from-blue-100/30 to-green-100/30 rounded-full blur-3xl"
-          animate={{
-            y: [0, -20, 0],
-            x: [0, 10, 0],
-            scale: [1, 1.1, 1],
-          }}
-          transition={{
-            duration: 8,
-            ease: "easeInOut",
-          }}
-        />
-        <motion.div
-          className="absolute bottom-20 left-20 w-40 h-40 bg-gradient-to-br from-green-100/30 to-blue-100/30 rounded-full blur-3xl"
-          animate={{
-            y: [0, 20, 0],
-            x: [0, -10, 0],
-            scale: [1, 0.9, 1],
-          }}
-          transition={{
-            duration: 10,
-            ease: "easeInOut",
-          }}
-        />
+        <div className="absolute top-20 right-20 w-32 h-32 bg-gradient-to-br from-blue-100/20 to-green-100/20 rounded-full blur-3xl animate-float-slow"></div>
+        <div className="absolute bottom-20 left-20 w-40 h-40 bg-gradient-to-br from-green-100/20 to-blue-100/20 rounded-full blur-3xl animate-float-reverse"></div>
       </div>
 
       {/* Main Container */}
       <div className="relative max-w-7xl mx-auto">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
-          {/* Left Side - 3D Image */}
-          <motion.div 
-            className="relative w-full lg:w-[45%]"
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.02 }}
-          >
-            <motion.div
-              className="relative perspective-1000"
-              animate={{
-                y: [0, -10, 0]
-              }}
-              transition={{
-                duration: 4,
-                ease: "easeInOut"
-              }}
-              whileHover={{ 
-                rotateY: 5,
-                rotateX: 5,
-                scale: 1.02
-              }}
-            >
+          {/* Left Side - Optimized Image */}
+          <div className="relative w-full lg:w-[45%] animate-fade-in-left">
+            <div className="relative">
               <Image
                 src={aboutData.mainImage}
                 alt="Student"
                 width={500}
                 height={500}
-                className="rounded-3xl shadow-2xl w-full h-auto border border-gray-200/50 transform-gpu"
-                style={{
-                  transform: 'translateZ(20px)',
-                  boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)'
-                }}
+                className="rounded-3xl shadow-2xl w-full h-auto border border-gray-200/50 hover:shadow-3xl transition-shadow duration-500"
               />
+
+            </div>
+
+            {/* Optimized Testimonial Card */}
+            <div className="mt-10 lg:mt-0 absolute -top-20 lg:top-4 left-4 bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-gray-200/50 max-w-[280px] z-10 hover:scale-105 transition-transform duration-300 animate-fade-in-up animation-delay-200">
+
             </motion.div>
 
             {/* Modern Testimonial Card */}
@@ -154,6 +115,7 @@ export default function AboutUsSection() {
                 rotateY: 5
               }}
             >
+
               <div className="flex items-start gap-3 mb-4">
                 <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center">
                   <span className="text-white text-lg">&ldquo;</span>
@@ -175,6 +137,12 @@ export default function AboutUsSection() {
                   <p className="text-xs text-gray-500">{aboutData.testimonial.position}</p>
                 </div>
               </div>
+
+            </div>
+
+            {/* Optimized Class Schedule Card */}
+            <div className="absolute -bottom-35 lg:-bottom-16 right-0 bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-2xl p-4 w-[200px] shadow-xl z-10 hover:scale-105 transition-transform duration-300 animate-fade-in-up animation-delay-300">
+
             </motion.div>
 
             {/* Modern Class Schedule Card */}
@@ -196,6 +164,7 @@ export default function AboutUsSection() {
                 rotateY: -5
               }}
             >
+
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
                   <span className="text-white text-sm">📅</span>
@@ -218,33 +187,19 @@ export default function AboutUsSection() {
                   )
                 )}
               </ul>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
 
-          {/* Right Side - Modern Content */}
-          <motion.div 
-            className="w-full lg:w-[50%] mt-20 lg:mt-0"
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.02 }}
-          >
-            {/* Modern Section Header */}
-            <motion.div 
-              className="flex items-center gap-4 mb-8"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.02 }}
-            >
+          {/* Right Side - Optimized Content */}
+          <div className="w-full lg:w-[50%] mt-20 lg:mt-0 animate-fade-in-right">
+            {/* Optimized Section Header */}
+            <div className="flex items-center gap-4 mb-8 animate-fade-in-up animation-delay-100">
               <div className="w-12 h-1 bg-gradient-to-r from-blue-500 to-green-500 rounded-full"></div>
               <p className={`${aboutData.colors.title} font-bold text-2xl uppercase tracking-wider`}>{aboutData.title}</p>
-            </motion.div>
+            </div>
 
-            {/* Content with Modern Styling */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.02, delay: 0.01 }}
-            >
+            {/* Content with Optimized Styling */}
+            <div className="animate-fade-in-up animation-delay-200">
               <div
                 className={`prose prose-lg max-w-none ${aboutData.colors.content} leading-relaxed`}
                 dangerouslySetInnerHTML={{ 
@@ -254,31 +209,91 @@ export default function AboutUsSection() {
                   )
                 }}
               />
-            </motion.div>
+            </div>
 
-            {/* Modern CTA Button */}
-            <motion.div
-              className="mt-8"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.02, delay: 0.01 }}
-            >
-              <motion.button
-                className="px-8 py-4 bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white rounded-full font-semibold shadow-lg transition-all duration-300 transform-gpu hover:scale-105 hover:shadow-xl"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+            {/* Optimized CTA Button */}
+            <div className="mt-8 animate-fade-in-up animation-delay-300">
+              <button
+                className="px-8 py-4 bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white rounded-full font-semibold shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl"
                 onClick={() => window.location.href = aboutData.button.link}
               >
                 {aboutData.button.text}
-              </motion.button>
-            </motion.div>
-          </motion.div>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
       <style jsx>{`
-        .perspective-1000 { perspective: 1000px; }
-        .transform-gpu { transform-style: preserve-3d; }
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        @keyframes fadeInLeft {
+          from {
+            opacity: 0;
+            transform: translateX(-50px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        
+        @keyframes fadeInRight {
+          from {
+            opacity: 0;
+            transform: translateX(50px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        
+        @keyframes floatSlow {
+          0%, 100% { transform: translateY(0px) translateX(0px); }
+          50% { transform: translateY(-15px) translateX(8px); }
+        }
+        
+        @keyframes floatReverse {
+          0%, 100% { transform: translateY(0px) translateX(0px); }
+          50% { transform: translateY(15px) translateX(-8px); }
+        }
+        
+        .animate-fade-in-up {
+          animation: fadeInUp 0.8s ease-out forwards;
+          opacity: 0;
+        }
+        
+        .animate-fade-in-left {
+          animation: fadeInLeft 0.8s ease-out forwards;
+          opacity: 0;
+        }
+        
+        .animate-fade-in-right {
+          animation: fadeInRight 0.8s ease-out forwards;
+          opacity: 0;
+        }
+        
+        .animate-float-slow {
+          animation: floatSlow 6s ease-in-out infinite;
+        }
+        
+        .animate-float-reverse {
+          animation: floatReverse 8s ease-in-out infinite;
+        }
+        
+        .animation-delay-100 { animation-delay: 0.1s; }
+        .animation-delay-200 { animation-delay: 0.2s; }
+        .animation-delay-300 { animation-delay: 0.3s; }
       `}</style>
     </section>
   );
