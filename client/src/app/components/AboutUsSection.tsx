@@ -88,10 +88,34 @@ export default function AboutUsSection() {
                 height={500}
                 className="rounded-3xl shadow-2xl w-full h-auto border border-gray-200/50 hover:shadow-3xl transition-shadow duration-500"
               />
+
             </div>
 
             {/* Optimized Testimonial Card */}
             <div className="mt-10 lg:mt-0 absolute -top-20 lg:top-4 left-4 bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-gray-200/50 max-w-[280px] z-10 hover:scale-105 transition-transform duration-300 animate-fade-in-up animation-delay-200">
+
+            </motion.div>
+
+            {/* Modern Testimonial Card */}
+            <motion.div 
+              className="mt-10 lg:mt-0 absolute -top-20 lg:top-4 left-4 bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-gray-200/50 max-w-[280px] z-10"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              animate={{
+                y: [0, -8, 0]
+              }}
+              transition={{
+                duration: 3,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 0.2
+              }}
+              whileHover={{ 
+                scale: 1.05,
+                rotateY: 5
+              }}
+            >
+
               <div className="flex items-start gap-3 mb-4">
                 <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center">
                   <span className="text-white text-lg">&ldquo;</span>
@@ -113,10 +137,34 @@ export default function AboutUsSection() {
                   <p className="text-xs text-gray-500">{aboutData.testimonial.position}</p>
                 </div>
               </div>
+
             </div>
 
             {/* Optimized Class Schedule Card */}
             <div className="absolute -bottom-35 lg:-bottom-16 right-0 bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-2xl p-4 w-[200px] shadow-xl z-10 hover:scale-105 transition-transform duration-300 animate-fade-in-up animation-delay-300">
+
+            </motion.div>
+
+            {/* Modern Class Schedule Card */}
+            <motion.div 
+              className="absolute -bottom-35 lg:-bottom-16 right-0 bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-2xl p-4 w-[200px] shadow-xl z-10"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              animate={{
+                y: [0, -6, 0]
+              }}
+              transition={{
+                duration: 3.5,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 0.4
+              }}
+              whileHover={{ 
+                scale: 1.05,
+                rotateY: -5
+              }}
+            >
+
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
                   <span className="text-white text-sm">📅</span>
