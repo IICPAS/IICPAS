@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
 import {
   VideoIcon,
   PhoneIcon,
@@ -10,25 +11,108 @@ import {
   MoreHorizontal,
 } from "lucide-react";
 
-const classes = [
-  {
-    title: "Master Python Programming for Beginners and Beyond",
-    lessons: 45,
-    duration: "620h 55min",
-  },
-  {
-    title: "Meet the Team: Passionate People, Exceptional Talent",
-    lessons: 45,
-    duration: "620h 55min",
-  },
-  {
-    title: "The Faces Behind the Brand, Dedicated, Driven",
-    lessons: 45,
-    duration: "620h 55min",
-  },
-];
+interface LiveSession {
+  _id: string;
+  title: string;
+  time: string;
+  date: string;
+  link: string;
+  price: number;
+  status: string;
+}
 
 export default function LiveClassSection() {
+  const [liveSessions, setLiveSessions] = useState<LiveSession[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchLiveSessions();
+  }, []);
+
+  const fetchLiveSessions = async () => {
+    try {
+      const response = await fetch("/api/live-sessions");
+      if (response.ok) {
+        const data = await response.json();
+        setLiveSessions(data);
+      } else {
+        // Fallback to mock data if API fails
+        setLiveSessions([
+          {
+            _id: "1",
+            title: "Master Python Programming for Beginners and Beyond",
+            time: "10:00 - 12:00",
+            date: new Date().toISOString(),
+            link: "https://example.com/live-session-1",
+            price: 0,
+            status: "active",
+          } as LiveSession,
+          {
+            _id: "2",
+            title: "Meet the Team: Passionate People, Exceptional Talent",
+            time: "14:00 - 16:00",
+            date: new Date().toISOString(),
+            link: "https://example.com/live-session-2",
+            price: 0,
+            status: "active",
+          } as LiveSession,
+          {
+            _id: "3",
+            title: "The Faces Behind the Brand, Dedicated, Driven",
+            time: "18:00 - 20:00",
+            date: new Date().toISOString(),
+            link: "https://example.com/live-session-3",
+            price: 0,
+            status: "active",
+          } as LiveSession,
+        ]);
+      }
+    } catch (error) {
+      console.error("Error fetching live sessions:", error);
+      // Fallback to mock data
+      setLiveSessions([
+        {
+          _id: "1",
+          title: "Master Python Programming for Beginners and Beyond",
+          time: "10:00 - 12:00",
+          date: new Date().toISOString(),
+          link: "https://example.com/live-session-1",
+          price: 0,
+          status: "active",
+        } as LiveSession,
+        {
+          _id: "2",
+          title: "Meet the Team: Passionate People, Exceptional Talent",
+          time: "14:00 - 16:00",
+          date: new Date().toISOString(),
+          link: "https://example.com/live-session-2",
+          price: 0,
+          status: "active",
+        } as LiveSession,
+        {
+          _id: "3",
+          title: "The Faces Behind the Brand, Dedicated, Driven",
+          time: "18:00 - 20:00",
+          date: new Date().toISOString(),
+          link: "https://example.com/live-session-3",
+          price: 0,
+          status: "active",
+        } as LiveSession,
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <section className="relative py-12 bg-white overflow-hidden">
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
+        </div>
+      </section>
+    );
+  }
   return (
     <section className="relative py-12 bg-white overflow-hidden">
       {/* Subtle Background Elements */}
@@ -42,7 +126,6 @@ export default function LiveClassSection() {
           }}
           transition={{
             duration: 8,
-            repeat: Infinity,
             ease: "easeInOut",
           }}
         />
@@ -55,7 +138,6 @@ export default function LiveClassSection() {
           }}
           transition={{
             duration: 10,
-            repeat: Infinity,
             ease: "easeInOut",
           }}
         />
@@ -68,13 +150,13 @@ export default function LiveClassSection() {
             className="w-full lg:w-1/2"
             initial={{ opacity: 0, x: -50 }}
             whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.02 }}
           >
             {/* Modern Header */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
+              transition={{ duration: 0.02 }}
             >
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-12 h-1 bg-gradient-to-r from-green-500 to-blue-500 rounded-full"></div>
@@ -89,7 +171,7 @@ export default function LiveClassSection() {
               className="text-3xl lg:text-4xl font-bold text-gray-900 leading-tight mb-6"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.1 }}
+              transition={{ duration: 0.02, delay: 0.01 }}
             >
               Join Our Live Class, <br /> Start Your Online{" "}
               <span className="bg-gradient-to-r from-green-500 to-blue-500 bg-clip-text text-transparent">
@@ -101,20 +183,20 @@ export default function LiveClassSection() {
               className="text-base text-gray-600 mb-6 leading-relaxed"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
+              transition={{ duration: 0.02, delay: 0.01 }}
             >
               Experience interactive learning with our expert instructors in real-time sessions
             </motion.p>
 
             {/* Modern Course Cards */}
             <div className="space-y-4">
-              {classes.map((cls, idx) => (
+              {liveSessions.map((session, idx) => (
                 <motion.div
-                  key={idx}
+                  key={session._id}
                   className="group bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200/50 p-4 shadow-xl transform-gpu hover:shadow-2xl transition-all duration-500"
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.3 + idx * 0.1 }}
+                  transition={{ duration: 0.02, delay: 0.01 + idx * 0.005 }}
                   whileHover={{ 
                     scale: 1.02,
                     rotateY: 2
@@ -138,7 +220,6 @@ export default function LiveClassSection() {
                       }}
                       transition={{
                         duration: 3,
-                        repeat: Infinity,
                         ease: "easeInOut"
                       }}
                       style={{
@@ -155,11 +236,11 @@ export default function LiveClassSection() {
                         className="mb-2"
                         initial={{ opacity: 0, x: -20 }}
                         whileInView={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.6, delay: 0.4 + idx * 0.1 }}
+                        transition={{ duration: 0.02, delay: 0.01 + idx * 0.005 }}
                       >
                         <div className="inline-flex items-center gap-2 bg-gradient-to-r from-green-50 to-blue-50 text-green-600 text-sm font-semibold px-3 py-1 rounded-full border border-green-200/50">
                           <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                          {cls.lessons} Lesson · {cls.duration}
+                          {new Date(session.date).toLocaleDateString()} · {session.time}
                         </div>
                       </motion.div>
 
@@ -168,9 +249,9 @@ export default function LiveClassSection() {
                         className="font-bold text-base text-gray-900 group-hover:text-green-600 transition-colors duration-300"
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.5 + idx * 0.1 }}
+                        transition={{ duration: 0.02, delay: 0.01 + idx * 0.005 }}
                       >
-                        {cls.title}
+                        {session.title}
                       </motion.h3>
                     </div>
                   </div>
@@ -191,7 +272,7 @@ export default function LiveClassSection() {
             className="relative w-full lg:w-1/2"
             initial={{ opacity: 0, x: 50 }}
             whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
+            transition={{ duration: 0.02, delay: 0.01 }}
           >
             <motion.div
               className="relative bg-white/90 backdrop-blur-sm shadow-2xl rounded-2xl overflow-hidden border border-gray-200/50 transform-gpu"
@@ -206,7 +287,7 @@ export default function LiveClassSection() {
                 rotateY: 2
               }}
               transition={{ 
-                duration: 0.8,
+                duration: 0.02,
                 ease: "easeOut"
               }}
               style={{ 
@@ -225,7 +306,6 @@ export default function LiveClassSection() {
                   }}
                   transition={{
                     duration: 2,
-                    repeat: Infinity,
                     ease: "easeInOut"
                   }}
                 >
@@ -239,9 +319,9 @@ export default function LiveClassSection() {
                   initial={{ x: -50, opacity: 0 }}
                   whileInView={{ x: 0, opacity: 1 }}
                   transition={{ 
-                    duration: 1.0, 
+                    duration: 0.02, 
                     ease: "easeOut",
-                    delay: 0.5
+                    delay: 0.01
                   }}
                 >
                   <Image
@@ -267,7 +347,6 @@ export default function LiveClassSection() {
                     }}
                     transition={{
                       duration: 3,
-                      repeat: Infinity,
                       ease: "easeInOut"
                     }}
                   />
@@ -279,7 +358,6 @@ export default function LiveClassSection() {
                     }}
                     transition={{
                       duration: 4,
-                      repeat: Infinity,
                       ease: "easeInOut",
                       delay: 1
                     }}
@@ -291,7 +369,7 @@ export default function LiveClassSection() {
                   className="absolute bottom-0 w-full bg-gradient-to-r from-green-500 to-blue-600 py-3 px-4 flex items-center justify-center gap-4 rounded-b-2xl z-10"
                   initial={{ y: 50, opacity: 0 }}
                   whileInView={{ y: 0, opacity: 1 }}
-                  transition={{ duration: 0.6, delay: 0.7 }}
+                  transition={{ duration: 0.02, delay: 0.01 }}
                 >
                   <motion.div
                     whileHover={{ scale: 1.1, rotate: 5 }}
@@ -326,17 +404,23 @@ export default function LiveClassSection() {
               className="text-center mt-6"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.8 }}
+              transition={{ duration: 0.02, delay: 0.01 }}
             >
               <motion.button
                 className="inline-flex items-center gap-2 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-6 py-3 rounded-xl font-semibold shadow-xl transition-all duration-300 hover:shadow-2xl"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  // Open the first live session link if available
+                  if (liveSessions.length > 0 && liveSessions[0].link) {
+                    window.open(liveSessions[0].link, '_blank');
+                  }
+                }}
               >
                 Join Live Class Now
                 <motion.div
                   animate={{ x: [0, 5, 0] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
+                  transition={{ duration: 1.5 }}
                 >
                   →
                 </motion.div>

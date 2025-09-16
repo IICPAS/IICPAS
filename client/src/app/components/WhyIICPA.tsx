@@ -1,12 +1,86 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { FaGraduationCap, FaUsers, FaPlay, FaCheckCircle } from "react-icons/fa";
 import { motion } from "framer-motion";
 
 export default function WhyIICPA() {
+  const [whyIICPAData, setWhyIICPAData] = useState({
+    title: "Empowering Your Future with Excellence",
+    subtitle: "Why Choose IICPA",
+    description: "IICPA Institute stands as a beacon of educational excellence, offering cutting-edge courses designed to transform your career aspirations into reality. Our comprehensive curriculum, expert instructors, and industry-aligned programs ensure you receive world-class education that prepares you for the dynamic professional landscape.",
+    image: "/images/img1.jpg",
+    statistics: {
+      courses: {
+        number: "50+",
+        label: "Courses",
+        description: "Comprehensive courses covering accounting, finance, and professional development"
+      },
+      students: {
+        number: "10K+",
+        label: "Students",
+        description: "Successful graduates building successful careers across industries"
+      },
+      successRate: {
+        number: "98%",
+        label: "Success Rate"
+      }
+    },
+    features: [
+      "Industry-Expert Instructors",
+      "Flexible Learning Schedule",
+      "Practical Hands-on Training",
+      "Career Placement Support"
+    ],
+    buttons: {
+      exploreCourses: {
+        text: "Explore Our Courses",
+        link: "/courses"
+      },
+      learnMore: {
+        text: "Learn More About IICPA",
+        link: "/about"
+      }
+    },
+    colors: {
+      title: "text-white",
+      subtitle: "text-green-400",
+      description: "text-white/70",
+      background: "bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900"
+    }
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchWhyIICPAData();
+  }, []);
+
+  const fetchWhyIICPAData = async () => {
+    try {
+      const response = await fetch("/api/why-iicpa");
+      if (response.ok) {
+        const data = await response.json();
+        setWhyIICPAData(data);
+      }
+    } catch (error) {
+      console.error("Error fetching WhyIICPA data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <section className="relative py-12 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+        </div>
+      </section>
+    );
+  }
   return (
-    <section className="relative py-12 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
+    <section className={`relative py-12 ${whyIICPAData.colors.background} overflow-hidden`}>
       {/* 3D Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
@@ -18,7 +92,6 @@ export default function WhyIICPA() {
           }}
           transition={{
             duration: 8,
-            repeat: Infinity,
             ease: "easeInOut",
           }}
         />
@@ -31,7 +104,6 @@ export default function WhyIICPA() {
           }}
           transition={{
             duration: 10,
-            repeat: Infinity,
             ease: "easeInOut",
           }}
         />
@@ -44,7 +116,6 @@ export default function WhyIICPA() {
           }}
           transition={{
             duration: 12,
-            repeat: Infinity,
             ease: "easeInOut",
           }}
         />
@@ -57,7 +128,7 @@ export default function WhyIICPA() {
             className="relative"
             initial={{ opacity: 0, x: -50 }}
             whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.02 }}
           >
             <motion.div 
               className="relative perspective-1000"
@@ -69,7 +140,6 @@ export default function WhyIICPA() {
               }}
               transition={{
                 duration: 8,
-                repeat: Infinity,
                 ease: "easeInOut"
               }}
               whileHover={{ 
@@ -80,7 +150,7 @@ export default function WhyIICPA() {
             >
               <div className="relative overflow-hidden rounded-3xl shadow-2xl transform-gpu border border-white/20">
                 <motion.img
-                  src="/images/img1.jpg"
+                  src={whyIICPAData.image}
                   alt="IICPA Students Learning"
                   className="w-full h-[400px] object-cover"
                   style={{
@@ -93,7 +163,6 @@ export default function WhyIICPA() {
                   }}
                   transition={{
                     duration: 8,
-                    repeat: Infinity,
                     ease: "easeInOut"
                   }}
                 />
@@ -110,7 +179,6 @@ export default function WhyIICPA() {
                   }}
                   transition={{
                     duration: 4,
-                    repeat: Infinity,
                     ease: "easeInOut"
                   }}
                   whileHover={{ 
@@ -127,7 +195,6 @@ export default function WhyIICPA() {
                       }}
                       transition={{
                         duration: 3,
-                        repeat: Infinity,
                         ease: "easeInOut"
                       }}
                       whileHover={{ rotate: 360 }}
@@ -135,8 +202,8 @@ export default function WhyIICPA() {
                       <FaGraduationCap className="text-white text-lg" />
                     </motion.div>
                     <div>
-                      <p className="text-sm text-white/70">Success Rate</p>
-                      <p className="text-xl font-bold text-white">98%</p>
+                      <p className="text-sm text-white/70">{whyIICPAData.statistics.successRate.label}</p>
+                      <p className="text-xl font-bold text-white">{whyIICPAData.statistics.successRate.number}</p>
                     </div>
                   </div>
                 </motion.div>
@@ -148,14 +215,14 @@ export default function WhyIICPA() {
               className="mt-8 text-center"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
+              transition={{ duration: 0.02, delay: 0.01 }}
             >
               <Link
-                href="/courses"
+                href={whyIICPAData.buttons.exploreCourses.link}
                 className="inline-flex items-center gap-3 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-8 py-4 rounded-full font-semibold text-lg shadow-2xl transition-all duration-300 transform-gpu hover:scale-105 hover:shadow-green-500/25 border border-white/20"
               >
                 <FaGraduationCap className="text-xl" />
-                Explore Our Courses
+                {whyIICPAData.buttons.exploreCourses.text}
                 <FaPlay className="text-sm" />
               </Link>
             </motion.div>
@@ -166,7 +233,7 @@ export default function WhyIICPA() {
             className="space-y-6"
             initial={{ opacity: 0, x: 50 }}
             whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.02 }}
           >
             {/* Section Title */}
             <div className="space-y-4">
@@ -174,39 +241,32 @@ export default function WhyIICPA() {
                 className="flex items-center gap-3"
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6 }}
+                transition={{ duration: 0.02 }}
               >
                 <div className="w-12 h-1 bg-gradient-to-r from-green-400 to-blue-500 rounded-full"></div>
-                <span className="text-green-400 font-semibold text-sm uppercase tracking-wider">
-                  Why Choose IICPA
+                <span className={`${whyIICPAData.colors.subtitle} font-semibold text-sm uppercase tracking-wider`}>
+                  {whyIICPAData.subtitle}
                 </span>
               </motion.div>
               
               <motion.h2 
-                className="text-3xl lg:text-4xl font-bold text-white leading-tight"
+                className={`text-3xl lg:text-4xl font-bold ${whyIICPAData.colors.title} leading-tight`}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.1 }}
+                transition={{ duration: 0.02, delay: 0.01 }}
               >
-                Empowering Your
-                <span className="bg-gradient-to-r from-green-400 to-blue-500 bg-clip-text text-transparent"> Future</span> with
-                <span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent"> Excellence</span>
+                {whyIICPAData.title}
               </motion.h2>
             </div>
 
             {/* Description */}
             <motion.p 
-              className="text-base text-white/70 leading-relaxed"
+              className={`text-base ${whyIICPAData.colors.description} leading-relaxed`}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
+              transition={{ duration: 0.02, delay: 0.01 }}
             >
-              IICPA Institute stands as a beacon of educational excellence,
-              offering cutting-edge courses designed to transform your career
-              aspirations into reality. Our comprehensive curriculum, expert
-              instructors, and industry-aligned programs ensure you receive
-              world-class education that prepares you for the dynamic
-              professional landscape.
+              {whyIICPAData.description}
             </motion.p>
 
             {/* 3D Statistics Boxes */}
@@ -216,7 +276,7 @@ export default function WhyIICPA() {
                 className="group relative overflow-hidden bg-white/5 backdrop-blur-xl rounded-3xl p-6 border border-white/20 shadow-2xl transform-gpu hover:scale-105 transition-all duration-300"
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.3 }}
+                transition={{ duration: 0.02, delay: 0.01 }}
                 whileHover={{ 
                   rotateY: 5,
                   rotateX: 5
@@ -233,13 +293,12 @@ export default function WhyIICPA() {
                       <FaGraduationCap className="text-white text-2xl" />
                     </motion.div>
                     <div>
-                      <h3 className="text-2xl font-bold text-white">50+</h3>
-                      <p className="text-blue-400 font-semibold">Courses</p>
+                      <h3 className="text-2xl font-bold text-white">{whyIICPAData.statistics.courses.number}</h3>
+                      <p className="text-blue-400 font-semibold">{whyIICPAData.statistics.courses.label}</p>
                     </div>
                   </div>
                   <p className="text-sm text-white/70">
-                    Comprehensive courses covering accounting, finance, and
-                    professional development
+                    {whyIICPAData.statistics.courses.description}
                   </p>
                 </div>
               </motion.div>
@@ -249,7 +308,7 @@ export default function WhyIICPA() {
                 className="group relative overflow-hidden bg-white/5 backdrop-blur-xl rounded-3xl p-6 border border-white/20 shadow-2xl transform-gpu hover:scale-105 transition-all duration-300"
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
+                transition={{ duration: 0.02, delay: 0.01 }}
                 whileHover={{ 
                   rotateY: 5,
                   rotateX: 5
@@ -266,13 +325,12 @@ export default function WhyIICPA() {
                       <FaUsers className="text-white text-2xl" />
                     </motion.div>
                     <div>
-                      <h3 className="text-2xl font-bold text-white">10K+</h3>
-                      <p className="text-green-400 font-semibold">Students</p>
+                      <h3 className="text-2xl font-bold text-white">{whyIICPAData.statistics.students.number}</h3>
+                      <p className="text-green-400 font-semibold">{whyIICPAData.statistics.students.label}</p>
                     </div>
                   </div>
                   <p className="text-sm text-white/70">
-                    Successful graduates building successful careers across
-                    industries
+                    {whyIICPAData.statistics.students.description}
                   </p>
                 </div>
               </motion.div>
@@ -283,20 +341,15 @@ export default function WhyIICPA() {
               className="grid grid-cols-1 md:grid-cols-2 gap-4"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.5 }}
+              transition={{ duration: 0.02, delay: 0.01 }}
             >
-              {[
-                "Industry-Expert Instructors",
-                "Flexible Learning Schedule",
-                "Practical Hands-on Training",
-                "Career Placement Support"
-              ].map((feature, index) => (
+              {whyIICPAData.features.map((feature, index) => (
                 <motion.div 
                   key={index}
                   className="flex items-center gap-3 group"
                   initial={{ opacity: 0, x: -20 }}
                   whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6, delay: 0.6 + index * 0.1 }}
+                  transition={{ duration: 0.02, delay: 0.01 + index * 0.005 }}
                 >
                   <motion.div 
                     className="w-2 h-2 bg-gradient-to-r from-green-400 to-blue-500 rounded-full group-hover:scale-150 transition-transform duration-300"
@@ -314,13 +367,13 @@ export default function WhyIICPA() {
               className="pt-4"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.7 }}
+              transition={{ duration: 0.02, delay: 0.01 }}
             >
               <Link
-                href="/about"
+                href={whyIICPAData.buttons.learnMore.link}
                 className="inline-flex items-center gap-2 text-green-400 hover:text-green-300 font-semibold group transition-colors duration-300"
               >
-                Learn More About IICPA
+                {whyIICPAData.buttons.learnMore.text}
                 <motion.div
                   whileHover={{ x: 5 }}
                   transition={{ duration: 0.3 }}

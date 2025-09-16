@@ -1,6 +1,60 @@
 "use client";
 
+import { useState, useEffect } from "react";
+
 export default function HeroSection() {
+  const [heroData, setHeroData] = useState({
+    smallText: "# Best Online Platform",
+    mainHeading: {
+      part1: "Start Learning",
+      part2: "Today",
+      part3: "Discover",
+      part4: "Your Next",
+      part5: "Great Skill"
+    },
+    description: "Enhance your educational journey with our cutting-edge course platform.",
+    buttonText: "Get Started »",
+    videoUrl: "/videos/homehero.mp4",
+    videoFile: null,
+    colors: {
+      smallText: "text-green-400",
+      part1: "text-white",
+      part2: "text-green-400",
+      part3: "text-green-400",
+      part4: "text-white",
+      part5: "text-blue-300",
+      description: "text-white/90",
+      button: "bg-green-500 hover:bg-green-600"
+    }
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchHeroData();
+  }, []);
+
+  const fetchHeroData = async () => {
+    try {
+      const response = await fetch("/api/hero");
+      if (response.ok) {
+        const data = await response.json();
+        setHeroData(data);
+      }
+    } catch (error) {
+      console.error("Error fetching hero data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <section className="relative overflow-hidden h-screen bg-gray-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+      </section>
+    );
+  }
+
   return (
     <section className="relative overflow-hidden h-screen">
       {/* Video Background */}
@@ -12,7 +66,7 @@ export default function HeroSection() {
           playsInline
           className="w-full h-full object-cover"
         >
-          <source src="/videos/homehero.mp4" type="video/mp4" />
+          <source src={heroData.videoFile || heroData.videoUrl} type="video/mp4" />
           Your browser does not support the video tag.
         </video>
         
@@ -24,28 +78,28 @@ export default function HeroSection() {
       <div className="relative z-10 h-screen flex items-center justify-center">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 text-center">
           {/* Small green text */}
-          <h3 className="text-green-400 font-bold text-lg mb-6 drop-shadow-lg">
-            # Best Online Platform
+          <h3 className={`${heroData.colors.smallText} font-bold text-lg mb-6 drop-shadow-lg`}>
+            {heroData.smallText}
           </h3>
           
           {/* Main heading */}
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6 drop-shadow-2xl">
-            <span className="text-white">Start Learning </span>
-            <span className="text-green-400">Today</span>
+            <span className={heroData.colors.part1}>{heroData.mainHeading.part1} </span>
+            <span className={heroData.colors.part2}>{heroData.mainHeading.part2}</span>
             <br />
-            <span className="text-green-400">Discover</span> <span className="text-white">Your Next</span>
+            <span className={heroData.colors.part3}>{heroData.mainHeading.part3}</span> <span className={heroData.colors.part4}>{heroData.mainHeading.part4}</span>
             <br />
-            <span className="text-blue-300">Great Skill</span>
+            <span className={heroData.colors.part5}>{heroData.mainHeading.part5}</span>
           </h1>
           
           {/* Description */}
-          <p className="text-white/90 text-lg sm:text-xl mb-8 max-w-2xl mx-auto leading-relaxed drop-shadow-lg">
-            Enhance your educational journey with our cutting-edge course platform.
+          <p className={`${heroData.colors.description} text-lg sm:text-xl mb-8 max-w-2xl mx-auto leading-relaxed drop-shadow-lg`}>
+            {heroData.description}
           </p>
           
           {/* CTA Button */}
-          <button className="px-8 py-4 bg-green-500 hover:bg-green-600 text-white rounded-full text-lg font-semibold shadow-lg transition-all duration-300 transform hover:scale-105">
-            Get Started »
+          <button className={`${heroData.colors.button} text-white px-8 py-4 rounded-full text-lg font-semibold shadow-lg transition-all duration-300 transform hover:scale-105`}>
+            {heroData.buttonText}
           </button>
         </div>
       </div>

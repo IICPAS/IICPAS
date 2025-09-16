@@ -34,7 +34,9 @@ export default function TestimonialAdmin() {
     name: "",
     designation: "",
     message: "",
+    image: null,
   });
+  const [imagePreview, setImagePreview] = useState(null);
   const { hasPermission } = useAuth();
 
   useEffect(() => {
@@ -77,31 +79,84 @@ export default function TestimonialAdmin() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (editingTestimonial) {
-      await axios.put(
-        `${process.env.NEXT_PUBLIC_API_URL}/testimonials/${editingTestimonial}`,
-        form
-      );
-    } else {
-      await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/testimonials`,
-        form
-      );
+    
+    try {
+      const formData = new FormData();
+      formData.append('name', form.name);
+      formData.append('designation', form.designation);
+      formData.append('message', form.message);
+      
+      if (form.image) {
+        formData.append('image', form.image);
+      }
+
+      if (editingTestimonial) {
+        await axios.put(
+          `${process.env.NEXT_PUBLIC_API_URL}/testimonials/${editingTestimonial}`,
+          formData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          }
+        );
+      } else {
+        await axios.post(
+          `${process.env.NEXT_PUBLIC_API_URL}/testimonials`,
+          formData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          }
+        );
+      }
+      
+      resetForm();
+      fetchTestimonials();
+      setMode("list");
+      Swal.fire("Success!", "Testimonial saved successfully!", "success");
+    } catch (error) {
+      console.error("Error saving testimonial:", error);
+      Swal.fire("Error!", "Failed to save testimonial", "error");
     }
-    resetForm();
-    fetchTestimonials();
-    setMode("list");
   };
 
   const handleEdit = (data) => {
-    setForm(data);
+    setForm({
+      name: data.name,
+      designation: data.designation,
+      message: data.message,
+      image: null, // Don't pre-populate image for editing
+    });
+    setImagePreview(data.image ? `${process.env.NEXT_PUBLIC_API_URL}/${data.image}` : null);
     setEditingTestimonial(data._id);
     setMode("edit");
   };
 
   const resetForm = () => {
-    setForm({ name: "", designation: "", message: "" });
+    setForm({ name: "", designation: "", message: "", image: null });
+    setImagePreview(null);
     setEditingTestimonial(null);
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setForm({ ...form, image: file });
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setForm({ ...form, image: null });
+    setImagePreview(null);
   };
 
   return (
@@ -120,6 +175,7 @@ export default function TestimonialAdmin() {
           <Table>
             <TableHead>
               <TableRow>
+                <TableCell>Image</TableCell>
                 <TableCell>Name</TableCell>
                 <TableCell>Designation</TableCell>
                 <TableCell>Message</TableCell>
@@ -130,6 +186,24 @@ export default function TestimonialAdmin() {
             <TableBody>
               {testimonials.map((item) => (
                 <TableRow key={item._id}>
+                  <TableCell>
+                    {item.image ? (
+                      <img
+                        src={`${process.env.NEXT_PUBLIC_API_URL}/${item.image}`}
+                        alt={item.name}
+                        className="w-12 h-12 object-cover rounded-full"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
+                        <span className="text-gray-500 text-xs">
+                          {item.name.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                  </TableCell>
                   <TableCell>{item.name}</TableCell>
                   <TableCell>{item.designation}</TableCell>
                   <TableCell>{item.message}</TableCell>
@@ -208,6 +282,65 @@ export default function TestimonialAdmin() {
                 setForm({ ...form, message: e.target.value })
               }
             />
+          </div>
+
+          {/* Image Upload Section */}
+          <div className="mt-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Profile Image (Optional)
+            </label>
+            
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+                id="image-upload"
+              />
+              <label
+                htmlFor="image-upload"
+                className="cursor-pointer flex flex-col items-center"
+              >
+                {imagePreview ? (
+                  <div className="relative">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-32 h-32 object-cover rounded-full mb-4"
+                    />
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        removeImage();
+                      }}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center">
+                    <svg
+                      className="w-12 h-12 text-gray-400 mb-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                    <p className="text-gray-600 mb-2">Click to upload image</p>
+                    <p className="text-sm text-gray-500">PNG, JPG, JPEG up to 5MB</p>
+                  </div>
+                )}
+              </label>
+            </div>
           </div>
 
           <div className="flex justify-end gap-4 mt-6">

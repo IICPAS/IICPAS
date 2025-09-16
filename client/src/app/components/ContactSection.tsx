@@ -1,19 +1,68 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
 import { Mail, PhoneCall, MapPin, Send } from "lucide-react";
 import { toast } from "react-hot-toast";
 
 export default function ContactSection() {
+  const [contactData, setContactData] = useState({
+    title: "Contact Us",
+    subtitle: "Let's Get in Touch",
+    description: "Ready to start your learning journey? Get in touch with us today!",
+    contactInfo: {
+      phone: {
+        number: "+91 98765 43210",
+        label: "Phone"
+      },
+      email: {
+        address: "support@iicpa.org",
+        label: "Email"
+      },
+      address: {
+        text: "123 Knowledge Park, New Delhi, India",
+        label: "Address"
+      }
+    },
+    form: {
+      buttonText: "Send Message",
+      successMessage: "Message sent successfully!",
+      errorMessage: "Something went wrong. Please try again."
+    },
+    colors: {
+      title: "text-green-600",
+      subtitle: "text-gray-900",
+      description: "text-gray-600",
+      background: "bg-white"
+    }
+  });
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
     message: "",
   });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchContactData();
+  }, []);
+
+  const fetchContactData = async () => {
+    try {
+      const response = await fetch("/api/contact");
+      if (response.ok) {
+        const data = await response.json();
+        setContactData(data);
+      }
+    } catch (error) {
+      console.error("Error fetching Contact data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -27,15 +76,25 @@ export default function ContactSection() {
 
     try {
       await axios.post(`${API_BASE_URL}/contact`, formData);
-      toast.success("Message sent successfully!");
+      toast.success(contactData.form.successMessage);
       setFormData({ name: "", email: "", phone: "", message: "" });
     } catch (error: any) {
-      toast.error(error.response?.data?.error || "Something went wrong");
+      toast.error(error.response?.data?.error || contactData.form.errorMessage);
     }
   };
 
+  if (loading) {
+    return (
+      <section className="relative py-20 bg-white overflow-hidden">
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        </div>
+      </section>
+    );
+  }
+
   return (
-    <section className="relative py-20 bg-white overflow-hidden">
+    <section className={`relative py-20 ${contactData.colors.background} overflow-hidden`}>
       {/* Subtle Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
@@ -47,7 +106,6 @@ export default function ContactSection() {
           }}
           transition={{
             duration: 8,
-            repeat: Infinity,
             ease: "easeInOut",
           }}
         />
@@ -60,7 +118,6 @@ export default function ContactSection() {
           }}
           transition={{
             duration: 10,
-            repeat: Infinity,
             ease: "easeInOut",
           }}
         />
@@ -72,32 +129,37 @@ export default function ContactSection() {
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.02 }}
           >
             {/* Modern Header */}
             <motion.div
               className="mb-8"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
+              transition={{ duration: 0.02 }}
             >
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-12 h-1 bg-gradient-to-r from-green-500 to-blue-500 rounded-full"></div>
-                <span className="text-green-600 font-bold text-lg uppercase tracking-wider">
-                  Contact Us
+                <span className={`${contactData.colors.title} font-bold text-lg uppercase tracking-wider`}>
+                  {contactData.title}
                 </span>
                 <div className="w-12 h-1 bg-gradient-to-r from-blue-500 to-green-500 rounded-full"></div>
               </div>
               
+
+              <h2 className={`text-4xl lg:text-5xl font-bold ${contactData.colors.subtitle} leading-tight mb-6`}>
+                {contactData.subtitle}
+
               <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-6">
                 Let&apos;s{" "}
                 <span className="bg-gradient-to-r from-green-500 to-blue-500 bg-clip-text text-transparent">
                   Get in Touch
                 </span>
+
               </h2>
               
-              <p className="text-lg text-gray-600 leading-relaxed">
-                Ready to start your learning journey? Get in touch with us today!
+              <p className={`text-lg ${contactData.colors.description} leading-relaxed`}>
+                {contactData.description}
               </p>
             </motion.div>
 
@@ -107,12 +169,12 @@ export default function ContactSection() {
               onSubmit={handleSubmit}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
+              transition={{ duration: 0.02, delay: 0.01 }}
             >
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 0.3 }}
+                transition={{ duration: 0.02, delay: 0.01 }}
               >
                 <input
                   type="text"
@@ -128,7 +190,7 @@ export default function ContactSection() {
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
+                transition={{ duration: 0.02, delay: 0.01 }}
               >
                 <input
                   type="email"
@@ -144,7 +206,7 @@ export default function ContactSection() {
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 0.5 }}
+                transition={{ duration: 0.02, delay: 0.01 }}
               >
                 <input
                   type="tel"
@@ -160,7 +222,7 @@ export default function ContactSection() {
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 0.6 }}
+                transition={{ duration: 0.02, delay: 0.01 }}
               >
                 <textarea
                   name="message"
@@ -178,7 +240,7 @@ export default function ContactSection() {
                 className="w-full bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white font-semibold px-8 py-4 rounded-2xl shadow-xl transition-all duration-300 hover:shadow-2xl transform-gpu flex items-center justify-center gap-3"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.7 }}
+                transition={{ duration: 0.02, delay: 0.01 }}
                 whileHover={{ 
                   scale: 1.02,
                   rotateY: 2
@@ -189,7 +251,7 @@ export default function ContactSection() {
                   boxShadow: '0 10px 25px -5px rgba(34, 197, 94, 0.4)'
                 }}
               >
-                Send Message
+                {contactData.form.buttonText}
                 <motion.div
                   whileHover={{ x: 3 }}
                   transition={{ duration: 0.2 }}
@@ -205,7 +267,7 @@ export default function ContactSection() {
             className="bg-white/80 backdrop-blur-sm rounded-3xl border border-gray-200/50 p-8 shadow-xl transform-gpu"
             initial={{ opacity: 0, x: 50 }}
             whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
+            transition={{ duration: 0.02, delay: 0.01 }}
             whileHover={{ 
               scale: 1.02,
               rotateY: 2
@@ -219,14 +281,14 @@ export default function ContactSection() {
               className="space-y-8"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
+              transition={{ duration: 0.02, delay: 0.01 }}
             >
               {/* Phone Contact */}
               <motion.div 
                 className="flex items-start gap-4 group"
                 initial={{ opacity: 0, x: 20 }}
                 whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 0.5 }}
+                transition={{ duration: 0.02, delay: 0.01 }}
                 whileHover={{ x: 5 }}
               >
                 <motion.div
@@ -241,7 +303,6 @@ export default function ContactSection() {
                   }}
                   transition={{
                     duration: 4,
-                    repeat: Infinity,
                     ease: "easeInOut"
                   }}
                   style={{
@@ -252,8 +313,8 @@ export default function ContactSection() {
                   <PhoneCall size={20} />
                 </motion.div>
                 <div>
-                  <p className="font-bold text-gray-900 text-lg mb-1">Phone</p>
-                  <p className="text-gray-600">+91 98765 43210</p>
+                  <p className="font-bold text-gray-900 text-lg mb-1">{contactData.contactInfo.phone.label}</p>
+                  <p className="text-gray-600">{contactData.contactInfo.phone.number}</p>
                 </div>
               </motion.div>
 
@@ -262,7 +323,7 @@ export default function ContactSection() {
                 className="flex items-start gap-4 group"
                 initial={{ opacity: 0, x: 20 }}
                 whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 0.6 }}
+                transition={{ duration: 0.02, delay: 0.01 }}
                 whileHover={{ x: 5 }}
               >
                 <motion.div
@@ -277,7 +338,6 @@ export default function ContactSection() {
                   }}
                   transition={{
                     duration: 4,
-                    repeat: Infinity,
                     ease: "easeInOut",
                     delay: 1
                   }}
@@ -289,8 +349,8 @@ export default function ContactSection() {
                   <Mail size={20} />
                 </motion.div>
                 <div>
-                  <p className="font-bold text-gray-900 text-lg mb-1">Email</p>
-                  <p className="text-gray-600">support@iicpa.org</p>
+                  <p className="font-bold text-gray-900 text-lg mb-1">{contactData.contactInfo.email.label}</p>
+                  <p className="text-gray-600">{contactData.contactInfo.email.address}</p>
                 </div>
               </motion.div>
 
@@ -299,7 +359,7 @@ export default function ContactSection() {
                 className="flex items-start gap-4 group"
                 initial={{ opacity: 0, x: 20 }}
                 whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 0.7 }}
+                transition={{ duration: 0.02, delay: 0.01 }}
                 whileHover={{ x: 5 }}
               >
                 <motion.div
@@ -314,7 +374,6 @@ export default function ContactSection() {
                   }}
                   transition={{
                     duration: 4,
-                    repeat: Infinity,
                     ease: "easeInOut",
                     delay: 2
                   }}
@@ -326,9 +385,9 @@ export default function ContactSection() {
                   <MapPin size={20} />
                 </motion.div>
                 <div>
-                  <p className="font-bold text-gray-900 text-lg mb-1">Address</p>
+                  <p className="font-bold text-gray-900 text-lg mb-1">{contactData.contactInfo.address.label}</p>
                   <p className="text-gray-600">
-                    123 Knowledge Park, New Delhi, India
+                    {contactData.contactInfo.address.text}
                   </p>
                 </div>
               </motion.div>

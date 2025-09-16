@@ -1,62 +1,82 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { FaStar, FaHeart, FaRegHeart, FaBook, FaClock } from "react-icons/fa";
 
+interface Course {
+  _id: string;
+  title: string;
+  image: string;
+  price: number;
+  lessons: string;
+  duration: string;
+  rating: number;
+  reviews: number;
+}
+
 export default function CoursesSection() {
   const [likedIndexes, setLikedIndexes] = useState<number[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const courses = [
+  // Fallback data
+  const fallbackCourses: Course[] = [
     {
+      _id: "1",
       title: "Learn the Foundations of Visual Communication",
       image: "/images/a1.jpeg",
-      price: "$240.00",
+      price: 240.00,
       lessons: "12 Lesson",
       duration: "620h, 20min",
       rating: 4.5,
       reviews: 129,
     },
     {
+      _id: "2",
       title: "Cooking Made Easy: Essential Skills for Everyday Meals",
       image: "/images/a2.avif",
-      price: "$240.00",
+      price: 240.00,
       lessons: "12 Lesson",
       duration: "620h, 20min",
       rating: 4.5,
       reviews: 129,
     },
     {
-      title: "A Beginner’s Guide to Basic Skills and Improved",
+      _id: "3",
+      title: "A Beginner's Guide to Basic Skills and Improved",
       image: "/images/a3.jpeg",
-      price: "$240.00",
+      price: 240.00,
       lessons: "12 Lesson",
       duration: "620h, 20min",
       rating: 4.5,
       reviews: 129,
     },
     {
+      _id: "4",
       title: "Learn the Foundations of Visual Communication",
       image: "/images/a4.jpg",
-      price: "$240.00",
+      price: 240.00,
       lessons: "12 Lesson",
       duration: "620h, 20min",
       rating: 4.5,
       reviews: 129,
     },
     {
+      _id: "5",
       title: "Cooking Made Easy: Essential Skills for Everyday Meals",
       image: "/images/about.jpeg",
-      price: "$240.00",
+      price: 240.00,
       lessons: "12 Lesson",
       duration: "620h, 20min",
       rating: 4.5,
       reviews: 129,
     },
     {
+      _id: "6",
       title: "How to Capture Stunning Photos with Ease",
       image: "/images/s.jpg",
-      price: "$240.00",
+      price: 240.00,
       lessons: "12 Lesson",
       duration: "620h, 20min",
       rating: 4.5,
@@ -64,11 +84,53 @@ export default function CoursesSection() {
     },
   ];
 
+  useEffect(() => {
+    fetchCourses();
+  }, []);
+
+  const fetchCourses = async () => {
+    try {
+      const response = await fetch("/api/courses/available");
+      if (response.ok) {
+        const data = await response.json();
+        // Transform the data to match the expected format
+        const transformedCourses = data.map((course: { _id: string; title: string; image?: string; price: number; level: string; discount?: number; status: string; chapters?: { _id: string; title: string }[] }) => ({
+          _id: course._id,
+          title: course.title,
+          image: course.image || "/images/a1.jpeg",
+          price: course.price || 240.00,
+          lessons: course.chapters?.length ? `${course.chapters.length} Lesson` : "12 Lesson",
+          duration: "620h, 20min", // This could be calculated from course content
+          rating: 4.5, // This could be fetched from reviews
+          reviews: 129, // This could be fetched from reviews
+        }));
+        setCourses(transformedCourses);
+      } else {
+        setCourses(fallbackCourses);
+      }
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+      setCourses(fallbackCourses);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const toggleLike = (index: number) => {
     setLikedIndexes((prev) =>
       prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
     );
   };
+
+  if (loading) {
+    return (
+      <section className="py-16 px-4 md:px-20 bg-[#f9fbfa]">
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-16 px-4 md:px-20 bg-[#f9fbfa]">
@@ -100,7 +162,7 @@ export default function CoursesSection() {
             <div className="p-5 space-y-3">
               <div className="flex items-center justify-between text-sm text-gray-600 font-semibold">
                 <span className="text-lg text-[#3cd664] font-bold">
-                  {course.price}
+                  ${course.price}
                 </span>
                 <span className="flex items-center gap-1 text-yellow-500">
                   <FaStar /> {course.rating}
