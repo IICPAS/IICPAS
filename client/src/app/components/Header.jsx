@@ -47,7 +47,6 @@ const navLinks = [
 export default function Header() {
   const pathname = usePathname();
   const [showHeader, setShowHeader] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [cartDrawer, setCartDrawer] = useState(false);
   const [student, setStudent] = useState(null);
@@ -56,20 +55,13 @@ export default function Header() {
 
   const API = process.env.NEXT_PUBLIC_API_URL;
 
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > lastScrollY && window.scrollY > 60) {
-        setShowHeader(false);
-        setShowMarquee(false);
-      } else {
-        setShowHeader(true);
-        setShowMarquee(true);
-      }
-      setLastScrollY(window.scrollY);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [lastScrollY]);
+  // Check if current page is a dashboard page
+  const isDashboardPage = pathname.includes('-dashboard') || pathname.includes('/dashboard');
+
+  // Hide header on dashboard pages
+  if (isDashboardPage) {
+    return null;
+  }
 
   const fetchStudentAndCart = async () => {
     try {
@@ -224,9 +216,7 @@ export default function Header() {
     <>
       <AlertMarquee showMarquee={showMarquee} />
       <header
-        className={`fixed left-0 w-full z-40 bg-white shadow-lg transition-transform duration-300 ${
-          showHeader ? "translate-y-0" : "-translate-y-full"
-        }`}
+        className="fixed left-0 w-full z-40 bg-white shadow-lg"
         style={{ top: showMarquee ? "40px" : "0px" }}
       >
         <div className="w-full px-2 md:px-6 py-3 flex items-center justify-between">
