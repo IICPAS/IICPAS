@@ -136,7 +136,7 @@ export default function CoursesSection() {
 
   return (
     <section className="py-16 px-4 md:px-20 bg-[#f9fbfa]">
-      <h2 className="text-3xl md:text-4xl font-extrabold text-center mb-12 text-gray-800">
+      <h2 className="text-3xl md:text-4xl font-extrabold text-center mb-12 text-gray-800 animate-fade-in-up">
         Our Courses Designed For{" "}
         <span className="text-[#3cd664] bg-[#3cd664]/10 px-2 py-1 rounded-lg">
           Your Success
@@ -147,7 +147,8 @@ export default function CoursesSection() {
         {courses.map((course, index) => (
           <div
             key={index}
-            className="relative bg-white rounded-2xl shadow-xl overflow-hidden group transition-all duration-300 hover:shadow-2xl"
+            className="relative bg-white rounded-2xl shadow-xl overflow-hidden group transition-all duration-300 hover:shadow-2xl animate-fade-in-up"
+            style={{ animationDelay: `${index * 0.1}s` }}
           >
             <div className="relative w-full h-48 md:h-56 p-4 bg-white rounded-xl">
               <div className="relative w-full h-full overflow-hidden rounded-lg">
@@ -215,9 +216,29 @@ export default function CoursesSection() {
           </div>
         ))}
       </div>
-      <div className="w-full flex justify-center items-center mt-10">
-        <button className="px-6 py-3 bg-green-500 text-white">View All</button>
+      <div className="w-full flex justify-center items-center mt-10 animate-fade-in-up animation-delay-500">
+        <button className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors duration-300 hover:scale-105">View All</button>
       </div>
+
+      <style jsx>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-fade-in-up {
+          animation: fadeInUp 0.8s ease-out forwards;
+          opacity: 0;
+        }
+        
+        .animation-delay-500 { animation-delay: 0.5s; }
+      `}</style>
     </section>
   );
 }
