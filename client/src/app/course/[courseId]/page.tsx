@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, use } from "react";
+import React, { useState, use, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ChevronDown, ChevronUp, Play, Star, Clock, Users, Award, CheckCircle } from "lucide-react";
 import Image from "next/image";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
+import axios from "axios";
 
 // Dummy course data - in real app this would come from API
 const dummyCourses = {
@@ -228,18 +229,40 @@ const dummyCourses = {
 export default function CourseDetailPage({ params }: { params: Promise<{ courseId: string }> }) {
   const [activeTab, setActiveTab] = useState("syllabus");
   const [expandedSections, setExpandedSections] = useState<number[]>([]);
+  const [course, setCourse] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Unwrap the params Promise using React.use()
   const resolvedParams = use(params);
   
-  console.log("CourseDetailPage rendered with params:", resolvedParams);
-  const course = dummyCourses[resolvedParams.courseId as keyof typeof dummyCourses];
-  console.log("Found course:", course);
-  console.log("Course videoThumbnail:", course?.videoThumbnail);
-  console.log("Course image:", course?.image);
+  // Fetch course data from API
+  useEffect(() => {
+    const fetchCourse = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/courses/${resolvedParams.courseId}`);
+        setCourse(response.data);
+      } catch (err) {
+        console.error("Error fetching course:", err);
+        setError("Course not found");
+        // Fallback to dummy data if API fails
+        const fallbackCourse = dummyCourses[resolvedParams.courseId as keyof typeof dummyCourses];
+        if (fallbackCourse) {
+          setCourse(fallbackCourse);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Add loading state
-  if (!resolvedParams.courseId) {
+    if (resolvedParams.courseId) {
+      fetchCourse();
+    }
+  }, [resolvedParams.courseId]);
+
+  // Loading state
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -250,6 +273,24 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
     );
   }
 
+  // Error state
+  if (error && !course) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="pt-20 flex items-center justify-center">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Course Not Found</h1>
+            <p className="text-gray-600">The course you're looking for doesn't exist.</p>
+            <p className="text-sm text-gray-500 mt-2">Course ID: {resolvedParams.courseId}</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Course not found
   if (!course) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -258,7 +299,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">Course Not Found</h1>
             <p className="text-gray-600">The course you're looking for doesn't exist.</p>
-            <p className="text-sm text-gray-500 mt-2">Course ID: {params.courseId}</p>
+            <p className="text-sm text-gray-500 mt-2">Course ID: {resolvedParams.courseId}</p>
           </div>
         </div>
         <Footer />
@@ -274,13 +315,20 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
     );
   };
 
+  // Dynamic tabs based on course data
   const tabs = [
     { id: "syllabus", label: "Syllabus" },
-    { id: "case-studies", label: "Case Studies" },
-    { id: "exam", label: "Exam & Certification" },
+    { id: "case-studies", label: "Assignment" },
+    { id: "exam", label: "Assessment & Certificate" },
     { id: "schedule", label: "Live Schedule +" },
-    { id: "simulation", label: "Simulation & Experiments" }
-  ];
+    { id: "simulation", label: "Simulation & Ex." }
+  ].filter(tab => {
+    // Show tabs based on course content availability
+    if (tab.id === "case-studies") return course.caseStudy;
+    if (tab.id === "exam") return course.examCert;
+    if (tab.id === "schedule") return course.video;
+    return true; // Always show syllabus and simulation
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -301,7 +349,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
               >
                 {/* Course Type Badge */}
                 <div className="inline-block bg-[#3cd664] text-white text-lg font-bold px-6 py-3 rounded-full mb-6">
-                  {course.type}
+                  {course.level || "Individual Course"}
                 </div>
 
                 {/* Course Title */}
@@ -309,39 +357,42 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
                   {course.title}
                 </h1>
 
-                {/* Rating */}
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="flex items-center">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`w-8 h-8 ${
-                          i < Math.floor(course.rating)
-                            ? "text-yellow-400 fill-current"
-                            : "text-gray-300"
-                        }`}
-                      />
-                    ))}
+                {/* Rating - Show if available */}
+                {(course.rating || course.reviewCount) && (
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="flex items-center">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`w-8 h-8 ${
+                            i < Math.floor(course.rating || 0)
+                              ? "text-yellow-400 fill-current"
+                              : "text-gray-300"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-2xl font-bold text-gray-900">
+                      {course.rating || 0}
+                    </span>
+                    <span className="text-xl text-gray-600">[{course.reviewCount || 0}]</span>
                   </div>
-                  <span className="text-2xl font-bold text-gray-900">
-                    {course.rating}
-                  </span>
-                  <span className="text-xl text-gray-600">[{course.reviewCount}]</span>
-                </div>
+                )}
 
                 {/* Description */}
-                <p className="text-xl text-gray-700 leading-relaxed mb-8">
-                  {course.description}
-                </p>
+                <div 
+                  className="text-xl text-gray-700 leading-relaxed mb-8"
+                  dangerouslySetInnerHTML={{ __html: course.description || "No description available." }}
+                />
 
                 {/* Tabs */}
                 <div className="border-b-2 border-gray-200 mb-8">
-                  <nav className="-mb-px flex space-x-12">
+                  <nav className="-mb-px flex space-x-4 overflow-x-auto">
                     {tabs.map((tab) => (
                       <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`py-4 px-2 border-b-4 font-bold text-lg ${
+                        className={`py-4 px-3 border-b-4 font-bold text-sm whitespace-nowrap ${
                           activeTab === tab.id
                             ? "border-[#3cd664] text-[#3cd664]"
                             : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
@@ -363,69 +414,100 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
                       </button>
                     </div>
                     
-                    <div className="space-y-4">
-                      {course.syllabus.map((section, index) => (
-                        <div key={index} className="border-2 border-gray-200 rounded-xl">
-                          <button
-                            onClick={() => toggleSection(index)}
-                            className="w-full px-6 py-5 text-left flex items-center justify-between hover:bg-gray-50 rounded-xl"
-                          >
-                            <span className="font-bold text-xl text-gray-900">{section.title}</span>
-                            {expandedSections.includes(index) ? (
-                              <ChevronUp className="w-8 h-8 text-gray-500" />
-                            ) : (
-                              <ChevronDown className="w-8 h-8 text-gray-500" />
-                            )}
-                          </button>
-                          
-                          {expandedSections.includes(index) && (
-                            <motion.div
-                              initial={{ opacity: 0, height: 0 }}
-                              animate={{ opacity: 1, height: "auto" }}
-                              exit={{ opacity: 0, height: 0 }}
-                              className="px-6 pb-5"
+                    {/* Dynamic syllabus from chapters */}
+                    {course.chapters && course.chapters.length > 0 ? (
+                      <div className="space-y-4">
+                        {course.chapters.map((chapter, index) => (
+                          <div key={index} className="border-2 border-gray-200 rounded-xl">
+                            <button
+                              onClick={() => toggleSection(index)}
+                              className="w-full px-6 py-5 text-left flex items-center justify-between hover:bg-gray-50 rounded-xl"
                             >
-                              <ul className="space-y-3">
-                                {section.topics.map((topic, topicIndex) => (
-                                  <li key={topicIndex} className="flex items-center text-lg text-gray-600">
-                                    <CheckCircle className="w-6 h-6 text-[#3cd664] mr-3 flex-shrink-0" />
-                                    {topic}
-                                  </li>
-                                ))}
-                              </ul>
-                            </motion.div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
+                              <span className="font-bold text-xl text-gray-900">{chapter.title}</span>
+                              {expandedSections.includes(index) ? (
+                                <ChevronUp className="w-8 h-8 text-gray-500" />
+                              ) : (
+                                <ChevronDown className="w-8 h-8 text-gray-500" />
+                              )}
+                            </button>
+                            
+                            {expandedSections.includes(index) && (
+                              <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                exit={{ opacity: 0, height: 0 }}
+                                className="px-6 pb-5"
+                              >
+                                <ul className="space-y-3">
+                                  {chapter.topics && chapter.topics.map((topic, topicIndex) => (
+                                    <li key={topicIndex} className="flex items-center text-lg text-gray-600">
+                                      <CheckCircle className="w-6 h-6 text-[#3cd664] mr-3 flex-shrink-0" />
+                                      {topic.title}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </motion.div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <p className="text-gray-600">Syllabus will be available soon.</p>
+                      </div>
+                    )}
                   </div>
                 )}
 
                 {activeTab === "case-studies" && (
                   <div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-4">Case Studies</h3>
-                    <p className="text-gray-600">Real-world case studies will be available here.</p>
+                    <h3 className="text-3xl font-bold text-gray-900 mb-6">Assignment</h3>
+                    <div 
+                      className="text-xl text-gray-600"
+                      dangerouslySetInnerHTML={{ __html: course.caseStudy || "Practical assignments will be available here." }}
+                    />
                   </div>
                 )}
 
                 {activeTab === "exam" && (
                   <div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-4">Exam & Certification</h3>
-                    <p className="text-gray-600">Exam details and certification information will be available here.</p>
+                    <h3 className="text-3xl font-bold text-gray-900 mb-6">Assessment & Certificate</h3>
+                    <div 
+                      className="text-xl text-gray-600"
+                      dangerouslySetInnerHTML={{ __html: course.examCert || "Assessment details and certificate information will be available here." }}
+                    />
                   </div>
                 )}
 
                 {activeTab === "schedule" && (
                   <div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-4">Live Schedule</h3>
-                    <p className="text-gray-600">Live session schedule will be available here.</p>
+                    <h3 className="text-3xl font-bold text-gray-900 mb-6">Live Schedule</h3>
+                    {course.video ? (
+                      <div className="text-xl text-gray-600">
+                        <p>Live session schedule will be available here.</p>
+                        {course.video && (
+                          <div className="mt-4">
+                            <a 
+                              href={course.video} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-[#3cd664] hover:text-[#33bb58] font-semibold"
+                            >
+                              Watch Live Session →
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-xl text-gray-600">Live session schedule will be available here.</p>
+                    )}
                   </div>
                 )}
 
                 {activeTab === "simulation" && (
                   <div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-4">Simulation & Experiments</h3>
-                    <p className="text-gray-600">Interactive simulations and experiments will be available here.</p>
+                    <h3 className="text-3xl font-bold text-gray-900 mb-6">Simulation & Ex.</h3>
+                    <p className="text-xl text-gray-600">Interactive simulations and experiments will be available here.</p>
                   </div>
                 )}
               </motion.div>
@@ -443,39 +525,73 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
                 <div className="relative">
                   <div className="aspect-video bg-gray-900 relative overflow-hidden">
                     {/* Course Thumbnail */}
-                    <Image
-                      src={course?.videoThumbnail || course?.image || "/images/accounting.webp"}
-                      alt={`${course?.title} - Course Preview`}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 100vw, 50vw"
+                    <img
+                      src={course.image || "/images/accounting.webp"}
+                      alt={`${course.title} - Course Preview`}
+                      className="w-full h-full object-cover"
                       onError={(e) => {
                         console.log("Image failed to load:", e);
+                        console.log("Image src was:", e.currentTarget.src);
                         e.currentTarget.src = "/images/accounting.webp";
+                      }}
+                      onLoad={() => {
+                        console.log("Course thumbnail loaded successfully!");
                       }}
                     />
                     
                     {/* Play Button Overlay */}
-                    <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-                      <div className="text-center text-white">
-                        <div className="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center mb-4 mx-auto hover:bg-opacity-30 transition-all cursor-pointer">
-                          <Play className="w-10 h-10 ml-1" />
-                        </div>
-                        <p className="text-lg font-semibold">Course Preview Video</p>
+                    <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center">
+                      <div className="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center hover:bg-opacity-30 transition-all cursor-pointer">
+                        <Play className="w-10 h-10 text-white ml-1" />
                       </div>
                     </div>
                   </div>
-                  
-                  {/* Video Overlay Text */}
-                  <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-                    <div className="text-center text-white p-6">
-                      <h3 className="text-2xl font-bold mb-4">Learn the Essentials of {course.title}!</h3>
-                      <ul className="text-lg space-y-2">
-                        <li>• Master {course.category.toLowerCase()} principles</li>
-                        <li>• Learn practical implementation</li>
-                        <li>• Get hands-on experience</li>
-                      </ul>
+                </div>
+
+                {/* Pricing & Enrollment */}
+                <div className="p-6 border-b-2">
+                  <div className="text-center text-lg text-gray-600 mb-6">
+                    <p>Get access to this course in Lab & Lab+.</p>
+                    <button className="text-blue-600 hover:text-blue-800 font-semibold mt-2">Compare</button>
+                  </div>
+
+                  {/* Recorded Lecture Option */}
+                  <div className="border-2 border-[#3cd664] rounded-xl p-4 mb-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <span className="text-3xl font-bold text-[#3cd664]">Recorded Lecture</span>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-4xl font-bold text-[#3cd664]">
+                          ₹{course.price ? course.price.toLocaleString() : "10,800"}
+                        </div>
+                        {course.discount > 0 && (
+                          <div className="text-lg text-gray-500 line-through">
+                            ₹{course.originalPrice ? course.originalPrice.toLocaleString() : "12,000"}
+                          </div>
+                        )}
+                      </div>
                     </div>
+                    <button className="w-full bg-[#3cd664] hover:bg-[#33bb58] text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 text-lg">
+                      Add Lab
+                    </button>
+                  </div>
+
+                  {/* Live Lecture Option */}
+                  <div className="border-2 border-orange-500 rounded-xl p-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <span className="text-3xl font-bold text-orange-500">Live Lecture</span>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-4xl font-bold text-orange-500">
+                          ₹{course.price ? (course.price * 1.5).toLocaleString() : "18,000"}
+                        </div>
+                      </div>
+                    </div>
+                    <button className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 text-lg">
+                      Add Lab+
+                    </button>
                   </div>
                 </div>
 
@@ -484,52 +600,29 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
                   <p className="text-xl text-gray-600 mb-6 font-semibold">This course includes:</p>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-[#0b1224] text-white px-4 py-3 rounded-lg text-lg font-bold">
-                      {course.features.chapters} Chapters
+                      {course.chapters ? course.chapters.length : 0} Chapters
                     </div>
                     <div className="bg-[#3cd664] text-white px-4 py-3 rounded-lg text-lg font-bold">
-                      {course.features.microVideos} MicroVideos
+                      {course.chapters ? course.chapters.reduce((total, chapter) => total + (chapter.topics ? chapter.topics.length : 0), 0) : 0} Topics
                     </div>
                     <div className="bg-[#0b1224] text-white px-4 py-3 rounded-lg text-lg font-bold">
-                      {course.features.caseStudies} Case Studies
+                      {course.caseStudy ? "Yes" : "No"} Case Studies
                     </div>
                     <div className="bg-[#3cd664] text-white px-4 py-3 rounded-lg text-lg font-bold">
-                      {course.features.assessments} Assessments
+                      {course.examCert ? "Yes" : "No"} Assessments
                     </div>
                     <div className="bg-[#0b1224] text-white px-4 py-3 rounded-lg text-lg font-bold">
-                      {course.features.simulations} Simulations
+                      {course.video ? "Yes" : "No"} Live Sessions
                     </div>
                     <div className="bg-[#3cd664] text-white px-4 py-3 rounded-lg text-lg font-bold">
-                      {course.features.experiments} Experiments
+                      {course.level || "Foundation"} Level
                     </div>
                     <div className="bg-[#0b1224] text-white px-4 py-3 rounded-lg text-lg font-bold">
-                      {course.features.recordings}+ Recordings
+                      {course.category || "General"} Category
                     </div>
                     <div className="bg-[#3cd664] text-white px-4 py-3 rounded-lg text-lg font-bold">
-                      {course.features.languages} Languages
+                      {course.discount > 0 ? `${course.discount}% OFF` : "No Discount"}
                     </div>
-                  </div>
-                </div>
-
-                {/* Pricing & Enrollment */}
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <div>
-                      <span className="text-3xl font-bold text-[#0b1224]">Lab+ Live</span>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-4xl font-bold text-[#0b1224]">₹{course.price.toLocaleString()}</div>
-                      {course.originalPrice > course.price && (
-                        <div className="text-lg text-gray-500 line-through">₹{course.originalPrice.toLocaleString()}</div>
-                      )}
-                    </div>
-                  </div>
-
-                  <button className="w-full bg-[#3cd664] hover:bg-[#33bb58] text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 text-xl">
-                    Sign Up to get Access
-                  </button>
-
-                  <div className="mt-6 text-center text-lg text-gray-600">
-                    <p>Get access to this course in Lab & Lab+. Compare</p>
                   </div>
                 </div>
 
@@ -539,16 +632,16 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
                     <div>
                       <div className="flex items-center justify-center mb-2">
                         <Clock className="w-6 h-6 text-gray-500 mr-2" />
-                        <span className="text-xl font-bold text-gray-900">{course.duration}</span>
+                        <span className="text-xl font-bold text-gray-900">{course.level || "Foundation"}</span>
                       </div>
-                      <p className="text-lg text-gray-600 font-semibold">Duration</p>
+                      <p className="text-lg text-gray-600 font-semibold">Level</p>
                     </div>
                     <div>
                       <div className="flex items-center justify-center mb-2">
                         <Users className="w-6 h-6 text-gray-500 mr-2" />
-                        <span className="text-xl font-bold text-gray-900">{course.students.toLocaleString()}</span>
+                        <span className="text-xl font-bold text-gray-900">{course.category || "General"}</span>
                       </div>
-                      <p className="text-lg text-gray-600 font-semibold">Students</p>
+                      <p className="text-lg text-gray-600 font-semibold">Category</p>
                     </div>
                   </div>
                 </div>

@@ -191,21 +191,23 @@ export default function CoursePage() {
               <motion.div
                 key={course._id || index}
                 whileHover={{ scale: 1.03 }}
-                className="bg-white rounded-2xl shadow-xl border border-gray-200 hover:shadow-2xl transition duration-300 ease-in-out group"
+                className="bg-white rounded-2xl shadow-xl border-2 border-white hover:shadow-2xl transition duration-300 ease-in-out group"
               >
-                {/* Image with overlay */}
-                <div className="relative h-44 w-full overflow-hidden rounded-t-2xl">
+                {/* Image with white border */}
+                <div className="relative h-52 w-full rounded-t-2xl border-[12px] border-white overflow-hidden">
                   {course.image ? (
-                    <Image
-                      src={course.image.startsWith('http') ? course.image : course.image.startsWith('/') ? course.image : `http://localhost:8080${course.image}`}
-                      alt={course.title}
-                      fill
-                      className="object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
-                      sizes="(max-width: 768px) 100vw, 33vw"
-                      priority={index < 2}
-                    />
+                    <div className="w-full h-full rounded-t-2xl overflow-hidden">
+                      <Image
+                        src={course.image.startsWith('http') ? course.image : course.image.startsWith('/') ? course.image : `http://localhost:8080${course.image}`}
+                        alt={course.title}
+                        fill
+                        className="object-cover transition-transform duration-300 ease-in-out group-hover:scale-110"
+                        sizes="(max-width: 768px) 100vw, 33vw"
+                        priority={index < 2}
+                      />
+                    </div>
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-200">
+                    <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-200 rounded-t-2xl">
                       <div className="text-center">
                         <div className="text-4xl mb-2">📚</div>
                         <div className="text-sm">Course Image</div>
@@ -221,18 +223,18 @@ export default function CoursePage() {
                 </div>
 
                 {/* Details */}
-                <div className="p-5 flex flex-col justify-between h-[220px]">
+                <div className="p-6 flex flex-col justify-between h-[240px]">
                   <div>
                     <p className="text-sm text-gray-500 mb-1">
                       {course.category}
                     </p>
-                    <h3 className="text-lg font-semibold text-[#0b1224] group-hover:text-green-700 line-clamp-2">
+                    <h3 className="text-xl font-bold text-[#0b1224] group-hover:text-green-700 line-clamp-2">
                       {course.title}
                     </h3>
                   </div>
                   <div className="mt-4 flex items-end justify-between">
                     <div>
-                      <p className="text-green-600 font-bold text-xl">
+                      <p className="text-green-600 font-bold text-2xl">
                         ₹{discountedPrice.toLocaleString()}
                       </p>
                       {course.discount > 0 && (
@@ -254,7 +256,7 @@ export default function CoursePage() {
                         }
                         router.push(`/course/${courseId}`);
                       }}
-                      className="bg-[#0b1224] text-white px-4 py-2 rounded-full text-sm hover:bg-green-600 transition"
+                      className="bg-[#0b1224] text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-green-600 transition"
                     >
                       Enroll Now →
                     </button>
