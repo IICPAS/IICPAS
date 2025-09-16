@@ -113,7 +113,7 @@ export default function AboutUsSection() {
                   <p className="text-xs text-gray-500">{aboutData.testimonial.position}</p>
                 </div>
               </div>
-            </motion.div>
+            </div>
 
             {/* Optimized Class Schedule Card */}
             <div className="absolute -bottom-35 lg:-bottom-16 right-0 bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-2xl p-4 w-[200px] shadow-xl z-10 hover:scale-105 transition-transform duration-300 animate-fade-in-up animation-delay-300">
@@ -139,8 +139,8 @@ export default function AboutUsSection() {
                   )
                 )}
               </ul>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
 
           {/* Right Side - Optimized Content */}
           <div className="w-full lg:w-[50%] mt-20 lg:mt-0 animate-fade-in-right">

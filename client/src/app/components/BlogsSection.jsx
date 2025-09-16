@@ -37,34 +37,19 @@ export default function BlogSection() {
       </div>
 
       <div className="relative max-w-7xl mx-auto px-6">
-        {/* Modern Section Header */}
-        <motion.div
-          className="text-center mb-16"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.02 }}
-        >
-          <motion.h2 
-            className="text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-6"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.02, delay: 0.01 }}
-          >
+        {/* Optimized Section Header */}
+        <div className="text-center mb-16">
+          <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-6 animate-fade-in-up">
             Your Source For Ideas, Insights, And{" "}
             <span className="bg-gradient-to-r from-green-500 to-blue-500 bg-clip-text text-transparent">
               Inspiration
             </span>
-          </motion.h2>
+          </h2>
           
-          <motion.p 
-            className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.02, delay: 0.01 }}
-          >
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed animate-fade-in-up animation-delay-200">
             Discover the latest insights, trends, and inspiration from our expert team
-          </motion.p>
-        </motion.div>
+          </p>
+        </div>
 
         {/* Ultra Modern Blog Grid */}
         <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
@@ -93,36 +78,16 @@ export default function BlogSection() {
               : getFallbackImage(blog.title);
 
             return (
-              <motion.div
+              <div
                 key={blog._id}
-                className="group relative bg-white rounded-3xl shadow-2xl border border-gray-100/50 overflow-hidden transform-gpu hover:shadow-3xl transition-all duration-700 hover:-translate-y-2"
-                initial={{ opacity: 0, y: 50, rotateX: 15 }}
-                whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
-                transition={{ 
-                  duration: 0.8, 
-                  delay: index * 0.1,
-                  type: "spring",
-                  stiffness: 100
-                }}
-                whileHover={{ 
-                  scale: 1.02,
-                  rotateY: 2,
-                  z: 50
-                }}
-                style={{
-                  transformStyle: 'preserve-3d',
-                  boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)'
-                }}
+                className="group relative bg-white rounded-3xl shadow-2xl border border-gray-100/50 overflow-hidden hover:shadow-3xl transition-all duration-500 hover:-translate-y-2 animate-fade-in-up"
+                style={{ animationDelay: `${index * 0.1}s` }}
               >
                 {/* Glassmorphism Background */}
                 <div className="absolute inset-0 bg-gradient-to-br from-white/80 via-white/60 to-white/40 backdrop-blur-xl" />
                 
-                {/* Image Container with Advanced Effects */}
-                <motion.div 
-                  className="relative overflow-hidden h-72"
-                  whileHover={{ scale: 1.08 }}
-                  transition={{ duration: 0.6, ease: "easeOut" }}
-                >
+                {/* Optimized Image Container */}
+                <div className="relative overflow-hidden h-72 group-hover:scale-105 transition-transform duration-500">
                   <img
                     src={imageUrl}
                     alt={blog.title}
@@ -188,7 +153,7 @@ export default function BlogSection() {
                       <p className="text-sm font-semibold text-gray-800 mt-2">Read Article</p>
                     </motion.div>
                   </motion.div>
-                </motion.div>
+                </div>
 
                 {/* Enhanced Content Container */}
                 <div className="relative p-8 flex flex-col justify-between flex-1 min-h-[280px]">
@@ -263,7 +228,7 @@ export default function BlogSection() {
                 {/* Decorative Elements */}
                 <div className="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-br from-green-400/20 to-blue-500/20 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                 <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-gradient-to-tr from-blue-400/20 to-green-500/20 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-              </motion.div>
+              </div>
             );
           })}
         </div>
@@ -307,8 +272,42 @@ export default function BlogSection() {
       </div>
 
       <style jsx>{`
-        .perspective-1000 { perspective: 1000px; }
-        .transform-gpu { transform-style: preserve-3d; }
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        @keyframes floatSlow {
+          0%, 100% { transform: translateY(0px) translateX(0px); }
+          50% { transform: translateY(-15px) translateX(8px); }
+        }
+        
+        @keyframes floatReverse {
+          0%, 100% { transform: translateY(0px) translateX(0px); }
+          50% { transform: translateY(15px) translateX(-8px); }
+        }
+        
+        .animate-fade-in-up {
+          animation: fadeInUp 0.8s ease-out forwards;
+          opacity: 0;
+        }
+        
+        .animate-float-slow {
+          animation: floatSlow 6s ease-in-out infinite;
+        }
+        
+        .animate-float-reverse {
+          animation: floatReverse 8s ease-in-out infinite;
+        }
+        
+        .animation-delay-200 { animation-delay: 0.2s; }
+        
         .line-clamp-3 {
           display: -webkit-box;
           -webkit-line-clamp: 3;

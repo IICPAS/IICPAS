@@ -229,9 +229,9 @@ const dummyCourses = {
 export default function CourseDetailPage({ params }: { params: Promise<{ courseId: string }> }) {
   const [activeTab, setActiveTab] = useState("syllabus");
   const [expandedSections, setExpandedSections] = useState<number[]>([]);
-  const [course, setCourse] = useState(null);
+  const [course, setCourse] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   // Unwrap the params Promise using React.use()
   const resolvedParams = use(params);
@@ -281,7 +281,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
         <div className="pt-20 flex items-center justify-center">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">Course Not Found</h1>
-            <p className="text-gray-600">The course you're looking for doesn't exist.</p>
+            <p className="text-gray-600">The course you&apos;re looking for doesn&apos;t exist.</p>
             <p className="text-sm text-gray-500 mt-2">Course ID: {resolvedParams.courseId}</p>
           </div>
         </div>
@@ -298,7 +298,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
         <div className="pt-20 flex items-center justify-center">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">Course Not Found</h1>
-            <p className="text-gray-600">The course you're looking for doesn't exist.</p>
+            <p className="text-gray-600">The course you&apos;re looking for doesn&apos;t exist.</p>
             <p className="text-sm text-gray-500 mt-2">Course ID: {resolvedParams.courseId}</p>
           </div>
         </div>
