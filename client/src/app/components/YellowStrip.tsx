@@ -65,8 +65,8 @@ export default function YellowStatsStrip() {
     }
   };
 
-  const getIconComponent = (iconName) => {
-    const iconMap = {
+  const getIconComponent = (iconName: string) => {
+    const iconMap: { [key: string]: React.ComponentType<{ className?: string }> } = {
       FaGraduationCap: FaGraduationCap,
       FaClipboardCheck: FaClipboardCheck,
       FaBookOpen: FaBookOpen,
@@ -99,7 +99,6 @@ export default function YellowStatsStrip() {
           }}
           transition={{
             duration: 8,
-            repeat: Infinity,
             ease: "easeInOut",
           }}
         />
@@ -112,7 +111,6 @@ export default function YellowStatsStrip() {
           }}
           transition={{
             duration: 10,
-            repeat: Infinity,
             ease: "easeInOut",
           }}
         />
@@ -125,7 +123,6 @@ export default function YellowStatsStrip() {
           }}
           transition={{
             duration: 12,
-            repeat: Infinity,
             ease: "easeInOut",
           }}
                 />
@@ -189,7 +186,6 @@ export default function YellowStatsStrip() {
                     }}
                     transition={{
                       duration: 4,
-                      repeat: Infinity,
                       ease: "easeInOut",
                     }}
                   />
@@ -212,7 +208,7 @@ export default function YellowStatsStrip() {
                         rotateY: [0, 5, -5, 0],
                       }}
                       transition={{
-                        rotateY: { duration: 6, repeat: Infinity, ease: "easeInOut" },
+                        rotateY: { duration: 6, ease: "easeInOut" },
                       }}
                       style={{ transformStyle: "preserve-3d" }}
                     >
@@ -257,7 +253,6 @@ export default function YellowStatsStrip() {
                         }}
                         transition={{
                           duration: 3 + Math.random() * 2,
-                          repeat: Infinity,
                           delay: Math.random() * 2,
                         }}
                       />
@@ -296,7 +291,6 @@ export default function YellowStatsStrip() {
               }}
               transition={{
                 duration: 2,
-                repeat: Infinity,
                 delay: i * 0.3,
               }}
             />

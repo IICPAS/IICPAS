@@ -80,7 +80,6 @@ export default function AboutUsSection() {
           }}
           transition={{
             duration: 8,
-            repeat: Infinity,
             ease: "easeInOut",
           }}
         />
@@ -93,7 +92,6 @@ export default function AboutUsSection() {
           }}
           transition={{
             duration: 10,
-            repeat: Infinity,
             ease: "easeInOut",
           }}
         />
@@ -116,7 +114,6 @@ export default function AboutUsSection() {
               }}
               transition={{
                 duration: 4,
-                repeat: Infinity,
                 ease: "easeInOut"
               }}
               whileHover={{ 
@@ -143,14 +140,13 @@ export default function AboutUsSection() {
               className="mt-10 lg:mt-0 absolute -top-20 lg:top-4 left-4 bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-gray-200/50 max-w-[280px] z-10"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.02, delay: 0.01 }}
               animate={{
                 y: [0, -8, 0]
               }}
               transition={{
                 duration: 3,
-                repeat: Infinity,
-                ease: "easeInOut"
+                ease: "easeInOut",
+                delay: 0.01
               }}
               whileHover={{ 
                 scale: 1.05,
@@ -159,7 +155,7 @@ export default function AboutUsSection() {
             >
               <div className="flex items-start gap-3 mb-4">
                 <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center">
-                  <span className="text-white text-lg">"</span>
+                  <span className="text-white text-lg">&ldquo;</span>
                 </div>
                 <p className="text-sm italic text-gray-700 leading-relaxed">
                   {aboutData.testimonial.text}
@@ -185,14 +181,13 @@ export default function AboutUsSection() {
               className="absolute -bottom-35 lg:-bottom-16 right-0 bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-2xl p-4 w-[200px] shadow-xl z-10"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.02, delay: 0.01 }}
               animate={{
                 y: [0, -6, 0]
               }}
               transition={{
                 duration: 3.5,
-                repeat: Infinity,
-                ease: "easeInOut"
+                ease: "easeInOut",
+                delay: 0.01
               }}
               whileHover={{ 
                 scale: 1.05,

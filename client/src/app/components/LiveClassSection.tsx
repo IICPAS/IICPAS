@@ -126,7 +126,6 @@ export default function LiveClassSection() {
           }}
           transition={{
             duration: 8,
-            repeat: Infinity,
             ease: "easeInOut",
           }}
         />
@@ -139,7 +138,6 @@ export default function LiveClassSection() {
           }}
           transition={{
             duration: 10,
-            repeat: Infinity,
             ease: "easeInOut",
           }}
         />
@@ -222,7 +220,6 @@ export default function LiveClassSection() {
                       }}
                       transition={{
                         duration: 3,
-                        repeat: Infinity,
                         ease: "easeInOut"
                       }}
                       style={{
@@ -309,7 +306,6 @@ export default function LiveClassSection() {
                   }}
                   transition={{
                     duration: 2,
-                    repeat: Infinity,
                     ease: "easeInOut"
                   }}
                 >
@@ -351,7 +347,6 @@ export default function LiveClassSection() {
                     }}
                     transition={{
                       duration: 3,
-                      repeat: Infinity,
                       ease: "easeInOut"
                     }}
                   />
@@ -363,7 +358,6 @@ export default function LiveClassSection() {
                     }}
                     transition={{
                       duration: 4,
-                      repeat: Infinity,
                       ease: "easeInOut",
                       delay: 1
                     }}
@@ -426,7 +420,7 @@ export default function LiveClassSection() {
                 Join Live Class Now
                 <motion.div
                   animate={{ x: [0, 5, 0] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
+                  transition={{ duration: 1.5 }}
                 >
                   →
                 </motion.div>

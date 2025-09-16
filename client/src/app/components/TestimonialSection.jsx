@@ -92,7 +92,6 @@ export default function TestimonialCarousel() {
           }}
           transition={{
             duration: 6,
-            repeat: Infinity,
             ease: "easeInOut",
           }}
         />
@@ -104,7 +103,6 @@ export default function TestimonialCarousel() {
           }}
           transition={{
             duration: 8,
-            repeat: Infinity,
             ease: "easeInOut",
           }}
         />
@@ -116,7 +114,6 @@ export default function TestimonialCarousel() {
           }}
           transition={{
             duration: 10,
-            repeat: Infinity,
             ease: "easeInOut",
           }}
         />
@@ -127,7 +124,7 @@ export default function TestimonialCarousel() {
         className="absolute top-8 right-8 md:top-12 md:right-16 w-16 h-16 rounded-2xl border border-white/20 flex items-center justify-center bg-white/10 backdrop-blur-md shadow-2xl z-10"
         initial={{ rotate: 0, scale: 0.8 }}
         animate={{ rotate: [0, 5, -5, 0], scale: [0.8, 1, 0.8] }}
-        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        transition={{ duration: 4, ease: "easeInOut" }}
         style={{ transformStyle: "preserve-3d" }}
       >
         <FaQuoteLeft className="text-2xl text-[#3cd664]" />

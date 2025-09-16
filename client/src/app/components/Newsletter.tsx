@@ -69,8 +69,8 @@ export default function NewsletterSection() {
     }
   };
 
-  const getIconComponent = (iconName) => {
-    const iconMap = {
+  const getIconComponent = (iconName: string) => {
+    const iconMap: { [key: string]: React.ComponentType<{ className?: string }> } = {
       FaEnvelope: FaEnvelope,
       FaRocket: FaRocket,
       FaCheckCircle: FaCheckCircle,
@@ -240,7 +240,6 @@ export default function NewsletterSection() {
                   }}
                   transition={{ 
                     duration: 6,
-                    repeat: Infinity,
                     ease: "easeInOut"
                   }}
                 >
@@ -260,7 +259,6 @@ export default function NewsletterSection() {
                     }}
                     transition={{ 
                       duration: 3,
-                      repeat: Infinity,
                       ease: "easeInOut"
                     }}
                   >
@@ -275,7 +273,6 @@ export default function NewsletterSection() {
                     }}
                     transition={{ 
                       duration: 4,
-                      repeat: Infinity,
                       ease: "easeInOut",
                       delay: 1
                     }}

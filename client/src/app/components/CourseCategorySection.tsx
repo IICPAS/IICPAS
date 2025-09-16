@@ -103,7 +103,6 @@ export default function FinanceCourseCategorySection() {
           }}
           transition={{
             duration: 8,
-            repeat: Infinity,
             ease: "easeInOut",
           }}
         />
@@ -116,7 +115,6 @@ export default function FinanceCourseCategorySection() {
           }}
           transition={{
             duration: 10,
-            repeat: Infinity,
             ease: "easeInOut",
           }}
         />
@@ -199,7 +197,6 @@ export default function FinanceCourseCategorySection() {
                   }}
                   transition={{
                     duration: 4,
-                    repeat: Infinity,
                     ease: "easeInOut"
                   }}
                   style={{

@@ -157,7 +157,6 @@ export default function SearchCenter() {
           }}
           transition={{
             duration: 8,
-            repeat: Infinity,
             ease: "easeInOut",
           }}
         />
@@ -170,7 +169,6 @@ export default function SearchCenter() {
           }}
           transition={{
             duration: 10,
-            repeat: Infinity,
             ease: "easeInOut",
           }}
         />
@@ -245,7 +243,7 @@ export default function SearchCenter() {
               <motion.div
                 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white bg-green-500 p-3 rounded-xl shadow-lg"
                 animate={{ rotate: [0, 10, -10, 0] }}
-                transition={{ duration: 2, repeat: Infinity }}
+                transition={{ duration: 2 }}
               >
                 <FaSearch className="text-xl font-bold" style={{ fontSize: '20px' }} />
               </motion.div>
@@ -268,7 +266,7 @@ export default function SearchCenter() {
               <motion.div
                 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white bg-blue-500 p-3 rounded-xl shadow-lg"
                 animate={{ scale: [1, 1.1, 1] }}
-                transition={{ duration: 3, repeat: Infinity }}
+                transition={{ duration: 3 }}
               >
                 <FaMapMarkerAlt className="text-xl font-bold" style={{ fontSize: '20px' }} />
               </motion.div>
@@ -295,7 +293,7 @@ export default function SearchCenter() {
               <motion.div
                 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white bg-purple-500 p-3 rounded-xl shadow-lg"
                 animate={{ rotate: [0, 5, -5, 0] }}
-                transition={{ duration: 4, repeat: Infinity }}
+                transition={{ duration: 4 }}
               >
                 <FaBookOpen className="text-xl font-bold" style={{ fontSize: '20px' }} />
               </motion.div>
@@ -483,7 +481,6 @@ export default function SearchCenter() {
               }}
               transition={{
                 duration: 4,
-                repeat: Infinity,
                 ease: "easeInOut",
               }}
             />
@@ -495,7 +492,6 @@ export default function SearchCenter() {
               }}
               transition={{
                 duration: 5,
-                repeat: Infinity,
                 ease: "easeInOut",
               }}
             />

@@ -103,8 +103,8 @@ export default function Footer() {
     }
   };
 
-  const getSocialIcon = (iconName) => {
-    const iconMap = {
+  const getSocialIcon = (iconName: string) => {
+    const iconMap: { [key: string]: React.ComponentType<{ className?: string }> } = {
       FaFacebook: FaFacebook,
       FaTwitter: FaTwitter,
       FaLinkedin: FaLinkedin,

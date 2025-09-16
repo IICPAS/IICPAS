@@ -106,7 +106,6 @@ export default function ContactSection() {
           }}
           transition={{
             duration: 8,
-            repeat: Infinity,
             ease: "easeInOut",
           }}
         />
@@ -119,7 +118,6 @@ export default function ContactSection() {
           }}
           transition={{
             duration: 10,
-            repeat: Infinity,
             ease: "easeInOut",
           }}
         />
@@ -297,7 +295,6 @@ export default function ContactSection() {
                   }}
                   transition={{
                     duration: 4,
-                    repeat: Infinity,
                     ease: "easeInOut"
                   }}
                   style={{
@@ -333,7 +330,6 @@ export default function ContactSection() {
                   }}
                   transition={{
                     duration: 4,
-                    repeat: Infinity,
                     ease: "easeInOut",
                     delay: 1
                   }}
@@ -370,7 +366,6 @@ export default function ContactSection() {
                   }}
                   transition={{
                     duration: 4,
-                    repeat: Infinity,
                     ease: "easeInOut",
                     delay: 2
                   }}

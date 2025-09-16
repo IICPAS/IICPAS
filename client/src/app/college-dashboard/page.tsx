@@ -29,7 +29,7 @@ const API = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080/api";
 const CollegeDashboardPage = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [college, setCollege] = useState<any>(null);
+  const [college, setCollege] = useState<{ name: string; email: string; address: string; phone: string; courses: string[] } | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("dashboard");
 

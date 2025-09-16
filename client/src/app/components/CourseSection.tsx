@@ -4,13 +4,24 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { FaStar, FaHeart, FaRegHeart, FaBook, FaClock } from "react-icons/fa";
 
+interface Course {
+  _id: string;
+  title: string;
+  image: string;
+  price: number;
+  lessons: string;
+  duration: string;
+  rating: number;
+  reviews: number;
+}
+
 export default function CoursesSection() {
   const [likedIndexes, setLikedIndexes] = useState<number[]>([]);
-  const [courses, setCourses] = useState([]);
+  const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Fallback data
-  const fallbackCourses = [
+  const fallbackCourses: Course[] = [
     {
       _id: "1",
       title: "Learn the Foundations of Visual Communication",
@@ -83,7 +94,7 @@ export default function CoursesSection() {
       if (response.ok) {
         const data = await response.json();
         // Transform the data to match the expected format
-        const transformedCourses = data.map((course: any) => ({
+        const transformedCourses = data.map((course: { _id: string; title: string; image?: string; price: number; level: string; discount?: number; status: string; chapters?: { _id: string; title: string }[] }) => ({
           _id: course._id,
           title: course.title,
           image: course.image || "/images/a1.jpeg",

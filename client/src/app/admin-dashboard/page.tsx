@@ -15,7 +15,6 @@ import BlogComponent from "./BlogComponent";
 import CollegeTab from "./CollegeTab";
 import CenterTab from "./CenterTab";
 import CalendarTab from "./CalendarTab";
-import AboutTab from "./AboutTab";
 import AboutUsTab from "./AboutUsTab";
 import ContactTab from "./ContactTab";
 import FooterTab from "./FooterTab";
@@ -108,7 +107,6 @@ const WEBSITE_SETTINGS_MODULES = [
   { id: "newsletter-section", label: "Newsletter Section", icon: <FaEnvelope /> },
   { id: "blogs", label: "Blogs", icon: <FaBlogger /> },
   { id: "testimonials", label: "Testimonials", icon: <FaQuoteRight /> },
-  { id: "about", label: "About Us", icon: <FaBook /> },
   { id: "meta", label: "Manage Metatags", icon: <FaTags /> },
   { id: "alert", label: "Alert", icon: <FaBell /> },
   { id: "ip-whitelist", label: "IP Whitelisting", icon: <FaShieldAlt /> },
@@ -366,8 +364,6 @@ function AdminDashboardContent() {
           <CompanyTab />
         ) : activeTab === "meta" ? (
           <ManageMetaTags />
-        ) : activeTab === "about" ? (
-          <AboutTab />
         ) : activeTab === "hero" ? (
           <HeroTab />
         ) : activeTab === "why-iicpa" ? (

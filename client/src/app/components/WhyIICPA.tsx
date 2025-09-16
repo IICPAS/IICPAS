@@ -92,7 +92,6 @@ export default function WhyIICPA() {
           }}
           transition={{
             duration: 8,
-            repeat: Infinity,
             ease: "easeInOut",
           }}
         />
@@ -105,7 +104,6 @@ export default function WhyIICPA() {
           }}
           transition={{
             duration: 10,
-            repeat: Infinity,
             ease: "easeInOut",
           }}
         />
@@ -118,7 +116,6 @@ export default function WhyIICPA() {
           }}
           transition={{
             duration: 12,
-            repeat: Infinity,
             ease: "easeInOut",
           }}
         />
@@ -143,7 +140,6 @@ export default function WhyIICPA() {
               }}
               transition={{
                 duration: 8,
-                repeat: Infinity,
                 ease: "easeInOut"
               }}
               whileHover={{ 
@@ -167,7 +163,6 @@ export default function WhyIICPA() {
                   }}
                   transition={{
                     duration: 8,
-                    repeat: Infinity,
                     ease: "easeInOut"
                   }}
                 />
@@ -184,7 +179,6 @@ export default function WhyIICPA() {
                   }}
                   transition={{
                     duration: 4,
-                    repeat: Infinity,
                     ease: "easeInOut"
                   }}
                   whileHover={{ 
@@ -201,7 +195,6 @@ export default function WhyIICPA() {
                       }}
                       transition={{
                         duration: 3,
-                        repeat: Infinity,
                         ease: "easeInOut"
                       }}
                       whileHover={{ rotate: 360 }}
