@@ -17,16 +17,78 @@ export default function CoursePage() {
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedLevels, setSelectedLevels] = useState([]);
 
+  // Dummy courses data
+  const dummyCourses = [
+    {
+      _id: "1",
+      title: "Basic Accounting & Tally Foundation",
+      category: "Accounting",
+      level: "Foundation",
+      price: 5000,
+      discount: 5,
+      image: "/images/accounting.webp",
+      description: "Master the fundamentals of accounting and Tally software"
+    },
+    {
+      _id: "2", 
+      title: "HR Certification Course",
+      category: "HR",
+      level: "Core",
+      price: 1000,
+      discount: 10,
+      image: "/images/young-woman.jpg",
+      description: "Comprehensive HR certification with practical skills"
+    },
+    {
+      _id: "3",
+      title: "Excel Certification Course", 
+      category: "Accounting",
+      level: "Expert",
+      price: 2000,
+      discount: 0,
+      image: "/images/course.png",
+      description: "Advanced Excel skills for professionals"
+    }
+  ];
+
+  // Dummy categories
+  const dummyCategories = [
+    { _id: "1", category: "Accounting" },
+    { _id: "2", category: "HR" },
+    { _id: "3", category: "Finance" },
+    { _id: "4", category: "US CMA" },
+    { _id: "5", category: "Excel" }
+  ];
+
   // Fetch data
   useEffect(() => {
+    // Try to fetch from API, but fallback to dummy data
     axios
       .get(`${process.env.NEXT_PUBLIC_API_URL}/api/courses`)
-      .then((res) => setAllCourses(res.data.courses || res.data));
+      .then((res) => {
+        const apiCourses = res.data.courses || res.data;
+        if (apiCourses && apiCourses.length > 0) {
+          setAllCourses(apiCourses);
+        } else {
+          setAllCourses(dummyCourses);
+        }
+      })
+      .catch(() => {
+        setAllCourses(dummyCourses);
+      });
+
     axios
       .get(`${process.env.NEXT_PUBLIC_API_URL}/api/categories`)
       .then((res) => {
-        console.log("Fetched categories:", res.data.categories || res.data);
-        setCategories(res.data.categories || res.data);
+        const apiCategories = res.data.categories || res.data;
+        if (apiCategories && apiCategories.length > 0) {
+          setCategories(apiCategories);
+        } else {
+          setCategories(dummyCategories);
+        }
+      })
+      .catch(() => {
+        setCategories(dummyCategories);
       });
   }, []);
 
@@ -135,7 +197,7 @@ export default function CoursePage() {
                 <div className="relative h-44 w-full overflow-hidden rounded-t-2xl">
                   {course.image ? (
                     <Image
-                      src={"http://localhost:8080" + course.image}
+                      src={course.image.startsWith('http') ? course.image : course.image.startsWith('/') ? course.image : `http://localhost:8080${course.image}`}
                       alt={course.title}
                       fill
                       className="object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
@@ -143,8 +205,11 @@ export default function CoursePage() {
                       priority={index < 2}
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400">
-                      No image
+                    <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-200">
+                      <div className="text-center">
+                        <div className="text-4xl mb-2">📚</div>
+                        <div className="text-sm">Course Image</div>
+                      </div>
                     </div>
                   )}
                   <div className="absolute inset-0 bg-black/10 group-hover:bg-[#0b1224]/40 transition duration-300 z-10 rounded-t-2xl" />
@@ -177,11 +242,18 @@ export default function CoursePage() {
                       )}
                     </div>
                     <button
-                      onClick={() =>
-                        router.push(
-                          `/course/${course.title.replace(/\s+/g, "_")}`
-                        )
-                      }
+                      onClick={() => {
+                        // Map course titles to our dummy course IDs
+                        let courseId = course.title.toLowerCase().replace(/\s+/g, "-");
+                        if (course.title.includes("Basic Accounting")) {
+                          courseId = "basic-accounting-tally";
+                        } else if (course.title.includes("HR Certification")) {
+                          courseId = "hr-certification";
+                        } else if (course.title.includes("Excel Certification")) {
+                          courseId = "excel-certification";
+                        }
+                        router.push(`/course/${courseId}`);
+                      }}
                       className="bg-[#0b1224] text-white px-4 py-2 rounded-full text-sm hover:bg-green-600 transition"
                     >
                       Enroll Now →

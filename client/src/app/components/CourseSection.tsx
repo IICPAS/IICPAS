@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { FaStar, FaHeart, FaRegHeart, FaBook, FaClock } from "react-icons/fa";
 
 interface Course {
@@ -16,6 +17,7 @@ interface Course {
 }
 
 export default function CoursesSection() {
+  const router = useRouter();
   const [likedIndexes, setLikedIndexes] = useState<number[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,33 +26,33 @@ export default function CoursesSection() {
   const fallbackCourses: Course[] = [
     {
       _id: "1",
-      title: "Learn the Foundations of Visual Communication",
-      image: "/images/a1.jpeg",
-      price: 240.00,
-      lessons: "12 Lesson",
-      duration: "620h, 20min",
-      rating: 4.5,
-      reviews: 129,
+      title: "Basic Accounting & Tally Foundation",
+      image: "/images/accounting.webp",
+      price: 5000,
+      lessons: "28 Lessons",
+      duration: "40 hours",
+      rating: 4.7,
+      reviews: 449,
     },
     {
       _id: "2",
-      title: "Cooking Made Easy: Essential Skills for Everyday Meals",
-      image: "/images/a2.avif",
-      price: 240.00,
-      lessons: "12 Lesson",
-      duration: "620h, 20min",
+      title: "HR Certification Course",
+      image: "/images/young-woman.jpg",
+      price: 1000,
+      lessons: "20 Lessons",
+      duration: "30 hours",
       rating: 4.5,
-      reviews: 129,
+      reviews: 320,
     },
     {
       _id: "3",
-      title: "A Beginner's Guide to Basic Skills and Improved",
-      image: "/images/a3.jpeg",
-      price: 240.00,
-      lessons: "12 Lesson",
-      duration: "620h, 20min",
-      rating: 4.5,
-      reviews: 129,
+      title: "Excel Certification Course",
+      image: "/images/course.png",
+      price: 2000,
+      lessons: "35 Lessons",
+      duration: "35 hours",
+      rating: 4.8,
+      reviews: 680,
     },
     {
       _id: "4",
@@ -176,7 +178,21 @@ export default function CoursesSection() {
                 {course.title}
               </h3>
 
-              <button className="mt-2 inline-flex items-center gap-2 bg-[#3cd664] hover:bg-[#33bb58] text-white text-sm font-semibold px-4 py-2 rounded-full transition-all">
+              <button 
+                onClick={() => {
+                  // Map course titles to our dummy course IDs
+                  let courseId = course.title.toLowerCase().replace(/\s+/g, "-");
+                  if (course.title.includes("Basic Accounting")) {
+                    courseId = "basic-accounting-tally";
+                  } else if (course.title.includes("HR Certification")) {
+                    courseId = "hr-certification";
+                  } else if (course.title.includes("Excel Certification")) {
+                    courseId = "excel-certification";
+                  }
+                  router.push(`/course/${courseId}`);
+                }}
+                className="mt-2 inline-flex items-center gap-2 bg-[#3cd664] hover:bg-[#33bb58] text-white text-sm font-semibold px-4 py-2 rounded-full transition-all"
+              >
                 Enroll Now <span className="text-xl leading-none">›</span>
               </button>
 
