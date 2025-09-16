@@ -287,46 +287,12 @@ export default function Header() {
 
           {/* Right side - Fixed at end */}
           <div className="hidden lg:flex items-center space-x-3 flex-shrink-0">
-            {student ? (
-              <>
-                <Link
-                  href="/student-dashboard"
-                  className="text-xs font-medium hover:text-green-600 transition-colors duration-200"
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  href="/course"
-                  className="text-xs font-medium hover:text-green-600 transition-colors duration-200"
-                >
-                  Courses
-                </Link>
-                <button
-                  onClick={() => setCartDrawer(true)}
-                  className="relative p-1.5 hover:bg-green-50 rounded-md transition-colors duration-200"
-                >
-                  <ShoppingCart size={18} />
-                  {cartCourses.length > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-green-600 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
-                      {cartCourses.length}
-                    </span>
-                  )}
-                </button>
-                <button
-                  onClick={handleLogout}
-                  className="flex items-center gap-1 text-xs font-medium hover:text-red-600 transition-colors duration-200"
-                >
-                  <LogOut size={14} /> Logout
-                </button>
-              </>
-            ) : (
-              <Link
-                href="/student-login"
-                className="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg"
-              >
-                Student Login
-              </Link>
-            )}
+            <Link
+              href="/student-login"
+              className="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg"
+            >
+              Student Login
+            </Link>
           </div>
 
           {/* Mobile menu button */}
@@ -356,96 +322,6 @@ export default function Header() {
           </button>
         </div>
 
-        {student ? (
-          <div className="space-y-4">
-            <Link
-              href="/student-dashboard"
-              onClick={() => setDrawerOpen(false)}
-              className="block py-3 px-4 text-lg font-medium hover:bg-green-50 hover:text-green-600 rounded-lg transition-colors duration-200"
-            >
-              Dashboard
-            </Link>
-            <Link
-              href="/course"
-              onClick={() => setDrawerOpen(false)}
-              className="block py-3 px-4 text-lg font-medium hover:bg-green-50 hover:text-green-600 rounded-lg transition-colors duration-200"
-            >
-              Courses
-            </Link>
-            <button
-              onClick={() => {
-                setDrawerOpen(false);
-                setCartDrawer(true);
-              }}
-              className="w-full flex items-center justify-between py-3 px-4 text-lg font-medium hover:bg-green-50 hover:text-green-600 rounded-lg transition-colors duration-200"
-            >
-              <div className="flex items-center gap-2">
-                <ShoppingCart size={20} />
-                <span>Cart</span>
-              </div>
-              {cartCourses.length > 0 && (
-                <span className="bg-green-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                  {cartCourses.length}
-                </span>
-              )}
-            </button>
-            <button
-              onClick={() => {
-                setDrawerOpen(false);
-                handleLogout();
-              }}
-              className="w-full flex items-center gap-2 py-3 px-4 text-lg font-medium hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors duration-200"
-            >
-              <LogOut size={20} /> Logout
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {navLinks.map((item) =>
-              item.children ? (
-                <div key={item.name} className="space-y-2">
-                  <div className="py-2 px-4 text-lg font-medium text-gray-700">
-                    {item.name}
-                  </div>
-                  <div className="pl-4 space-y-1">
-                    {item.children.map((child) => (
-                      <Link
-                        key={child.name}
-                        href={child.href}
-                        onClick={() => setDrawerOpen(false)}
-                        className="block py-2 px-4 text-base hover:bg-green-50 hover:text-green-600 rounded-lg transition-colors duration-200"
-                      >
-                        {child.name}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  onClick={() => setDrawerOpen(false)}
-                  className={`block py-3 px-4 text-lg font-medium hover:bg-green-50 hover:text-green-600 rounded-lg transition-colors duration-200 ${
-                    pathname === item.href ? "text-green-600 bg-green-50" : ""
-                  }`}
-                >
-                  {item.name}
-                </Link>
-              )
-            )}
-            <div className="pt-4 border-t">
-              <Link
-                href="/student-login"
-                onClick={() => setDrawerOpen(false)}
-                className="block w-full bg-green-600 hover:bg-green-700 text-white text-center py-3 px-4 rounded-lg font-medium transition-colors duration-200 shadow-md"
-              >
-                Student Login
-              </Link>
-            </div>
-          </div>
-        )}
-        
-        {/* Navigation links for authenticated users */}
         <div className="space-y-4">
           {navLinks.map((item) =>
             item.children ? (
@@ -479,6 +355,15 @@ export default function Header() {
               </Link>
             )
           )}
+          <div className="pt-4 border-t">
+            <Link
+              href="/student-login"
+              onClick={() => setDrawerOpen(false)}
+              className="block w-full bg-green-600 hover:bg-green-700 text-white text-center py-3 px-4 rounded-lg font-medium transition-colors duration-200 shadow-md"
+            >
+              Student Login
+            </Link>
+          </div>
         </div>
       </Drawer>
 

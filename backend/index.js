@@ -6,7 +6,7 @@ import collegeRoutes from "./routes/collegeRoutes.js";
 import cookieParser from "cookie-parser";
 import companyRoutes from "./routes/CompanyRoutes.js";
 import cors from "cors";
-import contactRoutes from "./routes/contactRoutes.js";
+import contactRoutesOld from "./routes/contactRoutes.js";
 import connectDB from "./config/db.js";
 import studentRoutes from "./routes/studentRoutes.js";
 import paymentRoutes from "./routes/PaymentRoutes/paymentRoutes.js";
@@ -99,7 +99,7 @@ app.use(cookieParser());
 // Routes
 app.use("/api/college", collegeRoutes);
 app.use("/api/admin", authRoutes);
-app.use("/api/contact", contactRoutes);
+app.use("/api/contact-old", contactRoutesOld);
 app.use("/api/companies", companyRoutes);
 app.use("/api/blogs", blogRoutes);
 app.use("/api", alertRoutes);
@@ -135,6 +135,30 @@ app.use("/jobs-internal", jobRoutes);
 
 //About Routes
 app.use("/api/about", aboutRoutes);
+
+//Hero Routes
+import heroRoutes from "./routes/WebsiteRoutes/heroRoutes.js";
+app.use("/api/hero", heroRoutes);
+
+//WhyIICPA Routes
+import whyIICPARoutes from "./routes/WebsiteRoutes/whyIICPARoutes.js";
+app.use("/api/why-iicpa", whyIICPARoutes);
+
+//Contact Routes
+import contactRoutes from "./routes/WebsiteRoutes/contactRoutes.js";
+app.use("/api/contact", contactRoutes);
+
+//Footer Routes
+import footerRoutes from "./routes/WebsiteRoutes/footerRoutes.js";
+app.use("/api/footer", footerRoutes);
+
+//YellowStatsStrip Routes
+import yellowStatsStripRoutes from "./routes/WebsiteRoutes/yellowStatsStripRoutes.js";
+app.use("/api/yellow-stats-strip", yellowStatsStripRoutes);
+
+//NewsletterSection Routes
+import newsletterSectionRoutes from "./routes/WebsiteRoutes/newsletterSectionRoutes.js";
+app.use("/api/newsletter-section", newsletterSectionRoutes);
 
 //Ticket Routes
 app.use("/api/tickets", ticketRoutes);

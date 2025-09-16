@@ -16,6 +16,13 @@ import CollegeTab from "./CollegeTab";
 import CenterTab from "./CenterTab";
 import CalendarTab from "./CalendarTab";
 import AboutTab from "./AboutTab";
+import AboutUsTab from "./AboutUsTab";
+import ContactTab from "./ContactTab";
+import FooterTab from "./FooterTab";
+import YellowStatsStripTab from "./YellowStatsStripTab";
+import NewsletterSectionTab from "./NewsletterSectionTab";
+import HeroTab from "./HeroTab";
+import WhyIICPATab from "./WhyIICPATab";
 import StudentsTab from "./StudentsTab";
 import PaymentsTab from "./PaymentsTab";
 import { useRouter } from "next/navigation";
@@ -51,6 +58,9 @@ import {
   FaBoxes,
   FaCreditCard,
   FaShieldAlt,
+  FaStar,
+  FaChartBar,
+  FaList,
 } from "react-icons/fa";
 import CompanyTab from "./CompanyTab";
 import CourseArea from "./CourseBuilder";
@@ -89,6 +99,13 @@ const ALL_MODULES = [
 
 // Website Settings modules
 const WEBSITE_SETTINGS_MODULES = [
+  { id: "hero", label: "Hero Section", icon: <FaHome /> },
+  { id: "why-iicpa", label: "WhyIICPA Section", icon: <FaStar /> },
+  { id: "about-us", label: "About Us Section", icon: <FaBook /> },
+  { id: "contact", label: "Contact Section", icon: <FaEnvelope /> },
+  { id: "footer", label: "Footer Section", icon: <FaList /> },
+  { id: "yellow-stats-strip", label: "Stats Strip Section", icon: <FaChartBar /> },
+  { id: "newsletter-section", label: "Newsletter Section", icon: <FaEnvelope /> },
   { id: "blogs", label: "Blogs", icon: <FaBlogger /> },
   { id: "testimonials", label: "Testimonials", icon: <FaQuoteRight /> },
   { id: "about", label: "About Us", icon: <FaBook /> },
@@ -351,6 +368,20 @@ function AdminDashboardContent() {
           <ManageMetaTags />
         ) : activeTab === "about" ? (
           <AboutTab />
+        ) : activeTab === "hero" ? (
+          <HeroTab />
+        ) : activeTab === "why-iicpa" ? (
+          <WhyIICPATab />
+        ) : activeTab === "about-us" ? (
+          <AboutUsTab />
+        ) : activeTab === "contact" ? (
+          <ContactTab />
+        ) : activeTab === "footer" ? (
+          <FooterTab />
+        ) : activeTab === "yellow-stats-strip" ? (
+          <YellowStatsStripTab />
+        ) : activeTab === "newsletter-section" ? (
+          <NewsletterSectionTab />
         ) : activeTab === "colleges" ? (
           <CollegeTab />
         ) : activeTab === "blogs" ? (

@@ -62,17 +62,17 @@ export default function BlogSection() {
 
       <div className="relative max-w-7xl mx-auto px-6">
         {/* Modern Section Header */}
-        <motion.div 
+        <motion.div
           className="text-center mb-16"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 0.02 }}
         >
           <motion.h2 
             className="text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-6"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.1 }}
+            transition={{ duration: 0.02, delay: 0.01 }}
           >
             Your Source For Ideas, Insights, And{" "}
             <span className="bg-gradient-to-r from-green-500 to-blue-500 bg-clip-text text-transparent">
@@ -84,7 +84,7 @@ export default function BlogSection() {
             className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
+            transition={{ duration: 0.02, delay: 0.01 }}
           >
             Discover the latest insights, trends, and inspiration from our expert team
           </motion.p>
@@ -98,7 +98,7 @@ export default function BlogSection() {
               className="group bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-gray-200/50 overflow-hidden transform-gpu hover:shadow-2xl transition-all duration-500"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
+              transition={{ duration: 0.02, delay: index * 0.005 }}
               whileHover={{ 
                 scale: 1.03,
                 rotateY: 5,
@@ -174,7 +174,7 @@ export default function BlogSection() {
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.3 + index * 0.1 }}
+                  transition={{ duration: 0.02, delay: 0.01 + index * 0.005 }}
                 >
                   <Link
                     href={`/blogs/${encodeURIComponent(
@@ -191,7 +191,7 @@ export default function BlogSection() {
                   className="text-gray-600 text-sm leading-relaxed mb-4 flex-1"
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.4 + index * 0.1 }}
+                  transition={{ duration: 0.02, delay: 0.01 + index * 0.005 }}
                 >
                   {blog.content.replace(/<[^>]+>/g, "").slice(0, 120)}
                   {blog.content.length > 120 && "..."}
@@ -201,7 +201,7 @@ export default function BlogSection() {
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.5 + index * 0.1 }}
+                  transition={{ duration: 0.02, delay: 0.01 + index * 0.005 }}
                 >
                   <Link
                     href={`/blogs/${encodeURIComponent(
@@ -229,7 +229,7 @@ export default function BlogSection() {
             className="text-center mt-12"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
+            transition={{ duration: 0.02, delay: 0.01 }}
           >
             <motion.div
               whileHover={{ scale: 1.05 }}

@@ -1,44 +1,93 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { BsStars } from "react-icons/bs";
 import { motion } from "framer-motion";
 import { FaGraduationCap, FaClipboardCheck, FaBookOpen, FaTrophy, FaRocket, FaChartLine } from "react-icons/fa";
 
-const stats = [
-  {
-    icon: FaGraduationCap,
-    number: "120K+",
-    label: "Successfully Student",
-    color: "from-blue-500 to-cyan-500",
-    bgColor: "from-blue-600/20 to-cyan-600/20",
-  },
-  {
-    icon: FaClipboardCheck,
-    number: "560K+",
-    label: "Courses Completed",
-    color: "from-green-500 to-emerald-500",
-    bgColor: "from-green-600/20 to-emerald-600/20",
-  },
-  {
-    icon: FaBookOpen,
-    number: "3M+",
-    label: "Satisfied Review",
-    color: "from-purple-500 to-pink-500",
-    bgColor: "from-purple-600/20 to-pink-600/20",
-  },
-  {
-    icon: FaTrophy,
-    number: "120K+",
-    label: "Successfully Student",
-    color: "from-orange-500 to-red-500",
-    bgColor: "from-orange-600/20 to-red-600/20",
-  },
-];
-
 export default function YellowStatsStrip() {
+  const [yellowStatsStripData, setYellowStatsStripData] = useState({
+    title: "Our Achievements",
+    statistics: [
+      {
+        icon: "FaGraduationCap",
+        number: "120K+",
+        label: "Successfully Student",
+        color: "from-blue-500 to-cyan-500",
+        bgColor: "from-blue-600/20 to-cyan-600/20",
+      },
+      {
+        icon: "FaClipboardCheck",
+        number: "560K+",
+        label: "Courses Completed",
+        color: "from-green-500 to-emerald-500",
+        bgColor: "from-green-600/20 to-emerald-600/20",
+      },
+      {
+        icon: "FaBookOpen",
+        number: "3M+",
+        label: "Satisfied Review",
+        color: "from-purple-500 to-pink-500",
+        bgColor: "from-purple-600/20 to-pink-600/20",
+      },
+      {
+        icon: "FaTrophy",
+        number: "120K+",
+        label: "Successfully Student",
+        color: "from-orange-500 to-red-500",
+        bgColor: "from-orange-600/20 to-red-600/20",
+      }
+    ],
+    colors: {
+      title: "text-white",
+      accent: "text-[#3cd664]",
+      background: "bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900"
+    }
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchYellowStatsStripData();
+  }, []);
+
+  const fetchYellowStatsStripData = async () => {
+    try {
+      const response = await fetch("/api/yellow-stats-strip");
+      if (response.ok) {
+        const data = await response.json();
+        setYellowStatsStripData(data);
+      }
+    } catch (error) {
+      console.error("Error fetching YellowStatsStrip data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getIconComponent = (iconName) => {
+    const iconMap = {
+      FaGraduationCap: FaGraduationCap,
+      FaClipboardCheck: FaClipboardCheck,
+      FaBookOpen: FaBookOpen,
+      FaTrophy: FaTrophy,
+      FaRocket: FaRocket,
+      FaChartLine: FaChartLine
+    };
+    return iconMap[iconName] || FaGraduationCap;
+  };
+
+  if (loading) {
+    return (
+      <section className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-16 px-6 overflow-hidden">
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+        </div>
+      </section>
+    );
+  }
   return (
-    <section className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-16 px-6 overflow-hidden">
+    <section className={`relative ${yellowStatsStripData.colors.background} py-16 px-6 overflow-hidden`}>
       {/* 3D Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
@@ -87,10 +136,16 @@ export default function YellowStatsStrip() {
         className="text-center mb-12"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
+        transition={{ duration: 0.02 }}
       >
-        <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-          Our <span className="text-[#3cd664]">Achievements</span>
+        <h2 className={`text-4xl md:text-5xl font-bold ${yellowStatsStripData.colors.title} mb-4`}>
+          {yellowStatsStripData.title.split(' ').map((word, index) => 
+            index === 1 ? (
+              <span key={index} className={yellowStatsStripData.colors.accent}> {word}</span>
+            ) : (
+              <span key={index}>{index === 0 ? '' : ' '}{word}</span>
+            )
+          )}
         </h2>
         <div className="w-24 h-1 bg-gradient-to-r from-[#3cd664] to-green-500 mx-auto rounded-full"></div>
       </motion.div>
@@ -98,15 +153,15 @@ export default function YellowStatsStrip() {
       {/* 3D Stats Grid */}
       <div className="relative z-10 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-          {stats.map((item, index) => {
-            const IconComponent = item.icon;
+          {yellowStatsStripData.statistics.map((item, index) => {
+            const IconComponent = getIconComponent(item.icon);
             return (
               <motion.div
                 key={index}
                 className="relative group"
                 initial={{ opacity: 0, y: 50, rotateX: 15 }}
                 whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
-                transition={{ duration: 0.8, delay: index * 0.2 }}
+                transition={{ duration: 0.02, delay: index * 0.01 }}
                 whileHover={{ 
                   y: -10,
                   rotateY: 5,
@@ -169,7 +224,7 @@ export default function YellowStatsStrip() {
                       className="text-3xl md:text-4xl font-bold text-white mb-2"
                       initial={{ scale: 0.8, opacity: 0 }}
                       whileInView={{ scale: 1, opacity: 1 }}
-                      transition={{ duration: 0.6, delay: 0.3 + index * 0.1 }}
+                      transition={{ duration: 0.02, delay: 0.01 + index * 0.005 }}
                       whileHover={{ scale: 1.1 }}
                     >
                 {item.number}
@@ -180,7 +235,7 @@ export default function YellowStatsStrip() {
                       className="text-sm md:text-base text-gray-300 font-medium"
                       initial={{ opacity: 0, y: 10 }}
                       whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.6, delay: 0.4 + index * 0.1 }}
+                      transition={{ duration: 0.02, delay: 0.01 + index * 0.005 }}
                     >
                       {item.label}
                     </motion.div>
@@ -211,12 +266,12 @@ export default function YellowStatsStrip() {
             </div>
 
                 {/* Connection Line */}
-            {index !== stats.length - 1 && (
+            {index !== yellowStatsStripData.statistics.length - 1 && (
                   <motion.div
                     className="hidden lg:block absolute top-1/2 -right-4 w-8 h-0.5 bg-gradient-to-r from-yellow-400 to-transparent"
                     initial={{ scaleX: 0 }}
                     whileInView={{ scaleX: 1 }}
-                    transition={{ duration: 1, delay: 0.5 + index * 0.2 }}
+                    transition={{ duration: 0.02, delay: 0.01 + index * 0.05 }}
                   />
                 )}
               </motion.div>
@@ -229,7 +284,7 @@ export default function YellowStatsStrip() {
           className="flex justify-center mt-12 gap-4"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
+          transition={{ duration: 0.02, delay: 0.01 }}
         >
           {[...Array(3)].map((_, i) => (
             <motion.div

@@ -1,13 +1,30 @@
-import axios from "axios";
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
-// Production API URL
-const API_BASE = "https://api.iicpa.in/api";
+// Configure dotenv
+dotenv.config();
 
-// Admin user data
+// Get current file directory for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Import the Employee model
+const Employee = await import('../models/Employee.js').then(m => m.default);
+
+// Connect to MongoDB
+mongoose.connect(process.env.MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+
+// Admin employee data
 const adminData = {
-  name: "Admin User",
+  name: "Super Admin",
   email: "admin@iicpa.com",
-  password: "admin123",
+  password: "admin123", // This will be hashed
   role: "Admin",
   status: "Active",
   permissions: {
@@ -154,7 +171,21 @@ const adminData = {
       delete: true,
       active: true,
     },
-    revision: {
+    guides: {
+      add: true,
+      read: true,
+      update: true,
+      delete: true,
+      active: true,
+    },
+    kits: {
+      add: true,
+      read: true,
+      update: true,
+      delete: true,
+      active: true,
+    },
+    "revision-tests": {
       add: true,
       read: true,
       update: true,
@@ -168,66 +199,44 @@ const adminData = {
       delete: true,
       active: true,
     },
-  },
+    audit: {
+      add: true,
+      read: true,
+      update: true,
+      delete: true,
+      active: true,
+    },
+  }
 };
 
-async function createAdminProduction() {
+async function createEmployeeAdmin() {
   try {
-    console.log("🚀 Creating admin user on production API...");
-    console.log("📡 API URL:", `${API_BASE}/employees`);
-
-    // First, try to login to see if admin already exists
-    try {
-      const loginResponse = await axios.post(`${API_BASE}/employees/login`, {
-        email: adminData.email,
-        password: adminData.password,
-      });
-
-      if (loginResponse.data) {
-        console.log("✅ Admin user already exists and can login!");
-        console.log("📧 Email:", adminData.email);
-        console.log("🔑 Password: admin123");
-        console.log("👤 Role: Admin");
-        console.log("✅ Status: Active");
-        console.log("🔐 All permissions granted");
-        return;
-      }
-    } catch (loginError) {
-      // Admin doesn't exist or can't login, proceed with registration
-      console.log("ℹ️ Admin user doesn't exist, creating new one...");
+    // Check if admin already exists
+    const existingAdmin = await Employee.findOne({ email: adminData.email });
+    if (existingAdmin) {
+      console.log('Admin employee already exists!');
+      console.log('Email:', existingAdmin.email);
+      console.log('Role:', existingAdmin.role);
+      process.exit(0);
     }
 
-    // Create new admin user
-    const response = await axios.post(`${API_BASE}/employees`, adminData, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    // Create admin employee
+    const admin = new Employee(adminData);
+    await admin.save();
 
-    if (response.status === 201 || response.status === 200) {
-      console.log("✅ Admin user created successfully on production!");
-      console.log("📧 Email:", adminData.email);
-      console.log("🔑 Password: admin123");
-      console.log("👤 Role: Admin");
-      console.log("✅ Status: Active");
-      console.log("🔐 All permissions granted");
-      console.log("🎯 Ready to login at: https://www.iicpa.in/admin");
-    } else {
-      console.log("⚠️ Unexpected response:", response.status, response.data);
-    }
+    console.log('✅ Admin employee created successfully!');
+    console.log('Email:', admin.email);
+    console.log('Password:', adminData.password);
+    console.log('Role:', admin.role);
+
   } catch (error) {
-    console.error(
-      "❌ Error creating admin on production:",
-      error.response?.data || error.message
-    );
-
-    if (error.response?.status === 400) {
-      console.log("ℹ️ Admin user might already exist. Try logging in with:");
-      console.log("📧 Email: admin@iicpa.com");
-      console.log("🔑 Password: admin123");
-    }
+    console.error('❌ Error creating admin employee:', error.message);
+  } finally {
+    // Close the database connection
+    mongoose.connection.close();
+    process.exit(0);
   }
 }
 
 // Run the script
-createAdminProduction();
+createEmployeeAdmin();

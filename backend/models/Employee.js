@@ -74,6 +74,13 @@ const employeeSchema = new mongoose.Schema(
         delete: { type: Boolean, default: false },
         active: { type: Boolean, default: false },
       },
+      hero: {
+        add: { type: Boolean, default: false },
+        read: { type: Boolean, default: false },
+        update: { type: Boolean, default: false },
+        delete: { type: Boolean, default: false },
+        active: { type: Boolean, default: false },
+      },
       meta: {
         add: { type: Boolean, default: false },
         read: { type: Boolean, default: false },

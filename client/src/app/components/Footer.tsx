@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -9,6 +10,9 @@ import {
   FaLinkedin, 
   FaInstagram, 
   FaYoutube,
+  FaWhatsapp,
+  FaTelegram,
+  FaDiscord,
   FaPhone,
   FaEnvelope,
   FaMapMarkerAlt,
@@ -17,49 +21,116 @@ import {
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const [footerData, setFooterData] = useState({
+    companyInfo: {
+      name: "IICPA Institute",
+      tagline: "Empowering future finance professionals with world-class education, expert guidance, and industry-relevant skills for career success.",
+      contact: {
+        phone: "+91 98765 43210",
+        email: "info@iicpa.com",
+        address: "123 Education Street, Learning City, LC 12345"
+      }
+    },
+    footerLinks: {
+      courses: [
+        { name: "Finance Courses", href: "/courses/finance" },
+        { name: "Accounting", href: "/courses/accounting" },
+        { name: "Taxation", href: "/courses/taxation" },
+        { name: "Auditing", href: "/courses/auditing" },
+        { name: "Investment Banking", href: "/courses/investment-banking" }
+      ],
+      resources: [
+        { name: "Blog", href: "/blog" },
+        { name: "Study Materials", href: "/resources" },
+        { name: "Practice Tests", href: "/practice" },
+        { name: "Career Guidance", href: "/career" },
+        { name: "Placement Support", href: "/placement" }
+      ],
+      company: [
+        { name: "About Us", href: "/about" },
+        { name: "Our Team", href: "/team" },
+        { name: "Success Stories", href: "/success" },
+        { name: "Partners", href: "/partners" },
+        { name: "Contact Us", href: "/contact" }
+      ],
+      support: [
+        { name: "Help Center", href: "/help" },
+        { name: "Live Sessions", href: "/live" },
+        { name: "Student Login", href: "/login" },
+        { name: "FAQ", href: "/faq" },
+        { name: "Privacy Policy", href: "/privacy" }
+      ]
+    },
+    socialLinks: [
+      { platform: "Facebook", href: "https://facebook.com/iicpa", icon: "FaFacebook" },
+      { platform: "Twitter", href: "https://twitter.com/iicpa", icon: "FaTwitter" },
+      { platform: "LinkedIn", href: "https://linkedin.com/company/iicpa", icon: "FaLinkedin" },
+      { platform: "Instagram", href: "https://instagram.com/iicpa", icon: "FaInstagram" },
+      { platform: "YouTube", href: "https://youtube.com/iicpa", icon: "FaYoutube" }
+    ],
+    bottomBar: {
+      copyright: "IICPA Institute. All rights reserved.",
+      legalLinks: [
+        { name: "Terms of Service", href: "/terms" },
+        { name: "Privacy Policy", href: "/privacy" },
+        { name: "Cookie Policy", href: "/cookies" }
+      ]
+    },
+    colors: {
+      background: "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900",
+      accent: "text-[#3cd664]",
+      text: "text-white",
+      textSecondary: "text-gray-300"
+    }
+  });
+  const [loading, setLoading] = useState(true);
 
-  const footerLinks = {
-    courses: [
-      { name: "Finance Courses", href: "/courses/finance" },
-      { name: "Accounting", href: "/courses/accounting" },
-      { name: "Taxation", href: "/courses/taxation" },
-      { name: "Auditing", href: "/courses/auditing" },
-      { name: "Investment Banking", href: "/courses/investment-banking" },
-    ],
-    resources: [
-      { name: "Blog", href: "/blog" },
-      { name: "Study Materials", href: "/resources" },
-      { name: "Practice Tests", href: "/practice" },
-      { name: "Career Guidance", href: "/career" },
-      { name: "Placement Support", href: "/placement" },
-    ],
-    company: [
-      { name: "About Us", href: "/about" },
-      { name: "Our Team", href: "/team" },
-      { name: "Success Stories", href: "/success" },
-      { name: "Partners", href: "/partners" },
-      { name: "Contact Us", href: "/contact" },
-    ],
-    support: [
-      { name: "Help Center", href: "/help" },
-      { name: "Live Sessions", href: "/live" },
-      { name: "Student Login", href: "/login" },
-      { name: "FAQ", href: "/faq" },
-      { name: "Privacy Policy", href: "/privacy" },
-    ]
+  useEffect(() => {
+    fetchFooterData();
+  }, []);
+
+  const fetchFooterData = async () => {
+    try {
+      const response = await fetch("/api/footer");
+      if (response.ok) {
+        const data = await response.json();
+        setFooterData(data);
+      }
+    } catch (error) {
+      console.error("Error fetching Footer data:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const socialLinks = [
-    { icon: FaFacebook, href: "https://facebook.com/iicpa", label: "Facebook" },
-    { icon: FaTwitter, href: "https://twitter.com/iicpa", label: "Twitter" },
-    { icon: FaLinkedin, href: "https://linkedin.com/company/iicpa", label: "LinkedIn" },
-    { icon: FaInstagram, href: "https://instagram.com/iicpa", label: "Instagram" },
-    { icon: FaYoutube, href: "https://youtube.com/iicpa", label: "YouTube" },
-  ];
+  const getSocialIcon = (iconName) => {
+    const iconMap = {
+      FaFacebook: FaFacebook,
+      FaTwitter: FaTwitter,
+      FaLinkedin: FaLinkedin,
+      FaInstagram: FaInstagram,
+      FaYoutube: FaYoutube,
+      FaWhatsapp: FaWhatsapp,
+      FaTelegram: FaTelegram,
+      FaDiscord: FaDiscord
+    };
+    return iconMap[iconName] || FaFacebook;
+  };
+
+  if (loading) {
+    return (
+      <footer className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white relative overflow-hidden">
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+        </div>
+      </footer>
+    );
+  }
+
 
 
   return (
-    <footer className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white relative overflow-hidden">
+    <footer className={`${footerData.colors.background} text-white relative overflow-hidden`}>
       {/* Background Elements */}
       <div className="absolute inset-0 bg-[url('/images/footer-pattern.svg')] opacity-5"></div>
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#3cd664] via-[#22c55e] to-[#16a34a]"></div>
@@ -76,47 +147,49 @@ export default function Footer() {
             transition={{ duration: 0.6 }}
           >
             <div className="mb-6">
-              <h3 className="text-2xl font-bold text-white mb-2">
-                IICPA <span className="text-[#3cd664]">Institute</span>
+              <h3 className={`text-2xl font-bold ${footerData.colors.text} mb-2`}>
+                {footerData.companyInfo.name}
               </h3>
-              <p className="text-gray-300 text-sm leading-relaxed">
-                Empowering future finance professionals with world-class education, 
-                expert guidance, and industry-relevant skills for career success.
+              <p className={`${footerData.colors.textSecondary} text-sm leading-relaxed`}>
+                {footerData.companyInfo.tagline}
               </p>
             </div>
 
             {/* Contact Info */}
             <div className="space-y-3 mb-6">
-              <div className="flex items-center gap-3 text-sm text-gray-300">
-                <FaPhone className="w-4 h-4 text-[#3cd664]" />
-                <span>+91 98765 43210</span>
+              <div className={`flex items-center gap-3 text-sm ${footerData.colors.textSecondary}`}>
+                <FaPhone className={`w-4 h-4 ${footerData.colors.accent}`} />
+                <span>{footerData.companyInfo.contact.phone}</span>
               </div>
-              <div className="flex items-center gap-3 text-sm text-gray-300">
-                <FaEnvelope className="w-4 h-4 text-[#3cd664]" />
-                <span>info@iicpa.com</span>
+              <div className={`flex items-center gap-3 text-sm ${footerData.colors.textSecondary}`}>
+                <FaEnvelope className={`w-4 h-4 ${footerData.colors.accent}`} />
+                <span>{footerData.companyInfo.contact.email}</span>
               </div>
-              <div className="flex items-start gap-3 text-sm text-gray-300">
-                <FaMapMarkerAlt className="w-4 h-4 text-[#3cd664] mt-0.5" />
-                <span>123 Education Street,<br />Learning City, LC 12345</span>
+              <div className={`flex items-start gap-3 text-sm ${footerData.colors.textSecondary}`}>
+                <FaMapMarkerAlt className={`w-4 h-4 ${footerData.colors.accent} mt-0.5`} />
+                <span dangerouslySetInnerHTML={{ __html: footerData.companyInfo.contact.address.replace(/\n/g, '<br />') }} />
               </div>
             </div>
 
             {/* Social Links */}
             <div className="flex gap-3">
-              {socialLinks.map((social, index) => (
-                <motion.a
-                  key={index}
-                  href={social.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 bg-gray-700 hover:bg-[#3cd664] rounded-full flex items-center justify-center transition-all duration-300 group"
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                  whileTap={{ scale: 0.95 }}
-                  aria-label={social.label}
-                >
-                  <social.icon className="w-4 h-4 text-gray-300 group-hover:text-white" />
-                </motion.a>
-              ))}
+              {footerData.socialLinks.map((social, index) => {
+                const IconComponent = getSocialIcon(social.icon);
+                return (
+                  <motion.a
+                    key={index}
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 bg-gray-700 hover:bg-[#3cd664] rounded-full flex items-center justify-center transition-all duration-300 group"
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    whileTap={{ scale: 0.95 }}
+                    aria-label={social.platform}
+                  >
+                    <IconComponent className="w-4 h-4 text-gray-300 group-hover:text-white" />
+                  </motion.a>
+                );
+              })}
             </div>
           </motion.div>
 
@@ -127,13 +200,13 @@ export default function Footer() {
             whileInView={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.1 }}
           >
-            <h4 className="text-lg font-semibold text-white mb-4">Courses</h4>
+            <h4 className={`text-lg font-semibold ${footerData.colors.text} mb-4`}>Courses</h4>
             <ul className="space-y-3">
-              {footerLinks.courses.map((link, index) => (
+              {footerData.footerLinks.courses.map((link, index) => (
                 <li key={index}>
                   <Link
                     href={link.href}
-                    className="text-gray-300 hover:text-green-500 transition-colors duration-300 text-sm cursor-pointer"
+                    className={`${footerData.colors.textSecondary} hover:text-green-500 transition-colors duration-300 text-sm cursor-pointer`}
                   >
                     {link.name}
                   </Link>
@@ -149,13 +222,13 @@ export default function Footer() {
             whileInView={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <h4 className="text-lg font-semibold text-white mb-4">Resources</h4>
+            <h4 className={`text-lg font-semibold ${footerData.colors.text} mb-4`}>Resources</h4>
             <ul className="space-y-3">
-              {footerLinks.resources.map((link, index) => (
+              {footerData.footerLinks.resources.map((link, index) => (
                 <li key={index}>
                   <Link
                     href={link.href}
-                    className="text-gray-300 hover:text-green-500 transition-colors duration-300 text-sm cursor-pointer"
+                    className={`${footerData.colors.textSecondary} hover:text-green-500 transition-colors duration-300 text-sm cursor-pointer`}
                   >
                     {link.name}
                   </Link>
@@ -171,13 +244,13 @@ export default function Footer() {
             whileInView={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.3 }}
           >
-            <h4 className="text-lg font-semibold text-white mb-4">Company</h4>
+            <h4 className={`text-lg font-semibold ${footerData.colors.text} mb-4`}>Company</h4>
             <ul className="space-y-3">
-              {footerLinks.company.map((link, index) => (
+              {footerData.footerLinks.company.map((link, index) => (
                 <li key={index}>
                   <Link
                     href={link.href}
-                    className="text-gray-300 hover:text-green-500 transition-colors duration-300 text-sm cursor-pointer"
+                    className={`${footerData.colors.textSecondary} hover:text-green-500 transition-colors duration-300 text-sm cursor-pointer`}
                   >
                     {link.name}
                   </Link>
@@ -193,13 +266,13 @@ export default function Footer() {
             whileInView={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            <h4 className="text-lg font-semibold text-white mb-4">Support</h4>
+            <h4 className={`text-lg font-semibold ${footerData.colors.text} mb-4`}>Support</h4>
             <ul className="space-y-3">
-              {footerLinks.support.map((link, index) => (
+              {footerData.footerLinks.support.map((link, index) => (
                 <li key={index}>
                   <Link
                     href={link.href}
-                    className="text-gray-300 hover:text-green-500 transition-colors duration-300 text-sm cursor-pointer"
+                    className={`${footerData.colors.textSecondary} hover:text-green-500 transition-colors duration-300 text-sm cursor-pointer`}
                   >
                     {link.name}
                   </Link>
@@ -221,19 +294,19 @@ export default function Footer() {
       >
         <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-12 xl:px-16">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="text-sm text-gray-400">
-              © {currentYear} IICPA Institute. All rights reserved.
+            <div className={`text-sm ${footerData.colors.textSecondary}`}>
+              © {currentYear} {footerData.bottomBar.copyright}
             </div>
-            <div className="flex gap-6 text-sm text-gray-400">
-              <Link href="/terms" className="hover:text-green-500 transition-colors duration-300 cursor-pointer">
-                Terms of Service
-              </Link>
-              <Link href="/privacy" className="hover:text-green-500 transition-colors duration-300 cursor-pointer">
-                Privacy Policy
-              </Link>
-              <Link href="/cookies" className="hover:text-green-500 transition-colors duration-300 cursor-pointer">
-                Cookie Policy
-              </Link>
+            <div className={`flex gap-6 text-sm ${footerData.colors.textSecondary}`}>
+              {footerData.bottomBar.legalLinks.map((link, index) => (
+                <Link 
+                  key={index}
+                  href={link.href} 
+                  className="hover:text-green-500 transition-colors duration-300 cursor-pointer"
+                >
+                  {link.name}
+                </Link>
+              ))}
             </div>
           </div>
         </div>

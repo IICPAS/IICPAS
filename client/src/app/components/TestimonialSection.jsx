@@ -50,9 +50,11 @@ export default function TestimonialCarousel() {
               quote: t.message,
               author: t.name,
               role: t.designation,
-              image: `https://randomuser.me/api/portraits/${
-                i % 2 === 0 ? "men" : "women"
-              }/${30 + i}.jpg`,
+              image: t.image 
+                ? `${process.env.NEXT_PUBLIC_API_URL}/${t.image}`
+                : `https://randomuser.me/api/portraits/${
+                    i % 2 === 0 ? "men" : "women"
+                  }/${30 + i}.jpg`,
             }))
           : mockTestimonials;
 
@@ -138,7 +140,7 @@ export default function TestimonialCarousel() {
           className="mb-8"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 0.02 }}
         >
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
             What Our <span className="text-[#3cd664]">Students</span> Say
@@ -151,7 +153,7 @@ export default function TestimonialCarousel() {
           className="relative"
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1 }}
+          transition={{ duration: 0.02 }}
         >
           <div className="relative bg-white/10 backdrop-blur-xl rounded-3xl p-6 md:p-8 border border-white/20 shadow-2xl">
             {/* 3D Card Effect */}
@@ -168,14 +170,14 @@ export default function TestimonialCarousel() {
               className="flex justify-center gap-1 mb-6"
               initial={{ opacity: 0, scale: 0.8 }}
               whileInView={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
+              transition={{ duration: 0.02, delay: 0.01 }}
             >
               {Array.from({ length: 5 }).map((_, i) => (
                 <motion.div
                   key={i}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.3 + i * 0.1 }}
+                  transition={{ duration: 0.02, delay: 0.01 + i * 0.005 }}
                   whileHover={{ scale: 1.2, rotate: 10 }}
                 >
                   <FaStar className="text-xl text-[#3cd664] drop-shadow-lg" />
@@ -190,7 +192,7 @@ export default function TestimonialCarousel() {
                 initial={{ opacity: 0, y: 30, rotateX: 15 }}
                 animate={{ opacity: 1, y: 0, rotateX: 0 }}
                 exit={{ opacity: 0, y: -30, rotateX: -15 }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
+                transition={{ duration: 0.02, ease: "easeOut" }}
                 className="max-w-3xl mx-auto text-lg md:text-xl text-white font-medium leading-relaxed mb-8 relative"
                 style={{ transformStyle: "preserve-3d" }}
               >
@@ -293,7 +295,7 @@ export default function TestimonialCarousel() {
           className="flex justify-center gap-2 mt-6"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
+          transition={{ duration: 0.02, delay: 0.01 }}
         >
           {testimonials.map((_, i) => (
             <motion.button
