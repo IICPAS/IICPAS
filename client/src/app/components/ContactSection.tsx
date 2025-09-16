@@ -146,8 +146,16 @@ export default function ContactSection() {
                 <div className="w-12 h-1 bg-gradient-to-r from-blue-500 to-green-500 rounded-full"></div>
               </div>
               
+
               <h2 className={`text-4xl lg:text-5xl font-bold ${contactData.colors.subtitle} leading-tight mb-6`}>
                 {contactData.subtitle}
+
+              <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-6">
+                Let&apos;s{" "}
+                <span className="bg-gradient-to-r from-green-500 to-blue-500 bg-clip-text text-transparent">
+                  Get in Touch
+                </span>
+
               </h2>
               
               <p className={`text-lg ${contactData.colors.description} leading-relaxed`}>
