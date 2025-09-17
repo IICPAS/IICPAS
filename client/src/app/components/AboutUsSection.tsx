@@ -136,6 +136,7 @@ export default function AboutUsSection() {
                   <p className="text-xs text-gray-500">{aboutData.testimonial.position}</p>
                 </div>
               </div>
+
             </motion.div>
 
             {/* Optimized Class Schedule Card */}
