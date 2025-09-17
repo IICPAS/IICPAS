@@ -51,6 +51,8 @@ export default function Header() {
   const [cartDrawer, setCartDrawer] = useState(false);
   const [student, setStudent] = useState(null);
   const [cartCourses, setCartCourses] = useState([]);
+  const [wishlistCourses, setWishlistCourses] = useState([]);
+  const [wishlistDrawer, setWishlistDrawer] = useState(false);
 
   const API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -76,14 +78,25 @@ export default function Header() {
       );
       const cartIDs = cartRes.data.cart || [];
 
+      // Fetch wishlist
+      const wishlistRes = await axios.get(
+        `${API}/api/v1/students/get-wishlist/${studentData._id}`,
+        { withCredentials: true }
+      );
+      const wishlistIDs = wishlistRes.data.wishlist || [];
+
       const allCourses = await axios.get(`${API}/api/courses`);
       const courseList = allCourses.data.courses || allCourses.data;
 
-      const filteredCourses = courseList.filter((c) => cartIDs.includes(c._id));
-      setCartCourses(filteredCourses);
+      const filteredCartCourses = courseList.filter((c) => cartIDs.includes(c._id));
+      const filteredWishlistCourses = courseList.filter((c) => wishlistIDs.includes(c._id));
+      
+      setCartCourses(filteredCartCourses);
+      setWishlistCourses(filteredWishlistCourses);
     } catch {
       setStudent(null);
       setCartCourses([]);
+      setWishlistCourses([]);
     }
   };
 
@@ -97,6 +110,7 @@ export default function Header() {
     });
     setStudent(null);
     setCartCourses([]);
+    setWishlistCourses([]);
     location.reload();
   };
 
@@ -211,6 +225,56 @@ export default function Header() {
     }
   };
 
+  const handleRemoveFromWishlist = async (courseId) => {
+    const result = await MySwal.fire({
+      title: "Are you sure?",
+      text: "You are about to remove this course from your wishlist.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, remove it!",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await axios.post(
+          `${API}/api/v1/students/remove-wishlist/${student._id}`,
+          { courseId },
+          { withCredentials: true }
+        );
+        fetchStudentAndCart();
+        Swal.fire("Removed!", "Course removed from wishlist.", "success");
+      } catch {
+        Swal.fire("Error", "Failed to remove item.", "error");
+      }
+    }
+  };
+
+  const handleClearWishlist = async () => {
+    const result = await MySwal.fire({
+      title: "Clear entire wishlist?",
+      text: "This action cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, clear it!",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await axios.delete(`${API}/api/v1/students/clear-wishlist/${student._id}`, {
+          withCredentials: true,
+        });
+        fetchStudentAndCart();
+        Swal.fire("Cleared!", "Your wishlist has been emptied.", "success");
+      } catch {
+        Swal.fire("Error", "Failed to clear wishlist.", "error");
+      }
+    }
+  };
+
   return (
     <>
       <AlertMarquee />
@@ -228,11 +292,11 @@ export default function Header() {
           </Link>
 
           {/* Navigation - Center */}
-          <nav className="hidden lg:flex items-center gap-4 text-base text-gray-800 font-medium flex-1 justify-center">
+          <nav className="hidden lg:flex items-center gap-8 text-base text-gray-800 font-medium flex-1 justify-center">
             {navLinks.map((item) =>
               item.children ? (
                 <div key={item.name} className="relative group">
-                  <button className="flex items-center gap-1 hover:text-green-600 transition-colors duration-200 py-1.5 px-2 rounded-md hover:bg-green-50 text-sm">
+                  <button className="flex items-center gap-1 hover:text-green-600 transition-colors duration-200 py-1.5 px-2 rounded-md hover:bg-green-50 text-base">
                     {item.name}
                     <svg
                       className="w-3 h-3 transition-transform group-hover:rotate-180"
@@ -264,7 +328,7 @@ export default function Header() {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`hover:text-green-600 transition-colors duration-200 py-1.5 px-2 rounded-md hover:bg-green-50 text-sm ${
+                  className={`hover:text-green-600 transition-colors duration-200 py-1.5 px-2 rounded-md hover:bg-green-50 text-base ${
                     pathname === item.href ? "text-green-600 bg-green-50" : ""
                   }`}
                 >
@@ -276,9 +340,33 @@ export default function Header() {
 
           {/* Right side - Fixed at end */}
           <div className="hidden lg:flex items-center space-x-3 flex-shrink-0">
+            {/* Star Plus Icon Button - Wishlist */}
+            <button
+              onClick={() => {
+                // Always go to wishlist page - it will handle login check internally
+                window.location.href = '/wishlist';
+              }}
+              className="w-10 h-10 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg flex items-center justify-center transition-colors duration-200 shadow-md hover:shadow-lg border border-blue-200 relative"
+              title={student ? "My Wishlist" : "Login to view Wishlist"}
+            >
+              <svg
+                className="w-6 h-6"
+                fill="white"
+                stroke="currentColor"
+                strokeWidth="1"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                {/* Star shape */}
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                {/* Plus sign overlay */}
+                <path d="M17 11h-2v-2h2v2zm0 4h-2v-2h2v2zm-4-4h-2v-2h2v2zm0 4h-2v-2h2v2z" fill="white"/>
+              </svg>
+            </button>
+            
             <Link
               href="/student-login"
-              className="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg"
+              className="bg-green-600 hover:bg-green-700 text-white text-base font-semibold px-4 py-2 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg"
             >
               Student Login
             </Link>

@@ -1,9 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-
 export default function HeroSection() {
-  const [heroData, setHeroData] = useState({
+  const heroData = {
     smallText: "# Best Online Platform",
     mainHeading: {
       part1: "Start Learning",
@@ -26,34 +24,7 @@ export default function HeroSection() {
       description: "text-white/90",
       button: "bg-green-500 hover:bg-green-600"
     }
-  });
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchHeroData();
-  }, []);
-
-  const fetchHeroData = async () => {
-    try {
-      const response = await fetch("/api/hero");
-      if (response.ok) {
-        const data = await response.json();
-        setHeroData(data);
-      }
-    } catch (error) {
-      console.error("Error fetching hero data:", error);
-    } finally {
-      setLoading(false);
-    }
   };
-
-  if (loading) {
-    return (
-      <section className="relative overflow-hidden h-screen mt-18 bg-gray-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
-      </section>
-    );
-  }
 
   return (
     <section className="relative overflow-hidden h-screen mt-18">

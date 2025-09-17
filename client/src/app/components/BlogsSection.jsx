@@ -1,32 +1,40 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Calendar, User, ArrowRight, Eye, Clock, Tag, BookOpen } from "lucide-react";
 import Link from "next/link";
-import axios from "axios";
 import { motion } from "framer-motion";
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
-
 export default function BlogSection() {
-  const [blogs, setBlogs] = useState([]);
-
-  useEffect(() => {
-    async function fetchBlogs() {
-      try {
-        const res = await axios.get(`${API_BASE}/blogs`);
-        // Filter only blogs that have status === "active"
-        const activeBlogs = (res.data || []).filter(
-          (blog) => blog.status === "active"
-        );
-        setBlogs(activeBlogs);
-      } catch {
-        setBlogs([]);
-      }
+  // Static blog data for instant loading
+  const blogs = [
+    {
+      _id: "1",
+      title: "Master the Art of Financial Planning: A Complete Guide",
+      content: "Learn the essential strategies for effective financial planning that will help you secure your future and achieve your financial goals. This comprehensive guide covers everything from budgeting to investment strategies.",
+      author: "Dr. Sarah Johnson",
+      category: "Finance",
+      createdAt: new Date().toISOString(),
+      imageUrl: "/images/accounting.webp"
+    },
+    {
+      _id: "2", 
+      title: "Excel Mastery: Advanced Techniques for Professionals",
+      content: "Discover advanced Excel techniques that will make you more productive and efficient in your professional work. From complex formulas to data visualization, master the tools that matter.",
+      author: "Michael Chen",
+      category: "Technology",
+      createdAt: new Date().toISOString(),
+      imageUrl: "/images/course.png"
+    },
+    {
+      _id: "3",
+      title: "The Future of Online Learning: Trends and Innovations",
+      content: "Explore the latest trends in online education and how technology is revolutionizing the way we learn. From AI-powered learning to virtual reality classrooms, discover what's next.",
+      author: "Emily Rodriguez",
+      category: "Education",
+      createdAt: new Date().toISOString(),
+      imageUrl: "/images/live-class.jpg"
     }
-    fetchBlogs();
-  }, []);
+  ];
 
   return (
     <section className="relative py-20 bg-white overflow-hidden">
@@ -74,7 +82,7 @@ export default function BlogSection() {
             const imageUrl = blog.imageUrl?.startsWith("http")
               ? blog.imageUrl
               : blog.imageUrl
-              ? `${API_BASE.replace("/api", "")}/${blog.imageUrl}`
+              ? `${process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") || "http://localhost:8080"}/${blog.imageUrl}`
               : getFallbackImage(blog.title);
 
             return (

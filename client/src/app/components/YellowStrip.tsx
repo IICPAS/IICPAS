@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Image from "next/image";
 import { BsStars } from "react-icons/bs";
 import { motion } from "framer-motion";
 import { FaGraduationCap, FaClipboardCheck, FaBookOpen, FaTrophy, FaRocket, FaChartLine } from "react-icons/fa";
 
 export default function YellowStatsStrip() {
-  const [yellowStatsStripData, setYellowStatsStripData] = useState({
+  const yellowStatsStripData = {
     title: "Our Achievements",
     statistics: [
       {
@@ -44,25 +43,6 @@ export default function YellowStatsStrip() {
       accent: "text-[#3cd664]",
       background: "bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900"
     }
-  });
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchYellowStatsStripData();
-  }, []);
-
-  const fetchYellowStatsStripData = async () => {
-    try {
-      const response = await fetch("/api/yellow-stats-strip");
-      if (response.ok) {
-        const data = await response.json();
-        setYellowStatsStripData(data);
-      }
-    } catch (error) {
-      console.error("Error fetching YellowStatsStrip data:", error);
-    } finally {
-      setLoading(false);
-    }
   };
 
   const getIconComponent = (iconName: string) => {
@@ -77,15 +57,6 @@ export default function YellowStatsStrip() {
     return iconMap[iconName] || FaGraduationCap;
   };
 
-  if (loading) {
-    return (
-      <section className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-16 px-6 overflow-hidden">
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
-        </div>
-      </section>
-    );
-  }
   return (
     <section className={`relative ${yellowStatsStripData.colors.background} py-16 px-6 overflow-hidden`}>
       {/* Lightweight Background Elements */}

@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
 import {
   FaMoneyBillWave,
   FaChartBar,
@@ -32,64 +31,17 @@ interface Category {
 }
 
 export default function FinanceCourseCategorySection() {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  const fetchCategories = async () => {
-    try {
-      const response = await fetch("/api/categories");
-      if (response.ok) {
-        const data = await response.json();
-        // Transform the data to include course count (mock for now)
-        const transformedCategories = data.map((cat: Category, index: number) => ({
-          ...cat,
-          courses: Math.floor(Math.random() * 20) + 5, // Mock course count
-        }));
-        setCategories(transformedCategories);
-      } else {
-        // Fallback to mock data if API fails
-        setCategories([
-          { _id: "1", category: "Investment Strategies", status: "Active", courses: 12 },
-          { _id: "2", category: "Stock Market Analysis", status: "Active", courses: 10 },
-          { _id: "3", category: "Personal Finance", status: "Active", courses: 15 },
-          { _id: "4", category: "Taxation & Compliance", status: "Active", courses: 8 },
-          { _id: "5", category: "Wealth Management", status: "Active", courses: 11 },
-          { _id: "6", category: "Corporate Finance", status: "Active", courses: 13 },
-          { _id: "7", category: "Cryptocurrency & Blockchain", status: "Active", courses: 9 },
-          { _id: "8", category: "Banking Fundamentals", status: "Active", courses: 14 },
-        ]);
-      }
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-      // Fallback to mock data
-      setCategories([
-        { _id: "1", category: "Investment Strategies", status: "Active", courses: 12 },
-        { _id: "2", category: "Stock Market Analysis", status: "Active", courses: 10 },
-        { _id: "3", category: "Personal Finance", status: "Active", courses: 15 },
-        { _id: "4", category: "Taxation & Compliance", status: "Active", courses: 8 },
-        { _id: "5", category: "Wealth Management", status: "Active", courses: 11 },
-        { _id: "6", category: "Corporate Finance", status: "Active", courses: 13 },
-        { _id: "7", category: "Cryptocurrency & Blockchain", status: "Active", courses: 9 },
-        { _id: "8", category: "Banking Fundamentals", status: "Active", courses: 14 },
-      ]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <section className="relative py-20 bg-white overflow-hidden">
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
-        </div>
-      </section>
-    );
-  }
+  // Static data for instant loading
+  const categories: Category[] = [
+    { _id: "1", category: "Investment Strategies", status: "Active", courses: 12 },
+    { _id: "2", category: "Stock Market Analysis", status: "Active", courses: 10 },
+    { _id: "3", category: "Personal Finance", status: "Active", courses: 15 },
+    { _id: "4", category: "Taxation & Compliance", status: "Active", courses: 8 },
+    { _id: "5", category: "Wealth Management", status: "Active", courses: 11 },
+    { _id: "6", category: "Corporate Finance", status: "Active", courses: 13 },
+    { _id: "7", category: "Cryptocurrency & Blockchain", status: "Active", courses: 9 },
+    { _id: "8", category: "Banking Fundamentals", status: "Active", courses: 14 },
+  ];
   return (
     <section className="relative py-20 bg-white overflow-hidden">
       {/* Subtle Background Elements */}

@@ -1,14 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Image from "next/image";
-import axios from "axios";
 import { motion } from "framer-motion";
 
 export default function AboutUsSection() {
-  const [aboutData, setAboutData] = useState({
+  const aboutData = {
     title: "About Us",
-    content: "Welcome to IICPA Institute, where excellence in education meets innovation in learning.",
+    content: "Welcome to IICPA Institute, where excellence in education meets innovation in learning. We are committed to providing world-class education that transforms careers and empowers individuals to achieve their professional goals. Our comprehensive curriculum, expert instructors, and industry-aligned programs ensure you receive the best learning experience.",
     mainImage: "/images/about.jpeg",
     video: {
       type: "file",
@@ -27,37 +25,7 @@ export default function AboutUsSection() {
       content: "text-gray-700",
       background: "bg-white"
     }
-  });
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchAbout = async () => {
-      try {
-        const res = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/about`
-        );
-        if (res.data) {
-          setAboutData(res.data);
-        }
-      } catch (error) {
-        console.error("Failed to fetch About Us content", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAbout();
-  }, []);
-
-  if (loading) {
-    return (
-      <section className="relative bg-white py-16 px-4 md:px-8 lg:px-12 xl:px-16 text-gray-800 overflow-hidden">
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-        </div>
-      </section>
-    );
-  }
+  };
 
   return (
     <section className={`relative ${aboutData.colors.background} py-16 px-4 md:px-8 lg:px-12 xl:px-16 text-gray-800 overflow-hidden`}>

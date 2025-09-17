@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import { FaGraduationCap, FaUsers, FaPlay } from "react-icons/fa";
 import { motion } from "framer-motion";
 
 export default function WhyIICPA() {
-  const [whyIICPAData, setWhyIICPAData] = useState({
+  const whyIICPAData = {
     title: "Empowering Your Future with Excellence",
     subtitle: "Why Choose IICPA",
     description: "IICPA Institute stands as a beacon of educational excellence, offering cutting-edge courses designed to transform your career aspirations into reality. Our comprehensive curriculum, expert instructors, and industry-aligned programs ensure you receive world-class education that prepares you for the dynamic professional landscape.",
@@ -49,36 +48,7 @@ export default function WhyIICPA() {
       description: "text-white/70",
       background: "bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900"
     }
-  });
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchWhyIICPAData();
-  }, []);
-
-  const fetchWhyIICPAData = async () => {
-    try {
-      const response = await fetch("/api/why-iicpa");
-      if (response.ok) {
-        const data = await response.json();
-        setWhyIICPAData(data);
-      }
-    } catch (error) {
-      console.error("Error fetching WhyIICPA data:", error);
-    } finally {
-      setLoading(false);
-    }
   };
-
-  if (loading) {
-    return (
-      <section className="relative py-12 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
-        </div>
-      </section>
-    );
-  }
   return (
     <section className={`relative py-12 ${whyIICPAData.colors.background} overflow-hidden`}>
       {/* 3D Background Elements */}
