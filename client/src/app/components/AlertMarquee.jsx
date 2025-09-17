@@ -4,11 +4,9 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Marquee from "react-fast-marquee";
 
-const AlertMarquee = ({ showMarquee: externalShowMarquee }) => {
+const AlertMarquee = () => {
   const [alerts, setAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showMarquee, setShowMarquee] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
 
   const API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -31,24 +29,8 @@ const AlertMarquee = ({ showMarquee: externalShowMarquee }) => {
     fetchAlerts();
   }, [API]);
 
-  useEffect(() => {
-    if (externalShowMarquee !== undefined) {
-      setShowMarquee(externalShowMarquee);
-    }
-  }, [externalShowMarquee]);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > lastScrollY && window.scrollY > 60) {
-        setShowMarquee(false);
-      } else {
-        setShowMarquee(true);
-      }
-      setLastScrollY(window.scrollY);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [lastScrollY]);
+  // Removed scroll-based hiding - marquee will always stay visible
 
   if (loading) {
     return null; // Don't show anything while loading
@@ -60,9 +42,7 @@ const AlertMarquee = ({ showMarquee: externalShowMarquee }) => {
 
   return (
     <div
-      className={`bg-green-600 text-white font-bold border-b border-yellow-200 fixed top-0 left-0 w-full z-50 transition-transform duration-300 ${
-        showMarquee ? "translate-y-0" : "-translate-y-full"
-      }`}
+      className="bg-green-600 text-white font-bold border-b border-yellow-200 fixed top-0 left-0 w-full z-50"
       style={{ "--marquee-height": "40px" }}
     >
       <Marquee speed={80} gradient={false} className="py-2 overflow-hidden">

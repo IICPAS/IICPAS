@@ -147,8 +147,20 @@ export default function CoursesSection() {
         {courses.map((course, index) => (
           <div
             key={index}
-            className="relative bg-white rounded-2xl shadow-xl overflow-hidden group transition-all duration-300 hover:shadow-2xl animate-fade-in-up"
+            className="relative bg-white rounded-2xl shadow-xl overflow-hidden group transition-all duration-300 hover:shadow-2xl animate-fade-in-up cursor-pointer"
             style={{ animationDelay: `${index * 0.1}s` }}
+            onClick={() => {
+              // Map course titles to our dummy course IDs
+              let courseId = course.title.toLowerCase().replace(/\s+/g, "-");
+              if (course.title.includes("Basic Accounting")) {
+                courseId = "basic-accounting-tally";
+              } else if (course.title.includes("HR Certification")) {
+                courseId = "hr-certification";
+              } else if (course.title.includes("Excel Certification")) {
+                courseId = "excel-certification";
+              }
+              router.push(`/course/${courseId}`);
+            }}
           >
             <div className="relative w-full h-48 md:h-56 p-4 bg-white rounded-xl">
               <div className="relative w-full h-full overflow-hidden rounded-lg">
@@ -180,18 +192,6 @@ export default function CoursesSection() {
               </h3>
 
               <button 
-                onClick={() => {
-                  // Map course titles to our dummy course IDs
-                  let courseId = course.title.toLowerCase().replace(/\s+/g, "-");
-                  if (course.title.includes("Basic Accounting")) {
-                    courseId = "basic-accounting-tally";
-                  } else if (course.title.includes("HR Certification")) {
-                    courseId = "hr-certification";
-                  } else if (course.title.includes("Excel Certification")) {
-                    courseId = "excel-certification";
-                  }
-                  router.push(`/course/${courseId}`);
-                }}
                 className="mt-2 inline-flex items-center gap-2 bg-[#3cd664] hover:bg-[#33bb58] text-white text-sm font-semibold px-4 py-2 rounded-full transition-all"
               >
                 Enroll Now <span className="text-xl leading-none">›</span>
@@ -209,7 +209,10 @@ export default function CoursesSection() {
 
             <div
               className="absolute top-6 right-6 text-xl cursor-pointer text-red-500 hover:text-white hover:bg-red-500 p-2 rounded-full transition-all duration-300"
-              onClick={() => toggleLike(index)}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleLike(index);
+              }}
             >
               {likedIndexes.includes(index) ? <FaHeart /> : <FaRegHeart />}
             </div>
