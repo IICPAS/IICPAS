@@ -51,7 +51,6 @@ export default function Header() {
   const [cartDrawer, setCartDrawer] = useState(false);
   const [student, setStudent] = useState(null);
   const [cartCourses, setCartCourses] = useState([]);
-  const [showMarquee, setShowMarquee] = useState(true);
 
   const API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -214,10 +213,10 @@ export default function Header() {
 
   return (
     <>
-      <AlertMarquee showMarquee={showMarquee} />
+      <AlertMarquee />
       <header
         className="fixed left-0 w-full z-40 bg-white shadow-lg"
-        style={{ top: showMarquee ? "40px" : "0px" }}
+        style={{ top: "40px" }}
       >
         <div className="w-full px-2 md:px-6 py-3 flex items-center justify-between">
           {/* Logo - Fixed at start */}
