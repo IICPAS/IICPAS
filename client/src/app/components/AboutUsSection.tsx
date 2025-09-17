@@ -10,21 +10,13 @@ export default function AboutUsSection() {
     title: "About Us",
     content: "Welcome to IICPA Institute, where excellence in education meets innovation in learning.",
     mainImage: "/images/about.jpeg",
-    testimonialImage: "/images/young-woman.jpg",
-    testimonial: {
-      text: "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.",
-      author: "Alisa Oliva",
-      position: "Web Designer"
-    },
-    classSchedule: {
-      title: "Our Class Day",
-      days: [
-        { day: "Saturday", time: "10:00-16:00" },
-        { day: "Sunday", time: "10:00-16:00" },
-        { day: "Monday", time: "10:00-16:00" },
-        { day: "Tuesday", time: "10:00-16:00" },
-        { day: "Wednesday", time: "10:00-16:00" }
-      ]
+    video: {
+      type: "file",
+      url: "/videos/aboutus.mp4",
+      poster: "/images/video-poster.jpg",
+      autoplay: true,
+      loop: true,
+      muted: true
     },
     button: {
       text: "Learn More About Us",
@@ -78,114 +70,24 @@ export default function AboutUsSection() {
       {/* Main Container */}
       <div className="relative max-w-7xl mx-auto">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
-          {/* Left Side - Optimized Image */}
+          {/* Left Side - Video Section */}
           <div className="relative w-full lg:w-[45%] animate-fade-in-left">
             <div className="relative">
-              <Image
-                src={aboutData.mainImage}
-                alt="Student"
-                width={500}
-                height={500}
+              <video
                 className="rounded-3xl shadow-2xl w-full h-auto border border-gray-200/50 hover:shadow-3xl transition-shadow duration-500"
-              />
-
-            </div>
-
-            {/* Optimized Testimonial Card */}
-            <div className="mt-10 lg:mt-0 absolute -top-20 lg:top-4 left-4 bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-gray-200/50 max-w-[280px] z-10 hover:scale-105 transition-transform duration-300 animate-fade-in-up animation-delay-200">
-            </div>
-
-            {/* Modern Testimonial Card */}
-            <motion.div 
-              className="mt-10 lg:mt-0 absolute -top-20 lg:top-4 left-4 bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-gray-200/50 max-w-[280px] z-10"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              animate={{
-                y: [0, -8, 0]
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: 0.2
-              }}
-              whileHover={{ 
-                scale: 1.05,
-                rotateY: 5
-              }}
-            >
-
-              <div className="flex items-start gap-3 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center">
-                  <span className="text-white text-lg">&ldquo;</span>
+                autoPlay={aboutData.video?.autoplay || true}
+                loop={aboutData.video?.loop || true}
+                muted={aboutData.video?.muted !== false}
+                playsInline
+                preload="metadata"
+                controls={false}
+                poster={aboutData.video?.poster || "/images/about.jpeg"}
+              >
+                <source src={aboutData.video?.url || "/videos/aboutus.mp4"} type="video/mp4" />
+                <source src="/videos/homehero.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
                 </div>
-                <p className="text-sm italic text-gray-700 leading-relaxed">
-                  {aboutData.testimonial.text}
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <Image
-                  src={aboutData.testimonialImage}
-                  alt={aboutData.testimonial.author}
-                  width={40}
-                  height={40}
-                  className="rounded-full border-2 border-gray-200"
-                />
-                <div>
-                  <h4 className="font-bold text-sm text-gray-900">{aboutData.testimonial.author}</h4>
-                  <p className="text-xs text-gray-500">{aboutData.testimonial.position}</p>
-                </div>
-              </div>
-
-            </motion.div>
-
-            {/* Optimized Class Schedule Card */}
-            <div className="absolute -bottom-35 lg:-bottom-16 right-0 bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-2xl p-4 w-[200px] shadow-xl z-10 hover:scale-105 transition-transform duration-300 animate-fade-in-up animation-delay-300">
-            </div>
-
-            {/* Modern Class Schedule Card */}
-            <motion.div 
-              className="absolute -bottom-35 lg:-bottom-16 right-0 bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-2xl p-4 w-[200px] shadow-xl z-10"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              animate={{
-                y: [0, -6, 0]
-              }}
-              transition={{
-                duration: 3.5,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: 0.4
-              }}
-              whileHover={{ 
-                scale: 1.05,
-                rotateY: -5
-              }}
-            >
-
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
-                  <span className="text-white text-sm">📅</span>
-                </div>
-                <h3 className="text-base font-bold">{aboutData.classSchedule.title}</h3>
-              </div>
-              <ul className="text-xs space-y-1">
-                {aboutData.classSchedule.days.map(
-                  (schedule, index) => (
-                    <motion.li
-                      key={schedule.day}
-                      className="flex justify-between items-center py-1 border-b border-white/20 last:border-b-0"
-                      initial={{ opacity: 0, x: 20 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.02, delay: 0.01 + index * 0.005 }}
-                    >
-                      <span className="font-medium text-xs">{schedule.day}</span>
-                      <span className="bg-white/20 px-1 py-0.5 rounded-full text-xs">{schedule.time}</span>
-                    </motion.li>
-                  )
-                )}
-              </ul>
-            </motion.div>
           </div>
 
           {/* Right Side - Optimized Content */}

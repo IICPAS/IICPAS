@@ -28,6 +28,35 @@ const aboutSchema = new mongoose.Schema(
       default: "/images/young-woman.jpg"
     },
     
+    // Video settings
+    video: {
+      type: {
+        type: String,
+        enum: ['file', 'url'],
+        default: 'file'
+      },
+      url: {
+        type: String,
+        default: "/videos/aboutus.mp4"
+      },
+      poster: {
+        type: String,
+        default: "/images/video-poster.jpg"
+      },
+      autoplay: {
+        type: Boolean,
+        default: true
+      },
+      loop: {
+        type: Boolean,
+        default: true
+      },
+      muted: {
+        type: Boolean,
+        default: true
+      }
+    },
+    
     // Testimonial content
     testimonial: {
       text: {
