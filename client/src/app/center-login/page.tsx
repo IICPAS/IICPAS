@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { Eye, EyeOff, Building2, Mail, Lock, ArrowRight } from "lucide-react";
+import Header from "../components/Header";
 
 export default function CenterLoginPage() {
   const router = useRouter();
@@ -54,7 +55,9 @@ export default function CenterLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4">
+    <div>
+      <Header />
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4 pt-36">
       <div className="max-w-md w-full space-y-8">
         {/* Header */}
         <div className="text-center">
@@ -186,6 +189,7 @@ export default function CenterLoginPage() {
             © 2024 IICPAS. All rights reserved.
           </p>
         </div>
+      </div>
       </div>
     </div>
   );
