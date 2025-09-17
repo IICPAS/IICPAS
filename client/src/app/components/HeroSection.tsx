@@ -49,14 +49,14 @@ export default function HeroSection() {
 
   if (loading) {
     return (
-      <section className="relative overflow-hidden h-screen pt-20 bg-gray-900 flex items-center justify-center">
+      <section className="relative overflow-hidden h-screen mt-16 bg-gray-900 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
       </section>
     );
   }
 
   return (
-    <section className="relative overflow-hidden h-screen pt-20">
+    <section className="relative overflow-hidden h-screen mt-16">
       {/* Video Background */}
       <div className="absolute inset-0 w-full h-full">
         <video
