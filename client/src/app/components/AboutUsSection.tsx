@@ -93,8 +93,7 @@ export default function AboutUsSection() {
 
             {/* Optimized Testimonial Card */}
             <div className="mt-10 lg:mt-0 absolute -top-20 lg:top-4 left-4 bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-gray-200/50 max-w-[280px] z-10 hover:scale-105 transition-transform duration-300 animate-fade-in-up animation-delay-200">
-
-            </motion.div>
+            </div>
 
             {/* Modern Testimonial Card */}
             <motion.div 
@@ -137,13 +136,11 @@ export default function AboutUsSection() {
                   <p className="text-xs text-gray-500">{aboutData.testimonial.position}</p>
                 </div>
               </div>
-
-            </div>
+            </motion.div>
 
             {/* Optimized Class Schedule Card */}
             <div className="absolute -bottom-35 lg:-bottom-16 right-0 bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-2xl p-4 w-[200px] shadow-xl z-10 hover:scale-105 transition-transform duration-300 animate-fade-in-up animation-delay-300">
-
-            </motion.div>
+            </div>
 
             {/* Modern Class Schedule Card */}
             <motion.div 
@@ -187,7 +184,7 @@ export default function AboutUsSection() {
                   )
                 )}
               </ul>
-            </div>
+            </motion.div>
           </div>
 
           {/* Right Side - Optimized Content */}
