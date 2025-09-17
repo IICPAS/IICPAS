@@ -7,9 +7,9 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import axios from "axios";
 import toast from "react-hot-toast";
 
-export default function StudentAuthForm() {
+export default function StudentRegisterForm() {
   // Mode: register | login | forgot
-  const [mode, setMode] = useState<"register" | "login" | "forgot">("login");
+  const [mode, setMode] = useState<"register" | "login" | "forgot">("register");
 
   // --- Register form state
   const [form, setForm] = useState({

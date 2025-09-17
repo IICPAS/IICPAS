@@ -8,7 +8,7 @@ import YellowStatsStrip from "../components/YellowStrip";
 import Footer from "../components/Footer";
 const page = () => {
   return (
-    <div className="pb-20">
+    <div>
       <Header />
       <LiveHero />
       <AboutUsSection />

@@ -170,7 +170,7 @@ export default function IndividualAuthPanel() {
 
   return (
     <div className="pb-20 flex items-center justify-center bg-gray-50 px-2">
-      <div className="flex mt-24 bg-white rounded-xl shadow-2xl overflow-hidden max-w-6xl w-full">
+      <div className="flex mt-40 bg-white rounded-xl shadow-2xl overflow-hidden max-w-6xl w-full">
         {/* Left Panel */}
         <div className="hidden md:flex bg-green-50 flex-col justify-center items-center w-1/2 py-20 px-8">
           <img src="/calc.png" alt="Briefcase" className="w-60 h-60 mb-5" />
