@@ -319,16 +319,10 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
   const tabs = [
     { id: "syllabus", label: "Syllabus" },
     { id: "case-studies", label: "Assignment" },
-    { id: "exam", label: "Assessment & Certificate" },
+    { id: "exam", label: "Assessment & Certificates" },
     { id: "schedule", label: "Live Schedule +" },
     { id: "simulation", label: "Simulation & Ex." }
-  ].filter(tab => {
-    // Show tabs based on course content availability
-    if (tab.id === "case-studies") return course.caseStudy;
-    if (tab.id === "exam") return course.examCert;
-    if (tab.id === "schedule") return course.video;
-    return true; // Always show syllabus and simulation
-  });
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -387,12 +381,12 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
 
                 {/* Tabs */}
                 <div className="border-b-2 border-gray-200 mb-8">
-                  <nav className="-mb-px flex space-x-4 overflow-x-auto">
+                  <nav className="-mb-px flex space-x-4">
                     {tabs.map((tab) => (
                       <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`py-4 px-3 border-b-4 font-bold text-sm whitespace-nowrap ${
+                        className={`py-3 px-2 border-b-4 font-semibold text-xs whitespace-nowrap ${
                           activeTab === tab.id
                             ? "border-[#3cd664] text-[#3cd664]"
                             : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
@@ -471,7 +465,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
 
                 {activeTab === "exam" && (
                   <div>
-                    <h3 className="text-3xl font-bold text-gray-900 mb-6">Assessment & Certificate</h3>
+                    <h3 className="text-3xl font-bold text-gray-900 mb-6">Assessment & Certificates</h3>
                     <div 
                       className="text-xl text-gray-600"
                       dangerouslySetInnerHTML={{ __html: course.examCert || "Assessment details and certificate information will be available here." }}
