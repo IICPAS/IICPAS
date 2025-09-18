@@ -52,7 +52,7 @@ export default function StudentDashboard() {
   // Sidebar tabs
   const tabs = [
     { id: "courses", icon: <FaBook />, label: "Courses" },
-    { id: "revision", icon: <FaBook />, label: "Revision" },
+    { id: "revision", icon: <FaBook />, label: "Assessment" },
     { id: "live", icon: <FaVideo />, label: "Live Class", dot: true },
     { id: "news", icon: <FaNewspaper />, label: "News" },
     { id: "profile", icon: <FaUser />, label: "Profile" },
