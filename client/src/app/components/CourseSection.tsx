@@ -21,12 +21,11 @@ export default function CoursesSection() {
   const router = useRouter();
   const [likedIndexes, setLikedIndexes] = useState<number[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  // Fallback data
+  // Fallback data with real course IDs from database
   const fallbackCourses: Course[] = [
     {
-      _id: "1",
+      _id: "68cba03ff6d6e18d9a7588f1",
       title: "Basic Accounting & Tally Foundation",
       image: "/images/accounting.webp",
       price: 5000,
@@ -36,7 +35,7 @@ export default function CoursesSection() {
       reviews: 449,
     },
     {
-      _id: "2",
+      _id: "68cba03ff6d6e18d9a7588f2",
       title: "HR Certification Course",
       image: "/images/young-woman.jpg",
       price: 1000,
@@ -46,7 +45,7 @@ export default function CoursesSection() {
       reviews: 320,
     },
     {
-      _id: "3",
+      _id: "68cba03ff6d6e18d9a7588f3",
       title: "Excel Certification Course",
       image: "/images/course.png",
       price: 2000,
@@ -56,7 +55,7 @@ export default function CoursesSection() {
       reviews: 680,
     },
     {
-      _id: "4",
+      _id: "68cba03ff6d6e18d9a7588f4",
       title: "Learn the Foundations of Visual Communication",
       image: "/images/a4.jpg",
       price: 240.00,
@@ -66,7 +65,7 @@ export default function CoursesSection() {
       reviews: 129,
     },
     {
-      _id: "5",
+      _id: "68cba03ff6d6e18d9a7588f5",
       title: "Cooking Made Easy: Essential Skills for Everyday Meals",
       image: "/images/about.jpeg",
       price: 240.00,
@@ -76,7 +75,7 @@ export default function CoursesSection() {
       reviews: 129,
     },
     {
-      _id: "6",
+      _id: "68cba03ff6d6e18d9a7588f6",
       title: "How to Capture Stunning Photos with Ease",
       image: "/images/s.jpg",
       price: 240.00,
@@ -88,6 +87,10 @@ export default function CoursesSection() {
   ];
 
   useEffect(() => {
+    // Set fallback courses immediately for instant display
+    setCourses(fallbackCourses);
+    
+    // Optionally fetch from API in background (without loading state)
     fetchCourses();
   }, []);
 
@@ -107,15 +110,14 @@ export default function CoursesSection() {
           rating: 4.5, // This could be fetched from reviews
           reviews: 129, // This could be fetched from reviews
         }));
-        setCourses(transformedCourses);
-      } else {
-        setCourses(fallbackCourses);
+        // Update courses if API data is different from fallback
+        if (transformedCourses.length > 0) {
+          setCourses(transformedCourses);
+        }
       }
     } catch (error) {
       console.error("Error fetching courses:", error);
-      setCourses(fallbackCourses);
-    } finally {
-      setLoading(false);
+      // Keep fallback courses if API fails
     }
   };
 
@@ -163,16 +165,6 @@ export default function CoursesSection() {
       alert("Error updating wishlist. Please try again.");
     }
   };
-
-  if (loading) {
-    return (
-      <section className="py-16 px-4 md:px-20 bg-[#f9fbfa]">
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
-        </div>
-      </section>
-    );
-  }
 
   return (
     <section className="py-16 px-4 md:px-20 bg-[#f9fbfa]">
