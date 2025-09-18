@@ -39,12 +39,19 @@ export default function LiveSesionAdmin() {
   const [selectedSessions, setSelectedSessions] = useState([]);
   const [form, setForm] = useState({
     title: "",
+    instructor: "",
+    description: "",
     startTime: "",
     endTime: "",
     date: "",
     link: "",
     price: "",
+    category: "",
+    maxParticipants: "",
+    thumbnail: "",
   });
+  const [uploadedImage, setUploadedImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState("");
   const { hasPermission } = useAuth();
 
   useEffect(() => {
@@ -64,12 +71,43 @@ export default function LiveSesionAdmin() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    
+    let thumbnailUrl = form.thumbnail;
+    
+    // If image is uploaded, upload it first
+    if (uploadedImage) {
+      try {
+        const formData = new FormData();
+        formData.append('image', uploadedImage);
+        
+        const uploadResponse = await fetch(`${API}/api/upload`, {
+          method: 'POST',
+          body: formData,
+        });
+        
+        if (uploadResponse.ok) {
+          const uploadData = await uploadResponse.json();
+          thumbnailUrl = uploadData.imageUrl;
+        }
+      } catch (error) {
+        console.error('Image upload failed:', error);
+        Swal.fire("Error", "Failed to upload image", "error");
+        setLoading(false);
+        return;
+      }
+    }
+    
     const payload = {
       title: form.title,
+      instructor: form.instructor,
+      description: form.description,
       time: `${form.startTime} - ${form.endTime}`,
       date: form.date,
       link: form.link,
       price: Number(form.price),
+      category: form.category,
+      maxParticipants: Number(form.maxParticipants),
+      thumbnail: thumbnailUrl,
     };
 
     const res = await fetch(
@@ -115,14 +153,21 @@ export default function LiveSesionAdmin() {
       const [startTime, endTime] = session.time.split(" - ");
       setForm({
         title: session.title,
+        instructor: session.instructor || "",
+        description: session.description || "",
         startTime,
         endTime,
         date: session.date.split("T")[0],
         link: session.link,
         price: session.price,
+        category: session.category || "",
+        maxParticipants: session.maxParticipants || "",
+        thumbnail: session.thumbnail || "",
       });
       setEditId(id);
       setTab("create");
+      setImagePreview(session.thumbnail || "");
+      setUploadedImage(null);
     }
   };
 
@@ -154,13 +199,32 @@ export default function LiveSesionAdmin() {
   const resetForm = () => {
     setForm({
       title: "",
+      instructor: "",
+      description: "",
       startTime: "",
       endTime: "",
       date: "",
       link: "",
       price: "",
+      category: "",
+      maxParticipants: "",
+      thumbnail: "",
     });
     setEditId(null);
+    setUploadedImage(null);
+    setImagePreview("");
+  };
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setUploadedImage(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   // Bulk export functionality
@@ -376,11 +440,26 @@ export default function LiveSesionAdmin() {
                   </IconButton>
 
                   <div className="text-lg font-semibold mb-1">{s.title}</div>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm text-gray-500 mb-1">
+                    <strong>Instructor:</strong> {s.instructor || "Not specified"}
+                  </div>
+                  <div className="text-sm text-gray-500 mb-1">
+                    <strong>Category:</strong> {s.category || "General"}
+                  </div>
+                  <div className="text-sm text-gray-500 mb-1">
                     {new Date(s.date).toDateString()}, {formatTimeRange(s.time)}
                   </div>
-                  <div className="text-sm mb-3">Link: {s.link}</div>
-                  <div className="text-sm mb-3">Price: ₹{s.price}</div>
+                  <div className="text-sm mb-1">
+                    <strong>Max Participants:</strong> {s.maxParticipants || "Unlimited"}
+                  </div>
+                  <div className="text-sm mb-3">
+                    <strong>Price:</strong> ₹{s.price}
+                  </div>
+                  {s.description && (
+                    <div className="text-xs text-gray-600 mb-3 line-clamp-2">
+                      {s.description}
+                    </div>
+                  )}
                   <div className="flex justify-between items-center">
                     <div className="flex gap-2">
                       {hasPermission("manage_live_sessions") && (
@@ -431,9 +510,11 @@ export default function LiveSesionAdmin() {
                       />
                     </TableCell>
                     <TableCell sx={{ fontWeight: "bold" }}>Title</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>Instructor</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>Category</TableCell>
                     <TableCell sx={{ fontWeight: "bold" }}>Date</TableCell>
                     <TableCell sx={{ fontWeight: "bold" }}>Time</TableCell>
-                    <TableCell sx={{ fontWeight: "bold" }}>Link</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>Max Participants</TableCell>
                     <TableCell sx={{ fontWeight: "bold" }}>Price</TableCell>
                     <TableCell sx={{ fontWeight: "bold" }}>Status</TableCell>
                     <TableCell sx={{ fontWeight: "bold" }}>Actions</TableCell>
@@ -449,24 +530,13 @@ export default function LiveSesionAdmin() {
                         />
                       </TableCell>
                       <TableCell>{session.title}</TableCell>
+                      <TableCell>{session.instructor || "Not specified"}</TableCell>
+                      <TableCell>{session.category || "General"}</TableCell>
                       <TableCell>
                         {new Date(session.date).toDateString()}
                       </TableCell>
                       <TableCell>{formatTimeRange(session.time)}</TableCell>
-                      <TableCell>
-                        <a
-                          href={
-                            session.link.startsWith("http")
-                              ? session.link
-                              : `https://${session.link}`
-                          }
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:text-blue-800 underline"
-                        >
-                          {session.link}
-                        </a>
-                      </TableCell>
+                      <TableCell>{session.maxParticipants || "Unlimited"}</TableCell>
                       <TableCell>₹{session.price}</TableCell>
                       <TableCell>
                         <Switch
@@ -518,31 +588,63 @@ export default function LiveSesionAdmin() {
           autoComplete="off"
           onSubmit={handleSubmit}
         >
-          {["title", "date", "startTime", "endTime", "link", "price"].map(
-            (name) => {
-              const label =
-                name === "title"
-                  ? "Title"
-                  : name === "date"
-                  ? "Date"
-                  : name === "startTime"
-                  ? "Start Time"
-                  : name === "endTime"
-                  ? "End Time"
-                  : name === "link"
-                  ? "Link"
-                  : "Price (In Rupees)";
-              const type =
-                name === "date" || name.includes("Time")
-                  ? name.includes("Time")
-                    ? "time"
-                    : "date"
-                  : name === "price"
-                  ? "number"
-                  : "text";
-              return (
-                <div key={name}>
-                  <label className="block font-semibold mb-2">{label}</label>
+          {[
+            "title", 
+            "instructor", 
+            "description", 
+            "category", 
+            "date", 
+            "startTime", 
+            "endTime", 
+            "link", 
+            "price", 
+            "maxParticipants"
+          ].map((name) => {
+            const label =
+              name === "title"
+                ? "Class Title"
+                : name === "instructor"
+                ? "Instructor Name"
+                : name === "description"
+                ? "Description"
+                : name === "category"
+                ? "Category (e.g., CA Foundation, CA Intermediate)"
+                : name === "date"
+                ? "Date"
+                : name === "startTime"
+                ? "Start Time"
+                : name === "endTime"
+                ? "End Time"
+                : name === "link"
+                ? "Meeting Link"
+                : name === "price"
+                ? "Price (In Rupees)"
+                : "Max Participants";
+            
+            const type =
+              name === "date" || name.includes("Time")
+                ? name.includes("Time")
+                  ? "time"
+                  : "date"
+                : name === "price" || name === "maxParticipants"
+                ? "number"
+                : "text";
+            
+            const isTextarea = name === "description";
+            
+            return (
+              <div key={name} className={name === "description" ? "md:col-span-2" : ""}>
+                <label className="block font-semibold mb-2">{label}</label>
+                {isTextarea ? (
+                  <textarea
+                    className="w-full border px-4 py-3 rounded-lg bg-gray-50 h-24 resize-none"
+                    placeholder={label}
+                    value={form[name]}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, [name]: e.target.value }))
+                    }
+                  />
+                ) : (
                   <input
                     type={type}
                     className="w-full border px-4 py-3 rounded-lg bg-gray-50"
@@ -552,10 +654,72 @@ export default function LiveSesionAdmin() {
                       setForm((f) => ({ ...f, [name]: e.target.value }))
                     }
                   />
+                )}
+              </div>
+            );
+          })}
+
+          {/* Thumbnail Section */}
+          <div className="md:col-span-2">
+            <label className="block font-semibold mb-2">Thumbnail Image</label>
+            <div className="space-y-4">
+              {/* Image Upload Option */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Upload Image File
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="w-full border px-4 py-3 rounded-lg bg-gray-50"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Supported formats: JPG, PNG, GIF (Max 5MB)
+                </p>
+              </div>
+
+              {/* OR Divider */}
+              <div className="flex items-center">
+                <div className="flex-1 border-t border-gray-300"></div>
+                <span className="px-3 text-sm text-gray-500">OR</span>
+                <div className="flex-1 border-t border-gray-300"></div>
+              </div>
+
+              {/* URL Option */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Image URL
+                </label>
+                <input
+                  type="text"
+                  className="w-full border px-4 py-3 rounded-lg bg-gray-50"
+                  placeholder="https://example.com/image.jpg"
+                  value={form.thumbnail}
+                  onChange={(e) => setForm((f) => ({ ...f, thumbnail: e.target.value }))}
+                />
+              </div>
+
+              {/* Image Preview */}
+              {(imagePreview || form.thumbnail) && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Preview
+                  </label>
+                  <div className="border rounded-lg p-4 bg-gray-50">
+                    <img
+                      src={imagePreview || form.thumbnail}
+                      alt="Thumbnail preview"
+                      className="w-32 h-24 object-cover rounded border"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                      }}
+                    />
+                  </div>
                 </div>
-              );
-            }
-          )}
+              )}
+            </div>
+          </div>
 
           <div className="md:col-span-2 mt-8">
             <Button
