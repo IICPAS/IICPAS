@@ -11,5 +11,6 @@ router.post("/", upload.single("image"), courseController.createCourse);
 router.put("/:id", upload.single("image"), courseController.updateCourse);
 router.delete("/:id", courseController.deleteCourse);
 router.get("/:id", courseController.getCourse);
+router.put("/:id/toggle-status", courseController.toggleCourseStatus);
 
 export default router;

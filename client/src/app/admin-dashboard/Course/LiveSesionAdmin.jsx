@@ -600,8 +600,8 @@ export default function LiveSesionAdmin() {
             "price", 
             "maxParticipants"
           ].map((name) => {
-            const label =
-              name === "title"
+              const label =
+                name === "title"
                 ? "Class Title"
                 : name === "instructor"
                 ? "Instructor Name"
@@ -609,32 +609,32 @@ export default function LiveSesionAdmin() {
                 ? "Description"
                 : name === "category"
                 ? "Category (e.g., CA Foundation, CA Intermediate)"
-                : name === "date"
-                ? "Date"
-                : name === "startTime"
-                ? "Start Time"
-                : name === "endTime"
-                ? "End Time"
-                : name === "link"
+                  : name === "date"
+                  ? "Date"
+                  : name === "startTime"
+                  ? "Start Time"
+                  : name === "endTime"
+                  ? "End Time"
+                  : name === "link"
                 ? "Meeting Link"
                 : name === "price"
                 ? "Price (In Rupees)"
                 : "Max Participants";
             
-            const type =
-              name === "date" || name.includes("Time")
-                ? name.includes("Time")
-                  ? "time"
-                  : "date"
+              const type =
+                name === "date" || name.includes("Time")
+                  ? name.includes("Time")
+                    ? "time"
+                    : "date"
                 : name === "price" || name === "maxParticipants"
-                ? "number"
-                : "text";
+                  ? "number"
+                  : "text";
             
             const isTextarea = name === "description";
             
-            return (
+              return (
               <div key={name} className={name === "description" ? "md:col-span-2" : ""}>
-                <label className="block font-semibold mb-2">{label}</label>
+                  <label className="block font-semibold mb-2">{label}</label>
                 {isTextarea ? (
                   <textarea
                     className="w-full border px-4 py-3 rounded-lg bg-gray-50 h-24 resize-none"
@@ -655,8 +655,8 @@ export default function LiveSesionAdmin() {
                     }
                   />
                 )}
-              </div>
-            );
+                </div>
+              );
           })}
 
           {/* Thumbnail Section */}
