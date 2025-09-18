@@ -237,7 +237,7 @@ export default function LiveClassSection() {
                 boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)'
               }}
             >
-              <div className="relative w-full h-64 bg-gradient-to-br from-green-50/50 to-blue-50/50">
+              <div className="relative w-full h-96 bg-gradient-to-br from-green-50/50 to-blue-50/50">
                 {/* Modern Live Tag */}
                 <motion.div 
                   className="absolute top-4 left-4 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm px-4 py-2 rounded-full font-bold shadow-lg z-10 flex items-center gap-2"

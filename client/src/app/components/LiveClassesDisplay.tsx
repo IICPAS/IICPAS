@@ -31,16 +31,8 @@ interface LiveClass {
   category: string;
 }
 
-export default function LiveClassesDisplay() {
-  const [liveClasses, setLiveClasses] = useState<LiveClass[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedTab, setSelectedTab] = useState<'upcoming' | 'live' | 'completed'>('upcoming');
-  const [user, setUser] = useState(null);
-
-  const API = process.env.NEXT_PUBLIC_API_URL;
-
-  // Dummy data for CA students
-  const dummyLiveClasses: LiveClass[] = [
+// Dummy data for CA students
+const dummyLiveClasses: LiveClass[] = [
     {
       _id: "1",
       title: "CA Foundation - Accounting Principles",
@@ -145,7 +137,16 @@ export default function LiveClassesDisplay() {
     }
   ];
 
+export default function LiveClassesDisplay() {
+  const [liveClasses, setLiveClasses] = useState<LiveClass[]>(dummyLiveClasses);
+  const [loading, setLoading] = useState(false);
+  const [selectedTab, setSelectedTab] = useState<'upcoming' | 'live' | 'completed'>('upcoming');
+  const [user, setUser] = useState(null);
+
+  const API = process.env.NEXT_PUBLIC_API_URL;
+
   useEffect(() => {
+    // Load data in background without blocking UI
     fetchLiveClasses();
     checkUserAuth();
   }, []);
@@ -173,17 +174,13 @@ export default function LiveClassesDisplay() {
           price: session.price || 0,
           category: session.category || "CA Foundation"
         }));
+        // Update data silently without loading state
         setLiveClasses(transformedClasses);
-      } else {
-        // Fallback to dummy data if API fails
-        setLiveClasses(dummyLiveClasses);
       }
-      setLoading(false);
+      // If API fails, keep showing dummy data (no need to update)
     } catch (error) {
       console.error("Error fetching live classes:", error);
-      // Fallback to dummy data
-      setLiveClasses(dummyLiveClasses);
-      setLoading(false);
+      // Keep showing dummy data if API fails
     }
   };
 
@@ -267,18 +264,6 @@ export default function LiveClassesDisplay() {
 
   const filteredClasses = liveClasses.filter(cls => cls.status === selectedTab);
 
-  if (loading) {
-    return (
-      <div className="py-16 px-4 md:px-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading live classes...</p>
-        </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <section className="py-16 px-4 md:px-20 bg-gray-50">
@@ -343,7 +328,7 @@ export default function LiveClassesDisplay() {
                     style={{
                       backgroundImage: `url(${liveClass.thumbnail || '/images/ca-default.jpg'})`
                     }}
-                  ></div>
+                  />
                   <div className="absolute inset-0 bg-black bg-opacity-40"></div>
                   <div className="absolute top-4 left-4">
                     <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(liveClass.status)}`}>
