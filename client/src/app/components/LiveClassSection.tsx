@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 import {
   VideoIcon,
   PhoneIcon,
@@ -21,6 +22,8 @@ interface LiveSession {
 }
 
 export default function LiveClassSection() {
+  const router = useRouter();
+  
   // Static data for instant loading
   const liveSessions: LiveSession[] = [
     {
@@ -349,10 +352,8 @@ export default function LiveClassSection() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => {
-                  // Open the first live session link if available
-                  if (liveSessions.length > 0 && liveSessions[0].link) {
-                    window.open(liveSessions[0].link, '_blank');
-                  }
+                  // Navigate to live session page
+                  router.push('/live-session');
                 }}
               >
                 Join Live Class Now

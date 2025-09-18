@@ -253,7 +253,7 @@ export default function StudentDashboard() {
           />
           <div className="hidden md:flex items-center gap-3 ml-4">
             <button className="bg-yellow-500 text-white px-3 py-1 rounded text-sm">
-              Learn to Use Lab
+              Digital Hub
             </button>
             <button className="bg-gray-800 text-white px-3 py-1 rounded text-sm">
               Download App
