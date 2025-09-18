@@ -72,6 +72,8 @@ export const createCourse = async (req, res) => {
       seoKeywords,
       seoDescription,
       chapters, // optional
+      pricing, // dynamic pricing configuration
+      tabs, // dynamic tab configuration
     } = req.body;
 
     // Handle uploaded image (if present)
@@ -98,6 +100,8 @@ export const createCourse = async (req, res) => {
       seoKeywords,
       seoDescription,
       chapters,
+      pricing,
+      tabs,
     });
 
     await course.save();

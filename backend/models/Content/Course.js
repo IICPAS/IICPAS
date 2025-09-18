@@ -22,6 +22,29 @@ const CourseSchema = new Schema({
   seoDescription: { type: String }, // HTML from ReactQuill
 
   chapters: [{ type: Schema.Types.ObjectId, ref: "Chapter" }],
+  
+  // Dynamic pricing and UI configuration
+  pricing: {
+    recordedSession: {
+      title: { type: String, default: "DIGITAL HUB+RECORDED SESSION" },
+      buttonText: { type: String, default: "Add Digital Hub" }
+    },
+    liveSession: {
+      title: { type: String, default: "DIGITAL HUB+LIVE SESSION" },
+      buttonText: { type: String, default: "Add Digital Hub+" },
+      priceMultiplier: { type: Number, default: 1.5 }
+    }
+  },
+  
+  // Dynamic tab configuration
+  tabs: {
+    syllabus: { label: { type: String, default: "Syllabus" } },
+    assignment: { label: { type: String, default: "Assignment" } },
+    assessment: { label: { type: String, default: "Assessment & Certificates" } },
+    schedule: { label: { type: String, default: "Live Schedule +" } },
+    simulator: { label: { type: String, default: "Simulator" } }
+  },
+  
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });

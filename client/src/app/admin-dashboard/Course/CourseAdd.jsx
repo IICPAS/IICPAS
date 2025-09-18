@@ -30,6 +30,24 @@ const initialForm = {
   seoKeywords: "",
   seoDescription: "",
   image: null,
+  pricing: {
+    recordedSession: {
+      title: "DIGITAL HUB+RECORDED SESSION",
+      buttonText: "Add Digital Hub"
+    },
+    liveSession: {
+      title: "DIGITAL HUB+LIVE SESSION",
+      buttonText: "Add Digital Hub+",
+      priceMultiplier: 1.5
+    }
+  },
+  tabs: {
+    syllabus: { label: "Syllabus" },
+    assignment: { label: "Assignment" },
+    assessment: { label: "Assessment & Certificates" },
+    schedule: { label: "Live Schedule +" },
+    simulator: { label: "Simulator" }
+  }
 };
 
 export default function CourseAddTab({ onBack }) {
@@ -335,6 +353,214 @@ export default function CourseAddTab({ onBack }) {
             onChange={debouncedJoditChange("caseStudy")}
             onBlur={handleJoditChange("caseStudy")}
           />
+        </div>
+
+        {/* Dynamic Configuration Section */}
+        <div className="border-t pt-8 mt-8">
+          <h2 className="text-xl font-semibold mb-3">Dynamic Configuration</h2>
+          
+          {/* Pricing Configuration */}
+          <div className="mb-6">
+            <h3 className="text-lg font-medium mb-4">Pricing Cards Configuration</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Recorded Session */}
+              <div className="border p-4 rounded-lg">
+                <h4 className="font-semibold mb-3 text-green-600">Recorded Session</h4>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Title</label>
+                    <input
+                      type="text"
+                      className="w-full border p-2 rounded"
+                      value={form.pricing.recordedSession.title}
+                      onChange={(e) => setForm(f => ({
+                        ...f,
+                        pricing: {
+                          ...f.pricing,
+                          recordedSession: {
+                            ...f.pricing.recordedSession,
+                            title: e.target.value
+                          }
+                        }
+                      }))}
+                      placeholder="DIGITAL HUB+RECORDED SESSION"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Button Text</label>
+                    <input
+                      type="text"
+                      className="w-full border p-2 rounded"
+                      value={form.pricing.recordedSession.buttonText}
+                      onChange={(e) => setForm(f => ({
+                        ...f,
+                        pricing: {
+                          ...f.pricing,
+                          recordedSession: {
+                            ...f.pricing.recordedSession,
+                            buttonText: e.target.value
+                          }
+                        }
+                      }))}
+                      placeholder="Add Digital Hub"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Live Session */}
+              <div className="border p-4 rounded-lg">
+                <h4 className="font-semibold mb-3 text-blue-600">Live Session</h4>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Title</label>
+                    <input
+                      type="text"
+                      className="w-full border p-2 rounded"
+                      value={form.pricing.liveSession.title}
+                      onChange={(e) => setForm(f => ({
+                        ...f,
+                        pricing: {
+                          ...f.pricing,
+                          liveSession: {
+                            ...f.pricing.liveSession,
+                            title: e.target.value
+                          }
+                        }
+                      }))}
+                      placeholder="DIGITAL HUB+LIVE SESSION"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Button Text</label>
+                    <input
+                      type="text"
+                      className="w-full border p-2 rounded"
+                      value={form.pricing.liveSession.buttonText}
+                      onChange={(e) => setForm(f => ({
+                        ...f,
+                        pricing: {
+                          ...f.pricing,
+                          liveSession: {
+                            ...f.pricing.liveSession,
+                            buttonText: e.target.value
+                          }
+                        }
+                      }))}
+                      placeholder="Add Digital Hub+"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Price Multiplier</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      className="w-full border p-2 rounded"
+                      value={form.pricing.liveSession.priceMultiplier}
+                      onChange={(e) => setForm(f => ({
+                        ...f,
+                        pricing: {
+                          ...f.pricing,
+                          liveSession: {
+                            ...f.pricing.liveSession,
+                            priceMultiplier: parseFloat(e.target.value) || 1.5
+                          }
+                        }
+                      }))}
+                      placeholder="1.5"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Tab Configuration */}
+          <div className="mb-6">
+            <h3 className="text-lg font-medium mb-4">Tab Labels Configuration</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Syllabus Tab</label>
+                <input
+                  type="text"
+                  className="w-full border p-2 rounded"
+                  value={form.tabs.syllabus.label}
+                  onChange={(e) => setForm(f => ({
+                    ...f,
+                    tabs: {
+                      ...f.tabs,
+                      syllabus: { label: e.target.value }
+                    }
+                  }))}
+                  placeholder="Syllabus"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Assignment Tab</label>
+                <input
+                  type="text"
+                  className="w-full border p-2 rounded"
+                  value={form.tabs.assignment.label}
+                  onChange={(e) => setForm(f => ({
+                    ...f,
+                    tabs: {
+                      ...f.tabs,
+                      assignment: { label: e.target.value }
+                    }
+                  }))}
+                  placeholder="Assignment"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Assessment Tab</label>
+                <input
+                  type="text"
+                  className="w-full border p-2 rounded"
+                  value={form.tabs.assessment.label}
+                  onChange={(e) => setForm(f => ({
+                    ...f,
+                    tabs: {
+                      ...f.tabs,
+                      assessment: { label: e.target.value }
+                    }
+                  }))}
+                  placeholder="Assessment & Certificates"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Schedule Tab</label>
+                <input
+                  type="text"
+                  className="w-full border p-2 rounded"
+                  value={form.tabs.schedule.label}
+                  onChange={(e) => setForm(f => ({
+                    ...f,
+                    tabs: {
+                      ...f.tabs,
+                      schedule: { label: e.target.value }
+                    }
+                  }))}
+                  placeholder="Live Schedule +"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Simulator Tab</label>
+                <input
+                  type="text"
+                  className="w-full border p-2 rounded"
+                  value={form.tabs.simulator.label}
+                  onChange={(e) => setForm(f => ({
+                    ...f,
+                    tabs: {
+                      ...f.tabs,
+                      simulator: { label: e.target.value }
+                    }
+                  }))}
+                  placeholder="Simulator"
+                />
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* SEO Section */}

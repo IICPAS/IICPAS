@@ -91,7 +91,7 @@ const dummyCourses = {
       languages: 15
     },
     duration: "40 hours",
-    level: "Executive & Professional",
+    level: "Levels",
     students: 1250
   },
   "hr-certification": {
@@ -156,7 +156,7 @@ const dummyCourses = {
       languages: 12
     },
     duration: "30 hours",
-    level: "Core",
+    level: "Levels",
     students: 890
   },
   "excel-certification": {
@@ -221,7 +221,7 @@ const dummyCourses = {
       languages: 18
     },
     duration: "35 hours",
-    level: "Expert",
+    level: "Levels",
     students: 2100
   }
 };
@@ -317,11 +317,11 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
 
   // Dynamic tabs based on course data
   const tabs = [
-    { id: "syllabus", label: "Syllabus" },
-    { id: "case-studies", label: "Assignment" },
-    { id: "exam", label: "Assessment & Certificates" },
-    { id: "schedule", label: "Live Schedule +" },
-    { id: "simulation", label: "Simulator" }
+    { id: "syllabus", label: course?.tabs?.syllabus?.label || "Syllabus" },
+    { id: "case-studies", label: course?.tabs?.assignment?.label || "Assignment" },
+    { id: "exam", label: course?.tabs?.assessment?.label || "Assessment & Certificates" },
+    { id: "schedule", label: course?.tabs?.schedule?.label || "Live Schedule +" },
+    { id: "simulation", label: course?.tabs?.simulator?.label || "Simulator" }
   ];
 
   return (
@@ -545,18 +545,23 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
                 {/* Pricing & Enrollment */}
                 <div className="p-6 border-b-2">
                   <div className="text-center text-lg text-gray-600 mb-6">
-                    <p>Get access to this course in Digital hub.</p>
+                    <p>Get access to this course in DIGITAL HUB.</p>
                     <button className="text-blue-600 hover:text-blue-800 font-semibold mt-2">Compare</button>
                   </div>
 
                   {/* Recorded Lecture Option */}
                   <div className="border-2 border-[#3cd664] rounded-xl p-4 mb-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <span className="text-3xl font-bold text-[#3cd664]">Recorded Lecture</span>
+                    <div className="mb-4">
+                      <div className="text-center mb-3">
+                        <span className="text-lg font-bold text-[#3cd664] block">
+                          {course?.pricing?.recordedSession?.title?.split('+')[0] || "DIGITAL HUB+"}
+                        </span>
+                        <span className="text-lg font-bold text-[#3cd664] block">
+                          {course?.pricing?.recordedSession?.title?.split('+')[1] || "RECORDED SESSION"}
+                        </span>
                       </div>
-                      <div className="text-right">
-                        <div className="text-4xl font-bold text-[#3cd664]">
+                      <div className="text-center">
+                        <div className="text-3xl font-bold text-[#3cd664]">
                           ₹{course.price ? course.price.toLocaleString() : "10,800"}
                         </div>
                         {course.discount > 0 && (
@@ -567,24 +572,29 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
                       </div>
                     </div>
                     <button className="w-full bg-[#3cd664] hover:bg-[#33bb58] text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 text-lg">
-                      Add Lab
+                      {course?.pricing?.recordedSession?.buttonText || "Add Digital Hub"}
                     </button>
                   </div>
 
                   {/* Live Lecture Option */}
                   <div className="border-2 border-blue-500 rounded-xl p-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <span className="text-3xl font-bold text-blue-500">Live Lecture</span>
+                    <div className="mb-4">
+                      <div className="text-center mb-3">
+                        <span className="text-lg font-bold text-blue-500 block">
+                          {course?.pricing?.liveSession?.title?.split('+')[0] || "DIGITAL HUB+"}
+                        </span>
+                        <span className="text-lg font-bold text-blue-500 block">
+                          {course?.pricing?.liveSession?.title?.split('+')[1] || "LIVE SESSION"}
+                        </span>
                       </div>
-                      <div className="text-right">
-                        <div className="text-4xl font-bold text-blue-500">
-                          ₹{course.price ? (course.price * 1.5).toLocaleString() : "18,000"}
+                      <div className="text-center">
+                        <div className="text-3xl font-bold text-blue-500">
+                          ₹{course.price ? (course.price * (course?.pricing?.liveSession?.priceMultiplier || 1.5)).toLocaleString() : "18,000"}
                         </div>
                       </div>
                     </div>
                     <button className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 text-lg">
-                      Add Lab+
+                      {course?.pricing?.liveSession?.buttonText || "Add Digital Hub+"}
                     </button>
                   </div>
                 </div>
@@ -609,7 +619,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
                       {course.video ? "Yes" : "No"} Live Sessions
                     </div>
                     <div className="bg-[#3cd664] text-white px-4 py-3 rounded-lg text-lg font-bold">
-                      {course.level || "Executive & Professional"} Level
+                      {course.level || "Levels"}
                     </div>
                     <div className="bg-blue-600 text-white px-4 py-3 rounded-lg text-lg font-bold">
                       {course.category || "General"} Category
@@ -626,7 +636,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
                     <div>
                       <div className="flex items-center justify-center mb-2">
                         <Clock className="w-6 h-6 text-gray-500 mr-2" />
-                        <span className="text-xl font-bold text-gray-900">{course.level || "Executive & Professional"}</span>
+                        <span className="text-xl font-bold text-gray-900">{course.level || "Levels"}</span>
                       </div>
                       <p className="text-lg text-gray-600 font-semibold">Level</p>
                     </div>
