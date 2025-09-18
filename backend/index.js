@@ -58,6 +58,9 @@ import guideRoutes from "./routes/guideRoutes.js";
 //Kit Routes
 import kitRoutes from "./routes/kitRoutes.js";
 
+//Newsletter Subscription Routes
+import newsletterSubscriptionRoutes from "./routes/newsletterSubscriptionRoutes.js";
+
 //Kit Order Routes
 import kitOrderRoutes from "./routes/kitOrderRoutes.js";
 import teacherRoutes from "./routes/teacherRoutes.js";
@@ -159,6 +162,7 @@ app.use("/api/yellow-stats-strip", yellowStatsStripRoutes);
 //NewsletterSection Routes
 import newsletterSectionRoutes from "./routes/WebsiteRoutes/newsletterSectionRoutes.js";
 app.use("/api/newsletter-section", newsletterSectionRoutes);
+app.use("/api/newsletter-subscriptions", newsletterSubscriptionRoutes);
 
 //Ticket Routes
 app.use("/api/tickets", ticketRoutes);

@@ -8,6 +8,7 @@ import { FaEnvelope, FaRocket, FaCheckCircle, FaStar } from "react-icons/fa";
 export default function NewsletterSection() {
   const [email, setEmail] = useState("");
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [newsletterData, setNewsletterData] = useState({
     badge: {
       text: "Stay Updated",
@@ -49,7 +50,6 @@ export default function NewsletterSection() {
       buttonHover: "from-[#22c55e] to-[#16a34a]"
     }
   });
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchNewsletterData();
@@ -84,22 +84,28 @@ export default function NewsletterSection() {
     if (email) {
       try {
         // API call to subscribe to newsletter
-        const response = await fetch("/api/newsletter/subscribe", {
+        const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+        const response = await fetch(`${API_BASE}/newsletter-subscriptions/subscribe`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ email }),
+          body: JSON.stringify({ 
+            email,
+            source: "newsletter"
+          }),
         });
         
-        if (response.ok) {
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
           setIsSubscribed(true);
           setTimeout(() => {
             setIsSubscribed(false);
             setEmail("");
           }, 3000);
         } else {
-          alert("Failed to subscribe. Please try again.");
+          alert(data.message || "Failed to subscribe. Please try again.");
         }
       } catch (error) {
         console.error("Error subscribing to newsletter:", error);
