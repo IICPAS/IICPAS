@@ -86,7 +86,24 @@ export default function StudentAuthForm() {
         { withCredentials: true }
       );
       toast.success("Login successful");
-      window.location.href = "/student-dashboard";
+      
+      // Small delay to ensure login state is set
+      setTimeout(() => {
+        // Check if user came from wishlist page
+        const urlParams = new URLSearchParams(window.location.search);
+        const redirectTo = urlParams.get('redirect');
+        
+        // Also check if user was on wishlist page before
+        const referrer = document.referrer;
+        const wasOnWishlist = referrer.includes('/wishlist');
+        
+        if (redirectTo === 'wishlist' || wasOnWishlist) {
+          // Force a hard reload to refresh the wishlist page state
+          window.location.replace("/wishlist");
+        } else {
+          window.location.href = "/student-dashboard";
+        }
+      }, 500);
     } catch (err: any) {
       toast.error(err?.response?.data?.message || "Login failed");
     }

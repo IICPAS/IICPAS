@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import OurClassDay from "../components/OurClassDay";
 
 const skillLevels = ["Foundation", "Core", "Expert"];
 
@@ -48,6 +49,36 @@ export default function CoursePage() {
       discount: 0,
       image: "/images/course.png",
       description: "Advanced Excel skills for professionals"
+    },
+    {
+      _id: "4",
+      title: "Finance Management Course",
+      category: "Finance",
+      level: "Core",
+      price: 3500,
+      discount: 15,
+      image: "/images/finance.jpg",
+      description: "Complete guide to financial management and analysis"
+    },
+    {
+      _id: "5",
+      title: "US CMA Certification Prep",
+      category: "US CMA",
+      level: "Expert",
+      price: 8000,
+      discount: 8,
+      image: "/images/cma.jpg",
+      description: "Prepare for US Certified Management Accountant exam"
+    },
+    {
+      _id: "6",
+      title: "Advanced Excel Mastery",
+      category: "Excel",
+      level: "Expert",
+      price: 2800,
+      discount: 12,
+      image: "/images/excel-advanced.jpg",
+      description: "Master advanced Excel functions, macros, and data analysis"
     }
   ];
 
@@ -157,7 +188,7 @@ export default function CoursePage() {
             ))}
           </div>
 
-          <div>
+          <div className="mb-6">
             <h3 className="text-xl font-semibold mb-3">Skills Level</h3>
             {skillLevels.map((level) => (
               <label
@@ -174,6 +205,9 @@ export default function CoursePage() {
               </label>
             ))}
           </div>
+
+          {/* Our Class Day Component */}
+          <OurClassDay />
         </aside>
 
         {/* Course Cards */}
@@ -190,51 +224,65 @@ export default function CoursePage() {
             return (
               <motion.div
                 key={course._id || index}
-                whileHover={{ scale: 1.03 }}
-                className="bg-white rounded-2xl shadow-xl border-2 border-white hover:shadow-2xl transition duration-300 ease-in-out group"
+                whileHover={{ scale: 1.02 }}
+                className="bg-white rounded-xl shadow-lg hover:shadow-xl transition duration-300 ease-in-out group cursor-pointer"
+                onClick={() => {
+                  // Map course titles to our dummy course IDs
+                  let courseId = course.title.toLowerCase().replace(/\s+/g, "-");
+                  if (course.title.includes("Basic Accounting")) {
+                    courseId = "basic-accounting-tally";
+                  } else if (course.title.includes("HR Certification")) {
+                    courseId = "hr-certification";
+                  } else if (course.title.includes("Excel Certification")) {
+                    courseId = "excel-certification";
+                  }
+                  router.push(`/course/${courseId}`);
+                }}
               >
-                {/* Image with white border */}
-                <div className="relative h-52 w-full rounded-t-2xl border-[12px] border-white overflow-hidden">
+                {/* Image Section */}
+                <div className="relative h-48 w-full rounded-t-xl overflow-hidden">
                   {course.image ? (
-                    <div className="w-full h-full rounded-t-2xl overflow-hidden">
-                      <Image
-                        src={course.image.startsWith('http') ? course.image : course.image.startsWith('/') ? course.image : `http://localhost:8080${course.image}`}
-                        alt={course.title}
-                        fill
-                        className="object-cover transition-transform duration-300 ease-in-out group-hover:scale-110"
-                        sizes="(max-width: 768px) 100vw, 33vw"
-                        priority={index < 2}
-                      />
-                    </div>
+                    <Image
+                      src={course.image.startsWith('http') ? course.image : course.image.startsWith('/') ? course.image : `http://localhost:8080${course.image}`}
+                      alt={course.title}
+                      fill
+                      className="object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                      priority={index < 2}
+                    />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-200 rounded-t-2xl">
+                    <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-200">
                       <div className="text-center">
                         <div className="text-4xl mb-2">📚</div>
                         <div className="text-sm">Course Image</div>
                       </div>
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-black/10 group-hover:bg-[#0b1224]/40 transition duration-300 z-10 rounded-t-2xl" />
+                  
+                  {/* Discount Badge */}
                   {course.discount > 0 && (
-                    <span className="absolute top-3 right-3 z-20 bg-green-600 text-white text-xs px-2 py-1 rounded-full shadow-md">
+                    <div className="absolute top-3 right-3 bg-green-500 text-white text-xs px-2 py-1 rounded-full font-medium">
                       {course.discount}% OFF
-                    </span>
+                    </div>
                   )}
                 </div>
 
-                {/* Details */}
-                <div className="p-6 flex flex-col justify-between h-[240px]">
-                  <div>
-                    <p className="text-sm text-gray-500 mb-1">
-                      {course.category}
-                    </p>
-                    <h3 className="text-xl font-bold text-[#0b1224] group-hover:text-green-700 line-clamp-2">
-                      {course.title}
-                    </h3>
-                  </div>
-                  <div className="mt-4 flex items-end justify-between">
+                {/* Content Section */}
+                <div className="p-5 space-y-3">
+                  {/* Category */}
+                  <p className="text-sm text-gray-500 font-medium">
+                    {course.category}
+                  </p>
+                  
+                  {/* Title */}
+                  <h3 className="text-lg font-bold text-gray-900 group-hover:text-green-600 transition-colors line-clamp-2">
+                    {course.title}
+                  </h3>
+                  
+                  {/* Price Section */}
+                  <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-green-600 font-bold text-2xl">
+                      <p className="text-green-600 font-bold text-xl">
                         ₹{discountedPrice.toLocaleString()}
                       </p>
                       {course.discount > 0 && (
@@ -243,9 +291,12 @@ export default function CoursePage() {
                         </p>
                       )}
                     </div>
+                    
+                    {/* Enroll Button */}
                     <button
-                      onClick={() => {
-                        // Map course titles to our dummy course IDs
+                      className="bg-gray-900 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+                      onClick={(e) => {
+                        e.stopPropagation();
                         let courseId = course.title.toLowerCase().replace(/\s+/g, "-");
                         if (course.title.includes("Basic Accounting")) {
                           courseId = "basic-accounting-tally";
@@ -256,7 +307,6 @@ export default function CoursePage() {
                         }
                         router.push(`/course/${courseId}`);
                       }}
-                      className="bg-[#0b1224] text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-green-600 transition"
                     >
                       Enroll Now →
                     </button>

@@ -79,14 +79,32 @@ export default function NewsletterSection() {
     return iconMap[iconName] || FaEnvelope;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (email) {
-      setIsSubscribed(true);
-      setTimeout(() => {
-        setIsSubscribed(false);
-        setEmail("");
-      }, 3000);
+      try {
+        // API call to subscribe to newsletter
+        const response = await fetch("/api/newsletter/subscribe", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email }),
+        });
+        
+        if (response.ok) {
+          setIsSubscribed(true);
+          setTimeout(() => {
+            setIsSubscribed(false);
+            setEmail("");
+          }, 3000);
+        } else {
+          alert("Failed to subscribe. Please try again.");
+        }
+      } catch (error) {
+        console.error("Error subscribing to newsletter:", error);
+        alert("Failed to subscribe. Please try again.");
+      }
     }
   };
 
@@ -99,6 +117,7 @@ export default function NewsletterSection() {
       </section>
     );
   }
+
 
   return (
     <section className="relative py-12 px-4 md:px-8 lg:px-12 xl:px-16 mt-12">

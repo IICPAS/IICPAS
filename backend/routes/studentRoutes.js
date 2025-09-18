@@ -625,4 +625,107 @@ router.post("/add-course/:id", async (req, res) => {
   }
 });
 
+// POST /api/v1/students/add-wishlist/:id - Add course to student's wishlist
+router.post("/add-wishlist/:id", async (req, res) => {
+  try {
+    const student = await Student.findById(req.params.id);
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    const { courseId } = req.body;
+    if (!courseId) {
+      return res.status(400).json({ message: "courseId is required" });
+    }
+
+    // Check if course exists
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    // Check if course is already in wishlist
+    if (student.wishlist.includes(courseId)) {
+      return res
+        .status(400)
+        .json({ message: "Course is already in wishlist" });
+    }
+
+    // Add course to student's wishlist
+    student.wishlist.push(courseId);
+    await student.save();
+
+    res.json({
+      message: "Course added to wishlist successfully",
+      studentId: student._id,
+      courseId: courseId,
+      wishlist: student.wishlist,
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: "Failed to add course to wishlist",
+      error: err.message,
+    });
+  }
+});
+
+// POST /api/v1/students/remove-wishlist/:id - Remove course from student's wishlist
+router.post("/remove-wishlist/:id", async (req, res) => {
+  try {
+    const student = await Student.findById(req.params.id);
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    const { courseId } = req.body;
+    if (!courseId) {
+      return res.status(400).json({ message: "courseId is required" });
+    }
+
+    // Check if course is in wishlist
+    if (!student.wishlist.includes(courseId)) {
+      return res
+        .status(400)
+        .json({ message: "Course is not in wishlist" });
+    }
+
+    // Remove course from student's wishlist
+    student.wishlist = student.wishlist.filter(id => id.toString() !== courseId);
+    await student.save();
+
+    res.json({
+      message: "Course removed from wishlist successfully",
+      studentId: student._id,
+      courseId: courseId,
+      wishlist: student.wishlist,
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: "Failed to remove course from wishlist",
+      error: err.message,
+    });
+  }
+});
+
+// GET /api/v1/students/get-wishlist/:id - Get student's wishlist
+router.get("/get-wishlist/:id", async (req, res) => {
+  try {
+    const student = await Student.findById(req.params.id).populate('wishlist');
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    res.json({
+      message: "Wishlist retrieved successfully",
+      studentId: student._id,
+      wishlist: student.wishlist,
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: "Failed to get wishlist",
+      error: err.message,
+    });
+  }
+});
+
 export default router;

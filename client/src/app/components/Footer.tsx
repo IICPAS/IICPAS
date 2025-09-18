@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -21,7 +20,7 @@ import {
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
-  const [footerData, setFooterData] = useState({
+  const footerData = {
     companyInfo: {
       name: "IICPA Institute",
       tagline: "Empowering future finance professionals with world-class education, expert guidance, and industry-relevant skills for career success.",
@@ -82,25 +81,6 @@ export default function Footer() {
       text: "text-white",
       textSecondary: "text-gray-300"
     }
-  });
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchFooterData();
-  }, []);
-
-  const fetchFooterData = async () => {
-    try {
-      const response = await fetch("/api/footer");
-      if (response.ok) {
-        const data = await response.json();
-        setFooterData(data);
-      }
-    } catch (error) {
-      console.error("Error fetching Footer data:", error);
-    } finally {
-      setLoading(false);
-    }
   };
 
   const getSocialIcon = (iconName: string) => {
@@ -117,15 +97,6 @@ export default function Footer() {
     return iconMap[iconName] || FaFacebook;
   };
 
-  if (loading) {
-    return (
-      <footer className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white relative overflow-hidden">
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
-        </div>
-      </footer>
-    );
-  }
 
 
 

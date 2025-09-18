@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
 import {
   VideoIcon,
   PhoneIcon,
@@ -22,97 +21,36 @@ interface LiveSession {
 }
 
 export default function LiveClassSection() {
-  const [liveSessions, setLiveSessions] = useState<LiveSession[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchLiveSessions();
-  }, []);
-
-  const fetchLiveSessions = async () => {
-    try {
-      const response = await fetch("/api/live-sessions");
-      if (response.ok) {
-        const data = await response.json();
-        setLiveSessions(data);
-      } else {
-        // Fallback to mock data if API fails
-        setLiveSessions([
-          {
-            _id: "1",
-            title: "Master Python Programming for Beginners and Beyond",
-            time: "10:00 - 12:00",
-            date: new Date().toISOString(),
-            link: "https://example.com/live-session-1",
-            price: 0,
-            status: "active",
-          } as LiveSession,
-          {
-            _id: "2",
-            title: "Meet the Team: Passionate People, Exceptional Talent",
-            time: "14:00 - 16:00",
-            date: new Date().toISOString(),
-            link: "https://example.com/live-session-2",
-            price: 0,
-            status: "active",
-          } as LiveSession,
-          {
-            _id: "3",
-            title: "The Faces Behind the Brand, Dedicated, Driven",
-            time: "18:00 - 20:00",
-            date: new Date().toISOString(),
-            link: "https://example.com/live-session-3",
-            price: 0,
-            status: "active",
-          } as LiveSession,
-        ]);
-      }
-    } catch (error) {
-      console.error("Error fetching live sessions:", error);
-      // Fallback to mock data
-      setLiveSessions([
-        {
-          _id: "1",
-          title: "Master Python Programming for Beginners and Beyond",
-          time: "10:00 - 12:00",
-          date: new Date().toISOString(),
-          link: "https://example.com/live-session-1",
-          price: 0,
-          status: "active",
-        } as LiveSession,
-        {
-          _id: "2",
-          title: "Meet the Team: Passionate People, Exceptional Talent",
-          time: "14:00 - 16:00",
-          date: new Date().toISOString(),
-          link: "https://example.com/live-session-2",
-          price: 0,
-          status: "active",
-        } as LiveSession,
-        {
-          _id: "3",
-          title: "The Faces Behind the Brand, Dedicated, Driven",
-          time: "18:00 - 20:00",
-          date: new Date().toISOString(),
-          link: "https://example.com/live-session-3",
-          price: 0,
-          status: "active",
-        } as LiveSession,
-      ]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <section className="relative py-12 bg-white overflow-hidden">
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
-        </div>
-      </section>
-    );
-  }
+  // Static data for instant loading
+  const liveSessions: LiveSession[] = [
+    {
+      _id: "1",
+      title: "Master Python Programming for Beginners and Beyond",
+      time: "10:00 - 12:00",
+      date: new Date().toISOString(),
+      link: "https://example.com/live-session-1",
+      price: 0,
+      status: "active",
+    },
+    {
+      _id: "2",
+      title: "Meet the Team: Passionate People, Exceptional Talent",
+      time: "14:00 - 16:00",
+      date: new Date().toISOString(),
+      link: "https://example.com/live-session-2",
+      price: 0,
+      status: "active",
+    },
+    {
+      _id: "3",
+      title: "The Faces Behind the Brand, Dedicated, Driven",
+      time: "18:00 - 20:00",
+      date: new Date().toISOString(),
+      link: "https://example.com/live-session-3",
+      price: 0,
+      status: "active",
+    },
+  ];
   return (
     <section className="relative py-12 bg-white overflow-hidden">
       {/* Subtle Background Elements */}

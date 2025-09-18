@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { FaStar, FaHeart, FaRegHeart, FaBook, FaClock } from "react-icons/fa";
+import { FaStar, FaBook, FaClock } from "react-icons/fa";
+import axios from "axios";
 
 interface Course {
   _id: string;
@@ -20,12 +21,11 @@ export default function CoursesSection() {
   const router = useRouter();
   const [likedIndexes, setLikedIndexes] = useState<number[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  // Fallback data
+  // Fallback data with real course IDs from database
   const fallbackCourses: Course[] = [
     {
-      _id: "1",
+      _id: "68cba03ff6d6e18d9a7588f1",
       title: "Basic Accounting & Tally Foundation",
       image: "/images/accounting.webp",
       price: 5000,
@@ -35,7 +35,7 @@ export default function CoursesSection() {
       reviews: 449,
     },
     {
-      _id: "2",
+      _id: "68cba03ff6d6e18d9a7588f2",
       title: "HR Certification Course",
       image: "/images/young-woman.jpg",
       price: 1000,
@@ -45,7 +45,7 @@ export default function CoursesSection() {
       reviews: 320,
     },
     {
-      _id: "3",
+      _id: "68cba03ff6d6e18d9a7588f3",
       title: "Excel Certification Course",
       image: "/images/course.png",
       price: 2000,
@@ -55,7 +55,7 @@ export default function CoursesSection() {
       reviews: 680,
     },
     {
-      _id: "4",
+      _id: "68cba03ff6d6e18d9a7588f4",
       title: "Learn the Foundations of Visual Communication",
       image: "/images/a4.jpg",
       price: 240.00,
@@ -65,7 +65,7 @@ export default function CoursesSection() {
       reviews: 129,
     },
     {
-      _id: "5",
+      _id: "68cba03ff6d6e18d9a7588f5",
       title: "Cooking Made Easy: Essential Skills for Everyday Meals",
       image: "/images/about.jpeg",
       price: 240.00,
@@ -75,7 +75,7 @@ export default function CoursesSection() {
       reviews: 129,
     },
     {
-      _id: "6",
+      _id: "68cba03ff6d6e18d9a7588f6",
       title: "How to Capture Stunning Photos with Ease",
       image: "/images/s.jpg",
       price: 240.00,
@@ -87,6 +87,10 @@ export default function CoursesSection() {
   ];
 
   useEffect(() => {
+    // Set fallback courses immediately for instant display
+    setCourses(fallbackCourses);
+    
+    // Optionally fetch from API in background (without loading state)
     fetchCourses();
   }, []);
 
@@ -106,33 +110,61 @@ export default function CoursesSection() {
           rating: 4.5, // This could be fetched from reviews
           reviews: 129, // This could be fetched from reviews
         }));
-        setCourses(transformedCourses);
-      } else {
-        setCourses(fallbackCourses);
+        // Update courses if API data is different from fallback
+        if (transformedCourses.length > 0) {
+          setCourses(transformedCourses);
+        }
       }
     } catch (error) {
       console.error("Error fetching courses:", error);
-      setCourses(fallbackCourses);
-    } finally {
-      setLoading(false);
+      // Keep fallback courses if API fails
     }
   };
 
-  const toggleLike = (index: number) => {
-    setLikedIndexes((prev) =>
-      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
-    );
+  const toggleLike = async (courseId: string, index: number) => {
+    try {
+      const API = process.env.NEXT_PUBLIC_API_URL;
+      
+      // Check if student is logged in
+      const studentRes = await axios.get(`${API}/api/v1/students/isstudent`, {
+        withCredentials: true,
+      });
+      
+      if (!studentRes.data.student) {
+        // Redirect to wishlist page - it will show login prompt
+        window.location.href = "/wishlist";
+        return;
+      }
+      
+      const studentId = studentRes.data.student._id;
+      const isLiked = likedIndexes.includes(index);
+      
+      if (isLiked) {
+        // Remove from wishlist
+        await axios.post(
+          `${API}/api/v1/students/remove-wishlist/${studentId}`,
+          { courseId },
+          { withCredentials: true }
+        );
+      } else {
+        // Add to wishlist
+        await axios.post(
+          `${API}/api/v1/students/add-wishlist/${studentId}`,
+          { courseId },
+          { withCredentials: true }
+        );
+      }
+      
+      // Update local state
+      setLikedIndexes((prev) =>
+        isLiked ? prev.filter((i) => i !== index) : [...prev, index]
+      );
+      
+    } catch (error) {
+      console.error("Error toggling wishlist:", error);
+      alert("Error updating wishlist. Please try again.");
+    }
   };
-
-  if (loading) {
-    return (
-      <section className="py-16 px-4 md:px-20 bg-[#f9fbfa]">
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
-        </div>
-      </section>
-    );
-  }
 
   return (
     <section className="py-16 px-4 md:px-20 bg-[#f9fbfa]">
@@ -177,7 +209,7 @@ export default function CoursesSection() {
             <div className="p-5 space-y-3">
               <div className="flex items-center justify-between text-sm text-gray-600 font-semibold">
                 <span className="text-lg text-[#3cd664] font-bold">
-                  ${course.price}
+                  ₹{course.price}
                 </span>
                 <span className="flex items-center gap-1 text-yellow-500">
                   <FaStar /> {course.rating}
@@ -208,13 +240,36 @@ export default function CoursesSection() {
             </div>
 
             <div
-              className="absolute top-6 right-6 text-xl cursor-pointer text-red-500 hover:text-white hover:bg-red-500 p-2 rounded-full transition-all duration-300"
+              className="absolute top-6 right-6 cursor-pointer"
               onClick={(e) => {
                 e.stopPropagation();
-                toggleLike(index);
+                toggleLike(course._id, index);
               }}
             >
-              {likedIndexes.includes(index) ? <FaHeart /> : <FaRegHeart />}
+              <button
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 shadow-md hover:shadow-lg border ${
+                  likedIndexes.includes(index) 
+                    ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600' 
+                    : 'bg-blue-100 hover:bg-blue-200 text-blue-600 border-blue-200'
+                }`}
+                title="Add to Favorites"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="currentColor"
+                  stroke="currentColor"
+                  strokeWidth="1"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  <path
+                    d="M18 11h-2v-2h2v2zm0 4h-2v-2h2v2zm-4-4h-2v-2h2v2zm0 4h-2v-2h2v2zm-4-4H6v-2h2v2zm0 4H6v-2h2v2z"
+                    fill="white"
+                    opacity="0.8"
+                  />
+                </svg>
+              </button>
             </div>
           </div>
         ))}

@@ -1,72 +1,38 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { FaStar, FaChevronLeft, FaChevronRight, FaQuoteLeft } from "react-icons/fa";
 import Image from "next/image";
 import { BiSolidQuoteRight } from "react-icons/bi";
-import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Mock fallback data
-const mockTestimonials = [
-  {
-    quote:
-      "Their support and technical expertise helped us launch our platform in record time. Highly recommended!",
-    author: "Rajiv Ranjan",
-    role: "Student",
-    image: "https://randomuser.me/api/portraits/men/32.jpg",
-  },
-  {
-    quote:
-      "The team was super responsive and helped us with every challenge. A truly professional experience!",
-    author: "Sneha Kapoor",
-    role: "HR Manager",
-    image: "https://randomuser.me/api/portraits/women/65.jpg",
-  },
-  {
-    quote:
-      "Triostack built our platform with impressive speed and quality. Will definitely work again!",
-    author: "Michael Scott",
-    role: "Marketing Head",
-    image: "https://randomuser.me/api/portraits/men/78.jpg",
-  },
-];
-
 export default function TestimonialCarousel() {
-  const [testimonials, setTestimonials] = useState([]);
   const [index, setIndex] = useState(0);
-
-  useEffect(() => {
-    const fetchTestimonials = async () => {
-      try {
-        const res = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/testimonials`
-        );
-        const data = res.data;
-
-        // Map and normalize
-        const formatted = data.length
-          ? data.map((t, i) => ({
-              quote: t.message,
-              author: t.name,
-              role: t.designation,
-              image: t.image 
-                ? `${process.env.NEXT_PUBLIC_API_URL}/${t.image}`
-                : `https://randomuser.me/api/portraits/${
-                    i % 2 === 0 ? "men" : "women"
-                  }/${30 + i}.jpg`,
-            }))
-          : mockTestimonials;
-
-        setTestimonials(formatted);
-      } catch (err) {
-        console.error("Error fetching testimonials:", err);
-        setTestimonials(mockTestimonials);
-      }
-    };
-
-    fetchTestimonials();
-  }, []);
+  
+  // Static testimonial data for instant loading
+  const testimonials = [
+    {
+      quote:
+        "IICPA Institute transformed my career completely. The courses are comprehensive and the instructors are experts in their field. Highly recommended!",
+      author: "Rajiv Ranjan",
+      role: "Student",
+      image: "https://randomuser.me/api/portraits/men/32.jpg",
+    },
+    {
+      quote:
+        "The learning experience at IICPA is exceptional. The practical approach and real-world examples made complex concepts easy to understand.",
+      author: "Sneha Kapoor",
+      role: "HR Manager",
+      image: "https://randomuser.me/api/portraits/women/65.jpg",
+    },
+    {
+      quote:
+        "IICPA helped me master accounting and finance skills that directly improved my job performance. The support team is amazing!",
+      author: "Michael Scott",
+      role: "Marketing Head",
+      image: "https://randomuser.me/api/portraits/men/78.jpg",
+    },
+  ];
 
   const handlePrev = () => {
     setIndex((prev) => (prev === 0 ? testimonials.length - 1 : prev - 1));

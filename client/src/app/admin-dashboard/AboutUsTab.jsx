@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FaSave, FaEye, FaEdit, FaTrash, FaCheck, FaTimes, FaImage, FaPlus, FaMinus } from "react-icons/fa";
+import { FaSave, FaEye, FaEdit, FaTrash, FaCheck, FaTimes, FaImage, FaVideo, FaUpload } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -14,15 +14,13 @@ export default function AboutUsTab() {
     title: "",
     content: "",
     mainImage: "",
-    testimonialImage: "",
-    testimonial: {
-      text: "",
-      author: "",
-      position: ""
-    },
-    classSchedule: {
-      title: "",
-      days: []
+    video: {
+      type: "file",
+      url: "/videos/aboutus.mp4",
+      poster: "/images/video-poster.jpg",
+      autoplay: true,
+      loop: true,
+      muted: true
     },
     button: {
       text: "",
@@ -34,7 +32,7 @@ export default function AboutUsTab() {
       background: "bg-white"
     }
   });
-  const [newDay, setNewDay] = useState({ day: "", time: "" });
+  const [uploadingVideo, setUploadingVideo] = useState(false);
 
   const colorOptions = [
     { value: "text-white", label: "White" },
@@ -117,27 +115,56 @@ export default function AboutUsTab() {
     }
   };
 
-  const handleDayAdd = () => {
-    if (newDay.day.trim() && newDay.time.trim()) {
-      setFormData(prev => ({
-        ...prev,
-        classSchedule: {
-          ...prev.classSchedule,
-          days: [...prev.classSchedule.days, { ...newDay }]
-        }
-      }));
-      setNewDay({ day: "", time: "" });
-    }
-  };
 
-  const handleDayRemove = (index) => {
-    setFormData(prev => ({
-      ...prev,
-      classSchedule: {
-        ...prev.classSchedule,
-        days: prev.classSchedule.days.filter((_, i) => i !== index)
+  const handleVideoUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('video/')) {
+      toast.error("Please select a valid video file");
+      return;
+    }
+
+    // Validate file size (50MB limit)
+    if (file.size > 50 * 1024 * 1024) {
+      toast.error("Video file size must be less than 50MB");
+      return;
+    }
+
+    setUploadingVideo(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('video', file);
+
+      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const response = await fetch(`${API_BASE}/upload/video`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setFormData(prev => ({
+          ...prev,
+          video: {
+            ...prev.video,
+            url: result.filePath,
+            type: 'file'
+          }
+        }));
+        toast.success("Video uploaded successfully!");
+      } else {
+        toast.error("Failed to upload video");
       }
-    }));
+    } catch (error) {
+      console.error("Error uploading video:", error);
+      toast.error("Error uploading video");
+    } finally {
+      setUploadingVideo(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -245,15 +272,13 @@ export default function AboutUsTab() {
       title: "",
       content: "",
       mainImage: "",
-      testimonialImage: "",
-      testimonial: {
-        text: "",
-        author: "",
-        position: ""
-      },
-      classSchedule: {
-        title: "",
-        days: []
+      video: {
+        type: "file",
+        url: "/videos/aboutus.mp4",
+        poster: "/images/video-poster.jpg",
+        autoplay: true,
+        loop: true,
+        muted: true
       },
       button: {
         text: "",
@@ -265,7 +290,6 @@ export default function AboutUsTab() {
         background: "bg-white"
       }
     });
-    setNewDay({ day: "", time: "" });
   };
 
   if (loading) {
@@ -335,143 +359,132 @@ export default function AboutUsTab() {
             />
           </div>
 
-          {/* Testimonial */}
+          {/* Video Management Section */}
           <div>
-            <h3 className="text-lg font-medium text-gray-700 mb-4">Testimonial</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <h3 className="text-lg font-medium text-gray-700 mb-4">Video Settings</h3>
+            <div className="bg-gray-50 p-4 rounded-lg space-y-4">
+              
+              {/* Video Type Selection */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Testimonial Image URL
+                  Video Type
+                </label>
+                <select
+                  value={formData.video.type}
+                  onChange={(e) => handleInputChange("video.type", e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="file">Upload Video File</option>
+                  <option value="url">External Video URL</option>
+                </select>
+              </div>
+
+              {/* Video Upload or URL Input */}
+              {formData.video.type === "file" ? (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Upload Video File
+                  </label>
+                  <div className="flex items-center space-x-4">
+                    <input
+                      type="file"
+                      accept="video/*"
+                      onChange={handleVideoUpload}
+                      className="hidden"
+                      id="video-upload"
+                      disabled={uploadingVideo}
+                    />
+                    <label
+                      htmlFor="video-upload"
+                      className={`flex items-center px-4 py-2 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50 ${
+                        uploadingVideo ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                    >
+                      <FaUpload className="mr-2" />
+                      {uploadingVideo ? 'Uploading...' : 'Choose Video File'}
+                    </label>
+                    {formData.video.url && (
+                      <span className="text-sm text-gray-600">
+                        Current: {formData.video.url}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Supported formats: MP4, WebM, AVI. Max size: 50MB
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Video URL
+                  </label>
+                  <input
+                    type="url"
+                    value={formData.video.url}
+                    onChange={(e) => handleInputChange("video.url", e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="https://example.com/video.mp4"
+                  />
+                </div>
+              )}
+
+              {/* Video Poster */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Video Poster/Thumbnail URL
                 </label>
                 <input
                   type="text"
-                  value={formData.testimonialImage}
-                  onChange={(e) => handleInputChange("testimonialImage", e.target.value)}
+                  value={formData.video.poster}
+                  onChange={(e) => handleInputChange("video.poster", e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="/images/young-woman.jpg"
+                  placeholder="/images/video-poster.jpg"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Author Name
-                </label>
-                <input
-                  type="text"
-                  value={formData.testimonial.author}
-                  onChange={(e) => handleInputChange("testimonial.author", e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Alisa Oliva"
-                />
+
+              {/* Video Settings */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="autoplay"
+                    checked={formData.video.autoplay}
+                    onChange={(e) => handleInputChange("video.autoplay", e.target.checked)}
+                    className="mr-2"
+                  />
+                  <label htmlFor="autoplay" className="text-sm text-gray-700">
+                    Auto Play
+                  </label>
+                </div>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="loop"
+                    checked={formData.video.loop}
+                    onChange={(e) => handleInputChange("video.loop", e.target.checked)}
+                    className="mr-2"
+                  />
+                  <label htmlFor="loop" className="text-sm text-gray-700">
+                    Loop Video
+                  </label>
+                </div>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="muted"
+                    checked={formData.video.muted}
+                    onChange={(e) => handleInputChange("video.muted", e.target.checked)}
+                    className="mr-2"
+                  />
+                  <label htmlFor="muted" className="text-sm text-gray-700">
+                    Muted
+                  </label>
+                </div>
               </div>
-            </div>
-            <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Author Position
-              </label>
-              <input
-                type="text"
-                value={formData.testimonial.position}
-                onChange={(e) => handleInputChange("testimonial.position", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Web Designer"
-              />
-            </div>
-            <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Testimonial Text
-              </label>
-              <textarea
-                value={formData.testimonial.text}
-                onChange={(e) => handleInputChange("testimonial.text", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                rows="3"
-                placeholder="Enter testimonial text"
-              />
             </div>
           </div>
 
-          {/* Class Schedule */}
-          <div>
-            <h3 className="text-lg font-medium text-gray-700 mb-4">Class Schedule</h3>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Schedule Title
-              </label>
-              <input
-                type="text"
-                value={formData.classSchedule.title}
-                onChange={(e) => handleInputChange("classSchedule.title", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Our Class Day"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <h4 className="font-medium text-gray-700">Schedule Days</h4>
-              {formData.classSchedule.days.map((day, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={day.day}
-                    onChange={(e) => {
-                      const newDays = [...formData.classSchedule.days];
-                      newDays[index].day = e.target.value;
-                      setFormData(prev => ({
-                        ...prev,
-                        classSchedule: { ...prev.classSchedule, days: newDays }
-                      }));
-                    }}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Day"
-                  />
-                  <input
-                    type="text"
-                    value={day.time}
-                    onChange={(e) => {
-                      const newDays = [...formData.classSchedule.days];
-                      newDays[index].time = e.target.value;
-                      setFormData(prev => ({
-                        ...prev,
-                        classSchedule: { ...prev.classSchedule, days: newDays }
-                      }));
-                    }}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Time"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleDayRemove(index)}
-                    className="p-2 text-red-600 hover:bg-red-100 rounded-md"
-                  >
-                    <FaMinus />
-                  </button>
-                </div>
-              ))}
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={newDay.day}
-                  onChange={(e) => setNewDay(prev => ({ ...prev, day: e.target.value }))}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Add day"
-                />
-                <input
-                  type="text"
-                  value={newDay.time}
-                  onChange={(e) => setNewDay(prev => ({ ...prev, time: e.target.value }))}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Add time"
-                />
-                <button
-                  type="button"
-                  onClick={handleDayAdd}
-                  className="p-2 text-green-600 hover:bg-green-100 rounded-md"
-                >
-                  <FaPlus />
-                </button>
-              </div>
-            </div>
-          </div>
+
 
           {/* Button */}
           <div>
@@ -583,10 +596,6 @@ export default function AboutUsTab() {
                     {entry.content.substring(0, 100)}...
                   </p>
                   
-                  <div className="text-gray-600">
-                    <span className="font-medium">Testimonial: </span>
-                    {entry.testimonial.author} - {entry.testimonial.position}
-                  </div>
                 </div>
                 
                 <div className="flex space-x-2">
