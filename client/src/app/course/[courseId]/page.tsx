@@ -91,7 +91,7 @@ const dummyCourses = {
       languages: 15
     },
     duration: "40 hours",
-    level: "Foundation",
+    level: "Executive & Professional",
     students: 1250
   },
   "hr-certification": {
@@ -321,7 +321,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
     { id: "case-studies", label: "Assignment" },
     { id: "exam", label: "Assessment & Certificates" },
     { id: "schedule", label: "Live Schedule +" },
-    { id: "simulation", label: "Simulation & Ex." }
+    { id: "simulation", label: "Simulator" }
   ];
 
   return (
@@ -347,7 +347,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
                 </div>
 
                 {/* Course Title */}
-                <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+                <h1 className="text-5xl lg:text-6xl font-bold bg-gradient-to-r from-blue-500 to-emerald-500 bg-clip-text text-transparent mb-6 leading-tight">
                   {course.title}
                 </h1>
 
@@ -386,7 +386,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
                       <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`py-3 px-2 border-b-4 font-semibold text-xs whitespace-nowrap ${
+                        className={`py-3 px-2 border-b-4 font-semibold text-base whitespace-nowrap ${
                           activeTab === tab.id
                             ? "border-[#3cd664] text-[#3cd664]"
                             : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
@@ -402,7 +402,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
                 {activeTab === "syllabus" && (
                   <div>
                     <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-3xl font-bold text-gray-900">Course Syllabus</h3>
+                      <h3 className="text-3xl font-bold bg-gradient-to-r from-blue-500 to-emerald-500 bg-clip-text text-transparent">Course Syllabus</h3>
                       <button className="text-[#3cd664] hover:text-[#33bb58] font-bold text-lg">
                         View Full Syllabus
                       </button>
@@ -545,7 +545,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
                 {/* Pricing & Enrollment */}
                 <div className="p-6 border-b-2">
                   <div className="text-center text-lg text-gray-600 mb-6">
-                    <p>Get access to this course in Lab & Lab+.</p>
+                    <p>Get access to this course in Digital hub.</p>
                     <button className="text-blue-600 hover:text-blue-800 font-semibold mt-2">Compare</button>
                   </div>
 
@@ -572,18 +572,18 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
                   </div>
 
                   {/* Live Lecture Option */}
-                  <div className="border-2 border-orange-500 rounded-xl p-4">
+                  <div className="border-2 border-blue-500 rounded-xl p-4">
                     <div className="flex items-center justify-between mb-4">
                       <div>
-                        <span className="text-3xl font-bold text-orange-500">Live Lecture</span>
+                        <span className="text-3xl font-bold text-blue-500">Live Lecture</span>
                       </div>
                       <div className="text-right">
-                        <div className="text-4xl font-bold text-orange-500">
+                        <div className="text-4xl font-bold text-blue-500">
                           ₹{course.price ? (course.price * 1.5).toLocaleString() : "18,000"}
                         </div>
                       </div>
                     </div>
-                    <button className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 text-lg">
+                    <button className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 text-lg">
                       Add Lab+
                     </button>
                   </div>
@@ -593,25 +593,25 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
                 <div className="p-6 border-b-2">
                   <p className="text-xl text-gray-600 mb-6 font-semibold">This course includes:</p>
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-[#0b1224] text-white px-4 py-3 rounded-lg text-lg font-bold">
-                      {course.chapters ? course.chapters.length : 0} Chapters
+                    <div className="bg-blue-600 text-white px-4 py-3 rounded-lg text-lg font-bold">
+                      {course.chapters ? course.chapters.length : 0} Lesson
                     </div>
                     <div className="bg-[#3cd664] text-white px-4 py-3 rounded-lg text-lg font-bold">
                       {course.chapters ? course.chapters.reduce((total, chapter) => total + (chapter.topics ? chapter.topics.length : 0), 0) : 0} Topics
                     </div>
-                    <div className="bg-[#0b1224] text-white px-4 py-3 rounded-lg text-lg font-bold">
-                      {course.caseStudy ? "Yes" : "No"} Case Studies
+                    <div className="bg-blue-600 text-white px-4 py-3 rounded-lg text-lg font-bold">
+                      Simulator
                     </div>
                     <div className="bg-[#3cd664] text-white px-4 py-3 rounded-lg text-lg font-bold">
-                      {course.examCert ? "Yes" : "No"} Assessments
+                      {course.examCert ? "Yes" : "No."} Assignment
                     </div>
-                    <div className="bg-[#0b1224] text-white px-4 py-3 rounded-lg text-lg font-bold">
+                    <div className="bg-blue-600 text-white px-4 py-3 rounded-lg text-lg font-bold">
                       {course.video ? "Yes" : "No"} Live Sessions
                     </div>
                     <div className="bg-[#3cd664] text-white px-4 py-3 rounded-lg text-lg font-bold">
-                      {course.level || "Foundation"} Level
+                      {course.level || "Executive & Professional"} Level
                     </div>
-                    <div className="bg-[#0b1224] text-white px-4 py-3 rounded-lg text-lg font-bold">
+                    <div className="bg-blue-600 text-white px-4 py-3 rounded-lg text-lg font-bold">
                       {course.category || "General"} Category
                     </div>
                     <div className="bg-[#3cd664] text-white px-4 py-3 rounded-lg text-lg font-bold">
@@ -626,7 +626,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
                     <div>
                       <div className="flex items-center justify-center mb-2">
                         <Clock className="w-6 h-6 text-gray-500 mr-2" />
-                        <span className="text-xl font-bold text-gray-900">{course.level || "Foundation"}</span>
+                        <span className="text-xl font-bold text-gray-900">{course.level || "Executive & Professional"}</span>
                       </div>
                       <p className="text-lg text-gray-600 font-semibold">Level</p>
                     </div>
