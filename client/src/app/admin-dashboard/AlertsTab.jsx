@@ -108,7 +108,7 @@ export default function AlertsTab() {
       </form>
 
       {/* Table */}
-      <div className="overflow-auto border border-gray-200 rounded-xl shadow-sm max-h-[65vh]">
+      <div className="overflow-auto border border-gray-200 rounded-xl shadow-sm max-h-[65vh] custom-scrollbar">
         <table className="min-w-full text-sm table-auto">
           <thead className="bg-gray-50 sticky top-0 z-10 shadow-sm">
             <tr>

@@ -224,7 +224,7 @@ export default function CenterDashboard() {
         <div className="font-semibold">{center?.name || "Center"}</div>
         <div className="text-sm text-[#e0e7ff]">{center?.email}</div>
       </div>
-      <nav className="flex-1 flex flex-col gap-2 text-base overflow-y-auto px-2 scrollbar-hide">
+      <nav className="flex-1 flex flex-col gap-2 text-base overflow-y-auto px-2 custom-scrollbar">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -249,7 +249,7 @@ export default function CenterDashboard() {
   return (
     <div className="flex h-screen bg-[#f5f7fa] overflow-hidden">
       {/* Desktop Sidebar */}
-      <aside className="hidden md:block w-70 bg-blue-400 border-r-1 border-blue-500 rounded-[1vmin] text-white h-full overflow-y-auto z-20 shadow">
+      <aside className="hidden md:block w-70 bg-blue-400 border-r-1 border-blue-500 rounded-[1vmin] text-white h-full overflow-y-auto z-20 shadow custom-scrollbar">
         {Sidebar}
       </aside>
 
@@ -277,7 +277,7 @@ export default function CenterDashboard() {
         />
 
         {/* Main content (scrollable area) */}
-        <div className="flex-1 overflow-y-auto bg-white">
+        <div className="flex-1 overflow-y-auto bg-white custom-scrollbar">
           {renderTabContent(activeTab, center)}
         </div>
       </div>

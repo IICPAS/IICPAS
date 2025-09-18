@@ -196,7 +196,7 @@ const CompanyDashboardPage = () => {
       {/* Ticket Modal */}
       {showTicketModal && (
         <div className="fixed inset-0 bg-transparent bg-opacity-10 backdrop-blur-[6px] flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-300 bg-opacity-30 rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-fade-in border border-gray-700">
+          <div className="bg-gray-300 bg-opacity-30 rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-fade-in border border-gray-700 custom-scrollbar">
             <div className="flex justify-between items-center p-5 bg-blue-900 bg-opacity-50 border-b border-gray-700">
               <h3 className="text-xl font-bold text-white">
                 Raise a New Ticket

@@ -106,7 +106,7 @@ export default function TeacherDashboard() {
           </div>
         )}
       </div>
-      <nav className="flex-1 overflow-y-auto scrollbar-hide px-2">
+      <nav className="flex-1 overflow-y-auto custom-scrollbar px-2">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -139,7 +139,7 @@ export default function TeacherDashboard() {
   return (
     <div className="flex h-screen">
       {/* Sidebar - Desktop: fixed height, scrollable, hidden scrollbar */}
-      <aside className="hidden lg:block w-70 min-h-screen bg-blue-200 border-r-1 border-blue-400 rounded-[1vmin] scrollbar-hide overflow-y-auto">
+      <aside className="hidden lg:block w-70 min-h-screen bg-blue-200 border-r-1 border-blue-400 rounded-[1vmin] custom-scrollbar overflow-y-auto">
         {renderSidebar()}
       </aside>
 
@@ -175,7 +175,7 @@ export default function TeacherDashboard() {
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         direction="left"
-        className="bg-white w-64 h-full scrollbar-hide"
+        className="bg-white w-64 h-full custom-scrollbar"
       >
         <div className="h-full">{renderSidebar(true)}</div>
         <button
@@ -188,7 +188,7 @@ export default function TeacherDashboard() {
       </Drawer>
 
       {/* Main Content: scrolls independently of sidebar */}
-      <main className="flex-1 min-h-screen p-6 pt-20 overflow-y-auto">
+      <main className="flex-1 min-h-screen p-6 pt-20 overflow-y-auto custom-scrollbar">
         {activeTab === "profile" ? (
           <TeacherProfileTab teacher={teacher} onUpdate={fetchTeacherProfile} />
         ) : activeTab === "courses" ? (

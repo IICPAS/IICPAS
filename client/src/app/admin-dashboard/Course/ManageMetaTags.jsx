@@ -184,7 +184,7 @@ export default function ManageMetaTags() {
             />
           </div>
 
-          <div className="overflow-auto rounded-md bg-white">
+          <div className="overflow-auto rounded-md bg-white custom-scrollbar">
             <Table>
               <TableHead className="bg-gray-100">
                 <TableRow>

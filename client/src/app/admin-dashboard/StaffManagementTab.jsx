@@ -353,7 +353,7 @@ function EmployeeModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-transparent bg-opacity-30 backdrop-blur-sm">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar">
         <div className="flex items-center justify-between p-6 border-b">
           <h3 className="text-xl font-bold text-gray-900">
             {isEdit ? "Edit Employee" : "Add New Employee"}
