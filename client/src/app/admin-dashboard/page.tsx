@@ -175,7 +175,7 @@ function AdminDashboardContent() {
           <p className="text-sm text-blue-600">{user?.role}</p>
         </div>
       </div>
-      <nav className="flex-1 overflow-y-auto scrollbar-hide px-3">
+      <nav className="flex-1 overflow-y-auto px-3 custom-scrollbar">
         {/* Accessible main modules */}
         {accessibleModules.slice(0, 3).map((tab) => (
           <button
@@ -299,7 +299,7 @@ function AdminDashboardContent() {
   return (
     <div className="bg-gray-50">
       {/* Sidebar - Desktop: fixed position, scrollable, hidden scrollbar */}
-      <aside className="hidden lg:block w-70 h-screen fixed left-0 top-0 bg-gradient-to-b from-blue-100 to-blue-200 border-r border-blue-300 rounded-r-2xl shadow-xl overflow-y-auto scrollbar-hide z-50">
+      <aside className="hidden lg:block w-70 h-screen fixed left-0 top-0 bg-gradient-to-b from-blue-100 to-blue-200 border-r border-blue-300 rounded-r-2xl shadow-xl overflow-y-auto custom-scrollbar z-50">
         {renderSidebar()}
       </aside>
 
@@ -337,7 +337,7 @@ function AdminDashboardContent() {
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         direction="left"
-        className="bg-gradient-to-b from-blue-100 to-blue-200 w-64 h-full scrollbar-hide"
+        className="bg-gradient-to-b from-blue-100 to-blue-200 w-64 h-full custom-scrollbar"
       >
         <div className="h-full">{renderSidebar(true)}</div>
         <button

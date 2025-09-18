@@ -484,18 +484,18 @@ const CourseDisplayTab = () => {
                 }}
               >
                 <Box
-                  className="flex-1 overflow-y-auto p-6"
+                  className="flex-1 overflow-y-auto p-6 custom-scrollbar"
                   sx={{
                     scrollbarWidth: "thin",
                     "&::-webkit-scrollbar": {
                       width: "8px",
                     },
                     "&::-webkit-scrollbar-track": {
-                      background: "#f1f5f9",
+                      background: "#dbeafe",
                       borderRadius: "4px",
                     },
                     "&::-webkit-scrollbar-thumb": {
-                      background: "#cbd5e1",
+                      background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
                       borderRadius: "4px",
                       "&:hover": {
                         background: "#94a3b8",

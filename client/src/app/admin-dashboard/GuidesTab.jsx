@@ -253,7 +253,7 @@ const GuidesTab = () => {
           className="fixed inset-0 bg-transparent bg-opacity-30 backdrop-blur-md flex items-center justify-center z-50"
           style={{ backdropFilter: "blur(6px)" }}
         >
-          <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto custom-scrollbar">
             <h2 className="text-xl font-semibold mb-4">
               {editingGuide ? "Edit Guide" : "Add New Guide"}
             </h2>
