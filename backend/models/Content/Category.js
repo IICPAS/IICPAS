@@ -7,6 +7,10 @@ const CategorySchema = new mongoose.Schema(
       unique: true,
       trim: true,
     },
+    description: {
+      type: String,
+      trim: true,
+    },
     status: {
       type: String,
       enum: ["Active", "Inactive"],
@@ -18,6 +22,6 @@ const CategorySchema = new mongoose.Schema(
   }
 );
 
-const Catgeory = mongoose.model("Category", CategorySchema);
+const Category = mongoose.model("Category", CategorySchema);
 
-export default Catgeory;
+export default Category;

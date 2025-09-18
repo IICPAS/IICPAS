@@ -95,7 +95,7 @@ export default function CoursePage() {
   useEffect(() => {
     // Try to fetch from API, but fallback to dummy data
     axios
-      .get(`${process.env.NEXT_PUBLIC_API_URL}/api/courses`)
+      .get(`${process.env.NEXT_PUBLIC_API_BASE}/courses`)
       .then((res) => {
         const apiCourses = res.data.courses || res.data;
         if (apiCourses && apiCourses.length > 0) {
@@ -109,7 +109,7 @@ export default function CoursePage() {
       });
 
     axios
-      .get(`${process.env.NEXT_PUBLIC_API_URL}/api/categories`)
+      .get(`${process.env.NEXT_PUBLIC_API_BASE}/categories`)
       .then((res) => {
         const apiCategories = res.data.categories || res.data;
         if (apiCategories && apiCategories.length > 0) {

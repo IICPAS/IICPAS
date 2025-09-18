@@ -52,7 +52,7 @@ export default function StudentDashboard() {
   // Sidebar tabs
   const tabs = [
     { id: "courses", icon: <FaBook />, label: "Courses" },
-    { id: "revision", icon: <FaBook />, label: "Revision" },
+    { id: "revision", icon: <FaBook />, label: "Assessment" },
     { id: "live", icon: <FaVideo />, label: "Live Class", dot: true },
     { id: "news", icon: <FaNewspaper />, label: "News" },
     { id: "profile", icon: <FaUser />, label: "Profile" },
@@ -253,7 +253,7 @@ export default function StudentDashboard() {
           />
           <div className="hidden md:flex items-center gap-3 ml-4">
             <button className="bg-yellow-500 text-white px-3 py-1 rounded text-sm">
-              Learn to Use Lab
+              Digital Hub
             </button>
             <button className="bg-gray-800 text-white px-3 py-1 rounded text-sm">
               Download App

@@ -20,6 +20,7 @@ import ContactTab from "./ContactTab";
 import FooterTab from "./FooterTab";
 import YellowStatsStripTab from "./YellowStatsStripTab";
 import NewsletterSectionTab from "./NewsletterSectionTab";
+import NewsletterSubscriptionsTab from "./NewsletterSubscriptionsTab";
 import HeroTab from "./HeroTab";
 import WhyIICPATab from "./WhyIICPATab";
 import StudentsTab from "./StudentsTab";
@@ -77,6 +78,7 @@ const ALL_MODULES = [
   { id: "course", label: "Course", icon: <FaLayerGroup /> },
   { id: "course-display", label: "Course Display", icon: <FaEye /> },
   { id: "live-session", label: "Live Session", icon: <FaCalendarAlt /> },
+  { id: "newsletter-subscriptions", label: "Newsletter Subscriptions", icon: <FaEnvelope /> },
   { id: "enquiries", label: "Enquiries", icon: <FaEnvelope /> },
   { id: "jobs", label: "Jobs", icon: <FaBriefcase /> },
   { id: "news", label: "News", icon: <FaNewspaper /> },
@@ -378,6 +380,8 @@ function AdminDashboardContent() {
           <YellowStatsStripTab />
         ) : activeTab === "newsletter-section" ? (
           <NewsletterSectionTab />
+        ) : activeTab === "newsletter-subscriptions" ? (
+          <NewsletterSubscriptionsTab />
         ) : activeTab === "colleges" ? (
           <CollegeTab />
         ) : activeTab === "blogs" ? (

@@ -241,7 +241,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
     const fetchCourse = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/courses/${resolvedParams.courseId}`);
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/courses/${resolvedParams.courseId}`);
         setCourse(response.data);
       } catch (err) {
         console.error("Error fetching course:", err);

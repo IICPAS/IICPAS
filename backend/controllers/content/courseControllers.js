@@ -137,3 +137,23 @@ export const deleteCourse = async (req, res) => {
   if (!course) return res.status(404).json({ error: "Course not found" });
   res.json({ message: "Course deleted" });
 };
+
+export const toggleCourseStatus = async (req, res) => {
+  try {
+    const course = await Course.findById(req.params.id);
+    if (!course) return res.status(404).json({ error: "Course not found" });
+    
+    // Toggle status
+    course.status = course.status === "Active" ? "Inactive" : "Active";
+    await course.save();
+    
+    res.json({ 
+      message: "Course status updated successfully", 
+      course: course,
+      newStatus: course.status 
+    });
+  } catch (error) {
+    console.error("Error toggling course status:", error);
+    res.status(500).json({ error: "Failed to toggle course status" });
+  }
+};

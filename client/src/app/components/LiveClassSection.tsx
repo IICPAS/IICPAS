@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 import {
   VideoIcon,
   PhoneIcon,
@@ -21,6 +22,8 @@ interface LiveSession {
 }
 
 export default function LiveClassSection() {
+  const router = useRouter();
+  
   // Static data for instant loading
   const liveSessions: LiveSession[] = [
     {
@@ -234,7 +237,7 @@ export default function LiveClassSection() {
                 boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)'
               }}
             >
-              <div className="relative w-full h-64 bg-gradient-to-br from-green-50/50 to-blue-50/50">
+              <div className="relative w-full h-96 bg-gradient-to-br from-green-50/50 to-blue-50/50">
                 {/* Modern Live Tag */}
                 <motion.div 
                   className="absolute top-4 left-4 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm px-4 py-2 rounded-full font-bold shadow-lg z-10 flex items-center gap-2"
@@ -349,10 +352,8 @@ export default function LiveClassSection() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => {
-                  // Open the first live session link if available
-                  if (liveSessions.length > 0 && liveSessions[0].link) {
-                    window.open(liveSessions[0].link, '_blank');
-                  }
+                  // Navigate to live session page
+                  router.push('/live-session');
                 }}
               >
                 Join Live Class Now
