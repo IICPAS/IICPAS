@@ -201,7 +201,18 @@ router.post("/course-buy/:id", async (req, res) => {
       return res.status(403).json({ message: "Forbidden" });
 
     const student = await Student.findById(req.params.id);
-    const course = await Course.findById(req.body.courseId);
+
+    // Handle course lookup by both ObjectId and slug
+    let course;
+    const courseId = req.body.courseId;
+    const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(courseId);
+
+    if (isValidObjectId) {
+      course = await Course.findById(courseId);
+    } else {
+      course = await Course.findOne({ slug: courseId });
+    }
+
     if (!student || !course)
       return res.status(404).json({ message: "Student or course not found" });
 
@@ -646,9 +657,7 @@ router.post("/add-wishlist/:id", async (req, res) => {
 
     // Check if course is already in wishlist
     if (student.wishlist.includes(courseId)) {
-      return res
-        .status(400)
-        .json({ message: "Course is already in wishlist" });
+      return res.status(400).json({ message: "Course is already in wishlist" });
     }
 
     // Add course to student's wishlist
@@ -684,13 +693,13 @@ router.post("/remove-wishlist/:id", async (req, res) => {
 
     // Check if course is in wishlist
     if (!student.wishlist.includes(courseId)) {
-      return res
-        .status(400)
-        .json({ message: "Course is not in wishlist" });
+      return res.status(400).json({ message: "Course is not in wishlist" });
     }
 
     // Remove course from student's wishlist
-    student.wishlist = student.wishlist.filter(id => id.toString() !== courseId);
+    student.wishlist = student.wishlist.filter(
+      (id) => id.toString() !== courseId
+    );
     await student.save();
 
     res.json({
@@ -710,7 +719,7 @@ router.post("/remove-wishlist/:id", async (req, res) => {
 // GET /api/v1/students/get-wishlist/:id - Get student's wishlist
 router.get("/get-wishlist/:id", async (req, res) => {
   try {
-    const student = await Student.findById(req.params.id).populate('wishlist');
+    const student = await Student.findById(req.params.id).populate("wishlist");
     if (!student) {
       return res.status(404).json({ message: "Student not found" });
     }

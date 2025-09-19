@@ -1,7 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FaSave, FaEye, FaEdit, FaTrash, FaCheck, FaTimes, FaImage, FaPlus, FaMinus } from "react-icons/fa";
+import {
+  FaSave,
+  FaEye,
+  FaEdit,
+  FaTrash,
+  FaCheck,
+  FaTimes,
+  FaImage,
+  FaPlus,
+  FaMinus,
+} from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -19,35 +29,35 @@ export default function WhyIICPATab() {
       courses: {
         number: "",
         label: "",
-        description: ""
+        description: "",
       },
       students: {
         number: "",
         label: "",
-        description: ""
+        description: "",
       },
       successRate: {
         number: "",
-        label: ""
-      }
+        label: "",
+      },
     },
     features: [],
     buttons: {
       exploreCourses: {
         text: "",
-        link: ""
+        link: "",
       },
       learnMore: {
         text: "",
-        link: ""
-      }
+        link: "",
+      },
     },
     colors: {
       title: "text-white",
       subtitle: "text-green-400",
       description: "text-white/70",
-      background: "bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900"
-    }
+      background: "bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900",
+    },
   });
   const [newFeature, setNewFeature] = useState("");
 
@@ -60,16 +70,28 @@ export default function WhyIICPATab() {
     { value: "text-red-400", label: "Red" },
     { value: "text-white/70", label: "White 70%" },
     { value: "text-white/80", label: "White 80%" },
-    { value: "text-white/90", label: "White 90%" }
+    { value: "text-white/90", label: "White 90%" },
   ];
 
   const backgroundOptions = [
-    { value: "bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900", label: "Dark Gradient" },
-    { value: "bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900", label: "Blue Gradient" },
-    { value: "bg-gradient-to-br from-green-900 via-green-800 to-green-900", label: "Green Gradient" },
-    { value: "bg-gradient-to-br from-purple-900 via-purple-800 to-purple-900", label: "Purple Gradient" },
+    {
+      value: "bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900",
+      label: "Dark Gradient",
+    },
+    {
+      value: "bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900",
+      label: "Blue Gradient",
+    },
+    {
+      value: "bg-gradient-to-br from-green-900 via-green-800 to-green-900",
+      label: "Green Gradient",
+    },
+    {
+      value: "bg-gradient-to-br from-purple-900 via-purple-800 to-purple-900",
+      label: "Purple Gradient",
+    },
     { value: "bg-slate-900", label: "Dark Solid" },
-    { value: "bg-blue-900", label: "Blue Solid" }
+    { value: "bg-blue-900", label: "Blue Solid" },
   ];
 
   useEffect(() => {
@@ -80,15 +102,20 @@ export default function WhyIICPATab() {
 
   const fetchWhyIICPAEntries = async () => {
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const API_BASE =
+        process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const token = localStorage.getItem("adminToken");
       const response = await fetch(`${API_BASE}/why-iicpa/all`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         credentials: "include",
       });
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const data = await response.json();
       // Ensure data is always an array
       setWhyIICPAEntries(Array.isArray(data) ? data : []);
@@ -105,58 +132,61 @@ export default function WhyIICPATab() {
     if (field.includes(".")) {
       const [parent, child, subChild] = field.split(".");
       if (subChild) {
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           [parent]: {
             ...prev[parent],
             [child]: {
               ...prev[parent][child],
-              [subChild]: value
-            }
-          }
+              [subChild]: value,
+            },
+          },
         }));
       } else {
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           [parent]: {
             ...prev[parent],
-            [child]: value
-          }
+            [child]: value,
+          },
         }));
       }
     } else {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        [field]: value
+        [field]: value,
       }));
     }
   };
 
   const handleFeatureAdd = () => {
     if (newFeature.trim()) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        features: [...prev.features, newFeature.trim()]
+        features: [...prev.features, newFeature.trim()],
       }));
       setNewFeature("");
     }
   };
 
   const handleFeatureRemove = (index) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      features: prev.features.filter((_, i) => i !== index)
+      features: prev.features.filter((_, i) => i !== index),
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const API_BASE =
+        process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const token = localStorage.getItem("adminToken");
       const response = await fetch(`${API_BASE}/why-iicpa`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         credentials: "include",
         body: JSON.stringify(formData),
@@ -176,11 +206,14 @@ export default function WhyIICPATab() {
 
   const handleUpdate = async (id) => {
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const API_BASE =
+        process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const token = localStorage.getItem("adminToken");
       const response = await fetch(`${API_BASE}/why-iicpa/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         credentials: "include",
         body: JSON.stringify(formData),
@@ -200,12 +233,20 @@ export default function WhyIICPATab() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this WhyIICPA content?")) return;
+    if (
+      !window.confirm("Are you sure you want to delete this WhyIICPA content?")
+    )
+      return;
 
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const API_BASE =
+        process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const token = localStorage.getItem("adminToken");
       const response = await fetch(`${API_BASE}/why-iicpa/${id}`, {
         method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         credentials: "include",
       });
 
@@ -222,9 +263,14 @@ export default function WhyIICPATab() {
 
   const handleActivate = async (id) => {
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const API_BASE =
+        process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const token = localStorage.getItem("adminToken");
       const response = await fetch(`${API_BASE}/why-iicpa/activate/${id}`, {
         method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         credentials: "include",
       });
 
@@ -259,35 +305,36 @@ export default function WhyIICPATab() {
         courses: {
           number: "",
           label: "",
-          description: ""
+          description: "",
         },
         students: {
           number: "",
           label: "",
-          description: ""
+          description: "",
         },
         successRate: {
           number: "",
-          label: ""
-        }
+          label: "",
+        },
       },
       features: [],
       buttons: {
         exploreCourses: {
           text: "",
-          link: ""
+          link: "",
         },
         learnMore: {
           text: "",
-          link: ""
-        }
+          link: "",
+        },
       },
       colors: {
         title: "text-white",
         subtitle: "text-green-400",
         description: "text-white/70",
-        background: "bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900"
-      }
+        background:
+          "bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900",
+      },
     });
     setNewFeature("");
   };
@@ -303,8 +350,12 @@ export default function WhyIICPATab() {
   return (
     <div className="p-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">WhyIICPA Section Management</h1>
-        <p className="text-gray-600">Manage your website's WhyIICPA section content and styling</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          WhyIICPA Section Management
+        </h1>
+        <p className="text-gray-600">
+          Manage your website's WhyIICPA section content and styling
+        </p>
       </div>
 
       {/* Create New WhyIICPA Form */}
@@ -312,7 +363,7 @@ export default function WhyIICPATab() {
         <h2 className="text-xl font-semibold mb-4">
           {editingId ? "Edit WhyIICPA Content" : "Create New WhyIICPA Content"}
         </h2>
-        
+
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Basic Content */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -375,7 +426,9 @@ export default function WhyIICPATab() {
 
           {/* Statistics */}
           <div>
-            <h3 className="text-lg font-medium text-gray-700 mb-4">Statistics</h3>
+            <h3 className="text-lg font-medium text-gray-700 mb-4">
+              Statistics
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Courses */}
               <div className="border border-gray-200 rounded-lg p-4">
@@ -384,20 +437,35 @@ export default function WhyIICPATab() {
                   <input
                     type="text"
                     value={formData.statistics.courses.number}
-                    onChange={(e) => handleInputChange("statistics.courses.number", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange(
+                        "statistics.courses.number",
+                        e.target.value
+                      )
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="50+"
                   />
                   <input
                     type="text"
                     value={formData.statistics.courses.label}
-                    onChange={(e) => handleInputChange("statistics.courses.label", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange(
+                        "statistics.courses.label",
+                        e.target.value
+                      )
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Courses"
                   />
                   <textarea
                     value={formData.statistics.courses.description}
-                    onChange={(e) => handleInputChange("statistics.courses.description", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange(
+                        "statistics.courses.description",
+                        e.target.value
+                      )
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     rows="2"
                     placeholder="Description"
@@ -412,20 +480,35 @@ export default function WhyIICPATab() {
                   <input
                     type="text"
                     value={formData.statistics.students.number}
-                    onChange={(e) => handleInputChange("statistics.students.number", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange(
+                        "statistics.students.number",
+                        e.target.value
+                      )
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="10K+"
                   />
                   <input
                     type="text"
                     value={formData.statistics.students.label}
-                    onChange={(e) => handleInputChange("statistics.students.label", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange(
+                        "statistics.students.label",
+                        e.target.value
+                      )
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Students"
                   />
                   <textarea
                     value={formData.statistics.students.description}
-                    onChange={(e) => handleInputChange("statistics.students.description", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange(
+                        "statistics.students.description",
+                        e.target.value
+                      )
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     rows="2"
                     placeholder="Description"
@@ -440,14 +523,24 @@ export default function WhyIICPATab() {
                   <input
                     type="text"
                     value={formData.statistics.successRate.number}
-                    onChange={(e) => handleInputChange("statistics.successRate.number", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange(
+                        "statistics.successRate.number",
+                        e.target.value
+                      )
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="98%"
                   />
                   <input
                     type="text"
                     value={formData.statistics.successRate.label}
-                    onChange={(e) => handleInputChange("statistics.successRate.label", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange(
+                        "statistics.successRate.label",
+                        e.target.value
+                      )
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Success Rate"
                   />
@@ -468,7 +561,10 @@ export default function WhyIICPATab() {
                     onChange={(e) => {
                       const newFeatures = [...formData.features];
                       newFeatures[index] = e.target.value;
-                      setFormData(prev => ({ ...prev, features: newFeatures }));
+                      setFormData((prev) => ({
+                        ...prev,
+                        features: newFeatures,
+                      }));
                     }}
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
@@ -505,19 +601,31 @@ export default function WhyIICPATab() {
             <h3 className="text-lg font-medium text-gray-700 mb-4">Buttons</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="border border-gray-200 rounded-lg p-4">
-                <h4 className="font-medium text-gray-700 mb-3">Explore Courses Button</h4>
+                <h4 className="font-medium text-gray-700 mb-3">
+                  Explore Courses Button
+                </h4>
                 <div className="space-y-2">
                   <input
                     type="text"
                     value={formData.buttons.exploreCourses.text}
-                    onChange={(e) => handleInputChange("buttons.exploreCourses.text", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange(
+                        "buttons.exploreCourses.text",
+                        e.target.value
+                      )
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Explore Our Courses"
                   />
                   <input
                     type="text"
                     value={formData.buttons.exploreCourses.link}
-                    onChange={(e) => handleInputChange("buttons.exploreCourses.link", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange(
+                        "buttons.exploreCourses.link",
+                        e.target.value
+                      )
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="/courses"
                   />
@@ -525,19 +633,31 @@ export default function WhyIICPATab() {
               </div>
 
               <div className="border border-gray-200 rounded-lg p-4">
-                <h4 className="font-medium text-gray-700 mb-3">Learn More Button</h4>
+                <h4 className="font-medium text-gray-700 mb-3">
+                  Learn More Button
+                </h4>
                 <div className="space-y-2">
                   <input
                     type="text"
                     value={formData.buttons.learnMore.text}
-                    onChange={(e) => handleInputChange("buttons.learnMore.text", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange(
+                        "buttons.learnMore.text",
+                        e.target.value
+                      )
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Learn More About IICPA"
                   />
                   <input
                     type="text"
                     value={formData.buttons.learnMore.link}
-                    onChange={(e) => handleInputChange("buttons.learnMore.link", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange(
+                        "buttons.learnMore.link",
+                        e.target.value
+                      )
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="/about"
                   />
@@ -548,26 +668,33 @@ export default function WhyIICPATab() {
 
           {/* Color Settings */}
           <div>
-            <h3 className="text-lg font-medium text-gray-700 mb-4">Color Settings</h3>
+            <h3 className="text-lg font-medium text-gray-700 mb-4">
+              Color Settings
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {Object.entries(formData.colors).map(([key, value]) => (
                 <div key={key}>
                   <label className="block text-sm font-medium text-gray-700 mb-2 capitalize">
-                    {key.replace(/([A-Z])/g, ' $1').trim()}
+                    {key.replace(/([A-Z])/g, " $1").trim()}
                   </label>
                   <select
                     value={value}
-                    onChange={(e) => handleInputChange(`colors.${key}`, e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange(`colors.${key}`, e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    {key === 'background' ? 
-                      backgroundOptions.map(option => (
-                        <option key={option.value} value={option.value}>{option.label}</option>
-                      )) :
-                      colorOptions.map(option => (
-                        <option key={option.value} value={option.value}>{option.label}</option>
-                      ))
-                    }
+                    {key === "background"
+                      ? backgroundOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))
+                      : colorOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
                   </select>
                 </div>
               ))}
@@ -603,71 +730,75 @@ export default function WhyIICPATab() {
         <div className="p-6 border-b border-gray-200">
           <h2 className="text-xl font-semibold">Existing WhyIICPA Contents</h2>
         </div>
-        
+
         <div className="divide-y divide-gray-200">
-          {Array.isArray(whyIICPAEntries) && whyIICPAEntries.map((entry) => (
-            <div key={entry._id} className="p-6">
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-4 mb-4">
-                    <h3 className="text-lg font-medium text-gray-900">
-                      {entry.title}
-                    </h3>
-                    {entry.isActive && (
-                      <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
-                        Active
-                      </span>
-                    )}
+          {Array.isArray(whyIICPAEntries) &&
+            whyIICPAEntries.map((entry) => (
+              <div key={entry._id} className="p-6">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-4 mb-4">
+                      <h3 className="text-lg font-medium text-gray-900">
+                        {entry.title}
+                      </h3>
+                      {entry.isActive && (
+                        <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                          Active
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="text-gray-600 mb-2">
+                      <span className="font-medium">Subtitle: </span>
+                      {entry.subtitle}
+                    </div>
+
+                    <p className="text-gray-600 mb-2">
+                      <span className="font-medium">Description: </span>
+                      {entry.description.substring(0, 100)}...
+                    </p>
+
+                    <div className="text-gray-600">
+                      <span className="font-medium">Statistics: </span>
+                      {entry.statistics.courses.number}{" "}
+                      {entry.statistics.courses.label},
+                      {entry.statistics.students.number}{" "}
+                      {entry.statistics.students.label},
+                      {entry.statistics.successRate.number}{" "}
+                      {entry.statistics.successRate.label}
+                    </div>
                   </div>
-                  
-                  <div className="text-gray-600 mb-2">
-                    <span className="font-medium">Subtitle: </span>
-                    {entry.subtitle}
-                  </div>
-                  
-                  <p className="text-gray-600 mb-2">
-                    <span className="font-medium">Description: </span>
-                    {entry.description.substring(0, 100)}...
-                  </p>
-                  
-                  <div className="text-gray-600">
-                    <span className="font-medium">Statistics: </span>
-                    {entry.statistics.courses.number} {entry.statistics.courses.label}, 
-                    {entry.statistics.students.number} {entry.statistics.students.label}, 
-                    {entry.statistics.successRate.number} {entry.statistics.successRate.label}
-                  </div>
-                </div>
-                
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => startEdit(entry)}
-                    className="p-2 text-blue-600 hover:bg-blue-100 rounded-md transition-colors"
-                    title="Edit"
-                  >
-                    <FaEdit />
-                  </button>
-                  
-                  {!entry.isActive && (
+
+                  <div className="flex space-x-2">
                     <button
-                      onClick={() => handleActivate(entry._id)}
-                      className="p-2 text-green-600 hover:bg-green-100 rounded-md transition-colors"
-                      title="Activate"
+                      onClick={() => startEdit(entry)}
+                      className="p-2 text-blue-600 hover:bg-blue-100 rounded-md transition-colors"
+                      title="Edit"
                     >
-                      <FaCheck />
+                      <FaEdit />
                     </button>
-                  )}
-                  
-                  <button
-                    onClick={() => handleDelete(entry._id)}
-                    className="p-2 text-red-600 hover:bg-red-100 rounded-md transition-colors"
-                    title="Delete"
-                  >
-                    <FaTrash />
-                  </button>
+
+                    {!entry.isActive && (
+                      <button
+                        onClick={() => handleActivate(entry._id)}
+                        className="p-2 text-green-600 hover:bg-green-100 rounded-md transition-colors"
+                        title="Activate"
+                      >
+                        <FaCheck />
+                      </button>
+                    )}
+
+                    <button
+                      onClick={() => handleDelete(entry._id)}
+                      className="p-2 text-red-600 hover:bg-red-100 rounded-md transition-colors"
+                      title="Delete"
+                    >
+                      <FaTrash />
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
           {Array.isArray(whyIICPAEntries) && whyIICPAEntries.length === 0 && (
             <div className="p-6 text-center text-gray-500">
               No WhyIICPA content found. Create your first entry above.

@@ -1,7 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FaSave, FaEye, FaEdit, FaTrash, FaCheck, FaTimes, FaUpload, FaVideo } from "react-icons/fa";
+import {
+  FaSave,
+  FaEye,
+  FaEdit,
+  FaTrash,
+  FaCheck,
+  FaTimes,
+  FaUpload,
+  FaVideo,
+} from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -17,7 +26,7 @@ export default function HeroTab() {
       part2: "",
       part3: "",
       part4: "",
-      part5: ""
+      part5: "",
     },
     description: "",
     buttonText: "",
@@ -31,8 +40,8 @@ export default function HeroTab() {
       part4: "text-white",
       part5: "text-blue-300",
       description: "text-white/90",
-      button: "bg-green-500 hover:bg-green-600"
-    }
+      button: "bg-green-500 hover:bg-green-600",
+    },
   });
   const [videoFile, setVideoFile] = useState(null);
   const [videoPreview, setVideoPreview] = useState(null);
@@ -48,7 +57,7 @@ export default function HeroTab() {
     { value: "text-pink-400", label: "Pink" },
     { value: "text-indigo-400", label: "Indigo" },
     { value: "text-white/90", label: "White 90%" },
-    { value: "text-white/80", label: "White 80%" }
+    { value: "text-white/80", label: "White 80%" },
   ];
 
   const buttonColorOptions = [
@@ -58,7 +67,7 @@ export default function HeroTab() {
     { value: "bg-purple-500 hover:bg-purple-600", label: "Purple" },
     { value: "bg-yellow-500 hover:bg-yellow-600", label: "Yellow" },
     { value: "bg-indigo-500 hover:bg-indigo-600", label: "Indigo" },
-    { value: "bg-pink-500 hover:bg-pink-600", label: "Pink" }
+    { value: "bg-pink-500 hover:bg-pink-600", label: "Pink" },
   ];
 
   useEffect(() => {
@@ -69,15 +78,26 @@ export default function HeroTab() {
 
   const fetchHeroes = async () => {
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const API_BASE =
+        process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const token = localStorage.getItem("adminToken");
+
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
+
       const response = await fetch(`${API_BASE}/hero/all`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
         credentials: "include",
       });
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const data = await response.json();
       setHeroes(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -93,9 +113,19 @@ export default function HeroTab() {
     if (!file) return;
 
     // Validate file type
-    const allowedTypes = ['video/mp4', 'video/avi', 'video/mov', 'video/wmv', 'video/flv', 'video/webm', 'video/mkv'];
+    const allowedTypes = [
+      "video/mp4",
+      "video/avi",
+      "video/mov",
+      "video/wmv",
+      "video/flv",
+      "video/webm",
+      "video/mkv",
+    ];
     if (!allowedTypes.includes(file.type)) {
-      toast.error("Please select a valid video file (MP4, AVI, MOV, WMV, FLV, WEBM, MKV)");
+      toast.error(
+        "Please select a valid video file (MP4, AVI, MOV, WMV, FLV, WEBM, MKV)"
+      );
       return;
     }
 
@@ -107,22 +137,28 @@ export default function HeroTab() {
 
     setUploading(true);
     const formData = new FormData();
-    formData.append('video', file);
+    formData.append("video", file);
 
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const API_BASE =
+        process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const token = localStorage.getItem("adminToken");
+
       const response = await fetch(`${API_BASE}/hero/upload-video`, {
         method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         credentials: "include",
         body: formData,
       });
 
       if (response.ok) {
         const data = await response.json();
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           videoFile: data.videoPath,
-          videoUrl: data.videoPath
+          videoUrl: data.videoPath,
         }));
         toast.success("Video uploaded successfully!");
       } else {
@@ -147,17 +183,17 @@ export default function HeroTab() {
   const handleInputChange = (field, value) => {
     if (field.includes(".")) {
       const [parent, child] = field.split(".");
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         [parent]: {
           ...prev[parent],
-          [child]: value
-        }
+          [child]: value,
+        },
       }));
     } else {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        [field]: value
+        [field]: value,
       }));
     }
   };
@@ -165,10 +201,14 @@ export default function HeroTab() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const API_BASE =
+        process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const token = localStorage.getItem("adminToken");
+
       const response = await fetch(`${API_BASE}/hero`, {
         method: "POST",
         headers: {
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         credentials: "include",
@@ -189,10 +229,14 @@ export default function HeroTab() {
 
   const handleUpdate = async (id) => {
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const API_BASE =
+        process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const token = localStorage.getItem("adminToken");
+
       const response = await fetch(`${API_BASE}/hero/${id}`, {
         method: "PUT",
         headers: {
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         credentials: "include",
@@ -213,12 +257,19 @@ export default function HeroTab() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this hero content?")) return;
+    if (!window.confirm("Are you sure you want to delete this hero content?"))
+      return;
 
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const API_BASE =
+        process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const token = localStorage.getItem("adminToken");
+
       const response = await fetch(`${API_BASE}/hero/${id}`, {
         method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         credentials: "include",
       });
 
@@ -235,9 +286,15 @@ export default function HeroTab() {
 
   const handleActivate = async (id) => {
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const API_BASE =
+        process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const token = localStorage.getItem("adminToken");
+
       const response = await fetch(`${API_BASE}/hero/activate/${id}`, {
         method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         credentials: "include",
       });
 
@@ -270,7 +327,7 @@ export default function HeroTab() {
         part2: "",
         part3: "",
         part4: "",
-        part5: ""
+        part5: "",
       },
       description: "",
       buttonText: "",
@@ -284,8 +341,8 @@ export default function HeroTab() {
         part4: "text-white",
         part5: "text-blue-300",
         description: "text-white/90",
-        button: "bg-green-500 hover:bg-green-600"
-      }
+        button: "bg-green-500 hover:bg-green-600",
+      },
     });
     setVideoFile(null);
     setVideoPreview(null);
@@ -302,8 +359,12 @@ export default function HeroTab() {
   return (
     <div className="p-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Hero Section Management</h1>
-        <p className="text-gray-600">Manage your website's hero section content and styling</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          Hero Section Management
+        </h1>
+        <p className="text-gray-600">
+          Manage your website's hero section content and styling
+        </p>
       </div>
 
       {/* Create New Hero Form */}
@@ -311,7 +372,7 @@ export default function HeroTab() {
         <h2 className="text-xl font-semibold mb-4">
           {editingId ? "Edit Hero Content" : "Create New Hero Content"}
         </h2>
-        
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Small Text */}
@@ -334,7 +395,7 @@ export default function HeroTab() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Hero Video
               </label>
-              
+
               {/* Video Upload Section */}
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
                 <input
@@ -405,7 +466,9 @@ export default function HeroTab() {
                 <input
                   type="text"
                   value={formData.videoUrl}
-                  onChange={(e) => handleInputChange("videoUrl", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("videoUrl", e.target.value)
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="/videos/homehero.mp4"
                 />
@@ -424,7 +487,9 @@ export default function HeroTab() {
                   <input
                     type="text"
                     value={value}
-                    onChange={(e) => handleInputChange(`mainHeading.${key}`, e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange(`mainHeading.${key}`, e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder={`Part ${key.slice(-1)}`}
                     required
@@ -466,26 +531,33 @@ export default function HeroTab() {
 
           {/* Color Settings */}
           <div>
-            <h3 className="text-lg font-medium text-gray-700 mb-4">Color Settings</h3>
+            <h3 className="text-lg font-medium text-gray-700 mb-4">
+              Color Settings
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {Object.entries(formData.colors).map(([key, value]) => (
                 <div key={key}>
                   <label className="block text-sm font-medium text-gray-700 mb-2 capitalize">
-                    {key.replace(/([A-Z])/g, ' $1').trim()}
+                    {key.replace(/([A-Z])/g, " $1").trim()}
                   </label>
                   <select
                     value={value}
-                    onChange={(e) => handleInputChange(`colors.${key}`, e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange(`colors.${key}`, e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    {key === 'button' ? 
-                      buttonColorOptions.map(option => (
-                        <option key={option.value} value={option.value}>{option.label}</option>
-                      )) :
-                      colorOptions.map(option => (
-                        <option key={option.value} value={option.value}>{option.label}</option>
-                      ))
-                    }
+                    {key === "button"
+                      ? buttonColorOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))
+                      : colorOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
                   </select>
                 </div>
               ))}
@@ -521,75 +593,90 @@ export default function HeroTab() {
         <div className="p-6 border-b border-gray-200">
           <h2 className="text-xl font-semibold">Existing Hero Contents</h2>
         </div>
-        
+
         <div className="divide-y divide-gray-200">
-          {Array.isArray(heroes) && heroes.map((hero) => (
-            <div key={hero._id} className="p-6">
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-4 mb-4">
-                    <h3 className="text-lg font-medium text-gray-900">
-                      {hero.smallText}
-                    </h3>
-                    {hero.isActive && (
-                      <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
-                        Active
+          {Array.isArray(heroes) &&
+            heroes.map((hero) => (
+              <div key={hero._id} className="p-6">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-4 mb-4">
+                      <h3 className="text-lg font-medium text-gray-900">
+                        {hero.smallText}
+                      </h3>
+                      {hero.isActive && (
+                        <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                          Active
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="text-gray-600 mb-2">
+                      <span className="font-medium">Heading: </span>
+                      <span className={hero.colors.part1}>
+                        {hero.mainHeading.part1}
+                      </span>{" "}
+                      <span className={hero.colors.part2}>
+                        {hero.mainHeading.part2}
+                      </span>{" "}
+                      <span className={hero.colors.part3}>
+                        {hero.mainHeading.part3}
+                      </span>{" "}
+                      <span className={hero.colors.part4}>
+                        {hero.mainHeading.part4}
+                      </span>{" "}
+                      <span className={hero.colors.part5}>
+                        {hero.mainHeading.part5}
                       </span>
-                    )}
+                    </div>
+
+                    <p className="text-gray-600 mb-2">
+                      <span className="font-medium">Description: </span>
+                      {hero.description}
+                    </p>
+
+                    <p className="text-gray-600">
+                      <span className="font-medium">Button: </span>
+                      <span
+                        className={
+                          hero.colors.button + " text-white px-2 py-1 rounded"
+                        }
+                      >
+                        {hero.buttonText}
+                      </span>
+                    </p>
                   </div>
-                  
-                  <div className="text-gray-600 mb-2">
-                    <span className="font-medium">Heading: </span>
-                    <span className={hero.colors.part1}>{hero.mainHeading.part1}</span>{" "}
-                    <span className={hero.colors.part2}>{hero.mainHeading.part2}</span>{" "}
-                    <span className={hero.colors.part3}>{hero.mainHeading.part3}</span>{" "}
-                    <span className={hero.colors.part4}>{hero.mainHeading.part4}</span>{" "}
-                    <span className={hero.colors.part5}>{hero.mainHeading.part5}</span>
-                  </div>
-                  
-                  <p className="text-gray-600 mb-2">
-                    <span className="font-medium">Description: </span>
-                    {hero.description}
-                  </p>
-                  
-                  <p className="text-gray-600">
-                    <span className="font-medium">Button: </span>
-                    <span className={hero.colors.button + " text-white px-2 py-1 rounded"}>
-                      {hero.buttonText}
-                    </span>
-                  </p>
-                </div>
-                
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => startEdit(hero)}
-                    className="p-2 text-blue-600 hover:bg-blue-100 rounded-md transition-colors"
-                    title="Edit"
-                  >
-                    <FaEdit />
-                  </button>
-                  
-                  {!hero.isActive && (
+
+                  <div className="flex space-x-2">
                     <button
-                      onClick={() => handleActivate(hero._id)}
-                      className="p-2 text-green-600 hover:bg-green-100 rounded-md transition-colors"
-                      title="Activate"
+                      onClick={() => startEdit(hero)}
+                      className="p-2 text-blue-600 hover:bg-blue-100 rounded-md transition-colors"
+                      title="Edit"
                     >
-                      <FaCheck />
+                      <FaEdit />
                     </button>
-                  )}
-                  
-                  <button
-                    onClick={() => handleDelete(hero._id)}
-                    className="p-2 text-red-600 hover:bg-red-100 rounded-md transition-colors"
-                    title="Delete"
-                  >
-                    <FaTrash />
-                  </button>
+
+                    {!hero.isActive && (
+                      <button
+                        onClick={() => handleActivate(hero._id)}
+                        className="p-2 text-green-600 hover:bg-green-100 rounded-md transition-colors"
+                        title="Activate"
+                      >
+                        <FaCheck />
+                      </button>
+                    )}
+
+                    <button
+                      onClick={() => handleDelete(hero._id)}
+                      className="p-2 text-red-600 hover:bg-red-100 rounded-md transition-colors"
+                      title="Delete"
+                    >
+                      <FaTrash />
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
         </div>
       </div>
     </div>

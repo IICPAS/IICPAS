@@ -9,26 +9,26 @@ export const getAllCourses = async (req, res) => {
 export const getStudentCourses = async (req, res) => {
   try {
     const { studentId } = req.params;
-    
+
     // Find student and populate their enrolled courses
     const student = await Student.findById(studentId).populate({
-      path: 'course',
+      path: "course",
       populate: {
-        path: 'chapters'
-      }
+        path: "chapters",
+      },
     });
-    
+
     if (!student) {
       return res.status(404).json({ error: "Student not found" });
     }
-    
-    res.json({ 
+
+    res.json({
       courses: student.course || [],
       student: {
         _id: student._id,
         name: student.name,
-        email: student.email
-      }
+        email: student.email,
+      },
     });
   } catch (error) {
     console.error("Error fetching student courses:", error);
@@ -39,7 +39,9 @@ export const getStudentCourses = async (req, res) => {
 export const getAvailableCourses = async (req, res) => {
   try {
     // Get all active courses
-    const courses = await Course.find({ status: "Active" }).populate("chapters");
+    const courses = await Course.find({ status: "Active" }).populate(
+      "chapters"
+    );
     res.json(courses);
   } catch (error) {
     console.error("Error fetching available courses:", error);
@@ -48,9 +50,30 @@ export const getAvailableCourses = async (req, res) => {
 };
 
 export const getCourse = async (req, res) => {
-  const course = await Course.findById(req.params.id).populate("chapters");
-  if (!course) return res.status(404).json({ error: "Course not found" });
-  res.json(course);
+  try {
+    const { id } = req.params;
+
+    // Check if the id is a valid ObjectId format
+    const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(id);
+
+    let course;
+    if (isValidObjectId) {
+      // If it's a valid ObjectId, search by _id
+      course = await Course.findById(id).populate("chapters");
+    } else {
+      // If it's not a valid ObjectId, search by slug
+      course = await Course.findOne({ slug: id }).populate("chapters");
+    }
+
+    if (!course) {
+      return res.status(404).json({ error: "Course not found" });
+    }
+
+    res.json(course);
+  } catch (error) {
+    console.error("Error fetching course:", error);
+    res.status(500).json({ error: "Failed to fetch course" });
+  }
 };
 
 export const createCourse = async (req, res) => {
@@ -115,7 +138,7 @@ export const updateCourse = async (req, res) => {
   try {
     // Prepare update data
     const updateData = { ...req.body };
-    
+
     // Handle uploaded image (if present)
     if (req.file) {
       updateData.image = `/uploads/${req.file.filename}`;
@@ -124,7 +147,7 @@ export const updateCourse = async (req, res) => {
     const course = await Course.findByIdAndUpdate(req.params.id, updateData, {
       new: true,
     });
-    
+
     if (!course) return res.status(404).json({ error: "Course not found" });
     res.json(course);
   } catch (err) {
@@ -142,15 +165,15 @@ export const toggleCourseStatus = async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
     if (!course) return res.status(404).json({ error: "Course not found" });
-    
+
     // Toggle status
     course.status = course.status === "Active" ? "Inactive" : "Active";
     await course.save();
-    
-    res.json({ 
-      message: "Course status updated successfully", 
+
+    res.json({
+      message: "Course status updated successfully",
       course: course,
-      newStatus: course.status 
+      newStatus: course.status,
     });
   } catch (error) {
     console.error("Error toggling course status:", error);

@@ -2,10 +2,31 @@ import Chapter from "../../models/Content/Chapter.js";
 import Course from "../../models/Content/Course.js";
 
 export const getChaptersByCourse = async (req, res) => {
-  const chapters = await Chapter.find({
-    _id: { $in: (await Course.findById(req.params.courseId)).chapters },
-  }).populate("topics");
-  res.json(chapters);
+  try {
+    const { courseId } = req.params;
+
+    // Handle course lookup by both ObjectId and slug
+    let course;
+    const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(courseId);
+
+    if (isValidObjectId) {
+      course = await Course.findById(courseId);
+    } else {
+      course = await Course.findOne({ slug: courseId });
+    }
+
+    if (!course) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    const chapters = await Chapter.find({
+      _id: { $in: course.chapters },
+    }).populate("topics");
+    res.json(chapters);
+  } catch (error) {
+    console.error("Error fetching chapters:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
 };
 
 export const getChapter = async (req, res) => {
@@ -15,13 +36,35 @@ export const getChapter = async (req, res) => {
 };
 
 export const createChapter = async (req, res) => {
-  const chapter = new Chapter(req.body);
-  await chapter.save();
-  // Add chapter to course
-  await Course.findByIdAndUpdate(req.params.courseId, {
-    $push: { chapters: chapter._id },
-  });
-  res.status(201).json(chapter);
+  try {
+    const { courseId } = req.params;
+
+    // Handle course lookup by both ObjectId and slug
+    let course;
+    const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(courseId);
+
+    if (isValidObjectId) {
+      course = await Course.findById(courseId);
+    } else {
+      course = await Course.findOne({ slug: courseId });
+    }
+
+    if (!course) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    const chapter = new Chapter(req.body);
+    await chapter.save();
+
+    // Add chapter to course using the course's _id
+    await Course.findByIdAndUpdate(course._id, {
+      $push: { chapters: chapter._id },
+    });
+    res.status(201).json(chapter);
+  } catch (error) {
+    console.error("Error creating chapter:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
 };
 
 export const updateChapter = async (req, res) => {

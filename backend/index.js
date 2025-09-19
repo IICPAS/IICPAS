@@ -93,7 +93,20 @@ app.get("/", (req, res) => {
 });
 
 // Middleware
-app.use("/uploads", express.static("uploads")); // Make uploaded images accessible
+app.use(
+  "/uploads",
+  express.static("uploads", {
+    setHeaders: (res, path) => {
+      if (path.endsWith(".mp4")) {
+        res.setHeader("Content-Type", "video/mp4");
+      } else if (path.endsWith(".webm")) {
+        res.setHeader("Content-Type", "video/webm");
+      } else if (path.endsWith(".avi")) {
+        res.setHeader("Content-Type", "video/x-msvideo");
+      }
+    },
+  })
+); // Make uploaded files accessible
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
