@@ -90,7 +90,17 @@ export default function FooterTab() {
   const fetchFooterEntries = async () => {
     try {
       const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const token = localStorage.getItem("adminToken");
+      
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
+      
       const response = await fetch(`${API_BASE}/footer/all`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
         credentials: "include",
       });
       
@@ -207,9 +217,17 @@ export default function FooterTab() {
     e.preventDefault();
     try {
       const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const token = localStorage.getItem("adminToken");
+      
+      if (!token) {
+        toast.error("Authentication token not found. Please log in again.");
+        return;
+      }
+      
       const response = await fetch(`${API_BASE}/footer`, {
         method: "POST",
         headers: {
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         credentials: "include",
@@ -231,9 +249,17 @@ export default function FooterTab() {
   const handleUpdate = async (id) => {
     try {
       const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const token = localStorage.getItem("adminToken");
+      
+      if (!token) {
+        toast.error("Authentication token not found. Please log in again.");
+        return;
+      }
+      
       const response = await fetch(`${API_BASE}/footer/${id}`, {
         method: "PUT",
         headers: {
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         credentials: "include",
@@ -258,8 +284,19 @@ export default function FooterTab() {
 
     try {
       const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const token = localStorage.getItem("adminToken");
+      
+      if (!token) {
+        toast.error("Authentication token not found. Please log in again.");
+        return;
+      }
+      
       const response = await fetch(`${API_BASE}/footer/${id}`, {
         method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
         credentials: "include",
       });
 
@@ -277,8 +314,19 @@ export default function FooterTab() {
   const handleActivate = async (id) => {
     try {
       const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const token = localStorage.getItem("adminToken");
+      
+      if (!token) {
+        toast.error("Authentication token not found. Please log in again.");
+        return;
+      }
+      
       const response = await fetch(`${API_BASE}/footer/activate/${id}`, {
         method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
         credentials: "include",
       });
 

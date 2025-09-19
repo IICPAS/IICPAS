@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
 import { 
   FaFacebook, 
   FaTwitter, 
@@ -20,7 +21,7 @@ import {
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
-  const footerData = {
+  const [footerData, setFooterData] = useState({
     companyInfo: {
       name: "IICPA Institute",
       tagline: "Empowering future finance professionals with world-class education, expert guidance, and industry-relevant skills for career success.",
@@ -81,7 +82,27 @@ export default function Footer() {
       text: "text-white",
       textSecondary: "text-gray-300"
     }
-  };
+  });
+
+  // Fetch footer data from backend
+  useEffect(() => {
+    const fetchFooterData = async () => {
+      try {
+        const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+        const response = await fetch(`${API_BASE}/footer`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          setFooterData(data);
+        }
+      } catch (error) {
+        console.error("Error fetching footer data:", error);
+        // Keep using default data if API fails
+      }
+    };
+
+    fetchFooterData();
+  }, []);
 
   const getSocialIcon = (iconName: string) => {
     const iconMap: { [key: string]: React.ComponentType<{ className?: string }> } = {
