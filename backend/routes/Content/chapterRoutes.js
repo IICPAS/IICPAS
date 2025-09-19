@@ -10,13 +10,27 @@ router.get("/course/:courseId", async (req, res) => {
   try {
     const { courseId } = req.params;
 
-    const course = await Course.findById(courseId).populate({
-      path: "chapters",
-      populate: {
-        path: "topics",
-        model: "Topic",
-      },
-    });
+    // Handle course lookup by both ObjectId and slug
+    let course;
+    const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(courseId);
+
+    if (isValidObjectId) {
+      course = await Course.findById(courseId).populate({
+        path: "chapters",
+        populate: {
+          path: "topics",
+          model: "Topic",
+        },
+      });
+    } else {
+      course = await Course.findOne({ slug: courseId }).populate({
+        path: "chapters",
+        populate: {
+          path: "topics",
+          model: "Topic",
+        },
+      });
+    }
 
     if (!course) {
       return res.status(404).json({ message: "Course not found" });

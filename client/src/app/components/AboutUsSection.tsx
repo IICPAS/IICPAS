@@ -1,7 +1,5 @@
 "use client";
 
-import Image from "next/image";
-import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 
 export default function AboutUsSection() {
@@ -40,6 +38,7 @@ export default function AboutUsSection() {
 
         if (response.ok) {
           const data = await response.json();
+          console.log("About data fetched:", data);
           setAboutData(data);
         } else {
           console.error("Failed to fetch about data");
@@ -82,6 +81,7 @@ export default function AboutUsSection() {
           {/* Left Side - Video Section */}
           <div className="relative w-full lg:w-[45%] animate-fade-in-left">
             <div className="relative">
+              {/* Video Section */}
               <video
                 className="rounded-3xl shadow-2xl w-full h-auto border border-gray-200/50 hover:shadow-3xl transition-shadow duration-500"
                 autoPlay={aboutData.video?.autoplay || true}
@@ -89,8 +89,15 @@ export default function AboutUsSection() {
                 muted={aboutData.video?.muted !== false}
                 playsInline
                 preload="metadata"
-                controls={false}
-                poster={aboutData.video?.poster || "/images/about.jpeg"}
+                controls={true}
+                poster={aboutData.video?.poster || "/images/video-poster.jpg"}
+                onError={(e) => {
+                  console.error("Video error:", e);
+                  console.error("Video src:", e.target.src);
+                }}
+                onLoadStart={() => console.log("Video loading started")}
+                onCanPlay={() => console.log("Video can play")}
+                onLoadedData={() => console.log("Video data loaded")}
               >
                 <source
                   src={aboutData.video?.url || "/videos/aboutus.mp4"}
@@ -99,6 +106,9 @@ export default function AboutUsSection() {
                 <source src="/videos/homehero.mp4" type="video/mp4" />
                 Your browser does not support the video tag.
               </video>
+              <p className="text-sm text-gray-500 mt-2">
+                Video URL: {aboutData.video?.url || "No video URL"}
+              </p>
             </div>
           </div>
 

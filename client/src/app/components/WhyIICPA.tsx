@@ -3,54 +3,97 @@
 import Link from "next/link";
 import { FaGraduationCap, FaUsers, FaPlay } from "react-icons/fa";
 import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
 
 export default function WhyIICPA() {
-  const whyIICPAData = {
+  const [whyIICPAData, setWhyIICPAData] = useState({
     title: "Empowering Your Future with Excellence",
     subtitle: "Why Choose IICPA",
-    description: "IICPA Institute stands as a beacon of educational excellence, offering cutting-edge courses designed to transform your career aspirations into reality. Our comprehensive curriculum, expert instructors, and industry-aligned programs ensure you receive world-class education that prepares you for the dynamic professional landscape.",
+    description:
+      "IICPA Institute stands as a beacon of educational excellence, offering cutting-edge courses designed to transform your career aspirations into reality. Our comprehensive curriculum, expert instructors, and industry-aligned programs ensure you receive world-class education that prepares you for the dynamic professional landscape.",
     image: "/images/img1.jpg",
     statistics: {
       courses: {
         number: "50+",
         label: "Courses",
-        description: "Comprehensive courses covering accounting, finance, and professional development"
+        description:
+          "Comprehensive courses covering accounting, finance, and professional development",
       },
       students: {
         number: "10K+",
         label: "Students",
-        description: "Successful graduates building successful careers across industries"
+        description:
+          "Successful graduates building successful careers across industries",
       },
       successRate: {
         number: "98%",
-        label: "Success Rate"
-      }
+        label: "Success Rate",
+      },
     },
     features: [
       "Industry-Expert Instructors",
       "Flexible Learning Schedule",
       "Practical Hands-on Training",
-      "Career Placement Support"
+      "Career Placement Support",
     ],
     buttons: {
       exploreCourses: {
         text: "Explore Our Courses",
-        link: "/courses"
+        link: "/courses",
       },
       learnMore: {
         text: "Learn More About IICPA",
-        link: "/about"
-      }
+        link: "/about",
+      },
     },
     colors: {
       title: "text-white",
       subtitle: "text-green-400",
       description: "text-white/70",
-      background: "bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900"
-    }
-  };
+      background: "bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900",
+    },
+  });
+
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchWhyIICPAData = async () => {
+      try {
+        const API_BASE =
+          process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+        const response = await fetch(`${API_BASE}/why-iicpa`);
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log("WhyIICPA data fetched:", data);
+          setWhyIICPAData(data);
+        } else {
+          console.error("Failed to fetch WhyIICPA data");
+        }
+      } catch (error) {
+        console.error("Error fetching WhyIICPA data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchWhyIICPAData();
+  }, []);
+
+  if (loading) {
+    return (
+      <section className="relative py-12 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-400"></div>
+        </div>
+      </section>
+    );
+  }
+
   return (
-    <section className={`relative py-12 ${whyIICPAData.colors.background} overflow-hidden`}>
+    <section
+      className={`relative py-12 ${whyIICPAData.colors.background} overflow-hidden`}
+    >
       {/* 3D Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
@@ -94,28 +137,28 @@ export default function WhyIICPA() {
       <div className="relative max-w-7xl mx-auto px-6">
         <div className="grid lg:grid-cols-2 gap-8 items-center">
           {/* Left Side - 3D Image */}
-          <motion.div 
+          <motion.div
             className="relative"
             initial={{ opacity: 0, x: -50 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.02 }}
           >
-            <motion.div 
+            <motion.div
               className="relative perspective-1000"
               animate={{
                 rotateY: [0, 2, -2, 0],
                 rotateX: [0, 1, -1, 0],
                 scale: [1, 1.01, 1],
-                x: [0, 15, -15, 0]
+                x: [0, 15, -15, 0],
               }}
               transition={{
                 duration: 8,
-                ease: "easeInOut"
+                ease: "easeInOut",
               }}
-              whileHover={{ 
+              whileHover={{
                 rotateY: 5,
                 rotateX: 5,
-                scale: 1.02
+                scale: 1.02,
               }}
             >
               <div className="relative overflow-hidden rounded-3xl shadow-2xl transform-gpu border border-white/20">
@@ -124,56 +167,64 @@ export default function WhyIICPA() {
                   alt="IICPA Students Learning"
                   className="w-full h-[400px] object-cover"
                   style={{
-                    transform: 'translateZ(20px)',
-                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+                    transform: "translateZ(20px)",
+                    boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
                   }}
                   animate={{
                     scale: [1, 1.05, 1],
-                    filter: ['brightness(1)', 'brightness(1.1)', 'brightness(1)']
+                    filter: [
+                      "brightness(1)",
+                      "brightness(1.1)",
+                      "brightness(1)",
+                    ],
                   }}
                   transition={{
                     duration: 8,
-                    ease: "easeInOut"
+                    ease: "easeInOut",
                   }}
                 />
-                
+
                 {/* 3D Overlay gradient */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
 
                 {/* 3D Floating stats card */}
-                <motion.div 
+                <motion.div
                   className="absolute bottom-6 left-6 bg-white/10 backdrop-blur-xl rounded-2xl p-4 shadow-2xl border border-white/20"
                   animate={{
                     y: [0, -5, 0],
-                    scale: [1, 1.02, 1]
+                    scale: [1, 1.02, 1],
                   }}
                   transition={{
                     duration: 4,
-                    ease: "easeInOut"
+                    ease: "easeInOut",
                   }}
-                  whileHover={{ 
+                  whileHover={{
                     scale: 1.05,
-                    rotateY: 10
+                    rotateY: 10,
                   }}
                 >
                   <div className="flex items-center gap-3">
-                    <motion.div 
+                    <motion.div
                       className="bg-gradient-to-r from-green-500 to-blue-500 rounded-xl p-3"
                       animate={{
                         rotate: [0, 5, -5, 0],
-                        scale: [1, 1.05, 1]
+                        scale: [1, 1.05, 1],
                       }}
                       transition={{
                         duration: 3,
-                        ease: "easeInOut"
+                        ease: "easeInOut",
                       }}
                       whileHover={{ rotate: 360 }}
                     >
                       <FaGraduationCap className="text-white text-lg" />
                     </motion.div>
                     <div>
-                      <p className="text-sm text-white/70">{whyIICPAData.statistics.successRate.label}</p>
-                      <p className="text-xl font-bold text-white">{whyIICPAData.statistics.successRate.number}</p>
+                      <p className="text-sm text-white/70">
+                        {whyIICPAData.statistics.successRate.label}
+                      </p>
+                      <p className="text-xl font-bold text-white">
+                        {whyIICPAData.statistics.successRate.number}
+                      </p>
                     </div>
                   </div>
                 </motion.div>
@@ -181,7 +232,7 @@ export default function WhyIICPA() {
             </motion.div>
 
             {/* 3D Courses Button */}
-            <motion.div 
+            <motion.div
               className="mt-8 text-center"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -199,7 +250,7 @@ export default function WhyIICPA() {
           </motion.div>
 
           {/* Right Side - 3D Content */}
-          <motion.div 
+          <motion.div
             className="space-y-6"
             initial={{ opacity: 0, x: 50 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -207,19 +258,21 @@ export default function WhyIICPA() {
           >
             {/* Section Title */}
             <div className="space-y-4">
-              <motion.div 
+              <motion.div
                 className="flex items-center gap-3"
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.02 }}
               >
                 <div className="w-12 h-1 bg-gradient-to-r from-green-400 to-blue-500 rounded-full"></div>
-                <span className={`${whyIICPAData.colors.subtitle} font-semibold text-sm uppercase tracking-wider`}>
+                <span
+                  className={`${whyIICPAData.colors.subtitle} font-semibold text-sm uppercase tracking-wider`}
+                >
                   {whyIICPAData.subtitle}
                 </span>
               </motion.div>
-              
-              <motion.h2 
+
+              <motion.h2
                 className={`text-3xl lg:text-4xl font-bold ${whyIICPAData.colors.title} leading-tight`}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -230,7 +283,7 @@ export default function WhyIICPA() {
             </div>
 
             {/* Description */}
-            <motion.p 
+            <motion.p
               className={`text-base ${whyIICPAData.colors.description} leading-relaxed`}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -242,20 +295,20 @@ export default function WhyIICPA() {
             {/* 3D Statistics Boxes */}
             <div className="grid grid-cols-2 gap-6">
               {/* Courses Box */}
-              <motion.div 
+              <motion.div
                 className="group relative overflow-hidden bg-white/5 backdrop-blur-xl rounded-3xl p-6 border border-white/20 shadow-2xl transform-gpu hover:scale-105 transition-all duration-300"
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.02, delay: 0.01 }}
-                whileHover={{ 
+                whileHover={{
                   rotateY: 5,
-                  rotateX: 5
+                  rotateX: 5,
                 }}
               >
                 <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-full -translate-y-10 translate-x-10 group-hover:scale-110 transition-transform duration-300"></div>
                 <div className="relative z-10">
                   <div className="flex items-center gap-4 mb-4">
-                    <motion.div 
+                    <motion.div
                       className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl p-3"
                       whileHover={{ rotate: 360 }}
                       transition={{ duration: 0.6 }}
@@ -263,8 +316,12 @@ export default function WhyIICPA() {
                       <FaGraduationCap className="text-white text-2xl" />
                     </motion.div>
                     <div>
-                      <h3 className="text-2xl font-bold text-white">{whyIICPAData.statistics.courses.number}</h3>
-                      <p className="text-blue-400 font-semibold">{whyIICPAData.statistics.courses.label}</p>
+                      <h3 className="text-2xl font-bold text-white">
+                        {whyIICPAData.statistics.courses.number}
+                      </h3>
+                      <p className="text-blue-400 font-semibold">
+                        {whyIICPAData.statistics.courses.label}
+                      </p>
                     </div>
                   </div>
                   <p className="text-sm text-white/70">
@@ -274,20 +331,20 @@ export default function WhyIICPA() {
               </motion.div>
 
               {/* Students Box */}
-              <motion.div 
+              <motion.div
                 className="group relative overflow-hidden bg-white/5 backdrop-blur-xl rounded-3xl p-6 border border-white/20 shadow-2xl transform-gpu hover:scale-105 transition-all duration-300"
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.02, delay: 0.01 }}
-                whileHover={{ 
+                whileHover={{
                   rotateY: 5,
-                  rotateX: 5
+                  rotateX: 5,
                 }}
               >
                 <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-full -translate-y-10 translate-x-10 group-hover:scale-110 transition-transform duration-300"></div>
                 <div className="relative z-10">
                   <div className="flex items-center gap-4 mb-4">
-                    <motion.div 
+                    <motion.div
                       className="bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl p-3"
                       whileHover={{ rotate: 360 }}
                       transition={{ duration: 0.6 }}
@@ -295,8 +352,12 @@ export default function WhyIICPA() {
                       <FaUsers className="text-white text-2xl" />
                     </motion.div>
                     <div>
-                      <h3 className="text-2xl font-bold text-white">{whyIICPAData.statistics.students.number}</h3>
-                      <p className="text-green-400 font-semibold">{whyIICPAData.statistics.students.label}</p>
+                      <h3 className="text-2xl font-bold text-white">
+                        {whyIICPAData.statistics.students.number}
+                      </h3>
+                      <p className="text-green-400 font-semibold">
+                        {whyIICPAData.statistics.students.label}
+                      </p>
                     </div>
                   </div>
                   <p className="text-sm text-white/70">
@@ -307,21 +368,21 @@ export default function WhyIICPA() {
             </div>
 
             {/* 3D Features List */}
-            <motion.div 
+            <motion.div
               className="grid grid-cols-1 md:grid-cols-2 gap-4"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.02, delay: 0.01 }}
             >
               {whyIICPAData.features.map((feature, index) => (
-                <motion.div 
+                <motion.div
                   key={index}
                   className="flex items-center gap-3 group"
                   initial={{ opacity: 0, x: -20 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.02, delay: 0.01 + index * 0.005 }}
                 >
-                  <motion.div 
+                  <motion.div
                     className="w-2 h-2 bg-gradient-to-r from-green-400 to-blue-500 rounded-full group-hover:scale-150 transition-transform duration-300"
                     whileHover={{ scale: 1.5 }}
                   />
@@ -333,7 +394,7 @@ export default function WhyIICPA() {
             </motion.div>
 
             {/* 3D CTA Button */}
-            <motion.div 
+            <motion.div
               className="pt-4"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -357,8 +418,12 @@ export default function WhyIICPA() {
       </div>
 
       <style jsx>{`
-        .perspective-1000 { perspective: 1000px; }
-        .transform-gpu { transform-style: preserve-3d; }
+        .perspective-1000 {
+          perspective: 1000px;
+        }
+        .transform-gpu {
+          transform-style: preserve-3d;
+        }
       `}</style>
     </section>
   );
