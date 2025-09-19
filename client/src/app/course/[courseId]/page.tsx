@@ -2,7 +2,16 @@
 
 import React, { useState, use, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ChevronDown, ChevronUp, Play, Star, Clock, Users, Award, CheckCircle } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  Play,
+  Star,
+  Clock,
+  Users,
+  Award,
+  CheckCircle,
+} from "lucide-react";
 import Image from "next/image";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
@@ -20,7 +29,8 @@ const dummyCourses = {
     discount: 5,
     category: "Accounting",
     type: "Individual Course",
-    description: "Tally Foundation Course covers in-depth knowledge to meet all the accounting requirements of the industry with learning exposure on Voucher Entries, Grouping, BRS, etc. We not only teach the concepts but also help you learn how you can practically implement those concepts in your day to day Accounting Process with practical examples and entries in Tally.",
+    description:
+      "Tally Foundation Course covers in-depth knowledge to meet all the accounting requirements of the industry with learning exposure on Voucher Entries, Grouping, BRS, etc. We not only teach the concepts but also help you learn how you can practically implement those concepts in your day to day Accounting Process with practical examples and entries in Tally.",
     image: "/images/course-1.jpg",
     videoThumbnail: "/images/accounting.webp",
     syllabus: [
@@ -30,8 +40,8 @@ const dummyCourses = {
           "Introduction to Accounting",
           "Accounting Principles",
           "Double Entry System",
-          "Journal Entries"
-        ]
+          "Journal Entries",
+        ],
       },
       {
         title: "Company creation and data management",
@@ -39,8 +49,8 @@ const dummyCourses = {
           "Creating Company in Tally",
           "Company Configuration",
           "Data Backup & Restore",
-          "Multi-Company Setup"
-        ]
+          "Multi-Company Setup",
+        ],
       },
       {
         title: "Voucher Entries in Tally",
@@ -49,8 +59,8 @@ const dummyCourses = {
           "Purchase Voucher",
           "Payment Voucher",
           "Receipt Voucher",
-          "Journal Voucher"
-        ]
+          "Journal Voucher",
+        ],
       },
       {
         title: "Concept of Dual Entry",
@@ -58,8 +68,8 @@ const dummyCourses = {
           "Debit and Credit Rules",
           "Trial Balance",
           "Profit & Loss Account",
-          "Balance Sheet"
-        ]
+          "Balance Sheet",
+        ],
       },
       {
         title: "Finalisation of ledger balances",
@@ -67,8 +77,8 @@ const dummyCourses = {
           "Ledger Creation",
           "Balance Confirmation",
           "Reconciliation Process",
-          "Year-end Procedures"
-        ]
+          "Year-end Procedures",
+        ],
       },
       {
         title: "Bank Reconciliation Statement",
@@ -76,9 +86,9 @@ const dummyCourses = {
           "BRS Concepts",
           "Bank Statement Analysis",
           "Reconciliation Process",
-          "Common Discrepancies"
-        ]
-      }
+          "Common Discrepancies",
+        ],
+      },
     ],
     features: {
       chapters: 7,
@@ -88,11 +98,11 @@ const dummyCourses = {
       simulations: 0,
       experiments: 30,
       recordings: 10,
-      languages: 15
+      languages: 15,
     },
     duration: "40 hours",
     level: "Levels",
-    students: 1250
+    students: 1250,
   },
   "hr-certification": {
     id: "hr-certification",
@@ -104,7 +114,8 @@ const dummyCourses = {
     discount: 10,
     category: "HR",
     type: "Individual Course",
-    description: "Comprehensive HR certification course covering recruitment, employee relations, performance management, and HR analytics. Learn practical HR skills with real-world case studies and industry best practices.",
+    description:
+      "Comprehensive HR certification course covering recruitment, employee relations, performance management, and HR analytics. Learn practical HR skills with real-world case studies and industry best practices.",
     image: "/images/course-2.jpg",
     videoThumbnail: "/images/young-woman.jpg",
     syllabus: [
@@ -114,8 +125,8 @@ const dummyCourses = {
           "Introduction to Human Resources",
           "HR Roles and Responsibilities",
           "HR Strategy and Planning",
-          "Legal Framework"
-        ]
+          "Legal Framework",
+        ],
       },
       {
         title: "Recruitment and Selection",
@@ -123,8 +134,8 @@ const dummyCourses = {
           "Job Analysis and Design",
           "Recruitment Methods",
           "Selection Process",
-          "Interview Techniques"
-        ]
+          "Interview Techniques",
+        ],
       },
       {
         title: "Employee Relations",
@@ -132,8 +143,8 @@ const dummyCourses = {
           "Employee Engagement",
           "Conflict Resolution",
           "Disciplinary Procedures",
-          "Grievance Handling"
-        ]
+          "Grievance Handling",
+        ],
       },
       {
         title: "Performance Management",
@@ -141,9 +152,9 @@ const dummyCourses = {
           "Performance Appraisal",
           "Goal Setting",
           "Feedback Mechanisms",
-          "Performance Improvement"
-        ]
-      }
+          "Performance Improvement",
+        ],
+      },
     ],
     features: {
       chapters: 5,
@@ -153,11 +164,11 @@ const dummyCourses = {
       simulations: 5,
       experiments: 15,
       recordings: 8,
-      languages: 12
+      languages: 12,
     },
     duration: "30 hours",
     level: "Levels",
-    students: 890
+    students: 890,
   },
   "excel-certification": {
     id: "excel-certification",
@@ -169,7 +180,8 @@ const dummyCourses = {
     discount: 0,
     category: "Accounting",
     type: "Individual Course",
-    description: "Master Excel from basics to advanced level. Learn formulas, functions, data analysis, pivot tables, and automation. Perfect for accounting professionals and data analysts.",
+    description:
+      "Master Excel from basics to advanced level. Learn formulas, functions, data analysis, pivot tables, and automation. Perfect for accounting professionals and data analysts.",
     image: "/images/course-3.jpg",
     videoThumbnail: "/images/course.png",
     syllabus: [
@@ -179,8 +191,8 @@ const dummyCourses = {
           "Interface and Navigation",
           "Data Entry and Formatting",
           "Basic Formulas",
-          "Cell References"
-        ]
+          "Cell References",
+        ],
       },
       {
         title: "Advanced Formulas",
@@ -188,8 +200,8 @@ const dummyCourses = {
           "VLOOKUP and HLOOKUP",
           "INDEX and MATCH",
           "IF Functions",
-          "Array Formulas"
-        ]
+          "Array Formulas",
+        ],
       },
       {
         title: "Data Analysis",
@@ -197,8 +209,8 @@ const dummyCourses = {
           "Pivot Tables",
           "Charts and Graphs",
           "Data Validation",
-          "Conditional Formatting"
-        ]
+          "Conditional Formatting",
+        ],
       },
       {
         title: "Automation",
@@ -206,9 +218,9 @@ const dummyCourses = {
           "Macros Basics",
           "VBA Introduction",
           "Automated Reports",
-          "Dashboard Creation"
-        ]
-      }
+          "Dashboard Creation",
+        ],
+      },
     ],
     features: {
       chapters: 6,
@@ -218,15 +230,19 @@ const dummyCourses = {
       simulations: 8,
       experiments: 25,
       recordings: 12,
-      languages: 18
+      languages: 18,
     },
     duration: "35 hours",
     level: "Levels",
-    students: 2100
-  }
+    students: 2100,
+  },
 };
 
-export default function CourseDetailPage({ params }: { params: Promise<{ courseId: string }> }) {
+export default function CourseDetailPage({
+  params,
+}: {
+  params: Promise<{ courseId: string }>;
+}) {
   const [activeTab, setActiveTab] = useState("syllabus");
   const [expandedSections, setExpandedSections] = useState<number[]>([]);
   const [course, setCourse] = useState<any>(null);
@@ -235,19 +251,22 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
 
   // Unwrap the params Promise using React.use()
   const resolvedParams = use(params);
-  
+
   // Fetch course data from API
   useEffect(() => {
     const fetchCourse = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/courses/${resolvedParams.courseId}`);
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_BASE}/courses/${resolvedParams.courseId}`
+        );
         setCourse(response.data);
       } catch (err) {
         console.error("Error fetching course:", err);
         setError("Course not found");
         // Fallback to dummy data if API fails
-        const fallbackCourse = dummyCourses[resolvedParams.courseId as keyof typeof dummyCourses];
+        const fallbackCourse =
+          dummyCourses[resolvedParams.courseId as keyof typeof dummyCourses];
         if (fallbackCourse) {
           setCourse(fallbackCourse);
         }
@@ -280,9 +299,15 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
         <Header />
         <div className="pt-20 flex items-center justify-center">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Course Not Found</h1>
-            <p className="text-gray-600">The course you&apos;re looking for doesn&apos;t exist.</p>
-            <p className="text-sm text-gray-500 mt-2">Course ID: {resolvedParams.courseId}</p>
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">
+              Course Not Found
+            </h1>
+            <p className="text-gray-600">
+              The course you&apos;re looking for doesn&apos;t exist.
+            </p>
+            <p className="text-sm text-gray-500 mt-2">
+              Course ID: {resolvedParams.courseId}
+            </p>
           </div>
         </div>
         <Footer />
@@ -297,9 +322,15 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
         <Header />
         <div className="pt-20 flex items-center justify-center">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Course Not Found</h1>
-            <p className="text-gray-600">The course you&apos;re looking for doesn&apos;t exist.</p>
-            <p className="text-sm text-gray-500 mt-2">Course ID: {resolvedParams.courseId}</p>
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">
+              Course Not Found
+            </h1>
+            <p className="text-gray-600">
+              The course you&apos;re looking for doesn&apos;t exist.
+            </p>
+            <p className="text-sm text-gray-500 mt-2">
+              Course ID: {resolvedParams.courseId}
+            </p>
           </div>
         </div>
         <Footer />
@@ -308,31 +339,37 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
   }
 
   const toggleSection = (index: number) => {
-    setExpandedSections(prev => 
-      prev.includes(index) 
-        ? prev.filter(i => i !== index)
-        : [...prev, index]
+    setExpandedSections((prev) =>
+      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
     );
   };
 
   // Dynamic tabs based on course data
   const tabs = [
     { id: "syllabus", label: course?.tabs?.syllabus?.label || "Syllabus" },
-    { id: "case-studies", label: course?.tabs?.assignment?.label || "Assignment" },
-    { id: "exam", label: course?.tabs?.assessment?.label || "Assessment & Certificates" },
-    { id: "schedule", label: course?.tabs?.schedule?.label || "Live Schedule +" },
-    { id: "simulation", label: course?.tabs?.simulator?.label || "Simulator" }
+    {
+      id: "case-studies",
+      label: course?.tabs?.assignment?.label || "Assignment",
+    },
+    {
+      id: "exam",
+      label: course?.tabs?.assessment?.label || "Assessment & Certificates",
+    },
+    {
+      id: "schedule",
+      label: course?.tabs?.schedule?.label || "Live Schedule +",
+    },
+    { id: "simulation", label: course?.tabs?.simulator?.label || "Simulator" },
   ];
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      
-              {/* Main Content */}
-              <div className="pt-48 pb-16">
+
+      {/* Main Content */}
+      <div className="pt-48 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
             {/* Left Column - Course Info */}
             <div className="lg:col-span-2">
               <motion.div
@@ -369,14 +406,18 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
                     <span className="text-2xl font-bold text-gray-900">
                       {course.rating || 0}
                     </span>
-                    <span className="text-xl text-gray-600">[{course.reviewCount || 0}]</span>
+                    <span className="text-xl text-gray-600">
+                      [{course.reviewCount || 0}]
+                    </span>
                   </div>
                 )}
 
                 {/* Description */}
-                <div 
+                <div
                   className="text-xl text-gray-700 leading-relaxed mb-8"
-                  dangerouslySetInnerHTML={{ __html: course.description || "No description available." }}
+                  dangerouslySetInnerHTML={{
+                    __html: course.description || "No description available.",
+                  }}
                 />
 
                 {/* Tabs */}
@@ -402,29 +443,36 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
                 {activeTab === "syllabus" && (
                   <div>
                     <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-3xl font-bold bg-gradient-to-r from-blue-500 to-emerald-500 bg-clip-text text-transparent">Course Syllabus</h3>
+                      <h3 className="text-3xl font-bold bg-gradient-to-r from-blue-500 to-emerald-500 bg-clip-text text-transparent">
+                        Course Syllabus
+                      </h3>
                       <button className="text-[#3cd664] hover:text-[#33bb58] font-bold text-lg">
                         View Full Syllabus
                       </button>
                     </div>
-                    
+
                     {/* Dynamic syllabus from chapters */}
                     {course.chapters && course.chapters.length > 0 ? (
                       <div className="space-y-4">
                         {course.chapters.map((chapter, index) => (
-                          <div key={index} className="border-2 border-gray-200 rounded-xl">
+                          <div
+                            key={index}
+                            className="border-2 border-gray-200 rounded-xl"
+                          >
                             <button
                               onClick={() => toggleSection(index)}
                               className="w-full px-6 py-5 text-left flex items-center justify-between hover:bg-gray-50 rounded-xl"
                             >
-                              <span className="font-bold text-xl text-gray-900">{chapter.title}</span>
+                              <span className="font-bold text-xl text-gray-900">
+                                {chapter.title}
+                              </span>
                               {expandedSections.includes(index) ? (
                                 <ChevronUp className="w-8 h-8 text-gray-500" />
                               ) : (
                                 <ChevronDown className="w-8 h-8 text-gray-500" />
                               )}
                             </button>
-                            
+
                             {expandedSections.includes(index) && (
                               <motion.div
                                 initial={{ opacity: 0, height: 0 }}
@@ -433,12 +481,16 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
                                 className="px-6 pb-5"
                               >
                                 <ul className="space-y-3">
-                                  {chapter.topics && chapter.topics.map((topic, topicIndex) => (
-                                    <li key={topicIndex} className="flex items-center text-lg text-gray-600">
-                                      <CheckCircle className="w-6 h-6 text-[#3cd664] mr-3 flex-shrink-0" />
-                                      {topic.title}
-                                    </li>
-                                  ))}
+                                  {chapter.topics &&
+                                    chapter.topics.map((topic, topicIndex) => (
+                                      <li
+                                        key={topicIndex}
+                                        className="flex items-center text-lg text-gray-600"
+                                      >
+                                        <CheckCircle className="w-6 h-6 text-[#3cd664] mr-3 flex-shrink-0" />
+                                        {topic.title || topic}
+                                      </li>
+                                    ))}
                                 </ul>
                               </motion.div>
                             )}
@@ -446,8 +498,20 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
                         ))}
                       </div>
                     ) : (
-                      <div className="text-center py-8">
-                        <p className="text-gray-600">Syllabus will be available soon.</p>
+                      <div className="text-center py-12">
+                        <div className="bg-gray-100 rounded-lg p-8">
+                          <h3 className="text-xl font-semibold text-gray-700 mb-4">
+                            Syllabus Coming Soon
+                          </h3>
+                          <p className="text-gray-600 mb-4">
+                            The detailed syllabus for this course is being
+                            prepared and will be available soon.
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            Please check back later or contact us for more
+                            information about the course content.
+                          </p>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -455,35 +519,49 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
 
                 {activeTab === "case-studies" && (
                   <div>
-                    <h3 className="text-3xl font-bold text-gray-900 mb-6">Assignment</h3>
-                    <div 
+                    <h3 className="text-3xl font-bold text-gray-900 mb-6">
+                      Assignment
+                    </h3>
+                    <div
                       className="text-xl text-gray-600"
-                      dangerouslySetInnerHTML={{ __html: course.caseStudy || "Practical assignments will be available here." }}
+                      dangerouslySetInnerHTML={{
+                        __html:
+                          course.caseStudy ||
+                          "Practical assignments will be available here.",
+                      }}
                     />
                   </div>
                 )}
 
                 {activeTab === "exam" && (
                   <div>
-                    <h3 className="text-3xl font-bold text-gray-900 mb-6">Assessment & Certificates</h3>
-                    <div 
+                    <h3 className="text-3xl font-bold text-gray-900 mb-6">
+                      Assessment & Certificates
+                    </h3>
+                    <div
                       className="text-xl text-gray-600"
-                      dangerouslySetInnerHTML={{ __html: course.examCert || "Assessment details and certificate information will be available here." }}
+                      dangerouslySetInnerHTML={{
+                        __html:
+                          course.examCert ||
+                          "Assessment details and certificate information will be available here.",
+                      }}
                     />
                   </div>
                 )}
 
                 {activeTab === "schedule" && (
                   <div>
-                    <h3 className="text-3xl font-bold text-gray-900 mb-6">Live Schedule</h3>
+                    <h3 className="text-3xl font-bold text-gray-900 mb-6">
+                      Live Schedule
+                    </h3>
                     {course.video ? (
                       <div className="text-xl text-gray-600">
                         <p>Live session schedule will be available here.</p>
                         {course.video && (
                           <div className="mt-4">
-                            <a 
-                              href={course.video} 
-                              target="_blank" 
+                            <a
+                              href={course.video}
+                              target="_blank"
                               rel="noopener noreferrer"
                               className="text-[#3cd664] hover:text-[#33bb58] font-semibold"
                             >
@@ -493,15 +571,22 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
                         )}
                       </div>
                     ) : (
-                      <p className="text-xl text-gray-600">Live session schedule will be available here.</p>
+                      <p className="text-xl text-gray-600">
+                        Live session schedule will be available here.
+                      </p>
                     )}
                   </div>
                 )}
 
                 {activeTab === "simulation" && (
                   <div>
-                    <h3 className="text-3xl font-bold text-gray-900 mb-6">Simulation & Ex.</h3>
-                    <p className="text-xl text-gray-600">Interactive simulations and experiments will be available here.</p>
+                    <h3 className="text-3xl font-bold text-gray-900 mb-6">
+                      Simulation & Ex.
+                    </h3>
+                    <p className="text-xl text-gray-600">
+                      Interactive simulations and experiments will be available
+                      here.
+                    </p>
                   </div>
                 )}
               </motion.div>
@@ -532,7 +617,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
                         console.log("Course thumbnail loaded successfully!");
                       }}
                     />
-                    
+
                     {/* Play Button Overlay */}
                     <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center">
                       <div className="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center hover:bg-opacity-30 transition-all cursor-pointer">
@@ -546,7 +631,9 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
                 <div className="p-6 border-b-2">
                   <div className="text-center text-lg text-gray-600 mb-6">
                     <p>Get access to this course in DIGITAL HUB.</p>
-                    <button className="text-blue-600 hover:text-blue-800 font-semibold mt-2">Compare</button>
+                    <button className="text-blue-600 hover:text-blue-800 font-semibold mt-2">
+                      Compare
+                    </button>
                   </div>
 
                   {/* Recorded Lecture Option */}
@@ -554,25 +641,36 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
                     <div className="mb-4">
                       <div className="text-center mb-3">
                         <span className="text-lg font-bold text-[#3cd664] block">
-                          {course?.pricing?.recordedSession?.title?.split('+')[0] || "DIGITAL HUB+"}
+                          {course?.pricing?.recordedSession?.title?.split(
+                            "+"
+                          )[0] || "DIGITAL HUB+"}
                         </span>
                         <span className="text-lg font-bold text-[#3cd664] block">
-                          {course?.pricing?.recordedSession?.title?.split('+')[1] || "RECORDED SESSION"}
+                          {course?.pricing?.recordedSession?.title?.split(
+                            "+"
+                          )[1] || "RECORDED SESSION"}
                         </span>
                       </div>
                       <div className="text-center">
                         <div className="text-3xl font-bold text-[#3cd664]">
-                          ₹{course.price ? course.price.toLocaleString() : "10,800"}
+                          ₹
+                          {course.price
+                            ? course.price.toLocaleString()
+                            : "10,800"}
                         </div>
                         {course.discount > 0 && (
                           <div className="text-lg text-gray-500 line-through">
-                            ₹{course.originalPrice ? course.originalPrice.toLocaleString() : "12,000"}
+                            ₹
+                            {course.originalPrice
+                              ? course.originalPrice.toLocaleString()
+                              : "12,000"}
                           </div>
                         )}
                       </div>
                     </div>
                     <button className="w-full bg-[#3cd664] hover:bg-[#33bb58] text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 text-lg">
-                      {course?.pricing?.recordedSession?.buttonText || "Add Digital Hub"}
+                      {course?.pricing?.recordedSession?.buttonText ||
+                        "Add Digital Hub"}
                     </button>
                   </div>
 
@@ -581,33 +679,53 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
                     <div className="mb-4">
                       <div className="text-center mb-3">
                         <span className="text-lg font-bold text-blue-500 block">
-                          {course?.pricing?.liveSession?.title?.split('+')[0] || "DIGITAL HUB+"}
+                          {course?.pricing?.liveSession?.title?.split("+")[0] ||
+                            "DIGITAL HUB+"}
                         </span>
                         <span className="text-lg font-bold text-blue-500 block">
-                          {course?.pricing?.liveSession?.title?.split('+')[1] || "LIVE SESSION"}
+                          {course?.pricing?.liveSession?.title?.split("+")[1] ||
+                            "LIVE SESSION"}
                         </span>
                       </div>
                       <div className="text-center">
                         <div className="text-3xl font-bold text-blue-500">
-                          ₹{course.price ? (course.price * (course?.pricing?.liveSession?.priceMultiplier || 1.5)).toLocaleString() : "18,000"}
+                          ₹
+                          {course.price
+                            ? (
+                                course.price *
+                                (course?.pricing?.liveSession
+                                  ?.priceMultiplier || 1.5)
+                              ).toLocaleString()
+                            : "18,000"}
                         </div>
                       </div>
                     </div>
                     <button className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 text-lg">
-                      {course?.pricing?.liveSession?.buttonText || "Add Digital Hub+"}
+                      {course?.pricing?.liveSession?.buttonText ||
+                        "Add Digital Hub+"}
                     </button>
                   </div>
                 </div>
 
                 {/* Course Features */}
                 <div className="p-6 border-b-2">
-                  <p className="text-xl text-gray-600 mb-6 font-semibold">This course includes:</p>
+                  <p className="text-xl text-gray-600 mb-6 font-semibold">
+                    This course includes:
+                  </p>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-blue-600 text-white px-4 py-3 rounded-lg text-lg font-bold">
                       {course.chapters ? course.chapters.length : 0} Lesson
                     </div>
                     <div className="bg-[#3cd664] text-white px-4 py-3 rounded-lg text-lg font-bold">
-                      {course.chapters ? course.chapters.reduce((total, chapter) => total + (chapter.topics ? chapter.topics.length : 0), 0) : 0} Topics
+                      {course.chapters
+                        ? course.chapters.reduce(
+                            (total, chapter) =>
+                              total +
+                              (chapter.topics ? chapter.topics.length : 0),
+                            0
+                          )
+                        : 0}{" "}
+                      Topics
                     </div>
                     <div className="bg-blue-600 text-white px-4 py-3 rounded-lg text-lg font-bold">
                       Simulator
@@ -625,7 +743,9 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
                       {course.category || "General"} Category
                     </div>
                     <div className="bg-[#3cd664] text-white px-4 py-3 rounded-lg text-lg font-bold">
-                      {course.discount > 0 ? `${course.discount}% OFF` : "No Discount"}
+                      {course.discount > 0
+                        ? `${course.discount}% OFF`
+                        : "No Discount"}
                     </div>
                   </div>
                 </div>
@@ -636,16 +756,24 @@ export default function CourseDetailPage({ params }: { params: Promise<{ courseI
                     <div>
                       <div className="flex items-center justify-center mb-2">
                         <Clock className="w-6 h-6 text-gray-500 mr-2" />
-                        <span className="text-xl font-bold text-gray-900">{course.level || "Levels"}</span>
+                        <span className="text-xl font-bold text-gray-900">
+                          {course.level || "Levels"}
+                        </span>
                       </div>
-                      <p className="text-lg text-gray-600 font-semibold">Level</p>
+                      <p className="text-lg text-gray-600 font-semibold">
+                        Level
+                      </p>
                     </div>
                     <div>
                       <div className="flex items-center justify-center mb-2">
                         <Users className="w-6 h-6 text-gray-500 mr-2" />
-                        <span className="text-xl font-bold text-gray-900">{course.category || "General"}</span>
+                        <span className="text-xl font-bold text-gray-900">
+                          {course.category || "General"}
+                        </span>
                       </div>
-                      <p className="text-lg text-gray-600 font-semibold">Category</p>
+                      <p className="text-lg text-gray-600 font-semibold">
+                        Category
+                      </p>
                     </div>
                   </div>
                 </div>
