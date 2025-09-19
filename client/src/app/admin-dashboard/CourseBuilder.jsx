@@ -8,6 +8,7 @@ import EditCourse from "./Course/EditCourse";
 import EditChapter from "./Course/EditChapter";
 import AddOrEditTopicForm from "./Course/AddOrEditTopicForm";
 import CourseAddTab from "./Course/CourseAdd";
+import CourseLevelManager from "./Course/CourseLevelManager";
 import axios from "axios";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
@@ -72,6 +73,13 @@ export default function CourseArea() {
     setView("edit-chapter");
   };
 
+  const handleShowCourseLevelManager = () => {
+    setView("course-level-manager");
+    setSelectedCourse(null);
+    setSelectedChapter(null);
+    setEditingTopic(null);
+  };
+
   // Course actions with SweetAlert2
   const handleDeleteCourse = async (course, refreshCourses) => {
     const result = await Swal.fire({
@@ -119,6 +127,7 @@ export default function CourseArea() {
           onAddChapter={handleShowChapters}
           onDeleteCourse={handleDeleteCourse}
           onToggleStatus={handleToggleStatus}
+          onManageLevels={handleShowCourseLevelManager}
         />
       )}
 
@@ -174,6 +183,10 @@ export default function CourseArea() {
             }
           }}
         />
+      )}
+
+      {view === "course-level-manager" && (
+        <CourseLevelManager onBack={handleShowCourseList} />
       )}
     </>
   );

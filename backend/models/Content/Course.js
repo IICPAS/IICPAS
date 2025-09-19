@@ -7,7 +7,10 @@ const CourseSchema = new Schema({
   slug: { type: String },
   price: { type: Number, required: true },
   image: { type: String }, // Image URL or path
-  level: { type: String }, // Foundation, Core, Expert
+  level: { 
+    type: String, 
+    enum: ["Executive Level", "Professional Level"] 
+  },
   discount: { type: Number, default: 0 },
   status: { type: String, default: "Active", enum: ["Active", "Inactive"] },
 

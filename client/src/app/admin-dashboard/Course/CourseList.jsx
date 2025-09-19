@@ -25,7 +25,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 
 const CourseList = forwardRef(
   (
-    { onAddCourse, onEditCourse, onAddChapter, onDeleteCourse, onToggleStatus },
+    { onAddCourse, onEditCourse, onAddChapter, onDeleteCourse, onToggleStatus, onManageLevels },
     ref
   ) => {
     const [courses, setCourses] = useState([]);
@@ -82,29 +82,52 @@ const CourseList = forwardRef(
           <Typography variant="h5" fontWeight={700} sx={{ color: "#1a237e" }}>
             Courses
           </Typography>
-          {hasPermission("course", "add") && (
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={onAddCourse}
-              sx={{
-                background: "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
-                borderRadius: "8px",
-                px: 3,
-                py: 1,
-                fontWeight: 600,
-                textTransform: "none",
-                boxShadow: "0 4px 12px rgba(25, 118, 210, 0.3)",
-                "&:hover": {
-                  background:
-                    "linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)",
-                  boxShadow: "0 6px 16px rgba(25, 118, 210, 0.4)",
-                },
-              }}
-            >
-              ADD COURSE
-            </Button>
-          )}
+          <Stack direction="row" spacing={2}>
+            {hasPermission("course", "add") && (
+              <Button
+                variant="outlined"
+                onClick={onManageLevels}
+                sx={{
+                  borderColor: "#1976d2",
+                  color: "#1976d2",
+                  borderRadius: "8px",
+                  px: 3,
+                  py: 1,
+                  fontWeight: 600,
+                  textTransform: "none",
+                  "&:hover": {
+                    borderColor: "#1565c0",
+                    backgroundColor: "#e3f2fd",
+                  },
+                }}
+              >
+                Manage Levels
+              </Button>
+            )}
+            {hasPermission("course", "add") && (
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={onAddCourse}
+                sx={{
+                  background: "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
+                  borderRadius: "8px",
+                  px: 3,
+                  py: 1,
+                  fontWeight: 600,
+                  textTransform: "none",
+                  boxShadow: "0 4px 12px rgba(25, 118, 210, 0.3)",
+                  "&:hover": {
+                    background:
+                      "linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)",
+                    boxShadow: "0 6px 16px rgba(25, 118, 210, 0.4)",
+                  },
+                }}
+              >
+                ADD COURSE
+              </Button>
+            )}
+          </Stack>
         </Stack>
         <Box
           sx={{

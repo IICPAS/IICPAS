@@ -166,7 +166,9 @@ app.use("/api/contact", contactRoutes);
 
 //Footer Routes
 import footerRoutes from "./routes/WebsiteRoutes/footerRoutes.js";
+import aboutUsRoutes from "./routes/WebsiteRoutes/aboutUsRoutes.js";
 app.use("/api/footer", footerRoutes);
+app.use("/api/about-us", aboutUsRoutes);
 
 //YellowStatsStrip Routes
 import yellowStatsStripRoutes from "./routes/WebsiteRoutes/yellowStatsStripRoutes.js";

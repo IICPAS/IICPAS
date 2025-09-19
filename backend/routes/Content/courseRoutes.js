@@ -13,4 +13,8 @@ router.delete("/:id", courseController.deleteCourse);
 router.get("/:id", courseController.getCourse);
 router.put("/:id/toggle-status", courseController.toggleCourseStatus);
 
+// Course Level Management Routes
+router.get("/course-levels", courseController.getCourseLevels);
+router.post("/course-levels", courseController.updateCourseLevels);
+
 export default router;

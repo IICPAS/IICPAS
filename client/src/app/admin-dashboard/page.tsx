@@ -16,6 +16,7 @@ import CollegeTab from "./CollegeTab";
 import CenterTab from "./CenterTab";
 import CalendarTab from "./CalendarTab";
 import AboutUsTab from "./AboutUsTab";
+import AboutUsSectionTab from "./AboutUsSectionTab";
 import ContactTab from "./ContactTab";
 import FooterTab from "./FooterTab";
 import YellowStatsStripTab from "./YellowStatsStripTab";
@@ -106,6 +107,7 @@ const WEBSITE_SETTINGS_MODULES = [
   { id: "hero", label: "Hero Section", icon: <FaHome /> },
   { id: "why-iicpa", label: "WhyIICPA Section", icon: <FaStar /> },
   { id: "about-us", label: "About Us Section", icon: <FaBook /> },
+  { id: "about-us-section", label: "About Us Section Management", icon: <FaUserTie /> },
   { id: "contact", label: "Contact Section", icon: <FaEnvelope /> },
   { id: "footer", label: "Footer Section", icon: <FaList /> },
   { id: "yellow-stats-strip", label: "Stats Strip Section", icon: <FaChartBar /> },
@@ -334,6 +336,7 @@ function AdminDashboardContent() {
         <button
           onClick={() => setDrawerOpen(true)}
           className="bg-white p-3 shadow-lg rounded-lg hover:bg-gray-50 transition-colors"
+          title="Open menu"
         >
           <FaBars className="text-gray-700" />
         </button>
@@ -377,6 +380,8 @@ function AdminDashboardContent() {
           <WhyIICPATab />
         ) : activeTab === "about-us" ? (
           <AboutUsTab />
+        ) : activeTab === "about-us-section" ? (
+          <AboutUsSectionTab />
         ) : activeTab === "contact" ? (
           <ContactTab />
         ) : activeTab === "footer" ? (
