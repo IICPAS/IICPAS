@@ -86,7 +86,17 @@ export default function YellowStatsStripTab() {
   const fetchYellowStatsStripEntries = async () => {
     try {
       const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const token = localStorage.getItem("adminToken");
+      
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
+      
       const response = await fetch(`${API_BASE}/yellow-stats-strip/all`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
         credentials: "include",
       });
       
@@ -159,9 +169,17 @@ export default function YellowStatsStripTab() {
     e.preventDefault();
     try {
       const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const token = localStorage.getItem("adminToken");
+      
+      if (!token) {
+        toast.error("Authentication token not found. Please log in again.");
+        return;
+      }
+      
       const response = await fetch(`${API_BASE}/yellow-stats-strip`, {
         method: "POST",
         headers: {
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         credentials: "include",
@@ -173,19 +191,35 @@ export default function YellowStatsStripTab() {
         fetchYellowStatsStripEntries();
         resetForm();
       } else {
-        toast.error("Failed to create YellowStatsStrip content");
+        const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+        if (response.status === 401) {
+          toast.error("Authentication failed. Please log in again.");
+        } else if (response.status === 403) {
+          toast.error("Access denied. Admin privileges required.");
+        } else {
+          toast.error(`Failed to create YellowStatsStrip content: ${errorData.error || 'Unknown error'}`);
+        }
       }
     } catch (error) {
-      toast.error("Error creating YellowStatsStrip content");
+      console.error("Error creating yellow stats strip content:", error);
+      toast.error("Network error. Please check your connection and try again.");
     }
   };
 
   const handleUpdate = async (id) => {
     try {
       const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const token = localStorage.getItem("adminToken");
+      
+      if (!token) {
+        toast.error("Authentication token not found. Please log in again.");
+        return;
+      }
+      
       const response = await fetch(`${API_BASE}/yellow-stats-strip/${id}`, {
         method: "PUT",
         headers: {
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         credentials: "include",
@@ -198,10 +232,18 @@ export default function YellowStatsStripTab() {
         setEditingId(null);
         resetForm();
       } else {
-        toast.error("Failed to update YellowStatsStrip content");
+        const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+        if (response.status === 401) {
+          toast.error("Authentication failed. Please log in again.");
+        } else if (response.status === 403) {
+          toast.error("Access denied. Admin privileges required.");
+        } else {
+          toast.error(`Failed to update YellowStatsStrip content: ${errorData.error || 'Unknown error'}`);
+        }
       }
     } catch (error) {
-      toast.error("Error updating YellowStatsStrip content");
+      console.error("Error updating yellow stats strip content:", error);
+      toast.error("Network error. Please check your connection and try again.");
     }
   };
 
@@ -210,8 +252,18 @@ export default function YellowStatsStripTab() {
 
     try {
       const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const token = localStorage.getItem("adminToken");
+      
+      if (!token) {
+        toast.error("Authentication token not found. Please log in again.");
+        return;
+      }
+      
       const response = await fetch(`${API_BASE}/yellow-stats-strip/${id}`, {
         method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         credentials: "include",
       });
 
@@ -219,18 +271,36 @@ export default function YellowStatsStripTab() {
         toast.success("YellowStatsStrip content deleted successfully!");
         fetchYellowStatsStripEntries();
       } else {
-        toast.error("Failed to delete YellowStatsStrip content");
+        const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+        if (response.status === 401) {
+          toast.error("Authentication failed. Please log in again.");
+        } else if (response.status === 403) {
+          toast.error("Access denied. Admin privileges required.");
+        } else {
+          toast.error(`Failed to delete YellowStatsStrip content: ${errorData.error || 'Unknown error'}`);
+        }
       }
     } catch (error) {
-      toast.error("Error deleting YellowStatsStrip content");
+      console.error("Error deleting yellow stats strip content:", error);
+      toast.error("Network error. Please check your connection and try again.");
     }
   };
 
   const handleActivate = async (id) => {
     try {
       const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const token = localStorage.getItem("adminToken");
+      
+      if (!token) {
+        toast.error("Authentication token not found. Please log in again.");
+        return;
+      }
+      
       const response = await fetch(`${API_BASE}/yellow-stats-strip/activate/${id}`, {
         method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         credentials: "include",
       });
 
@@ -238,10 +308,18 @@ export default function YellowStatsStripTab() {
         toast.success("YellowStatsStrip content activated successfully!");
         fetchYellowStatsStripEntries();
       } else {
-        toast.error("Failed to activate YellowStatsStrip content");
+        const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+        if (response.status === 401) {
+          toast.error("Authentication failed. Please log in again.");
+        } else if (response.status === 403) {
+          toast.error("Access denied. Admin privileges required.");
+        } else {
+          toast.error(`Failed to activate YellowStatsStrip content: ${errorData.error || 'Unknown error'}`);
+        }
       }
     } catch (error) {
-      toast.error("Error activating YellowStatsStrip content");
+      console.error("Error activating yellow stats strip content:", error);
+      toast.error("Network error. Please check your connection and try again.");
     }
   };
 
