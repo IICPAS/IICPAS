@@ -1,12 +1,11 @@
 "use client";
 
-import Image from "next/image";
-import { BsStars } from "react-icons/bs";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FaGraduationCap, FaClipboardCheck, FaBookOpen, FaTrophy, FaRocket, FaChartLine } from "react-icons/fa";
 
 export default function YellowStatsStrip() {
-  const yellowStatsStripData = {
+  const [yellowStatsStripData, setYellowStatsStripData] = useState({
     title: "Our Achievements",
     statistics: [
       {
@@ -43,6 +42,30 @@ export default function YellowStatsStrip() {
       accent: "text-[#3cd664]",
       background: "bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900"
     }
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchYellowStatsStripData();
+  }, []);
+
+  const fetchYellowStatsStripData = async () => {
+    try {
+      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const response = await fetch(`${API_BASE}/yellow-stats-strip`);
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Yellow Stats Strip data received:", data);
+        console.log("Number of statistics:", data.statistics?.length || 0);
+        setYellowStatsStripData(data);
+      } else {
+        console.error("Failed to fetch yellow stats strip data:", response.status);
+      }
+    } catch (error) {
+      console.error("Error fetching Yellow Stats Strip data:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getIconComponent = (iconName: string) => {
@@ -56,6 +79,16 @@ export default function YellowStatsStrip() {
     };
     return iconMap[iconName] || FaGraduationCap;
   };
+
+  if (loading) {
+    return (
+      <section className="relative py-16 px-6 overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className={`relative ${yellowStatsStripData.colors.background} py-16 px-6 overflow-hidden`}>
@@ -82,7 +115,12 @@ export default function YellowStatsStrip() {
 
       {/* Optimized Stats Grid */}
       <div className="relative z-10 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+        <div className={`grid gap-6 md:gap-8 ${
+          yellowStatsStripData.statistics.length === 1 ? 'grid-cols-1' :
+          yellowStatsStripData.statistics.length === 2 ? 'grid-cols-1 sm:grid-cols-2' :
+          yellowStatsStripData.statistics.length === 3 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' :
+          'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
+        }`}>
           {yellowStatsStripData.statistics.map((item, index) => {
             const IconComponent = getIconComponent(item.icon);
             return (
@@ -116,7 +154,7 @@ export default function YellowStatsStrip() {
 
                   {/* Optimized Floating Particles */}
                   <div className="absolute inset-0 overflow-hidden rounded-3xl">
-                    {[...Array(3)].map((_, i) => (
+                    {[...Array(Math.min(3, yellowStatsStripData.statistics.length))].map((_, i) => (
                       <div
                         key={i}
                         className="absolute w-1 h-1 bg-white/20 rounded-full animate-pulse"
@@ -142,7 +180,7 @@ export default function YellowStatsStrip() {
 
         {/* Optimized Bottom Decorative Elements */}
         <div className="flex justify-center mt-12 gap-4 animate-fade-in-up animation-delay-500">
-          {[...Array(3)].map((_, i) => (
+          {[...Array(Math.min(4, yellowStatsStripData.statistics.length))].map((_, i) => (
             <div
               key={i}
               className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"

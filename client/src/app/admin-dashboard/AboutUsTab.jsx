@@ -23,8 +23,6 @@ export default function AboutUsTab() {
   const [formData, setFormData] = useState({
     title: "",
     content: "",
-    mainImage: "/images/about.jpeg",
-    testimonialImage: "/images/young-woman.jpg",
     video: {
       type: "file",
       url: "/videos/aboutus.mp4",
@@ -32,21 +30,6 @@ export default function AboutUsTab() {
       autoplay: true,
       loop: true,
       muted: true,
-    },
-    testimonial: {
-      text: "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.",
-      author: "Alisa Oliva",
-      position: "Web Designer",
-    },
-    classSchedule: {
-      title: "Our Class Day",
-      days: [
-        { day: "Saturday", time: "10:00-16:00" },
-        { day: "Sunday", time: "10:00-16:00" },
-        { day: "Monday", time: "10:00-16:00" },
-        { day: "Tuesday", time: "10:00-16:00" },
-        { day: "Wednesday", time: "10:00-16:00" },
-      ],
     },
     button: {
       text: "",
@@ -168,9 +151,9 @@ export default function AboutUsTab() {
       return;
     }
 
-    // Validate file size (50MB limit)
-    if (file.size > 50 * 1024 * 1024) {
-      toast.error("Video file size must be less than 50MB");
+    // Validate file size (100MB limit to match backend)
+    if (file.size > 100 * 1024 * 1024) {
+      toast.error("Video file size must be less than 100MB");
       return;
     }
 
@@ -183,6 +166,11 @@ export default function AboutUsTab() {
       const API_BASE =
         process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
       const token = localStorage.getItem("adminToken");
+
+      if (!token) {
+        toast.error("Authentication token not found. Please log in again.");
+        return;
+      }
 
       const response = await fetch(`${API_BASE}/upload/video`, {
         method: "POST",
@@ -199,17 +187,24 @@ export default function AboutUsTab() {
           ...prev,
           video: {
             ...prev.video,
-            url: result.filePath,
+            url: result.videoUrl,
             type: "file",
           },
         }));
         toast.success("Video uploaded successfully!");
       } else {
-        toast.error("Failed to upload video");
+        const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+        if (response.status === 401) {
+          toast.error("Authentication failed. Please log in again.");
+        } else if (response.status === 403) {
+          toast.error("Access denied. Admin privileges required.");
+        } else {
+          toast.error(`Failed to upload video: ${errorData.error || 'Unknown error'}`);
+        }
       }
     } catch (error) {
       console.error("Error uploading video:", error);
-      toast.error("Error uploading video");
+      toast.error("Network error. Please check your connection and try again.");
     } finally {
       setUploadingVideo(false);
     }
@@ -340,8 +335,6 @@ export default function AboutUsTab() {
     setFormData({
       title: "",
       content: "",
-      mainImage: "/images/about.jpeg",
-      testimonialImage: "/images/young-woman.jpg",
       video: {
         type: "file",
         url: "/videos/aboutus.mp4",
@@ -349,21 +342,6 @@ export default function AboutUsTab() {
         autoplay: true,
         loop: true,
         muted: true,
-      },
-      testimonial: {
-        text: "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.",
-        author: "Alisa Oliva",
-        position: "Web Designer",
-      },
-      classSchedule: {
-        title: "Our Class Day",
-        days: [
-          { day: "Saturday", time: "10:00-16:00" },
-          { day: "Sunday", time: "10:00-16:00" },
-          { day: "Monday", time: "10:00-16:00" },
-          { day: "Tuesday", time: "10:00-16:00" },
-          { day: "Wednesday", time: "10:00-16:00" },
-        ],
       },
       button: {
         text: "",
@@ -432,171 +410,7 @@ export default function AboutUsTab() {
             />
           </div>
 
-          {/* Image Settings */}
-          <div>
-            <h3 className="text-lg font-medium text-gray-700 mb-4">
-              Image Settings
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Main Image URL
-                </label>
-                <input
-                  type="text"
-                  value={formData.mainImage}
-                  onChange={(e) =>
-                    handleInputChange("mainImage", e.target.value)
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="/images/about.jpeg"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Testimonial Image URL
-                </label>
-                <input
-                  type="text"
-                  value={formData.testimonialImage}
-                  onChange={(e) =>
-                    handleInputChange("testimonialImage", e.target.value)
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="/images/young-woman.jpg"
-                  required
-                />
-              </div>
-            </div>
-          </div>
 
-          {/* Testimonial Settings */}
-          <div>
-            <h3 className="text-lg font-medium text-gray-700 mb-4">
-              Testimonial Settings
-            </h3>
-            <div className="bg-gray-50 p-4 rounded-lg space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Testimonial Text
-                </label>
-                <textarea
-                  value={formData.testimonial.text}
-                  onChange={(e) =>
-                    handleInputChange("testimonial.text", e.target.value)
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  rows="3"
-                  placeholder="Enter testimonial text"
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Author Name
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.testimonial.author}
-                    onChange={(e) =>
-                      handleInputChange("testimonial.author", e.target.value)
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Alisa Oliva"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Author Position
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.testimonial.position}
-                    onChange={(e) =>
-                      handleInputChange("testimonial.position", e.target.value)
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Web Designer"
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Class Schedule Settings */}
-          <div>
-            <h3 className="text-lg font-medium text-gray-700 mb-4">
-              Class Schedule Settings
-            </h3>
-            <div className="bg-gray-50 p-4 rounded-lg space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Schedule Title
-                </label>
-                <input
-                  type="text"
-                  value={formData.classSchedule.title}
-                  onChange={(e) =>
-                    handleInputChange("classSchedule.title", e.target.value)
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Our Class Day"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Class Days & Times
-                </label>
-                <div className="space-y-2">
-                  {formData.classSchedule.days.map((day, index) => (
-                    <div key={index} className="flex gap-2">
-                      <input
-                        type="text"
-                        value={day.day}
-                        onChange={(e) => {
-                          const newDays = [...formData.classSchedule.days];
-                          newDays[index].day = e.target.value;
-                          setFormData((prev) => ({
-                            ...prev,
-                            classSchedule: {
-                              ...prev.classSchedule,
-                              days: newDays,
-                            },
-                          }));
-                        }}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Day"
-                        required
-                      />
-                      <input
-                        type="text"
-                        value={day.time}
-                        onChange={(e) => {
-                          const newDays = [...formData.classSchedule.days];
-                          newDays[index].time = e.target.value;
-                          setFormData((prev) => ({
-                            ...prev,
-                            classSchedule: {
-                              ...prev.classSchedule,
-                              days: newDays,
-                            },
-                          }));
-                        }}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Time"
-                        required
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
 
           {/* Video Management Section */}
           <div>
@@ -652,7 +466,7 @@ export default function AboutUsTab() {
                     )}
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    Supported formats: MP4, WebM, AVI. Max size: 50MB
+                    Supported formats: MP4, WebM, AVI. Max size: 100MB
                   </p>
                 </div>
               ) : (
