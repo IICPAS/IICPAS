@@ -11,6 +11,7 @@ import {
   FaImage,
   FaPlus,
   FaMinus,
+  FaUpload,
 } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -60,6 +61,7 @@ export default function WhyIICPATab() {
     },
   });
   const [newFeature, setNewFeature] = useState("");
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const colorOptions = [
     { value: "text-white", label: "White" },
@@ -174,6 +176,71 @@ export default function WhyIICPATab() {
       ...prev,
       features: prev.features.filter((_, i) => i !== index),
     }));
+  };
+
+  const handleImageUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select a valid image file");
+      return;
+    }
+
+    // Validate file size (10MB limit to match backend)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Image file size must be less than 10MB");
+      return;
+    }
+
+    setUploadingImage(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const API_BASE =
+        process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const token = localStorage.getItem("adminToken");
+
+      if (!token) {
+        toast.error("Authentication token not found. Please log in again.");
+        return;
+      }
+
+      const response = await fetch(`${API_BASE}/upload/image`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: "include",
+        body: formData,
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setFormData((prev) => ({
+          ...prev,
+          image: result.imageUrl,
+        }));
+        toast.success("Image uploaded successfully!");
+      } else {
+        const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+        if (response.status === 401) {
+          toast.error("Authentication failed. Please log in again.");
+        } else if (response.status === 403) {
+          toast.error("Access denied. Admin privileges required.");
+        } else {
+          toast.error(`Failed to upload image: ${errorData.error || 'Unknown error'}`);
+        }
+      }
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      toast.error("Network error. Please check your connection and try again.");
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -337,6 +404,7 @@ export default function WhyIICPATab() {
       },
     });
     setNewFeature("");
+    setUploadingImage(false);
   };
 
   if (loading) {
@@ -383,16 +451,39 @@ export default function WhyIICPATab() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Image URL
+                Image
               </label>
-              <input
-                type="text"
-                value={formData.image}
-                onChange={(e) => handleInputChange("image", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="/images/img1.jpg"
-                required
-              />
+              
+              {/* Image Upload */}
+              <div>
+                <div className="flex items-center space-x-4">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    id="image-upload"
+                    disabled={uploadingImage}
+                  />
+                  <label
+                    htmlFor="image-upload"
+                    className={`flex items-center px-4 py-2 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50 ${
+                      uploadingImage ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                  >
+                    <FaUpload className="mr-2" />
+                    {uploadingImage ? "Uploading..." : "Choose Image File"}
+                  </label>
+                  {formData.image && (
+                    <span className="text-sm text-gray-600">
+                      Current: {formData.image}
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Supported formats: JPG, PNG, GIF, WebP. Max size: 10MB
+                </p>
+              </div>
             </div>
           </div>
 
