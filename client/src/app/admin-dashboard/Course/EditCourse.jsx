@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import { FaArrowLeft, FaSave } from "react-icons/fa";
+import { getCourseLevels } from "../../../utils/courseLevels";
 
 const JoditEditor = dynamic(() => import("jodit-react"), { ssr: false });
 const MySwal = withReactContent(Swal);
@@ -19,14 +20,9 @@ const CATEGORY_OPTIONS = [
   { value: "US CMA", label: "US CMA" },
 ];
 
-const LEVEL_OPTIONS = [
-  { value: "Foundation", label: "Foundation" },
-  { value: "Core", label: "Core" },
-  { value: "Expert", label: "Expert" },
-];
-
 export default function EditCourse({ courseId, onBack }) {
   const [form, setForm] = useState(null);
+  const [levelOptions, setLevelOptions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -56,26 +52,33 @@ export default function EditCourse({ courseId, onBack }) {
 
   useEffect(() => {
     setMounted(true);
-    axios.get(`${API_BASE}/courses/${courseId}`).then((res) => {
-      const c = res.data;
-      setForm({
-        category:
-          CATEGORY_OPTIONS.find((opt) => opt.value === c.category) || null,
-        title: c.title || "",
-        slug: c.slug || "",
-        price: c.price || "",
-        level: LEVEL_OPTIONS.find((opt) => opt.value === c.level) || null,
-        discount: c.discount || "",
-        status: c.status || "Active",
-        video: c.video || "",
-        description: c.description || "",
-        examCert: c.examCert || "",
-        caseStudy: c.caseStudy || "",
-        seoTitle: c.seoTitle || "",
-        seoKeywords: c.seoKeywords || "",
-        seoDescription: c.seoDescription || "",
-        image: null,
-        imageUrl: c.image || "",
+    
+    // Load course levels first
+    getCourseLevels().then((levels) => {
+      setLevelOptions(levels);
+      
+      // Then load course data
+      axios.get(`${API_BASE}/courses/${courseId}`).then((res) => {
+        const c = res.data;
+        setForm({
+          category:
+            CATEGORY_OPTIONS.find((opt) => opt.value === c.category) || null,
+          title: c.title || "",
+          slug: c.slug || "",
+          price: c.price || "",
+          level: levels.find((opt) => opt.value === c.level) || null,
+          discount: c.discount || "",
+          status: c.status || "Active",
+          video: c.video || "",
+          description: c.description || "",
+          examCert: c.examCert || "",
+          caseStudy: c.caseStudy || "",
+          seoTitle: c.seoTitle || "",
+          seoKeywords: c.seoKeywords || "",
+          seoDescription: c.seoDescription || "",
+          image: null,
+          imageUrl: c.image || "",
+        });
       });
     });
   }, [courseId]);
@@ -232,7 +235,7 @@ export default function EditCourse({ courseId, onBack }) {
           <div className="space-y-4">
             <label>Level</label>
             <Select
-              options={LEVEL_OPTIONS}
+              options={levelOptions}
               value={form.level}
               onChange={handleLevelChange}
             />

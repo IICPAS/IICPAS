@@ -3,16 +3,11 @@ import Select from "react-select";
 import axios from "axios";
 import { FaArrowLeft, FaPlus } from "react-icons/fa";
 import dynamic from "next/dynamic";
+import { getCourseLevels } from "../../../utils/courseLevels";
 
 const JoditEditor = dynamic(() => import("jodit-react"), { ssr: false });
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
-
-const LEVEL_OPTIONS = [
-  { value: "Foundation", label: "Foundation" },
-  { value: "Core", label: "Core" },
-  { value: "Expert", label: "Expert" },
-];
 
 const initialForm = {
   category: null,
@@ -52,6 +47,7 @@ const initialForm = {
 
 export default function CourseAddTab({ onBack }) {
   const [categoryOptions, setCategoryOptions] = useState([]);
+  const [levelOptions, setLevelOptions] = useState([]);
   const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -73,6 +69,7 @@ export default function CourseAddTab({ onBack }) {
   };
 
   useEffect(() => {
+    // Load categories
     axios
       .get(`${API_BASE}/categories`)
       .then((res) => {
@@ -84,6 +81,9 @@ export default function CourseAddTab({ onBack }) {
         );
       })
       .catch(() => setCategoryOptions([]));
+
+    // Load course levels
+    getCourseLevels().then(setLevelOptions);
   }, []);
 
   const handleCategoryChange = (option) =>
@@ -257,7 +257,7 @@ export default function CourseAddTab({ onBack }) {
                 Select course level
               </label>
               <Select
-                options={LEVEL_OPTIONS}
+                options={levelOptions}
                 value={form.level}
                 onChange={handleLevelChange}
                 placeholder="Select course level"
