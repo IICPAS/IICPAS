@@ -72,7 +72,17 @@ export default function ContactTab() {
   const fetchContactEntries = async () => {
     try {
       const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const token = localStorage.getItem("adminToken");
+      
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
+      
       const response = await fetch(`${API_BASE}/contact/all`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
         credentials: "include",
       });
       
@@ -125,9 +135,18 @@ export default function ContactTab() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("/api/contact", {
+      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const token = localStorage.getItem("adminToken");
+      
+      if (!token) {
+        toast.error("Authentication token not found. Please log in again.");
+        return;
+      }
+      
+      const response = await fetch(`${API_BASE}/contact`, {
         method: "POST",
         headers: {
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         credentials: "include",
@@ -139,18 +158,35 @@ export default function ContactTab() {
         fetchContactEntries();
         resetForm();
       } else {
-        toast.error("Failed to create Contact content");
+        const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+        if (response.status === 401) {
+          toast.error("Authentication failed. Please log in again.");
+        } else if (response.status === 403) {
+          toast.error("Access denied. Admin privileges required.");
+        } else {
+          toast.error(`Failed to create Contact content: ${errorData.error || 'Unknown error'}`);
+        }
       }
     } catch (error) {
-      toast.error("Error creating Contact content");
+      console.error("Error creating contact content:", error);
+      toast.error("Network error. Please check your connection and try again.");
     }
   };
 
   const handleUpdate = async (id) => {
     try {
-      const response = await fetch(`/api/contact/${id}`, {
+      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const token = localStorage.getItem("adminToken");
+      
+      if (!token) {
+        toast.error("Authentication token not found. Please log in again.");
+        return;
+      }
+      
+      const response = await fetch(`${API_BASE}/contact/${id}`, {
         method: "PUT",
         headers: {
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         credentials: "include",
@@ -163,10 +199,18 @@ export default function ContactTab() {
         setEditingId(null);
         resetForm();
       } else {
-        toast.error("Failed to update Contact content");
+        const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+        if (response.status === 401) {
+          toast.error("Authentication failed. Please log in again.");
+        } else if (response.status === 403) {
+          toast.error("Access denied. Admin privileges required.");
+        } else {
+          toast.error(`Failed to update Contact content: ${errorData.error || 'Unknown error'}`);
+        }
       }
     } catch (error) {
-      toast.error("Error updating Contact content");
+      console.error("Error updating contact content:", error);
+      toast.error("Network error. Please check your connection and try again.");
     }
   };
 
@@ -174,8 +218,19 @@ export default function ContactTab() {
     if (!window.confirm("Are you sure you want to delete this Contact content?")) return;
 
     try {
-      const response = await fetch(`/api/contact/${id}`, {
+      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const token = localStorage.getItem("adminToken");
+      
+      if (!token) {
+        toast.error("Authentication token not found. Please log in again.");
+        return;
+      }
+      
+      const response = await fetch(`${API_BASE}/contact/${id}`, {
         method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         credentials: "include",
       });
 
@@ -183,17 +238,36 @@ export default function ContactTab() {
         toast.success("Contact content deleted successfully!");
         fetchContactEntries();
       } else {
-        toast.error("Failed to delete Contact content");
+        const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+        if (response.status === 401) {
+          toast.error("Authentication failed. Please log in again.");
+        } else if (response.status === 403) {
+          toast.error("Access denied. Admin privileges required.");
+        } else {
+          toast.error(`Failed to delete Contact content: ${errorData.error || 'Unknown error'}`);
+        }
       }
     } catch (error) {
-      toast.error("Error deleting Contact content");
+      console.error("Error deleting contact content:", error);
+      toast.error("Network error. Please check your connection and try again.");
     }
   };
 
   const handleActivate = async (id) => {
     try {
-      const response = await fetch(`/api/contact/activate/${id}`, {
+      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const token = localStorage.getItem("adminToken");
+      
+      if (!token) {
+        toast.error("Authentication token not found. Please log in again.");
+        return;
+      }
+      
+      const response = await fetch(`${API_BASE}/contact/activate/${id}`, {
         method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         credentials: "include",
       });
 
@@ -201,10 +275,18 @@ export default function ContactTab() {
         toast.success("Contact content activated successfully!");
         fetchContactEntries();
       } else {
-        toast.error("Failed to activate Contact content");
+        const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+        if (response.status === 401) {
+          toast.error("Authentication failed. Please log in again.");
+        } else if (response.status === 403) {
+          toast.error("Access denied. Admin privileges required.");
+        } else {
+          toast.error(`Failed to activate Contact content: ${errorData.error || 'Unknown error'}`);
+        }
       }
     } catch (error) {
-      toast.error("Error activating Contact content");
+      console.error("Error activating contact content:", error);
+      toast.error("Network error. Please check your connection and try again.");
     }
   };
 

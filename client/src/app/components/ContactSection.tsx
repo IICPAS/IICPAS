@@ -52,10 +52,13 @@ export default function ContactSection() {
 
   const fetchContactData = async () => {
     try {
-      const response = await fetch("/api/contact");
+      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const response = await fetch(`${API_BASE}/contact`);
       if (response.ok) {
         const data = await response.json();
         setContactData(data);
+      } else {
+        console.error("Failed to fetch contact data:", response.status);
       }
     } catch (error) {
       console.error("Error fetching Contact data:", error);
@@ -72,10 +75,10 @@ export default function ContactSection() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE;
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
 
     try {
-      await axios.post(`${API_BASE_URL}/contact`, formData);
+      await axios.post(`${API_BASE_URL}/contact/submit`, formData);
       toast.success(contactData.form.successMessage);
       setFormData({ name: "", email: "", phone: "", message: "" });
     } catch (error: any) {
