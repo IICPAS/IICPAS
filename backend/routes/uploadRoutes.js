@@ -3,6 +3,8 @@ import multer from "multer";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { requireAuth } from "../middleware/requireAuth.js";
+import { isAdmin } from "../middleware/isAdmin.js";
 
 const router = express.Router();
 
@@ -61,26 +63,36 @@ export const uploadImage = multer({
 
 const upload = multer({ storage: videoStorage });
 
-// Video upload route
-router.post("/video", uploadVideo.single("video"), (req, res) => {
-  if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+// Video upload route (protected - admin only)
+router.post("/video", requireAuth, isAdmin, uploadVideo.single("video"), (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: "No file uploaded" });
 
-  // Use API_URL from environment if available, otherwise use request host
-  const baseUrl = process.env.API_URL || `${req.protocol}://${req.get("host")}`;
-  const videoUrl = `${baseUrl}/uploads/videos/${req.file.filename}`;
+    // Use API_URL from environment if available, otherwise use request host
+    const baseUrl = process.env.API_URL || `${req.protocol}://${req.get("host")}`;
+    const videoUrl = `${baseUrl}/uploads/videos/${req.file.filename}`;
 
-  res.json({ videoUrl });
+    res.json({ videoUrl });
+  } catch (error) {
+    console.error("Video upload error:", error);
+    res.status(500).json({ error: "Failed to upload video" });
+  }
 });
 
-// Image upload route
-router.post("/image", uploadImage.single("image"), (req, res) => {
-  if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+// Image upload route (protected - admin only)
+router.post("/image", requireAuth, isAdmin, uploadImage.single("image"), (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: "No file uploaded" });
 
-  // Use API_URL from environment if available, otherwise use request host
-  const baseUrl = process.env.API_URL || `${req.protocol}://${req.get("host")}`;
-  const imageUrl = `${baseUrl}/uploads/images/${req.file.filename}`;
+    // Use API_URL from environment if available, otherwise use request host
+    const baseUrl = process.env.API_URL || `${req.protocol}://${req.get("host")}`;
+    const imageUrl = `${baseUrl}/uploads/images/${req.file.filename}`;
 
-  res.json({ imageUrl });
+    res.json({ imageUrl });
+  } catch (error) {
+    console.error("Image upload error:", error);
+    res.status(500).json({ error: "Failed to upload image" });
+  }
 });
 
 export default router;
