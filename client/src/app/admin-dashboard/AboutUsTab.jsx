@@ -13,7 +13,6 @@ export default function AboutUsTab() {
   const [formData, setFormData] = useState({
     title: "",
     content: "",
-    mainImage: "",
     video: {
       type: "file",
       url: "/videos/aboutus.mp4",
@@ -271,7 +270,6 @@ export default function AboutUsTab() {
     setFormData({
       title: "",
       content: "",
-      mainImage: "",
       video: {
         type: "file",
         url: "/videos/aboutus.mp4",
@@ -315,34 +313,18 @@ export default function AboutUsTab() {
         
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Basic Content */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Title
-              </label>
-              <input
-                type="text"
-                value={formData.title}
-                onChange={(e) => handleInputChange("title", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="About Us"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Main Image URL
-              </label>
-              <input
-                type="text"
-                value={formData.mainImage}
-                onChange={(e) => handleInputChange("mainImage", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="/images/about.jpeg"
-                required
-              />
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Title
+            </label>
+            <input
+              type="text"
+              value={formData.title}
+              onChange={(e) => handleInputChange("title", e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="About Us"
+              required
+            />
           </div>
 
           <div>

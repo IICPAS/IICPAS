@@ -39,6 +39,8 @@ const navLinks = [
       { name: "Blogs", href: "/blog" },
       { name: "Contact", href: "/contact" },
       { name: "About", href: "/about" },
+      { name: "Study Material", href: "/study-material" },
+      { name: "Career Guidance", href: "/career-guidance" },
     ],
   },
   { name: "Live Session", href: "/live-session" },
