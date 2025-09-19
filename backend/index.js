@@ -164,6 +164,14 @@ import newsletterSectionRoutes from "./routes/WebsiteRoutes/newsletterSectionRou
 app.use("/api/newsletter-section", newsletterSectionRoutes);
 app.use("/api/newsletter-subscriptions", newsletterSubscriptionRoutes);
 
+//Study Material Routes
+import studyMaterialRoutes from "./routes/WebsiteRoutes/studyMaterialRoutes.js";
+app.use("/api/v1/website/study-material", studyMaterialRoutes);
+
+//Career Guidance Routes
+import careerGuidanceRoutes from "./routes/WebsiteRoutes/careerGuidanceRoutes.js";
+app.use("/api/v1/website/career-guidance", careerGuidanceRoutes);
+
 //Ticket Routes
 app.use("/api/tickets", ticketRoutes);
 app.use("/api/bookings", bookingRoutes);

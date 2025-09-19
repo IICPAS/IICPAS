@@ -61,6 +61,7 @@ import {
   FaStar,
   FaChartBar,
   FaList,
+  FaUserTie,
 } from "react-icons/fa";
 import CompanyTab from "./CompanyTab";
 import CourseArea from "./CourseBuilder";
@@ -71,6 +72,8 @@ import RevisionTestsTab from "./RevisionTestsTab";
 import CourseDisplayTab from "./CourseDisplayTab";
 import IPLogsTab from "./IPLogsTab";
 import IPWhitelistTab from "./IPWhitelistTab";
+import StudyMaterialTab from "./StudyMaterialTab";
+import CareerGuidanceTab from "./CareerGuidanceTab";
 
 // All available modules with their permissions
 const ALL_MODULES = [
@@ -112,6 +115,8 @@ const WEBSITE_SETTINGS_MODULES = [
   { id: "meta", label: "Manage Metatags", icon: <FaTags /> },
   { id: "alert", label: "Alert", icon: <FaBell /> },
   { id: "ip-whitelist", label: "IP Whitelisting", icon: <FaShieldAlt /> },
+  { id: "study-material", label: "Study Material", icon: <FaBook /> },
+  { id: "career-guidance", label: "Career Guidance", icon: <FaUserTie /> },
 ];
 
 function AdminDashboardContent() {
@@ -400,6 +405,10 @@ function AdminDashboardContent() {
           <AlertsTab />
         ) : activeTab === "ip-whitelist" ? (
           <IPWhitelistTab />
+        ) : activeTab === "study-material" ? (
+          <StudyMaterialTab />
+        ) : activeTab === "career-guidance" ? (
+          <CareerGuidanceTab />
         ) : activeTab === "news" ? (
           <NewsTab />
         ) : activeTab === "testimonials" ? (
