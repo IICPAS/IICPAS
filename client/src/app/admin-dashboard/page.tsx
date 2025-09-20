@@ -63,6 +63,7 @@ import {
   FaChartBar,
   FaList,
   FaUserTie,
+  FaArrowLeft,
 } from "react-icons/fa";
 import CompanyTab from "./CompanyTab";
 import CourseArea from "./CourseBuilder";
@@ -73,7 +74,7 @@ import RevisionTestsTab from "./RevisionTestsTab";
 import CourseDisplayTab from "./CourseDisplayTab";
 import IPLogsTab from "./IPLogsTab";
 import IPWhitelistTab from "./IPWhitelistTab";
-import StudyMaterialTab from "./StudyMaterialTab";
+import DemoDigitalHubTab from "./DemoDigitalHubTab";
 import FAQTab from "./FAQTab";
 
 // All available modules with their permissions
@@ -117,7 +118,7 @@ const WEBSITE_SETTINGS_MODULES = [
   { id: "meta", label: "Manage Metatags", icon: <FaTags /> },
   { id: "alert", label: "Alert", icon: <FaBell /> },
   { id: "ip-whitelist", label: "IP Whitelisting", icon: <FaShieldAlt /> },
-  { id: "study-material", label: "Study Material", icon: <FaBook /> },
+  { id: "demo-digital-hub", label: "Demo Digital Hub", icon: <FaBook /> },
   { id: "faq", label: "FAQ", icon: <FaUserTie /> },
 ];
 
@@ -163,6 +164,10 @@ function AdminDashboardContent() {
   const handleLogout = async () => {
     await logout();
     router.push("/admin");
+  };
+
+  const handleBack = () => {
+    setActiveTab("");
   };
 
   // SIDEBAR: scrollable, hidden scrollbar
@@ -360,7 +365,20 @@ function AdminDashboardContent() {
       </Drawer>
 
       {/* Main Content: scrolls independently of sidebar */}
-      <main className="min-h-screen p-6 pt-20 overflow-y-auto lg:ml-70 relative">
+      <main className="min-h-screen p-6 pt-8 overflow-y-auto lg:ml-70 relative">
+        {/* Back Button - Only show when not on dashboard home */}
+        {activeTab !== "" && (
+          <div className="mb-6">
+            <button
+              onClick={handleBack}
+              className="bg-white text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 text-sm flex items-center gap-2 font-medium shadow-md transition-all duration-200 border border-gray-200"
+            >
+              <FaArrowLeft className="text-sm" />
+              Back
+            </button>
+          </div>
+        )}
+        
         {/* Permission-based content rendering */}
         {activeTab === "live-session" ? (
           <LiveSessionAdmin />
@@ -410,8 +428,8 @@ function AdminDashboardContent() {
           <AlertsTab />
         ) : activeTab === "ip-whitelist" ? (
           <IPWhitelistTab />
-        ) : activeTab === "study-material" ? (
-          <StudyMaterialTab />
+        ) : activeTab === "demo-digital-hub" ? (
+          <DemoDigitalHubTab />
         ) : activeTab === "faq" ? (
           <FAQTab />
         ) : activeTab === "news" ? (
