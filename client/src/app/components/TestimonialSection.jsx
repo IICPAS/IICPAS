@@ -1,38 +1,67 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaStar, FaChevronLeft, FaChevronRight, FaQuoteLeft } from "react-icons/fa";
 import Image from "next/image";
 import { BiSolidQuoteRight } from "react-icons/bi";
 import { motion, AnimatePresence } from "framer-motion";
+import axios from "axios";
+import StarRating from "./StarRating";
 
 export default function TestimonialCarousel() {
   const [index, setIndex] = useState(0);
+  const [testimonials, setTestimonials] = useState([]);
+  const [loading, setLoading] = useState(true);
   
-  // Static testimonial data for instant loading
-  const testimonials = [
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+
+  // Fallback testimonials if API fails
+  const fallbackTestimonials = [
     {
       quote:
         "IICPA Institute transformed my career completely. The courses are comprehensive and the instructors are experts in their field. Highly recommended!",
       author: "Rajiv Ranjan",
-      role: "Student",
+      designation: "Student",
       image: "https://randomuser.me/api/portraits/men/32.jpg",
+      rating: 5,
     },
     {
       quote:
         "The learning experience at IICPA is exceptional. The practical approach and real-world examples made complex concepts easy to understand.",
       author: "Sneha Kapoor",
-      role: "HR Manager",
+      designation: "HR Manager",
       image: "https://randomuser.me/api/portraits/women/65.jpg",
+      rating: 5,
     },
     {
       quote:
         "IICPA helped me master accounting and finance skills that directly improved my job performance. The support team is amazing!",
       author: "Michael Scott",
-      role: "Marketing Head",
+      designation: "Marketing Head",
       image: "https://randomuser.me/api/portraits/men/78.jpg",
+      rating: 4,
     },
   ];
+
+  useEffect(() => {
+    fetchApprovedTestimonials();
+  }, []);
+
+  const fetchApprovedTestimonials = async () => {
+    try {
+      const response = await axios.get(`${API_BASE}/testimonials/approved`);
+      if (response.data && response.data.length > 0) {
+        setTestimonials(response.data);
+      } else {
+        setTestimonials(fallbackTestimonials);
+      }
+    } catch (error) {
+      console.error("Error fetching testimonials:", error);
+      setTestimonials(fallbackTestimonials);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handlePrev = () => {
     setIndex((prev) => (prev === 0 ? testimonials.length - 1 : prev - 1));
@@ -41,6 +70,19 @@ export default function TestimonialCarousel() {
   const handleNext = () => {
     setIndex((prev) => (prev === testimonials.length - 1 ? 0 : prev + 1));
   };
+
+  if (loading) {
+    return (
+      <section className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-12 px-6 text-center overflow-hidden">
+        <div className="flex items-center justify-center min-h-96">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3cd664] mx-auto mb-4"></div>
+            <p className="text-white">Loading testimonials...</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   if (!testimonials.length) return null;
 
@@ -135,17 +177,11 @@ export default function TestimonialCarousel() {
               whileInView={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.02, delay: 0.01 }}
             >
-              {Array.from({ length: 5 }).map((_, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.02, delay: 0.01 + i * 0.005 }}
-                  whileHover={{ scale: 1.2, rotate: 10 }}
-                >
-                  <FaStar className="text-xl text-[#3cd664] drop-shadow-lg" />
-                </motion.div>
-              ))}
+              <StarRating 
+                rating={current.rating || 5} 
+                interactive={false}
+                size="text-xl"
+              />
             </motion.div>
 
             {/* Quote */}
@@ -162,7 +198,7 @@ export default function TestimonialCarousel() {
                 <div className="absolute -top-2 -left-2 text-4xl text-[#3cd664]/30 font-serif">
                   "
                 </div>
-                {current.quote}
+                {current.message || current.quote}
                 <div className="absolute -bottom-4 -right-2 text-4xl text-[#3cd664]/30 font-serif">
                   "
                 </div>
@@ -185,26 +221,51 @@ export default function TestimonialCarousel() {
                   transition={{ duration: 0.3 }}
                   style={{ transformStyle: "preserve-3d" }}
                 >
-                  <Image
-                    src={current.image}
-                    alt={current.author}
-                    width={64}
-                    height={64}
-                    className="object-cover w-full h-full"
-                  />
+                  {(() => {
+                    // Helper function to get valid image URL
+                    const getImageUrl = () => {
+                      // If current.image is a valid URL (starts with http/https), use it directly
+                      if (current.image && (current.image.startsWith('http://') || current.image.startsWith('https://'))) {
+                        return current.image;
+                      }
+                      
+                      // If current.image exists and is not empty, construct URL with API base
+                      if (current.image && current.image.trim() !== '') {
+                        const baseUrl = API_BASE.replace('/api', '');
+                        return `${baseUrl}/${current.image}`;
+                      }
+                      
+                      // Fallback to default avatar
+                      return 'https://randomuser.me/api/portraits/men/32.jpg';
+                    };
+                    
+                    return (
+                      <Image
+                        src={getImageUrl()}
+                        alt={current.name || current.author || 'Testimonial Author'}
+                        width={64}
+                        height={64}
+                        className="object-cover w-full h-full"
+                        onError={(e) => {
+                          // If image fails to load, set a fallback
+                          e.target.src = 'https://randomuser.me/api/portraits/men/32.jpg';
+                        }}
+                      />
+                    );
+                  })()}
                   <div className="absolute inset-0 bg-gradient-to-br from-[#3cd664]/20 to-transparent"></div>
                 </motion.div>
                 <motion.h4
                   className="mt-3 text-xl font-bold text-white"
                   whileHover={{ scale: 1.05 }}
                 >
-                  {current.author}
+                  {current.name || current.author}
                 </motion.h4>
                 <motion.p
                   className="text-base text-[#3cd664] font-medium"
                   whileHover={{ scale: 1.05 }}
                 >
-                  {current.role}
+                  {current.designation || current.role}
                 </motion.p>
               </motion.div>
             </AnimatePresence>

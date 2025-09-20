@@ -14,6 +14,7 @@ import {
   FaCertificate,
   FaBars,
   FaTimes,
+  FaQuoteLeft,
 } from "react-icons/fa";
 import toast from "react-hot-toast";
 
@@ -24,6 +25,7 @@ import TicketTab from "../components/TicketTab";
 import NewsTab from "./NewsTab";
 import LiveClassTab from "../components/LiveClassTab";
 import ProfileTab from "../components/ProfileTab";
+import TestimonialTab from "./TestimonialTab";
 
 export default function StudentDashboard() {
   const [activeTab, setActiveTab] = useState("courses");
@@ -56,6 +58,7 @@ export default function StudentDashboard() {
     { id: "live", icon: <FaVideo />, label: "Live Class", dot: true },
     { id: "news", icon: <FaNewspaper />, label: "News" },
     { id: "profile", icon: <FaUser />, label: "Profile" },
+    { id: "testimonial", icon: <FaQuoteLeft />, label: "Testimonial" },
     { id: "support", icon: <FaHeadset />, label: "Support" },
     {
       id: "certificates",
@@ -149,6 +152,8 @@ export default function StudentDashboard() {
         return <NewsTab />;
       case "profile":
         return <ProfileTab student={student} />;
+      case "testimonial":
+        return <TestimonialTab student={student} />;
       case "support":
         return <TicketTab />;
       case "certificates":

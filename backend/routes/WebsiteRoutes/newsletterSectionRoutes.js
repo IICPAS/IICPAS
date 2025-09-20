@@ -2,6 +2,7 @@ import express from "express";
 import NewsletterSection from "../../models/Website/NewsletterSection.js";
 import { requireAuth } from "../../middleware/requireAuth.js";
 import { isAdmin } from "../../middleware/isAdmin.js";
+import upload from "../Content/utils/multer.js";
 
 const router = express.Router();
 
@@ -70,13 +71,24 @@ router.get("/all", requireAuth, isAdmin, async (req, res) => {
 });
 
 // Create new NewsletterSection content (admin only)
-router.post("/", requireAuth, isAdmin, async (req, res) => {
+router.post("/", requireAuth, isAdmin, upload.single("image"), async (req, res) => {
   try {
     // Deactivate all existing entries
     await NewsletterSection.updateMany({}, { isActive: false });
     
+    // Prepare data
+    const data = { ...req.body };
+    
+    // Handle uploaded image
+    if (req.file) {
+      data.image = {
+        src: `/uploads/${req.file.filename}`,
+        alt: data.image?.alt || "Newsletter Image"
+      };
+    }
+    
     // Create new entry
-    const newsletterSection = await NewsletterSection.create(req.body);
+    const newsletterSection = await NewsletterSection.create(data);
     res.status(201).json(newsletterSection);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -84,11 +96,38 @@ router.post("/", requireAuth, isAdmin, async (req, res) => {
 });
 
 // Update NewsletterSection content (admin only)
-router.put("/:id", requireAuth, isAdmin, async (req, res) => {
+router.put("/:id", requireAuth, isAdmin, upload.single("image"), async (req, res) => {
   try {
+    // Prepare update data
+    let updateData;
+    
+    // Check if request has file (FormData) or JSON data
+    if (req.file) {
+      // Handle FormData with image upload
+      updateData = { ...req.body };
+      
+      // Parse JSON strings back to objects
+      if (typeof updateData.badge === 'string') updateData.badge = JSON.parse(updateData.badge);
+      if (typeof updateData.title === 'string') updateData.title = JSON.parse(updateData.title);
+      if (typeof updateData.features === 'string') updateData.features = JSON.parse(updateData.features);
+      if (typeof updateData.form === 'string') updateData.form = JSON.parse(updateData.form);
+      if (typeof updateData.stats === 'string') updateData.stats = JSON.parse(updateData.stats);
+      if (typeof updateData.image === 'string') updateData.image = JSON.parse(updateData.image);
+      if (typeof updateData.colors === 'string') updateData.colors = JSON.parse(updateData.colors);
+      
+      // Handle uploaded image
+      updateData.image = {
+        src: `/uploads/${req.file.filename}`,
+        alt: updateData.image?.alt || "Newsletter Image"
+      };
+    } else {
+      // Handle JSON data (no new image)
+      updateData = { ...req.body };
+    }
+    
     const newsletterSection = await NewsletterSection.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      updateData,
       { new: true, runValidators: true }
     );
     

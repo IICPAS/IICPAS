@@ -3,14 +3,24 @@ import Testimonial from "../models/Testimonials.js";
 // Submit a new testimonial
 export const submitTestimonial = async (req, res) => {
   try {
-    const { name, designation, message, image } = req.body;
+    const { name, designation, message, rating } = req.body;
     const studentId = req.user.id;
+    
+    // Handle image upload
+    let imagePath = "";
+    if (req.file) {
+      imagePath = req.file.path; // Path to uploaded file
+    }
+
+    // Validate rating
+    const validRating = rating ? Math.max(1, Math.min(5, parseInt(rating))) : 5;
 
     const testimonial = new Testimonial({
       name,
       designation,
       message,
-      image,
+      rating: validRating,
+      image: imagePath,
       studentId,
       status: false, // Pending approval
     });
@@ -133,6 +143,34 @@ export const deleteTestimonial = async (req, res) => {
   } catch (error) {
     console.error("Error deleting testimonial:", error);
     res.status(500).json({ error: "Failed to delete testimonial" });
+  }
+};
+
+// Update a testimonial (admin only)
+export const updateTestimonial = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
+    
+    // Validate rating if provided
+    if (updateData.rating) {
+      updateData.rating = Math.max(1, Math.min(5, parseInt(updateData.rating)));
+    }
+
+    const testimonial = await Testimonial.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true, runValidators: true }
+    );
+
+    if (!testimonial) {
+      return res.status(404).json({ error: "Testimonial not found" });
+    }
+
+    res.json({ message: "Testimonial updated successfully", testimonial });
+  } catch (error) {
+    console.error("Error updating testimonial:", error);
+    res.status(500).json({ error: "Failed to update testimonial" });
   }
 };
 
