@@ -74,7 +74,7 @@ import CourseDisplayTab from "./CourseDisplayTab";
 import IPLogsTab from "./IPLogsTab";
 import IPWhitelistTab from "./IPWhitelistTab";
 import StudyMaterialTab from "./StudyMaterialTab";
-import CareerGuidanceTab from "./CareerGuidanceTab";
+import FAQTab from "./FAQTab";
 
 // All available modules with their permissions
 const ALL_MODULES = [
@@ -118,7 +118,7 @@ const WEBSITE_SETTINGS_MODULES = [
   { id: "alert", label: "Alert", icon: <FaBell /> },
   { id: "ip-whitelist", label: "IP Whitelisting", icon: <FaShieldAlt /> },
   { id: "study-material", label: "Study Material", icon: <FaBook /> },
-  { id: "career-guidance", label: "Career Guidance", icon: <FaUserTie /> },
+  { id: "faq", label: "FAQ", icon: <FaUserTie /> },
 ];
 
 function AdminDashboardContent() {
@@ -412,8 +412,8 @@ function AdminDashboardContent() {
           <IPWhitelistTab />
         ) : activeTab === "study-material" ? (
           <StudyMaterialTab />
-        ) : activeTab === "career-guidance" ? (
-          <CareerGuidanceTab />
+        ) : activeTab === "faq" ? (
+          <FAQTab />
         ) : activeTab === "news" ? (
           <NewsTab />
         ) : activeTab === "testimonials" ? (

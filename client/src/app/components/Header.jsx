@@ -40,7 +40,7 @@ const navLinks = [
       { name: "Contact", href: "/contact" },
       { name: "About", href: "/about" },
       { name: "Study Material", href: "/study-material" },
-      { name: "Career Guidance", href: "/career-guidance" },
+      { name: "FAQ", href: "/faq" },
     ],
   },
   { name: "Live Session", href: "/live-session" },
