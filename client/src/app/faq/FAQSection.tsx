@@ -207,30 +207,6 @@ const FAQSection = () => {
           })}
         </div>
 
-        <div className="mt-12 text-center">
-          <div className="bg-white rounded-lg shadow-md p-8">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">
-              Still have questions?
-            </h3>
-            <p className="text-gray-600 mb-6">
-              Can't find the answer you're looking for? Our support team is here to help.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button 
-                onClick={() => window.location.href = "/contact"}
-                className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-200"
-              >
-                Contact Support
-              </button>
-              <button 
-                onClick={() => window.location.href = "/live-session"}
-                className="border-2 border-blue-600 text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-blue-600 hover:text-white transition-colors duration-200"
-              >
-                Join Live Session
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

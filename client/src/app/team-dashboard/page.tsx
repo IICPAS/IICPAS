@@ -39,6 +39,7 @@ import {
   FaChartLine,
   FaFileAlt,
   FaComments,
+  FaArrowLeft,
 } from "react-icons/fa";
 
 // Team-specific modules
@@ -101,6 +102,10 @@ function TeamDashboardContent() {
   const handleLogout = async () => {
     await logout();
     router.push("/team");
+  };
+
+  const handleBack = () => {
+    setActiveTab("dashboard");
   };
 
   const renderContent = () => {
@@ -242,6 +247,7 @@ function TeamDashboardContent() {
               <button
                 onClick={() => setDrawerOpen(true)}
                 className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 mr-3"
+                title="Open Menu"
               >
                 <FaBars className="h-5 w-5" />
               </button>
@@ -254,7 +260,10 @@ function TeamDashboardContent() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <button className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100">
+              <button 
+                className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                title="Notifications"
+              >
                 <FaBell className="h-5 w-5" />
               </button>
               <div className="flex items-center space-x-2">
@@ -273,6 +282,18 @@ function TeamDashboardContent() {
 
         {/* Main Content */}
         <main className="flex-1">
+          {/* Back Button - Only show when not on dashboard home */}
+          {activeTab !== "dashboard" && (
+            <div className="p-6 pb-0">
+              <button
+                onClick={handleBack}
+                className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors duration-200 font-medium"
+              >
+                <FaArrowLeft className="text-sm" />
+                Back to Dashboard
+              </button>
+            </div>
+          )}
           {renderContent()}
         </main>
 

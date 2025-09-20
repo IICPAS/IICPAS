@@ -15,6 +15,7 @@ import {
   FaBars,
   FaTimes,
   FaQuoteLeft,
+  FaArrowLeft,
 } from "react-icons/fa";
 import toast from "react-hot-toast";
 
@@ -137,6 +138,10 @@ export default function StudentDashboard() {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleBack = () => {
+    setActiveTab("courses");
   };
 
   // Tab rendering
@@ -268,6 +273,20 @@ export default function StudentDashboard() {
             </div>
           </div>
         </div>
+        
+        {/* Back Button - Only show when not on courses tab */}
+        {activeTab !== "courses" && (
+          <div className="mb-4">
+            <button
+              onClick={handleBack}
+              className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors duration-200 font-medium"
+            >
+              <FaArrowLeft className="text-sm" />
+              Back to Courses
+            </button>
+          </div>
+        )}
+        
         {/* (optional: banners and prompts) */}
         {renderTabContent()}
       </main>

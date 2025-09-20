@@ -39,7 +39,7 @@ const navLinks = [
       { name: "Blogs", href: "/blog" },
       { name: "Contact", href: "/contact" },
       { name: "About", href: "/about" },
-      { name: "Study Material", href: "/study-material" },
+      { name: "Demo Digital Hub", href: "/demo-digital-hub" },
       { name: "FAQ", href: "/faq" },
     ],
   },

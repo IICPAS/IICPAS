@@ -20,6 +20,7 @@ import {
   FaTicketAlt,
   FaUserCircle,
   FaShoppingCart,
+  FaArrowLeft,
 } from "react-icons/fa";
 
 // Import tab content components
@@ -180,6 +181,10 @@ export default function CenterDashboard() {
     }
   };
 
+  const handleBack = () => {
+    setActiveTab("dashboard");
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -278,6 +283,18 @@ export default function CenterDashboard() {
 
         {/* Main content (scrollable area) */}
         <div className="flex-1 overflow-y-auto bg-white custom-scrollbar">
+          {/* Back Button - Only show when not on dashboard home */}
+          {activeTab !== "dashboard" && (
+            <div className="p-6 pb-0">
+              <button
+                onClick={handleBack}
+                className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors duration-200 font-medium"
+              >
+                <FaArrowLeft className="text-sm" />
+                Back to Dashboard
+              </button>
+            </div>
+          )}
           {renderTabContent(activeTab, center)}
         </div>
       </div>
