@@ -79,13 +79,29 @@ router.post("/", requireAuth, isAdmin, upload.single("image"), async (req, res) 
     // Prepare data
     const data = { ...req.body };
     
+    // Parse JSON strings back to objects (for FormData requests)
+    try {
+      if (typeof data.badge === 'string') data.badge = JSON.parse(data.badge);
+      if (typeof data.title === 'string') data.title = JSON.parse(data.title);
+      if (typeof data.features === 'string') data.features = JSON.parse(data.features);
+      if (typeof data.form === 'string') data.form = JSON.parse(data.form);
+      if (typeof data.stats === 'string') data.stats = JSON.parse(data.stats);
+      if (typeof data.colors === 'string') data.colors = JSON.parse(data.colors);
+    } catch (parseError) {
+      console.error("JSON parsing error:", parseError);
+      return res.status(400).json({ error: "Invalid JSON data in request" });
+    }
+    
     // Handle uploaded image
     if (req.file) {
       data.image = {
         src: `/uploads/${req.file.filename}`,
-        alt: data.image?.alt || "Newsletter Image"
+        alt: data.imageAlt || "Newsletter Image"
       };
     }
+    
+    // Clean up data - remove imageAlt field
+    delete data.imageAlt;
     
     // Create new entry
     const newsletterSection = await NewsletterSection.create(data);
@@ -107,19 +123,27 @@ router.put("/:id", requireAuth, isAdmin, upload.single("image"), async (req, res
       updateData = { ...req.body };
       
       // Parse JSON strings back to objects
-      if (typeof updateData.badge === 'string') updateData.badge = JSON.parse(updateData.badge);
-      if (typeof updateData.title === 'string') updateData.title = JSON.parse(updateData.title);
-      if (typeof updateData.features === 'string') updateData.features = JSON.parse(updateData.features);
-      if (typeof updateData.form === 'string') updateData.form = JSON.parse(updateData.form);
-      if (typeof updateData.stats === 'string') updateData.stats = JSON.parse(updateData.stats);
-      if (typeof updateData.image === 'string') updateData.image = JSON.parse(updateData.image);
-      if (typeof updateData.colors === 'string') updateData.colors = JSON.parse(updateData.colors);
+      try {
+        if (typeof updateData.badge === 'string') updateData.badge = JSON.parse(updateData.badge);
+        if (typeof updateData.title === 'string') updateData.title = JSON.parse(updateData.title);
+        if (typeof updateData.features === 'string') updateData.features = JSON.parse(updateData.features);
+        if (typeof updateData.form === 'string') updateData.form = JSON.parse(updateData.form);
+        if (typeof updateData.stats === 'string') updateData.stats = JSON.parse(updateData.stats);
+        if (typeof updateData.image === 'string') updateData.image = JSON.parse(updateData.image);
+        if (typeof updateData.colors === 'string') updateData.colors = JSON.parse(updateData.colors);
+      } catch (parseError) {
+        console.error("JSON parsing error:", parseError);
+        return res.status(400).json({ error: "Invalid JSON data in request" });
+      }
       
       // Handle uploaded image
       updateData.image = {
         src: `/uploads/${req.file.filename}`,
-        alt: updateData.image?.alt || "Newsletter Image"
+        alt: updateData.imageAlt || "Newsletter Image"
       };
+      
+      // Clean up data - remove imageAlt field
+      delete updateData.imageAlt;
     } else {
       // Handle JSON data (no new image)
       updateData = { ...req.body };

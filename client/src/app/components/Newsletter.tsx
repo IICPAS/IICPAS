@@ -57,7 +57,8 @@ export default function NewsletterSection() {
 
   const fetchNewsletterData = async () => {
     try {
-      const response = await fetch("/api/newsletter-section");
+      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const response = await fetch(`${API_BASE}/newsletter-section`);
       if (response.ok) {
         const data = await response.json();
         setNewsletterData(data);

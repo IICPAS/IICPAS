@@ -35,7 +35,8 @@ export default function AddStudentTab({ onSuccess }) {
     setError("");
     setSuccess("");
     try {
-      const res = await fetch("/api/students/register", {
+      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const res = await fetch(`${API_BASE}/students/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),

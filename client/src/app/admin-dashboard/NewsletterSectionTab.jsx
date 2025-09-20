@@ -220,7 +220,7 @@ export default function NewsletterSectionTab() {
       formDataToSend.append("features", JSON.stringify(formData.features));
       formDataToSend.append("form", JSON.stringify(formData.form));
       formDataToSend.append("stats", JSON.stringify(formData.stats));
-      formDataToSend.append("image", JSON.stringify(formData.image));
+      formDataToSend.append("imageAlt", formData.image.alt); // Use different key for alt text
       formDataToSend.append("colors", JSON.stringify(formData.colors));
       
       // Add the image file
@@ -255,7 +255,7 @@ export default function NewsletterSectionTab() {
         formDataToSend.append("features", JSON.stringify(formData.features));
         formDataToSend.append("form", JSON.stringify(formData.form));
         formDataToSend.append("stats", JSON.stringify(formData.stats));
-        formDataToSend.append("image", JSON.stringify(formData.image));
+        formDataToSend.append("imageAlt", formData.image.alt); // Use different key for alt text
         formDataToSend.append("colors", JSON.stringify(formData.colors));
         
         // Add the new image file
