@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { FaSave, FaEdit, FaTrash, FaCheck, FaTimes, FaPlus, FaMinus, FaEnvelope, FaRocket, FaCheckCircle, FaStar } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { authenticatedGet, authenticatedPost, authenticatedPut, authenticatedDelete } from "@/utils/api";
 
 export default function NewsletterSectionTab() {
   const { user } = useAuth();
@@ -47,6 +48,8 @@ export default function NewsletterSectionTab() {
       buttonHover: "from-[#22c55e] to-[#16a34a]"
     }
   });
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
   const [newFeature, setNewFeature] = useState({
     text: "",
     icon: "FaCheckCircle"
@@ -102,12 +105,18 @@ export default function NewsletterSectionTab() {
     }
   }, [user]);
 
+  // Cleanup image preview URL to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
+
   const fetchNewsletterSectionEntries = async () => {
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
-      const response = await fetch(`${API_BASE}/newsletter-section/all`, {
-        credentials: "include",
-      });
+      const response = await authenticatedGet("/newsletter-section/all");
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -181,18 +190,43 @@ export default function NewsletterSectionTab() {
     }));
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedImage(file);
+      // Create preview URL
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Check if image is selected (required for new entries)
+    if (!selectedImage) {
+      toast.error("Please select an image to upload");
+      return;
+    }
+    
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
-      const response = await fetch(`${API_BASE}/newsletter-section`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify(formData),
-      });
+      // Create FormData for file upload
+      const formDataToSend = new FormData();
+      
+      // Add all form data
+      formDataToSend.append("badge", JSON.stringify(formData.badge));
+      formDataToSend.append("title", JSON.stringify(formData.title));
+      formDataToSend.append("description", formData.description);
+      formDataToSend.append("features", JSON.stringify(formData.features));
+      formDataToSend.append("form", JSON.stringify(formData.form));
+      formDataToSend.append("stats", JSON.stringify(formData.stats));
+      formDataToSend.append("imageAlt", formData.image.alt); // Use different key for alt text
+      formDataToSend.append("colors", JSON.stringify(formData.colors));
+      
+      // Add the image file
+      formDataToSend.append("image", selectedImage);
+      
+      const response = await authenticatedPost("/newsletter-section", formDataToSend, true);
 
       if (response.ok) {
         toast.success("NewsletterSection content created successfully!");
@@ -208,15 +242,30 @@ export default function NewsletterSectionTab() {
 
   const handleUpdate = async (id) => {
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
-      const response = await fetch(`${API_BASE}/newsletter-section/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify(formData),
-      });
+      let response;
+      
+      if (selectedImage) {
+        // If new image is selected, use FormData
+        const formDataToSend = new FormData();
+        
+        // Add all form data
+        formDataToSend.append("badge", JSON.stringify(formData.badge));
+        formDataToSend.append("title", JSON.stringify(formData.title));
+        formDataToSend.append("description", formData.description);
+        formDataToSend.append("features", JSON.stringify(formData.features));
+        formDataToSend.append("form", JSON.stringify(formData.form));
+        formDataToSend.append("stats", JSON.stringify(formData.stats));
+        formDataToSend.append("imageAlt", formData.image.alt); // Use different key for alt text
+        formDataToSend.append("colors", JSON.stringify(formData.colors));
+        
+        // Add the new image file
+        formDataToSend.append("image", selectedImage);
+        
+        response = await authenticatedPut(`/newsletter-section/${id}`, formDataToSend, true);
+      } else {
+        // If no new image, send JSON data (keep existing image)
+        response = await authenticatedPut(`/newsletter-section/${id}`, formData);
+      }
 
       if (response.ok) {
         toast.success("NewsletterSection content updated successfully!");
@@ -235,11 +284,7 @@ export default function NewsletterSectionTab() {
     if (!window.confirm("Are you sure you want to delete this NewsletterSection content?")) return;
 
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
-      const response = await fetch(`${API_BASE}/newsletter-section/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
+      const response = await authenticatedDelete(`/newsletter-section/${id}`);
 
       if (response.ok) {
         toast.success("NewsletterSection content deleted successfully!");
@@ -254,11 +299,7 @@ export default function NewsletterSectionTab() {
 
   const handleActivate = async (id) => {
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
-      const response = await fetch(`${API_BASE}/newsletter-section/activate/${id}`, {
-        method: "PUT",
-        credentials: "include",
-      });
+      const response = await authenticatedPut(`/newsletter-section/activate/${id}`, {});
 
       if (response.ok) {
         toast.success("NewsletterSection content activated successfully!");
@@ -274,6 +315,9 @@ export default function NewsletterSectionTab() {
   const startEdit = (entry) => {
     setEditingId(entry._id);
     setFormData(entry);
+    // Clear any existing image selection when editing
+    setSelectedImage(null);
+    setImagePreview(null);
   };
 
   const cancelEdit = () => {
@@ -320,6 +364,8 @@ export default function NewsletterSectionTab() {
       }
     });
     setNewFeature({ text: "", icon: "FaCheckCircle" });
+    setSelectedImage(null);
+    setImagePreview(null);
   };
 
   if (loading) {
@@ -624,19 +670,43 @@ export default function NewsletterSectionTab() {
           {/* Image */}
           <div>
             <h3 className="text-lg font-medium text-gray-700 mb-4">Image</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-4">
+              {/* Image Upload */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Image Source
+                  {editingId ? "Upload New Image (Optional)" : "Upload Image"} 
+                  {!editingId && <span className="text-red-500">*</span>}
                 </label>
                 <input
-                  type="text"
-                  value={formData.image.src}
-                  onChange={(e) => handleInputChange("image.src", e.target.value)}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="/images/student.png"
+                  required={!editingId}
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Supported formats: JPG, PNG, GIF. Max size: 5MB
+                  {editingId && " - Leave empty to keep current image"}
+                </p>
               </div>
+              
+              {/* Image Preview */}
+              {imagePreview && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Image Preview
+                  </label>
+                  <div className="border border-gray-300 rounded-md p-4">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="max-w-full h-48 object-contain mx-auto"
+                    />
+                  </div>
+                </div>
+              )}
+              
+              {/* Image Alt Text */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Image Alt Text

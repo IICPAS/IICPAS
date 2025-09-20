@@ -183,9 +183,9 @@ app.use("/api/newsletter-subscriptions", newsletterSubscriptionRoutes);
 import studyMaterialRoutes from "./routes/WebsiteRoutes/studyMaterialRoutes.js";
 app.use("/api/v1/website/study-material", studyMaterialRoutes);
 
-//Career Guidance Routes
-import careerGuidanceRoutes from "./routes/WebsiteRoutes/careerGuidanceRoutes.js";
-app.use("/api/v1/website/career-guidance", careerGuidanceRoutes);
+//FAQ Routes
+import faqRoutes from "./routes/WebsiteRoutes/faqRoutes.js";
+app.use("/api/v1/website/faq", faqRoutes);
 
 //Ticket Routes
 app.use("/api/tickets", ticketRoutes);

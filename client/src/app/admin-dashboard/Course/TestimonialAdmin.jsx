@@ -44,8 +44,14 @@ export default function TestimonialAdmin() {
   }, []);
 
   const fetchTestimonials = async () => {
+    const token = localStorage.getItem("adminToken");
     const res = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_URL}/testimonials`
+      `${API_BASE}/testimonials`,
+      { 
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }
+      }
     );
     setTestimonials(res.data);
   };
@@ -62,19 +68,50 @@ export default function TestimonialAdmin() {
     });
 
     if (result.isConfirmed) {
+      const token = localStorage.getItem("adminToken");
       await axios.delete(
-        `${process.env.NEXT_PUBLIC_API_URL}/testimonials/${id}`
+        `${API_BASE}/testimonials/${id}`,
+        { 
+          headers: {
+            Authorization: `Bearer ${token}`,
+          }
+        }
       );
       fetchTestimonials();
       Swal.fire("Deleted!", "Testimonial has been deleted.", "success");
     }
   };
 
-  const handleStatusToggle = async (id, status) => {
-    await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/testimonials/${id}`, {
-      status: !status,
-    });
-    fetchTestimonials();
+  const handleApprove = async (id) => {
+    try {
+      const token = localStorage.getItem("adminToken");
+      await axios.patch(`${API_BASE}/testimonials/approve/${id}`, {}, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }
+      });
+      fetchTestimonials();
+      Swal.fire("Approved!", "Testimonial has been approved.", "success");
+    } catch (error) {
+      console.error("Error approving testimonial:", error);
+      Swal.fire("Error!", "Failed to approve testimonial", "error");
+    }
+  };
+
+  const handleReject = async (id) => {
+    try {
+      const token = localStorage.getItem("adminToken");
+      await axios.patch(`${API_BASE}/testimonials/reject/${id}`, {}, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }
+      });
+      fetchTestimonials();
+      Swal.fire("Rejected!", "Testimonial has been rejected.", "success");
+    } catch (error) {
+      console.error("Error rejecting testimonial:", error);
+      Swal.fire("Error!", "Failed to reject testimonial", "error");
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -90,22 +127,26 @@ export default function TestimonialAdmin() {
         formData.append('image', form.image);
       }
 
+      const token = localStorage.getItem("adminToken");
+      
       if (editingTestimonial) {
         await axios.put(
-          `${process.env.NEXT_PUBLIC_API_URL}/testimonials/${editingTestimonial}`,
+          `${API_BASE}/testimonials/${editingTestimonial}`,
           formData,
           {
             headers: {
+              'Authorization': `Bearer ${token}`,
               'Content-Type': 'multipart/form-data',
             },
           }
         );
       } else {
         await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL}/testimonials`,
+          `${API_BASE}/testimonials`,
           formData,
           {
             headers: {
+              'Authorization': `Bearer ${token}`,
               'Content-Type': 'multipart/form-data',
             },
           }
@@ -129,7 +170,7 @@ export default function TestimonialAdmin() {
       message: data.message,
       image: null, // Don't pre-populate image for editing
     });
-    setImagePreview(data.image ? `${process.env.NEXT_PUBLIC_API_URL}/${data.image}` : null);
+    setImagePreview(data.image ? `${API_BASE.replace('/api', '')}/${data.image}` : null);
     setEditingTestimonial(data._id);
     setMode("edit");
   };
@@ -180,6 +221,7 @@ export default function TestimonialAdmin() {
                 <TableCell>Designation</TableCell>
                 <TableCell>Message</TableCell>
                 <TableCell>Status</TableCell>
+                <TableCell>Submitted</TableCell>
                 <TableCell align="center">Actions</TableCell>
               </TableRow>
             </TableHead>
@@ -189,7 +231,7 @@ export default function TestimonialAdmin() {
                   <TableCell>
                     {item.image ? (
                       <img
-                        src={`${process.env.NEXT_PUBLIC_API_URL}/${item.image}`}
+                        src={`${API_BASE.replace('/api', '')}/${item.image}`}
                         alt={item.name}
                         className="w-12 h-12 object-cover rounded-full"
                         onError={(e) => {
@@ -206,32 +248,54 @@ export default function TestimonialAdmin() {
                   </TableCell>
                   <TableCell>{item.name}</TableCell>
                   <TableCell>{item.designation}</TableCell>
-                  <TableCell>{item.message}</TableCell>
+                  <TableCell className="max-w-xs truncate">{item.message}</TableCell>
                   <TableCell>
                     {item.status ? (
-                      <span className="text-green-600">Active</span>
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <CheckCircleIcon className="w-3 h-3 mr-1" />
+                        Approved
+                      </span>
                     ) : (
-                      <span className="text-gray-500">Inactive</span>
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                        <CancelIcon className="w-3 h-3 mr-1" />
+                        Pending
+                      </span>
                     )}
                   </TableCell>
+                  <TableCell>
+                    {new Date(item.createdAt).toLocaleDateString()}
+                  </TableCell>
                   <TableCell align="center">
-                    {hasPermission("edit_testimonial") && (
-                      <IconButton onClick={() => handleEdit(item)}>
-                        <EditIcon />
-                      </IconButton>
-                    )}
-                    {hasPermission("toggle_testimonial_status") && (
-                      <IconButton
-                        onClick={() => handleStatusToggle(item._id, item.status)}
-                      >
-                        {item.status ? <CancelIcon /> : <CheckCircleIcon />}
-                      </IconButton>
-                    )}
-                    {hasPermission("delete_testimonial") && (
-                      <IconButton onClick={() => handleDelete(item._id)}>
-                        <DeleteIcon color="error" />
-                      </IconButton>
-                    )}
+                    <div className="flex items-center justify-center space-x-1">
+                      {!item.status && (
+                        <>
+                          <IconButton
+                            onClick={() => handleApprove(item._id)}
+                            className="text-green-600 hover:bg-green-50"
+                            title="Approve"
+                          >
+                            <CheckCircleIcon />
+                          </IconButton>
+                          <IconButton
+                            onClick={() => handleReject(item._id)}
+                            className="text-red-600 hover:bg-red-50"
+                            title="Reject"
+                          >
+                            <CancelIcon />
+                          </IconButton>
+                        </>
+                      )}
+                      {hasPermission("edit_testimonial") && (
+                        <IconButton onClick={() => handleEdit(item)}>
+                          <EditIcon />
+                        </IconButton>
+                      )}
+                      {hasPermission("delete_testimonial") && (
+                        <IconButton onClick={() => handleDelete(item._id)}>
+                          <DeleteIcon color="error" />
+                        </IconButton>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

@@ -40,7 +40,7 @@ const navLinks = [
       { name: "Contact", href: "/contact" },
       { name: "About", href: "/about" },
       { name: "Study Material", href: "/study-material" },
-      { name: "Career Guidance", href: "/career-guidance" },
+      { name: "FAQ", href: "/faq" },
     ],
   },
   { name: "Live Session", href: "/live-session" },
@@ -55,6 +55,7 @@ export default function Header() {
   const [cartCourses, setCartCourses] = useState([]);
   const [wishlistCourses, setWishlistCourses] = useState([]);
   const [wishlistDrawer, setWishlistDrawer] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
   const API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -103,6 +104,7 @@ export default function Header() {
   };
 
   useEffect(() => {
+    setIsClient(true);
     fetchStudentAndCart();
   }, []);
 
@@ -383,12 +385,16 @@ export default function Header() {
       </header>
 
       {/* Mobile Navigation Drawer */}
-      <Drawer
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        direction="right"
-        className="p-6 bg-white"
-      >
+      {isClient && (
+        <Drawer
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          direction="right"
+          className="p-6 bg-white"
+          size={300}
+          enableOverlay={true}
+          overlayOpacity={0.4}
+        >
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-lg font-bold text-[#003057]">Menu</h2>
           <button
@@ -442,15 +448,20 @@ export default function Header() {
             </Link>
           </div>
         </div>
-      </Drawer>
+        </Drawer>
+      )}
 
       {/* Cart Drawer */}
-      <Drawer
-        open={cartDrawer}
-        onClose={() => setCartDrawer(false)}
-        direction="right"
-        className="p-6 bg-white"
-      >
+      {isClient && (
+        <Drawer
+          open={cartDrawer}
+          onClose={() => setCartDrawer(false)}
+          direction="right"
+          className="p-6 bg-white"
+          size={350}
+          enableOverlay={true}
+          overlayOpacity={0.4}
+        >
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-base font-bold text-[#003057]">My Cart</h2>
           <div className="flex items-center gap-3">
@@ -509,7 +520,8 @@ export default function Header() {
             ))}
           </div>
         )}
-      </Drawer>
+        </Drawer>
+      )}
     </>
   );
 }

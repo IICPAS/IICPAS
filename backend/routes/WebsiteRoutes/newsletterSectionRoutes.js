@@ -2,6 +2,7 @@ import express from "express";
 import NewsletterSection from "../../models/Website/NewsletterSection.js";
 import { requireAuth } from "../../middleware/requireAuth.js";
 import { isAdmin } from "../../middleware/isAdmin.js";
+import upload from "../Content/utils/multer.js";
 
 const router = express.Router();
 
@@ -70,13 +71,40 @@ router.get("/all", requireAuth, isAdmin, async (req, res) => {
 });
 
 // Create new NewsletterSection content (admin only)
-router.post("/", requireAuth, isAdmin, async (req, res) => {
+router.post("/", requireAuth, isAdmin, upload.single("image"), async (req, res) => {
   try {
     // Deactivate all existing entries
     await NewsletterSection.updateMany({}, { isActive: false });
     
+    // Prepare data
+    const data = { ...req.body };
+    
+    // Parse JSON strings back to objects (for FormData requests)
+    try {
+      if (typeof data.badge === 'string') data.badge = JSON.parse(data.badge);
+      if (typeof data.title === 'string') data.title = JSON.parse(data.title);
+      if (typeof data.features === 'string') data.features = JSON.parse(data.features);
+      if (typeof data.form === 'string') data.form = JSON.parse(data.form);
+      if (typeof data.stats === 'string') data.stats = JSON.parse(data.stats);
+      if (typeof data.colors === 'string') data.colors = JSON.parse(data.colors);
+    } catch (parseError) {
+      console.error("JSON parsing error:", parseError);
+      return res.status(400).json({ error: "Invalid JSON data in request" });
+    }
+    
+    // Handle uploaded image
+    if (req.file) {
+      data.image = {
+        src: `/uploads/${req.file.filename}`,
+        alt: data.imageAlt || "Newsletter Image"
+      };
+    }
+    
+    // Clean up data - remove imageAlt field
+    delete data.imageAlt;
+    
     // Create new entry
-    const newsletterSection = await NewsletterSection.create(req.body);
+    const newsletterSection = await NewsletterSection.create(data);
     res.status(201).json(newsletterSection);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -84,11 +112,46 @@ router.post("/", requireAuth, isAdmin, async (req, res) => {
 });
 
 // Update NewsletterSection content (admin only)
-router.put("/:id", requireAuth, isAdmin, async (req, res) => {
+router.put("/:id", requireAuth, isAdmin, upload.single("image"), async (req, res) => {
   try {
+    // Prepare update data
+    let updateData;
+    
+    // Check if request has file (FormData) or JSON data
+    if (req.file) {
+      // Handle FormData with image upload
+      updateData = { ...req.body };
+      
+      // Parse JSON strings back to objects
+      try {
+        if (typeof updateData.badge === 'string') updateData.badge = JSON.parse(updateData.badge);
+        if (typeof updateData.title === 'string') updateData.title = JSON.parse(updateData.title);
+        if (typeof updateData.features === 'string') updateData.features = JSON.parse(updateData.features);
+        if (typeof updateData.form === 'string') updateData.form = JSON.parse(updateData.form);
+        if (typeof updateData.stats === 'string') updateData.stats = JSON.parse(updateData.stats);
+        if (typeof updateData.image === 'string') updateData.image = JSON.parse(updateData.image);
+        if (typeof updateData.colors === 'string') updateData.colors = JSON.parse(updateData.colors);
+      } catch (parseError) {
+        console.error("JSON parsing error:", parseError);
+        return res.status(400).json({ error: "Invalid JSON data in request" });
+      }
+      
+      // Handle uploaded image
+      updateData.image = {
+        src: `/uploads/${req.file.filename}`,
+        alt: updateData.imageAlt || "Newsletter Image"
+      };
+      
+      // Clean up data - remove imageAlt field
+      delete updateData.imageAlt;
+    } else {
+      // Handle JSON data (no new image)
+      updateData = { ...req.body };
+    }
+    
     const newsletterSection = await NewsletterSection.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      updateData,
       { new: true, runValidators: true }
     );
     
