@@ -106,12 +106,25 @@ router.get("/", async (req, res) => {
               },
               {
                 question: "Is my data secure?",
+
+                answer: "Absolutely. We use industry-standard encryption and security measures to protect your personal and payment information. Your privacy and security are our top priorities."
+              }
+            ]
+          }
+        ],
+        meta: {
+          title: "FAQ - Frequently Asked Questions | IICPA Institute",
+          description: "Find answers to common questions about IICPA Institute courses, admissions, payments, and support. Get help with your learning journey.",
+          keywords: ["FAQ", "questions", "help", "support", "courses", "admissions", "IICPA"]
+        }
+
                 answer:
                   "Absolutely. We use industry-standard encryption and security measures to protect your personal and payment information. Your privacy and security are our top priorities.",
               },
             ],
           },
         ],
+
       };
 
       return res.status(200).json(defaultFAQ);

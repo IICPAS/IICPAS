@@ -13,7 +13,7 @@ const FAQHero = () => {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/website/faq`);
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/v1/website/faq`);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching FAQ data:", error);

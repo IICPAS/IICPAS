@@ -3,7 +3,7 @@ import axios from "axios";
 import { toast } from "react-hot-toast";
 import { FaQuestionCircle, FaGraduationCap, FaCreditCard, FaUser, FaBook, FaCertificate, FaPlus, FaEdit, FaTrash, FaSave, FaChevronDown, FaChevronUp } from "react-icons/fa";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL;
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 
 const iconOptions = [
   { value: "FaQuestionCircle", label: "Question Circle", icon: <FaQuestionCircle /> },
@@ -26,7 +26,7 @@ export default function FAQTab() {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(`${API_BASE}/api/v1/website/faq`);
+      const response = await axios.get(`${API_BASE}/v1/website/faq`);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching FAQ data:", error);
@@ -85,11 +85,28 @@ export default function FAQTab() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await axios.post(`${API_BASE}/api/v1/website/faq/admin/create`, data);
+      const token = localStorage.getItem("adminToken");
+      if (!token) {
+        toast.error("No authentication token found. Please log in again.");
+        return;
+      }
+      
+      console.log("Saving FAQ with token:", token ? "Token exists" : "No token");
+      await axios.post(`${API_BASE}/v1/website/faq/admin/create`, data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        withCredentials: true
+      });
       toast.success("FAQ updated successfully!");
     } catch (error) {
       console.error("Error saving FAQ:", error);
-      toast.error("Failed to save changes");
+      if (error.response?.status === 401) {
+        toast.error("Authentication failed. Please log in again.");
+      } else {
+        toast.error("Failed to save changes");
+      }
     } finally {
       setSaving(false);
     }
@@ -99,7 +116,7 @@ export default function FAQTab() {
     setData(prev => ({
       ...prev,
       [section]: {
-        ...prev[section],
+        ...(prev[section] || {}),
         [field]: value
       }
     }));
@@ -406,7 +423,7 @@ export default function FAQTab() {
             <label className="block text-sm font-medium text-gray-700 mb-2">SEO Title</label>
             <input
               type="text"
-              value={data.meta.title}
+              value={data.meta?.title || ""}
               onChange={(e) => handleInputChange('meta', 'title', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
@@ -415,7 +432,7 @@ export default function FAQTab() {
             <label className="block text-sm font-medium text-gray-700 mb-2">Keywords (comma-separated)</label>
             <input
               type="text"
-              value={Array.isArray(data.meta.keywords) ? data.meta.keywords.join(', ') : data.meta.keywords}
+              value={Array.isArray(data.meta?.keywords) ? data.meta.keywords.join(', ') : data.meta?.keywords || ""}
               onChange={(e) => handleInputChange('meta', 'keywords', e.target.value.split(',').map(k => k.trim()))}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
@@ -423,7 +440,7 @@ export default function FAQTab() {
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-2">SEO Description</label>
             <textarea
-              value={data.meta.description}
+              value={data.meta?.description || ""}
               onChange={(e) => handleInputChange('meta', 'description', e.target.value)}
               rows={3}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"

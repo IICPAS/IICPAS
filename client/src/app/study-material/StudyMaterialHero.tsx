@@ -35,15 +35,15 @@ const StudyMaterialHero = () => {
 
   if (loading) {
     return (
-      <div className="bg-gradient-to-r from-teal-200 via-white to-blue-200 text-gray-800 py-30 mt-[16vmin]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="bg-gradient-to-r from-teal-200 via-white to-blue-200 text-gray-800 py-20 mt-[16vmin]">
+        <div className="max-w-lg mx-auto px-20">
           <div className="text-center">
             <div className="animate-pulse">
-              <div className="h-12 bg-gray-300 rounded mb-6 mx-auto max-w-md"></div>
-              <div className="h-6 bg-gray-300 rounded mb-8 mx-auto max-w-3xl"></div>
+              <div className="h-4 bg-gray-300 rounded mb-2 mx-auto max-w-xs"></div>
+              <div className="h-2 bg-gray-300 rounded mb-3 mx-auto max-w-lg"></div>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <div className="h-12 bg-gray-300 rounded w-40 mx-auto"></div>
-                <div className="h-12 bg-gray-300 rounded w-40 mx-auto"></div>
+                <div className="h-4 bg-gray-300 rounded w-20 mx-auto"></div>
+                <div className="h-4 bg-gray-300 rounded w-20 mx-auto"></div>
               </div>
             </div>
           </div>
@@ -62,25 +62,25 @@ const StudyMaterialHero = () => {
   };
 
   return (
-    <div className={`bg-gradient-to-r ${hero.backgroundGradient.from} ${hero.backgroundGradient.via} ${hero.backgroundGradient.to} ${hero.textColor} py-30 mt-[16vmin]`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className={`bg-gradient-to-r ${hero.backgroundGradient.from} ${hero.backgroundGradient.via} ${hero.backgroundGradient.to} ${hero.textColor} py-20 mt-[16vmin]`}>
+      <div className="max-w-4xl mx-auto px-8 sm:px-12 lg:px-16">
         <div className="text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">
+          <h1 className="text-xs font-bold mb-1">
             {hero.title}
           </h1>
-          <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
+          <p className="text-xs font-normal mb-2 max-w-sm mx-auto">
             {hero.subtitle}
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col gap-1 justify-center">
             <button 
               onClick={() => window.location.href = hero.button1.link}
-              className="bg-teal-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-teal-700 transition-colors duration-200"
+              className="bg-teal-600 text-white px-2 py-0.5 rounded text-xs font-normal hover:bg-teal-700 transition-colors duration-200"
             >
               {hero.button1.text}
             </button>
             <button 
               onClick={() => window.location.href = hero.button2.link}
-              className="border-2 border-teal-600 text-teal-600 px-8 py-3 rounded-lg font-semibold hover:bg-teal-600 hover:text-white transition-colors duration-200"
+              className="border-2 border-teal-600 text-teal-600 px-2 py-0.5 rounded text-xs font-normal hover:bg-teal-600 hover:text-white transition-colors duration-200"
             >
               {hero.button2.text}
             </button>

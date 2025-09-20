@@ -48,7 +48,7 @@ const MODULES = [
   { id: "audit", name: "IP Logs", icon: "🛡️" },
   { id: "ip-whitelist", name: "IP Whitelisting", icon: "🔒" },
   { id: "study-material", name: "Study Material", icon: "📚" },
-  { id: "career-guidance", name: "Career Guidance", icon: "🎯" },
+  { id: "faq", name: "FAQ", icon: "❓" },
 ];
 
 const PERMISSIONS = [
