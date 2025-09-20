@@ -32,6 +32,7 @@ export default function DemoDigitalHubTab() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editingMaterial, setEditingMaterial] = useState(null);
+  const [activeTab, setActiveTab] = useState('website'); // 'website' or 'courses'
   const [newMaterial, setNewMaterial] = useState({
     icon: "FaPlayCircle",
     title: "",
@@ -307,95 +308,159 @@ export default function DemoDigitalHubTab() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900">Demo Digital Hub Page Settings</h2>
-        <div className="flex gap-3">
+        <h2 className="text-2xl font-bold text-gray-900">Demo Digital Hub Management</h2>
+      </div>
+
+      {/* Tab Navigation */}
+      <div className="border-b border-gray-200">
+        <nav className="-mb-px flex space-x-8">
           <button
-            onClick={fetchData}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
+            onClick={() => setActiveTab('website')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'website'
+                ? 'border-green-500 text-green-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
           >
-            Refresh Data
+            Website Settings
           </button>
           <button
-            onClick={handleSave}
-            disabled={saving}
-            className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center gap-2"
+            onClick={() => setActiveTab('courses')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'courses'
+                ? 'border-green-500 text-green-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
           >
-            <FaSave />
-            {saving ? "Saving..." : "Save Changes"}
+            Course Management
           </button>
-        </div>
+        </nav>
       </div>
 
-      {/* Hero Section */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-xl font-semibold mb-4">Hero Section</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
-            <input
-              type="text"
-              value={data.hero.title}
-              onChange={(e) => handleInputChange('hero', 'title', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
+      {/* Website Settings Tab */}
+      {activeTab === 'website' && (
+        <>
+          {/* Hero Section */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-xl font-semibold mb-4">Hero Section</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+                <input
+                  type="text"
+                  value={data.hero.title}
+                  onChange={(e) => handleInputChange('hero', 'title', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Subtitle</label>
+                <textarea
+                  value={data.hero.subtitle}
+                  onChange={(e) => handleInputChange('hero', 'subtitle', e.target.value)}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Button 1 Text</label>
+                <input
+                  type="text"
+                  value={data.hero.button1.text}
+                  onChange={(e) => handleInputChange('hero', 'button1', { ...data.hero.button1, text: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Button 2 Text</label>
+                <input
+                  type="text"
+                  value={data.hero.button2.text}
+                  onChange={(e) => handleInputChange('hero', 'button2', { ...data.hero.button2, text: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Subtitle</label>
-            <textarea
-              value={data.hero.subtitle}
-              onChange={(e) => handleInputChange('hero', 'subtitle', e.target.value)}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Button 1 Text</label>
-            <input
-              type="text"
-              value={data.hero.button1.text}
-              onChange={(e) => handleInputChange('hero', 'button1', { ...data.hero.button1, text: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Button 2 Text</label>
-            <input
-              type="text"
-              value={data.hero.button2.text}
-              onChange={(e) => handleInputChange('hero', 'button2', { ...data.hero.button2, text: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
-          </div>
-        </div>
-      </div>
 
-      {/* Main Section */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-xl font-semibold mb-4">Main Section</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
-            <input
-              type="text"
-              value={data.mainSection.title}
-              onChange={(e) => handleInputChange('mainSection', 'title', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
+          {/* Main Section */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-xl font-semibold mb-4">Main Section</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+                <input
+                  type="text"
+                  value={data.mainSection.title}
+                  onChange={(e) => handleInputChange('mainSection', 'title', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Subtitle</label>
+                <textarea
+                  value={data.mainSection.subtitle}
+                  onChange={(e) => handleInputChange('mainSection', 'subtitle', e.target.value)}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Subtitle</label>
-            <textarea
-              value={data.mainSection.subtitle}
-              onChange={(e) => handleInputChange('mainSection', 'subtitle', e.target.value)}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
-          </div>
-        </div>
-      </div>
 
-      {/* Add New Course Form */}
-      <div className="bg-white rounded-lg shadow-md p-6">
+          {/* SEO Settings */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-xl font-semibold mb-4">SEO Settings</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">SEO Title</label>
+                <input
+                  type="text"
+                  value={data.seo.title}
+                  onChange={(e) => handleInputChange('seo', 'title', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Keywords</label>
+                <input
+                  type="text"
+                  value={data.seo.keywords}
+                  onChange={(e) => handleInputChange('seo', 'keywords', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">SEO Description</label>
+                <textarea
+                  value={data.seo.description}
+                  onChange={(e) => handleInputChange('seo', 'description', e.target.value)}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Save Changes Button for Website Settings */}
+          <div className="flex justify-center pt-6">
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center gap-2 text-lg font-medium shadow-lg"
+            >
+              <FaSave />
+              {saving ? "Saving..." : "Save Website Settings"}
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* Course Management Tab */}
+      {activeTab === 'courses' && (
+        <>
+          {/* Add New Course Form */}
+          <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-xl font-semibold">Add New Demo Course</h3>
           <button
@@ -738,6 +803,20 @@ export default function DemoDigitalHubTab() {
           </div>
         </div>
       </div>
+
+          {/* Save Changes Button for Course Management */}
+          <div className="flex justify-center pt-6">
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center gap-2 text-lg font-medium shadow-lg"
+            >
+              <FaSave />
+              {saving ? "Saving..." : "Save Course Changes"}
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }

@@ -55,7 +55,7 @@ const DemoDigitalHubHero = () => {
 
   return (
     <section className={`relative bg-gradient-to-br ${hero.backgroundGradient.from} ${hero.backgroundGradient.via} ${hero.backgroundGradient.to} py-16 md:py-20 px-4 md:px-20 pl-8 mt-28`}>
-      <h1 className={`text-5xl md:text-6xl font-extrabold ${hero.textColor} mt-8`}>
+      <h1 className={`text-3xl md:text-4xl font-extrabold ${hero.textColor} mt-8`}>
         {hero.title}
       </h1>
       <p className="mt-4 text-base text-gray-500 font-medium">
