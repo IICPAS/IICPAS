@@ -1,6 +1,7 @@
 import express from "express";
 import FAQ from "../../models/Website/FAQ.js";
-import { requireAuth, isAdmin } from "../../middleware/requireAuth.js";
+import { requireAuth } from "../../middleware/requireAuth.js";
+import { isAdmin } from "../../middleware/isAdmin.js";
 
 const router = express.Router();
 
@@ -93,7 +94,12 @@ router.get("/", async (req, res) => {
               }
             ]
           }
-        ]
+        ],
+        meta: {
+          title: "FAQ - Frequently Asked Questions | IICPA Institute",
+          description: "Find answers to common questions about IICPA Institute courses, admissions, payments, and support. Get help with your learning journey.",
+          keywords: ["FAQ", "questions", "help", "support", "courses", "admissions", "IICPA"]
+        }
       };
       
       return res.status(200).json(defaultFAQ);
