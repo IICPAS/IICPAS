@@ -76,6 +76,7 @@ import IPLogsTab from "./IPLogsTab";
 import IPWhitelistTab from "./IPWhitelistTab";
 import DemoDigitalHubTab from "./DemoDigitalHubTab";
 import FAQTab from "./FAQTab";
+import CourseRatingApprovalTab from "./CourseRatingApprovalTab";
 
 // All available modules with their permissions
 const ALL_MODULES = [
@@ -101,6 +102,7 @@ const ALL_MODULES = [
   { id: "revision-tests", label: "Revision Tests", icon: <FaSyncAlt /> },
   { id: "support", label: "Support Requests", icon: <FaEnvelope /> },
   { id: "audit", label: "IP Logs", icon: <FaShieldAlt /> },
+  { id: "course-ratings", label: "Course Rating Approval", icon: <FaStar /> },
 ];
 
 // Website Settings modules
@@ -450,6 +452,8 @@ function AdminDashboardContent() {
           <KitsTab />
         ) : activeTab === "audit" ? (
           <IPLogsTab />
+        ) : activeTab === "course-ratings" ? (
+          <CourseRatingApprovalTab />
         ) : activeTab === "center" ? (
           <CenterTab />
         ) : activeTab === "" ? (

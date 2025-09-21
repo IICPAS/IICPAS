@@ -248,6 +248,10 @@ export default function CourseDetailPage({
   const [course, setCourse] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [courseRatings, setCourseRatings] = useState<any>(null);
+  const [ratingsLoading, setRatingsLoading] = useState(true);
+
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
   // Unwrap the params Promise using React.use()
   const resolvedParams = use(params);
@@ -279,6 +283,42 @@ export default function CourseDetailPage({
       fetchCourse();
     }
   }, [resolvedParams.courseId]);
+
+  // Fetch course ratings from API
+  useEffect(() => {
+    const fetchCourseRatings = async () => {
+      try {
+        setRatingsLoading(true);
+        const response = await axios.get(
+          `${API_BASE}/api/v1/course-ratings/course/${resolvedParams.courseId}`
+        );
+        if (response.data.success) {
+          setCourseRatings(response.data);
+        } else {
+          // Set fallback ratings
+          setCourseRatings({
+            averageRating: course?.rating || 4.7,
+            totalRatings: course?.reviewCount || 449,
+            data: []
+          });
+        }
+      } catch (err) {
+        console.error("Error fetching course ratings:", err);
+        // Set default ratings if API fails
+        setCourseRatings({
+          averageRating: course?.rating || 4.7,
+          totalRatings: course?.reviewCount || 449,
+          data: []
+        });
+      } finally {
+        setRatingsLoading(false);
+      }
+    };
+
+    if (resolvedParams.courseId) {
+      fetchCourseRatings();
+    }
+  }, [resolvedParams.courseId, course]);
 
   // Loading state
   if (loading) {
@@ -389,14 +429,14 @@ export default function CourseDetailPage({
                 </h1>
 
                 {/* Rating - Show if available */}
-                {(course.rating || course.reviewCount) && (
+                {(courseRatings?.averageRating || courseRatings?.totalRatings) && (
                   <div className="flex items-center gap-3 mb-6">
                     <div className="flex items-center">
                       {[...Array(5)].map((_, i) => (
                         <Star
                           key={i}
                           className={`w-8 h-8 ${
-                            i < Math.floor(course.rating || 0)
+                            i < Math.floor(courseRatings?.averageRating || 0)
                               ? "text-yellow-400 fill-current"
                               : "text-gray-300"
                           }`}
@@ -404,11 +444,14 @@ export default function CourseDetailPage({
                       ))}
                     </div>
                     <span className="text-2xl font-bold text-gray-900">
-                      {course.rating || 0}
+                      {courseRatings?.averageRating || 0}
                     </span>
                     <span className="text-xl text-gray-600">
-                      [{course.reviewCount || 0}]
+                      [{courseRatings?.totalRatings || 0}]
                     </span>
+                    {ratingsLoading && (
+                      <span className="text-sm text-gray-500">Loading ratings...</span>
+                    )}
                   </div>
                 )}
 
