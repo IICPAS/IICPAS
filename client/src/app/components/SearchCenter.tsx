@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import axios from "axios";
 import {
   FaSearch,
   FaMapMarkerAlt,
@@ -14,106 +15,72 @@ import {
   FaBookOpen,
 } from "react-icons/fa";
 
-// Mock data for centers
-const mockCenters = [
-  {
-    id: 1,
-    name: "IICPA Delhi Center",
-    location: "Connaught Place, New Delhi",
-    phone: "+91 98765 43210",
-    email: "delhi@iicpa.in",
-    rating: 4.8,
-    students: 1250,
-    courses: 25,
-    image: "/images/college.jpg",
-    availableCourses: [
-      "Basic Accounting",
-      "Tally ERP 9",
-      "Advanced Excel",
-      "GST Training",
-    ],
-  },
-  {
-    id: 2,
-    name: "IICPA Mumbai Center",
-    location: "Andheri West, Mumbai",
-    phone: "+91 98765 43211",
-    email: "mumbai@iicpa.in",
-    rating: 4.7,
-    students: 980,
-    courses: 22,
-    image: "/images/college.avif",
-    availableCourses: [
-      "Basic Accounting",
-      "Tally ERP 9",
-      "Advanced Excel",
-      "Income Tax",
-    ],
-  },
-  {
-    id: 3,
-    name: "IICPA Bangalore Center",
-    location: "Koramangala, Bangalore",
-    phone: "+91 98765 43212",
-    email: "bangalore@iicpa.in",
-    rating: 4.9,
-    students: 1100,
-    courses: 28,
-    image: "/images/college.jpg",
-    availableCourses: [
-      "Basic Accounting",
-      "Tally ERP 9",
-      "Advanced Excel",
-      "Audit Training",
-    ],
-  },
-  {
-    id: 4,
-    name: "IICPA Chennai Center",
-    location: "T Nagar, Chennai",
-    phone: "+91 98765 43213",
-    email: "chennai@iicpa.in",
-    rating: 4.6,
-    students: 850,
-    courses: 20,
-    image: "/images/college.avif",
-    availableCourses: [
-      "Basic Accounting",
-      "Tally ERP 9",
-      "Advanced Excel",
-      "Company Law",
-    ],
-  },
-];
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8080';
 
 export default function SearchCenter() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("");
   const [selectedCourse, setSelectedCourse] = useState("");
-  const [filteredCenters, setFilteredCenters] = useState(mockCenters);
+  const [centers, setCenters] = useState([]);
+  const [filteredCenters, setFilteredCenters] = useState([]);
   const [hasSearched, setHasSearched] = useState(false);
+  const [loading, setLoading] = useState(true);
 
+  // Fetch centers from API
+  useEffect(() => {
+    const fetchCenters = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(`${API_BASE}/api/v1/centers/public`);
+        const centersData = response.data.data || [];
+        
+        // Transform API data to match component structure
+        const transformedCenters = centersData.map((center, index) => ({
+          id: center._id,
+          name: center.name,
+          location: `${center.address}, ${center.city}, ${center.state} - ${center.pincode}`,
+          phone: center.phone,
+          email: center.email,
+          rating: 4.5, // Default rating since API doesn't have ratings yet
+          students: center.capacity || 50, // Use capacity as student count
+          courses: center.courses?.length || 0,
+          image: "/images/college.jpg", // Default image
+          availableCourses: center.courses?.map(course => course.title) || [],
+          status: center.status,
+          facilities: center.facilities || [],
+          description: center.description || ""
+        }));
+        
+        setCenters(transformedCenters);
+        setFilteredCenters(transformedCenters);
+      } catch (error) {
+        console.error("Error fetching centers:", error);
+        // Fallback to empty array if API fails
+        setCenters([]);
+        setFilteredCenters([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCenters();
+  }, []);
+
+  // Dynamic locations from centers data
   const locations = [
     "All Locations",
-    "New Delhi",
-    "Mumbai",
-    "Bangalore",
-    "Chennai",
+    ...Array.from(new Set(centers.map(center => center.location.split(',')[1]?.trim()).filter(Boolean)))
   ];
+
+  // Dynamic courses from centers data
   const courses = [
     "All Courses",
-    "Basic Accounting",
-    "Tally ERP 9",
-    "Advanced Excel",
-    "GST Training",
-    "Income Tax",
-    "Audit Training",
-    "Company Law",
+    ...Array.from(new Set(centers.flatMap(center => center.availableCourses).filter(Boolean)))
   ];
 
   const handleSearch = () => {
     setHasSearched(true);
-    let filtered = mockCenters;
+    let filtered = centers;
 
     if (searchTerm) {
       filtered = filtered.filter(
@@ -143,6 +110,19 @@ export default function SearchCenter() {
     console.log(`Booking ${courseName} at center ${centerId}`);
     // You can implement the booking logic here
   };
+
+  if (loading) {
+    return (
+      <section className="relative py-20 bg-white overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading centers...</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="relative py-20 bg-white overflow-hidden">
@@ -274,6 +254,8 @@ export default function SearchCenter() {
                 value={selectedLocation}
                 onChange={(e) => setSelectedLocation(e.target.value)}
                 className="w-full pl-12 pr-4 py-4 border border-gray-300/50 rounded-2xl focus:ring-2 focus:ring-green-500 focus:border-transparent appearance-none bg-white/90 backdrop-blur-sm transition-all duration-300 hover:bg-white"
+                aria-label="Select location"
+                title="Select location"
               >
                 {locations.map((location) => (
                   <option key={location} value={location}>
@@ -301,6 +283,8 @@ export default function SearchCenter() {
                 value={selectedCourse}
                 onChange={(e) => setSelectedCourse(e.target.value)}
                 className="w-full pl-12 pr-4 py-4 border border-gray-300/50 rounded-2xl focus:ring-2 focus:ring-green-500 focus:border-transparent appearance-none bg-white/90 backdrop-blur-sm transition-all duration-300 hover:bg-white"
+                aria-label="Select course"
+                title="Select course"
               >
                 {courses.map((course) => (
                   <option key={course} value={course}>
