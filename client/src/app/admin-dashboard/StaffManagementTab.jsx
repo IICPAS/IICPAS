@@ -25,7 +25,6 @@ const MODULES = [
   { id: "enquiries", name: "Enquiries", icon: "📧" },
   { id: "jobs", name: "Jobs", icon: "💼" },
   { id: "news", name: "News", icon: "📰" },
-  { id: "center", name: "Center", icon: "🏢" },
   { id: "students", name: "Students", icon: "👨‍🎓" },
   { id: "staff", name: "Staff Management", icon: "👥" },
   { id: "companies", name: "Companies", icon: "🏢" },

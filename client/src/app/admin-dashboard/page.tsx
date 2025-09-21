@@ -13,7 +13,6 @@ import Drawer from "react-modern-drawer";
 import ManageMetaTags from "./Course/ManageMetaTags";
 import BlogComponent from "./BlogComponent";
 import CollegeTab from "./CollegeTab";
-import CenterTab from "./CenterTab";
 import CalendarTab from "./CalendarTab";
 import AboutUsTab from "./AboutUsTab";
 import AboutUsSectionTab from "./AboutUsSectionTab";
@@ -78,6 +77,7 @@ import DemoDigitalHubTab from "./DemoDigitalHubTab";
 import FAQTab from "./FAQTab";
 import CourseRatingApprovalTab from "./CourseRatingApprovalTab";
 import CenterManagementTab from "./CenterManagementTab";
+import MessagesTab from "./MessagesTab";
 
 // All available modules with their permissions
 const ALL_MODULES = [
@@ -89,7 +89,6 @@ const ALL_MODULES = [
   { id: "enquiries", label: "Enquiries", icon: <FaEnvelope /> },
   { id: "jobs", label: "Jobs", icon: <FaBriefcase /> },
   { id: "news", label: "News", icon: <FaNewspaper /> },
-  { id: "center", label: "Center", icon: <FaHome /> },
   { id: "students", label: "Students", icon: <FaUserGraduate /> },
   { id: "payments", label: "Payments", icon: <FaCreditCard /> },
   { id: "staff", label: "Staff Management", icon: <FaUsers /> },
@@ -124,6 +123,7 @@ const WEBSITE_SETTINGS_MODULES = [
   { id: "ip-whitelist", label: "IP Whitelisting", icon: <FaShieldAlt /> },
   { id: "demo-digital-hub", label: "Demo Digital Hub", icon: <FaBook /> },
   { id: "faq", label: "FAQ", icon: <FaUserTie /> },
+  { id: "messages", label: "Messages", icon: <FaEnvelope /> },
 ];
 
 function AdminDashboardContent() {
@@ -458,8 +458,8 @@ function AdminDashboardContent() {
           <CourseRatingApprovalTab />
         ) : activeTab === "center-management" ? (
           <CenterManagementTab />
-        ) : activeTab === "center" ? (
-          <CenterTab />
+        ) : activeTab === "messages" ? (
+          <MessagesTab />
         ) : activeTab === "" ? (
           <div className="text-center py-20">
             <h2 className="text-2xl font-bold text-gray-600 mb-4">
