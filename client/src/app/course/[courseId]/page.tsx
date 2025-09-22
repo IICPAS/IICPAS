@@ -9,10 +9,8 @@ import {
   Star,
   Clock,
   Users,
-  Award,
   CheckCircle,
 } from "lucide-react";
-import Image from "next/image";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import axios from "axios";
@@ -290,16 +288,19 @@ export default function CourseDetailPage({
   useEffect(() => {
     const checkStudentAuth = async () => {
       try {
-        const response = await axios.get(`${API_BASE}/api/v1/students/isstudent`, {
-          withCredentials: true,
-        });
+        const response = await axios.get(
+          `${API_BASE}/api/v1/students/isstudent`,
+          {
+            withCredentials: true,
+          }
+        );
         setStudent(response.data.student);
-      } catch (error) {
+      } catch (err) {
         setStudent(null);
       }
     };
     checkStudentAuth();
-  }, []);
+  }, [API_BASE]);
 
   // Handle Digital Hub+ enrollment
   const handleDigitalHubPlusEnrollment = async () => {
@@ -311,9 +312,12 @@ export default function CourseDetailPage({
     setIsEnrolling(true);
     try {
       // First, get all live sessions for this course category
-      const liveSessionsResponse = await axios.get(`${API_BASE}/api/live-sessions`);
+      const liveSessionsResponse = await axios.get(
+        `${API_BASE}/api/live-sessions`
+      );
       const courseLiveSessions = liveSessionsResponse.data.filter(
-        (session: any) => session.category === course?.category || "CA Foundation"
+        (session: any) =>
+          session.category === course?.category || "CA Foundation"
       );
 
       // Enroll student in all live sessions for this course
@@ -325,11 +329,16 @@ export default function CourseDetailPage({
             { withCredentials: true }
           );
         } catch (enrollError) {
-          console.error(`Failed to enroll in session ${session._id}:`, enrollError);
+          console.error(
+            `Failed to enroll in session ${session._id}:`,
+            enrollError
+          );
         }
       }
 
-      alert("Successfully enrolled in Digital Hub+ Live Sessions! You can now access live classes from your dashboard.");
+      alert(
+        "Successfully enrolled in Digital Hub+ Live Sessions! You can now access live classes from your dashboard."
+      );
     } catch (error) {
       console.error("Error enrolling in live sessions:", error);
       alert("Failed to enroll in live sessions. Please try again.");
@@ -353,7 +362,7 @@ export default function CourseDetailPage({
           setCourseRatings({
             averageRating: course?.rating || 4.7,
             totalRatings: course?.reviewCount || 449,
-            data: []
+            data: [],
           });
         }
       } catch (err) {
@@ -362,7 +371,7 @@ export default function CourseDetailPage({
         setCourseRatings({
           averageRating: course?.rating || 4.7,
           totalRatings: course?.reviewCount || 449,
-          data: []
+          data: [],
         });
       } finally {
         setRatingsLoading(false);
@@ -372,7 +381,7 @@ export default function CourseDetailPage({
     if (resolvedParams.courseId) {
       fetchCourseRatings();
     }
-  }, [resolvedParams.courseId, course]);
+  }, [resolvedParams.courseId, course, API_BASE]);
 
   // Loading state
   if (loading) {
@@ -483,7 +492,8 @@ export default function CourseDetailPage({
                 </h1>
 
                 {/* Rating - Show if available */}
-                {(courseRatings?.averageRating || courseRatings?.totalRatings) && (
+                {(courseRatings?.averageRating ||
+                  courseRatings?.totalRatings) && (
                   <div className="flex items-center gap-3 mb-6">
                     <div className="flex items-center">
                       {[...Array(5)].map((_, i) => (
@@ -496,23 +506,17 @@ export default function CourseDetailPage({
                           }`}
                         />
                       ))}
-     </div>
-
+                    </div>
                     <span className="text-lg font-bold text-gray-900">
-                      {course.rating || 0}
-                    </span>
-                    <span className="text-base text-gray-600">
-                      [{course.reviewCount || 0}]
-
-                    <span className="text-2xl font-bold text-gray-900">
                       {courseRatings?.averageRating || 0}
                     </span>
-                    <span className="text-xl text-gray-600">
+                    <span className="text-base text-gray-600">
                       [{courseRatings?.totalRatings || 0}]
-
                     </span>
                     {ratingsLoading && (
-                      <span className="text-sm text-gray-500">Loading ratings...</span>
+                      <span className="text-sm text-gray-500">
+                        Loading ratings...
+                      </span>
                     )}
                   </div>
                 )}
@@ -806,17 +810,15 @@ export default function CourseDetailPage({
                       </div>
                     </div>
 
-                    <button className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 text-base">
-                      {course?.pricing?.liveSession?.buttonText ||
-                        "Add Digital Hub+"}
-
-                    <button 
+                    <button
                       onClick={handleDigitalHubPlusEnrollment}
                       disabled={isEnrolling}
-                      className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 text-base disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {isEnrolling ? "Enrolling..." : (course?.pricing?.liveSession?.buttonText || "Add Digital Hub+")}
-
+                      {isEnrolling
+                        ? "Enrolling..."
+                        : course?.pricing?.liveSession?.buttonText ||
+                          "Add Digital Hub+"}
                     </button>
                   </div>
                 </div>
