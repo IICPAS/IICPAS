@@ -30,6 +30,7 @@ import "react-modern-drawer/dist/index.css";
 import TopicsManager from "./Topic/TopicsManager";
 import GuidesTab from "./GuidesTab";
 import KitsTab from "./KitsTab";
+import CenterLocationTab from "./CenterLocationTab";
 
 import {
   FaBars,
@@ -60,6 +61,7 @@ import {
   FaShieldAlt,
   FaStar,
   FaChartBar,
+  FaMapMarkerAlt,
   FaList,
   FaUserTie,
   FaArrowLeft,
@@ -103,7 +105,7 @@ const ALL_MODULES = [
   { id: "support", label: "Support Requests", icon: <FaEnvelope /> },
   { id: "audit", label: "IP Logs", icon: <FaShieldAlt /> },
   { id: "course-ratings", label: "Course Rating Approval", icon: <FaStar /> },
-  { id: "center-management", label: "Center Management", icon: <FaHome /> },
+  { id: "center-location", label: "Center Locations", icon: <FaMapMarkerAlt /> },
 ];
 
 // Website Settings modules
@@ -456,8 +458,8 @@ function AdminDashboardContent() {
           <IPLogsTab />
         ) : activeTab === "course-ratings" ? (
           <CourseRatingApprovalTab />
-        ) : activeTab === "center-management" ? (
-          <CenterManagementTab />
+        ) : activeTab === "center-location" ? (
+          <CenterLocationTab />
         ) : activeTab === "messages" ? (
           <MessagesTab />
         ) : activeTab === "" ? (

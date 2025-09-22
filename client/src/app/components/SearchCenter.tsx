@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import axios from "axios";
@@ -55,14 +55,58 @@ export default function SearchCenter() {
         
         console.log("Transformed centers:", transformedCenters);
         console.log("Available cities:", [...new Set(transformedCenters.map(center => center.city))]);
+        console.log("Available states:", [...new Set(transformedCenters.map(center => center.state))]);
+        console.log("Sample center data:", transformedCenters[0]);
         
         setCenters(transformedCenters);
         setFilteredCenters(transformedCenters);
+        setHasSearched(true); // Show results immediately after loading
       } catch (error) {
         console.error("Error fetching centers:", error);
         // Fallback to empty array if API fails
-        setCenters([]);
-        setFilteredCenters([]);
+        console.log("API failed, using fallback data for testing");
+        
+        // Add some test data for debugging
+        const testCenters = [
+          {
+            id: "test1",
+            name: "IICPA Delhi Center",
+            city: "Delhi",
+            state: "Delhi",
+            location: "Connaught Place, Delhi - 110001",
+            phone: "+91-11-12345678",
+            email: "delhi@iicpa.com",
+            rating: 4.5,
+            students: 150,
+            courses: 5,
+            image: "/images/college.jpg",
+            availableCourses: ["CA Foundation", "CA Intermediate", "CA Final"],
+            status: "active",
+            facilities: ["Library", "Computer Lab"],
+            description: "Premier CA coaching center in Delhi"
+          },
+          {
+            id: "test2", 
+            name: "IICPA Mumbai Center",
+            city: "Mumbai",
+            state: "Maharashtra",
+            location: "Andheri West, Mumbai - 400058",
+            phone: "+91-22-87654321",
+            email: "mumbai@iicpa.com",
+            rating: 4.8,
+            students: 200,
+            courses: 6,
+            image: "/images/college.jpg",
+            availableCourses: ["CA Foundation", "CA Intermediate", "CA Final", "CS Foundation"],
+            status: "active",
+            facilities: ["Library", "Computer Lab", "Auditorium"],
+            description: "Leading CA coaching center in Mumbai"
+          }
+        ];
+        
+        setCenters(testCenters);
+        setFilteredCenters(testCenters);
+        setHasSearched(true);
       } finally {
         setLoading(false);
       }
@@ -71,10 +115,58 @@ export default function SearchCenter() {
     fetchCenters();
   }, []);
 
+  // Define handleSearch function before using it in useEffect
+  const handleSearch = useCallback(() => {
+    console.log("Search triggered!");
+    console.log("Search term:", searchTerm);
+    console.log("Selected location:", selectedLocation);
+    console.log("Selected course:", selectedCourse);
+    console.log("Available centers:", centers.length);
+    
+    setHasSearched(true);
+    let filtered = centers;
+
+    if (searchTerm) {
+      filtered = filtered.filter(
+        (center) =>
+          center.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          center.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          center.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          center.state.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (selectedLocation && selectedLocation !== "All Locations") {
+      filtered = filtered.filter((center) =>
+        center.state === selectedLocation || center.city === selectedLocation
+      );
+    }
+
+    if (selectedCourse && selectedCourse !== "All Courses") {
+      filtered = filtered.filter((center) =>
+        center.availableCourses.includes(selectedCourse)
+      );
+    }
+
+    console.log("Filtered centers:", filtered.length);
+    setFilteredCenters(filtered);
+  }, [searchTerm, selectedLocation, selectedCourse, centers]);
+
+  // Auto-search when search parameters change
+  useEffect(() => {
+    if (centers.length > 0) {
+      console.log("Auto-search triggered due to parameter change");
+      handleSearch();
+    }
+  }, [handleSearch]);
+
   // Dynamic locations from centers data
   const locations = [
     "All Locations",
-    ...Array.from(new Set(centers.map(center => center.city).filter(Boolean)))
+    ...Array.from(new Set([
+      ...centers.map(center => center.city).filter(Boolean),
+      ...centers.map(center => center.state).filter(Boolean)
+    ]))
   ];
 
   // Add fallback locations if no centers are loaded
@@ -100,34 +192,6 @@ export default function SearchCenter() {
     ...Array.from(new Set(centers.flatMap(center => center.availableCourses).filter(Boolean)))
   ];
 
-  const handleSearch = () => {
-    setHasSearched(true);
-    let filtered = centers;
-
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (center) =>
-          center.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          center.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          center.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          center.state.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    if (selectedLocation && selectedLocation !== "All Locations") {
-      filtered = filtered.filter((center) =>
-        center.city === selectedLocation
-      );
-    }
-
-    if (selectedCourse && selectedCourse !== "All Courses") {
-      filtered = filtered.filter((center) =>
-        center.availableCourses.includes(selectedCourse)
-      );
-    }
-
-    setFilteredCenters(filtered);
-  };
 
   const handleBookCourse = (centerId: number, courseName: string) => {
     // This would typically redirect to a booking page or open a modal
@@ -150,6 +214,45 @@ export default function SearchCenter() {
 
   return (
     <section className="relative py-20 bg-white overflow-hidden">
+      <style jsx>{`
+        input, select, button {
+          pointer-events: auto !important;
+          cursor: pointer !important;
+          position: relative;
+          z-index: 10;
+        }
+        .search-container input,
+        .search-container select,
+        .search-container button {
+          pointer-events: auto !important;
+          position: relative;
+          z-index: 10;
+        }
+        input[type="text"] {
+          padding-left: 5rem !important;
+        }
+        select {
+          padding-left: 3.5rem !important;
+        }
+        .absolute {
+          position: absolute;
+          z-index: 10 !important;
+        }
+        .search-container:hover .absolute {
+          opacity: 1 !important;
+          visibility: visible !important;
+        }
+        input, select {
+          text-rendering: optimizeLegibility;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+        }
+        .search-container:hover input,
+        .search-container:hover select {
+          filter: none !important;
+          backdrop-filter: none !important;
+        }
+      `}</style>
       {/* Subtle Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
@@ -223,67 +326,52 @@ export default function SearchCenter() {
 
         {/* 3D Search Filters */}
         <motion.div 
-          className="search-container bg-white/95 rounded-3xl shadow-2xl p-8 mb-12 border border-gray-200/50 transform-gpu hover:bg-white hover:shadow-3xl hover:border-green-200/50 transition-all duration-500"
+          className="search-container bg-white/95 rounded-3xl shadow-2xl p-8 mb-12 border border-gray-200/50 transform-gpu"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3 }}
-          whileHover={{ 
-            scale: 1.03,
-            rotateY: 3,
-            boxShadow: "0 35px 60px -12px rgba(34, 197, 94, 0.2)"
-          }}
           style={{
             transform: 'translateZ(20px)',
             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)'
           }}
         >
           <div className="grid md:grid-cols-4 gap-6">
-            {/* 3D Search Input */}
-            <motion.div 
-              className="relative"
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-            >
-              <motion.div
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white bg-green-500 p-2 rounded-lg shadow-lg z-10 pointer-events-none"
-                animate={{ rotate: [0, 10, -10, 0] }}
-                transition={{ duration: 2 }}
-                style={{ zIndex: 10 }}
-              >
+            {/* Search Input */}
+            <div className="relative">
+              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white bg-green-500 p-2 rounded-lg shadow-lg z-10 pointer-events-none">
                 <FaSearch className="text-sm font-bold" style={{ fontSize: '14px' }} />
-              </motion.div>
+              </div>
               <input
                 type="text"
                 placeholder="Search centers..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => {
+                  console.log("Search term changed to:", e.target.value);
+                  setSearchTerm(e.target.value);
+                  console.log("Search term state updated");
+                }}
                 className="w-full pl-20 pr-4 py-4 border border-gray-300/50 rounded-2xl focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white transition-all duration-300 hover:bg-white hover:border-green-400 hover:shadow-lg hover:shadow-green-100 hover:scale-[1.02]"
+                style={{ pointerEvents: 'auto', zIndex: 10 }}
               />
-            </motion.div>
+            </div>
 
-            {/* 3D Location Filter */}
-            <motion.div 
-              className="relative"
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.5 }}
-            >
-              <motion.div
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white bg-blue-500 p-2 rounded-lg shadow-lg z-10 pointer-events-none"
-                animate={{ scale: [1, 1.1, 1] }}
-                transition={{ duration: 3 }}
-                style={{ zIndex: 10 }}
-              >
+            {/* Location Filter */}
+            <div className="relative">
+              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white bg-blue-500 p-2 rounded-lg shadow-lg z-10 pointer-events-none">
                 <FaMapMarkerAlt className="text-sm font-bold" style={{ fontSize: '14px' }} />
-              </motion.div>
+              </div>
               <select
                 value={selectedLocation}
-                onChange={(e) => setSelectedLocation(e.target.value)}
+                onChange={(e) => {
+                  console.log("Location changed to:", e.target.value);
+                  setSelectedLocation(e.target.value);
+                  console.log("Location state updated");
+                }}
                 className="w-full pl-14 pr-4 py-4 border border-gray-300/50 rounded-2xl focus:ring-2 focus:ring-green-500 focus:border-transparent appearance-none bg-white transition-all duration-300 hover:bg-white hover:border-blue-400 hover:shadow-lg hover:shadow-blue-100 hover:scale-[1.02] cursor-pointer"
                 aria-label="Select location"
                 title="Select location"
                 disabled={loading}
+                style={{ pointerEvents: 'auto', zIndex: 10 }}
               >
                 {loading ? (
                   <option value="">Loading locations...</option>
@@ -295,29 +383,23 @@ export default function SearchCenter() {
                   ))
                 )}
               </select>
-            </motion.div>
+            </div>
 
-            {/* 3D Course Filter */}
-            <motion.div 
-              className="relative"
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
-            >
-              <motion.div
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white bg-purple-500 p-2 rounded-lg shadow-lg z-10 pointer-events-none"
-                animate={{ rotate: [0, 5, -5, 0] }}
-                transition={{ duration: 4 }}
-                style={{ zIndex: 10 }}
-              >
+            {/* Course Filter */}
+            <div className="relative">
+              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white bg-purple-500 p-2 rounded-lg shadow-lg z-10 pointer-events-none">
                 <FaBookOpen className="text-sm font-bold" style={{ fontSize: '14px' }} />
-              </motion.div>
+              </div>
               <select
                 value={selectedCourse}
-                onChange={(e) => setSelectedCourse(e.target.value)}
+                onChange={(e) => {
+                  console.log("Course changed to:", e.target.value);
+                  setSelectedCourse(e.target.value);
+                }}
                 className="w-full pl-14 pr-4 py-4 border border-gray-300/50 rounded-2xl focus:ring-2 focus:ring-green-500 focus:border-transparent appearance-none bg-white transition-all duration-300 hover:bg-white hover:border-purple-400 hover:shadow-lg hover:shadow-purple-100 hover:scale-[1.02] cursor-pointer"
                 aria-label="Select course"
                 title="Select course"
+                style={{ pointerEvents: 'auto', zIndex: 10 }}
               >
                 {courses.map((course) => (
                   <option key={course} value={course}>
@@ -325,24 +407,28 @@ export default function SearchCenter() {
                   </option>
                 ))}
               </select>
-            </motion.div>
+            </div>
 
-            {/* 3D Search Button */}
-            <motion.button
-              onClick={handleSearch}
-              className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-8 py-4 rounded-2xl font-semibold shadow-xl transition-all duration-300 transform-gpu hover:scale-110 hover:shadow-2xl hover:shadow-green-500/30 border border-white/20 hover:border-white/40"
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.7 }}
-              whileHover={{ 
-                scale: 1.1,
-                rotateY: 5,
-                boxShadow: "0 25px 50px -12px rgba(34, 197, 94, 0.4)"
+            {/* Search Button */}
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log("Search button clicked!");
+                console.log("Current search term:", searchTerm);
+                console.log("Current selected location:", selectedLocation);
+                console.log("Current selected course:", selectedCourse);
+                handleSearch();
               }}
-              whileTap={{ scale: 0.95 }}
+              className="bg-gradient-to-r from-green-500 to-blue-600 text-white px-8 py-4 rounded-2xl font-semibold shadow-xl cursor-pointer"
+              style={{ 
+                pointerEvents: 'auto',
+                zIndex: 1000,
+                position: 'relative'
+              }}
             >
               Search Centers
-            </motion.button>
+            </button>
           </div>
         </motion.div>
 
@@ -618,6 +704,26 @@ export default function SearchCenter() {
         
         select {
           padding-left: 3.5rem !important;
+        }
+        
+        /* Ensure all interactive elements are clickable */
+        button, input, select {
+          pointer-events: auto !important;
+          cursor: pointer !important;
+        }
+        
+        /* Override any motion component interference */
+        .search-container button,
+        .search-container input,
+        .search-container select {
+          pointer-events: auto !important;
+          position: relative;
+          z-index: 10;
+        }
+        
+        /* Ensure motion components don't block clicks */
+        [data-framer-motion] {
+          pointer-events: auto !important;
         }
       `}</style>
     </section>
