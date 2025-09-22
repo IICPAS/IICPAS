@@ -2,7 +2,13 @@ import Course from "../../models/Content/Course.js";
 import Student from "../../models/Students.js";
 
 export const getAllCourses = async (req, res) => {
-  const courses = await Course.find().populate("chapters");
+  const courses = await Course.find().populate({
+    path: "chapters",
+    populate: {
+      path: "topics",
+      model: "Topic",
+    },
+  });
   res.json(courses);
 };
 
@@ -39,9 +45,13 @@ export const getStudentCourses = async (req, res) => {
 export const getAvailableCourses = async (req, res) => {
   try {
     // Get all active courses
-    const courses = await Course.find({ status: "Active" }).populate(
-      "chapters"
-    );
+    const courses = await Course.find({ status: "Active" }).populate({
+      path: "chapters",
+      populate: {
+        path: "topics",
+        model: "Topic",
+      },
+    });
     res.json(courses);
   } catch (error) {
     console.error("Error fetching available courses:", error);
@@ -59,10 +69,22 @@ export const getCourse = async (req, res) => {
     let course;
     if (isValidObjectId) {
       // If it's a valid ObjectId, search by _id
-      course = await Course.findById(id).populate("chapters");
+      course = await Course.findById(id).populate({
+        path: "chapters",
+        populate: {
+          path: "topics",
+          model: "Topic",
+        },
+      });
     } else {
       // If it's not a valid ObjectId, search by slug
-      course = await Course.findOne({ slug: id }).populate("chapters");
+      course = await Course.findOne({ slug: id }).populate({
+        path: "chapters",
+        populate: {
+          path: "topics",
+          model: "Topic",
+        },
+      });
     }
 
     if (!course) {
@@ -209,18 +231,18 @@ export const updateCourseLevels = async (req, res) => {
     // Validate each level has required fields
     for (const level of levels) {
       if (!level.value || !level.label) {
-        return res.status(400).json({ 
-          error: "Each level must have both 'value' and 'label' fields" 
+        return res.status(400).json({
+          error: "Each level must have both 'value' and 'label' fields",
         });
       }
     }
 
     // For now, just return success. In the future, this could be stored in a database
     // You could create a CourseLevel model and store these levels
-    
-    res.json({ 
-      message: "Course levels updated successfully", 
-      levels: levels 
+
+    res.json({
+      message: "Course levels updated successfully",
+      levels: levels,
     });
   } catch (error) {
     console.error("Error updating course levels:", error);
