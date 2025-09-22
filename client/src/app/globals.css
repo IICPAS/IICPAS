@@ -475,3 +475,28 @@ body::-webkit-scrollbar-thumb:hover {
 .custom-scrollbar::-webkit-scrollbar-thumb:active {
   background: #1e40af; /* Even darker when clicked */
 }
+
+/* Thin scrollbar for main content area */
+.thin-scrollbar {
+  scrollbar-width: thin; /* Firefox - thin scrollbar */
+  scrollbar-color: #3b82f6 #e0f2fe; /* Firefox - blue thumb and light blue track */
+}
+
+.thin-scrollbar::-webkit-scrollbar {
+  width: 4px; /* Very thin scrollbar width */
+}
+
+.thin-scrollbar::-webkit-scrollbar-track {
+  background: #e0f2fe; /* Light blue track */
+  border-radius: 2px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  background: #3b82f6; /* Blue thumb */
+  border-radius: 2px;
+  transition: all 0.2s ease;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #2563eb; /* Darker blue on hover */
+}

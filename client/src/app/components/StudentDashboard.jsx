@@ -246,7 +246,7 @@ export default function StudentDashboard() {
         <SidebarContent />
       </Drawer>
       {/* Main Content */}
-      <main className={`lg:${sidebarCollapsed ? "ml-16" : "ml-70"} bg-[#f5f6fa] h-screen transition-all duration-300 overflow-y-auto`}>
+      <main className={`lg:${sidebarCollapsed ? "ml-16" : "ml-70"} bg-[#f5f6fa] h-screen transition-all duration-300 overflow-y-auto thin-scrollbar`}>
         {/* Fixed Header */}
         <div className="sticky top-0 z-40 bg-[#f5f6fa] border-b border-gray-200 p-4 md:p-6">
           <div className="flex justify-between items-center">
