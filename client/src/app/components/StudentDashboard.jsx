@@ -16,6 +16,7 @@ import {
   FaTimes,
   FaQuoteLeft,
   FaArrowLeft,
+  FaPlay,
 } from "react-icons/fa";
 import toast from "react-hot-toast";
 
@@ -25,6 +26,7 @@ import RevisionTab from "./RevisionTab";
 import TicketTab from "../components/TicketTab";
 import NewsTab from "./NewsTab";
 import LiveClassTab from "../components/LiveClassTab";
+import RecordedSessionTab from "./RecordedSessionTab";
 import ProfileTab from "../components/ProfileTab";
 import TestimonialTab from "./TestimonialTab";
 
@@ -57,6 +59,7 @@ export default function StudentDashboard() {
     { id: "courses", icon: <FaBook />, label: "Courses" },
     { id: "revision", icon: <FaBook />, label: "Assessment" },
     { id: "live", icon: <FaVideo />, label: "Live Class", dot: true },
+    { id: "recorded", icon: <FaPlay />, label: "Recorded Sessions", dot: true },
     { id: "news", icon: <FaNewspaper />, label: "News" },
     { id: "profile", icon: <FaUser />, label: "Profile" },
     { id: "testimonial", icon: <FaQuoteLeft />, label: "Testimonial" },
@@ -158,6 +161,8 @@ export default function StudentDashboard() {
         return <RevisionTab />;
       case "live":
         return <LiveClassTab />;
+      case "recorded":
+        return <RecordedSessionTab />;
       case "news":
         return <NewsTab />;
       case "profile":
