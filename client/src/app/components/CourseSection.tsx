@@ -21,6 +21,9 @@ export default function CoursesSection() {
   const router = useRouter();
   const [likedIndexes, setLikedIndexes] = useState<number[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
+  const [courseRatings, setCourseRatings] = useState<{[key: string]: {averageRating: number, totalRatings: number}}>({});
+
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
   // Fallback data with real course IDs from database
   const fallbackCourses: Course[] = [
@@ -92,7 +95,49 @@ export default function CoursesSection() {
     
     // Optionally fetch from API in background (without loading state)
     fetchCourses();
+    
+    // Fetch ratings for all courses
+    fetchCourseRatings();
   }, []);
+
+  // Fetch ratings for all courses
+  const fetchCourseRatings = async () => {
+    try {
+      const ratingsPromises = fallbackCourses.map(async (course) => {
+        try {
+          const response = await axios.get(
+            `${API_BASE}/api/v1/course-ratings/course/${course._id}`
+          );
+          if (response.data.success) {
+            return {
+              courseId: course._id,
+              averageRating: response.data.averageRating || course.rating,
+              totalRatings: response.data.totalRatings || course.reviews
+            };
+          }
+        } catch (error) {
+          console.error(`Error fetching ratings for course ${course._id}:`, error);
+        }
+        return {
+          courseId: course._id,
+          averageRating: course.rating,
+          totalRatings: course.reviews
+        };
+      });
+
+      const ratings = await Promise.all(ratingsPromises);
+      const ratingsMap: {[key: string]: {averageRating: number, totalRatings: number}} = {};
+      ratings.forEach(rating => {
+        ratingsMap[rating.courseId] = {
+          averageRating: rating.averageRating,
+          totalRatings: rating.totalRatings
+        };
+      });
+      setCourseRatings(ratingsMap);
+    } catch (error) {
+      console.error("Error fetching course ratings:", error);
+    }
+  };
 
   const fetchCourses = async () => {
     try {
@@ -213,9 +258,9 @@ export default function CoursesSection() {
                   ₹{course.price}
                 </span>
                 <span className="flex items-center gap-1 text-yellow-500">
-                  <FaStar /> {course.rating}
+                  <FaStar /> {courseRatings[course._id]?.averageRating || course.rating}
                   <span className="text-gray-400 ml-1">
-                    ({course.reviews} Reviews)
+                    ({courseRatings[course._id]?.totalRatings || course.reviews} Reviews)
                   </span>
                 </span>
               </div>

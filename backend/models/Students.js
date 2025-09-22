@@ -20,6 +20,7 @@ const StudentSchema = new mongoose.Schema(
     course: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],
     cart: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],
     wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],
+    enrolledLiveSessions: [{ type: mongoose.Schema.Types.ObjectId, ref: "LiveSession" }],
     otp: { type: String },
     otpExpiry: { type: Date },
   },

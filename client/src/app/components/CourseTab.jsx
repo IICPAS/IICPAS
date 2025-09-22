@@ -26,6 +26,8 @@ import {
   FaCheckCircle,
   FaExclamationTriangle,
 } from "react-icons/fa";
+import StarRating from "./StarRating";
+import { toast } from "react-hot-toast";
 
 export default function CourseTab() {
   const [studentId, setStudentId] = useState(null);
@@ -40,6 +42,12 @@ export default function CourseTab() {
   const [formData, setFormData] = useState({});
   const [viewModes, setViewModes] = useState({}); // Track view mode for each course
   const [courseChapters, setCourseChapters] = useState({}); // Store chapters for each course
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [courseToRate, setCourseToRate] = useState(null);
+  const [rating, setRating] = useState(0);
+  const [review, setReview] = useState("");
+  const [submittingRating, setSubmittingRating] = useState(false);
+  const [courseRatings, setCourseRatings] = useState({}); // Store existing ratings
   const router = useRouter();
   const API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -171,6 +179,82 @@ export default function CourseTab() {
   useEffect(() => {
     fetchStudentCourses();
   }, []);
+
+  // Check if course is completed (simplified logic - you can enhance this)
+  const isCourseCompleted = (course) => {
+    // For demo purposes, consider course completed if progress > 80%
+    // In real implementation, you'd check if all chapters, assignments, and tests are completed
+    return course.overallProgress >= 80;
+  };
+
+  // Check if student has already rated this course
+  const hasStudentRated = async (courseId) => {
+    try {
+      const response = await axios.get(
+        `${API}/api/v1/course-ratings/student/${studentId}`
+      );
+      if (response.data.success) {
+        const existingRating = response.data.data.find(
+          rating => rating.courseId._id === courseId
+        );
+        return existingRating;
+      }
+    } catch (error) {
+      console.error("Error checking existing rating:", error);
+    }
+    return null;
+  };
+
+  // Handle course completion and rating prompt
+  const handleCourseCompletion = async (course) => {
+    if (isCourseCompleted(course)) {
+      const existingRating = await hasStudentRated(course._id);
+      if (!existingRating) {
+        setCourseToRate(course);
+        setShowRatingModal(true);
+      }
+    }
+  };
+
+  // Submit rating
+  const handleSubmitRating = async () => {
+    if (rating === 0) {
+      toast.error("Please select a rating");
+      return;
+    }
+
+    setSubmittingRating(true);
+    try {
+      const response = await axios.post(
+        `${API}/api/v1/course-ratings/submit`,
+        {
+          studentId: studentId,
+          courseId: courseToRate._id,
+          rating: rating,
+          review: review
+        }
+      );
+
+      if (response.data.success) {
+        toast.success("Rating submitted successfully! It will be reviewed by admin.");
+        setShowRatingModal(false);
+        setRating(0);
+        setReview("");
+        setCourseToRate(null);
+        
+        // Update local state
+        setCourseRatings(prev => ({
+          ...prev,
+          [courseToRate._id]: { rating, review, status: "pending" }
+        }));
+      }
+    } catch (error) {
+      console.error("Error submitting rating:", error);
+      toast.error("Failed to submit rating. Please try again.");
+    } finally {
+      setSubmittingRating(false);
+    }
+  };
 
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
@@ -654,38 +738,37 @@ export default function CourseTab() {
   }
 
   return (
-    <div className="p-6 w-full max-w-full mt-16 bg-gradient-to-br from-gray-50 to-blue-50 min-h-screen">
+    <div className="w-full max-w-full bg-gradient-to-br from-gray-50 to-blue-50">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-800 to-blue-800 bg-clip-text text-transparent mb-2">
-          My Courses
-        </h1>
-        <p className="text-gray-600 text-lg">Continue your learning journey</p>
+      <div className="p-6 pb-0">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-800 to-blue-800 bg-clip-text text-transparent mb-2">
+            My Courses
+          </h1>
+          <p className="text-gray-600 text-lg">Continue your learning journey</p>
+        </div>
       </div>
 
       {/* Course Display with State Switching */}
-      <div className="space-y-8">
+      <div className="px-6 pb-6 space-y-8">
         {courses.map((course) => (
           <div key={course._id} className="group relative">
             {viewModes[course._id] !== "detailed" ? (
               // State 1: Modern Course Overview Card
               <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden transform transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl">
                 {/* Course Header with Gradient */}
-                <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 p-6 text-white relative overflow-hidden">
+                <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 p-3 text-white relative overflow-hidden">
                   <div className="absolute inset-0 bg-black opacity-10"></div>
                   <div className="relative z-10">
                     <h2 className="text-2xl font-bold mb-2">{course.title}</h2>
-                    <p className="text-blue-100 text-sm opacity-90">
-                      Master the fundamentals and advance your skills
-                    </p>
                   </div>
                   {/* Decorative elements */}
                   <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full -translate-y-16 translate-x-16"></div>
                   <div className="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-5 rounded-full translate-y-12 -translate-x-12"></div>
                 </div>
 
-                <div className="p-6">
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="p-8">
+                  <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
                     {/* Left Side - Course Image with Modern Styling */}
                     <div className="lg:col-span-1">
                       <div className="relative group">
@@ -697,39 +780,18 @@ export default function CourseTab() {
                                 : "/images/a1.jpeg"
                             }
                             alt={course.title}
-                            className="w-full h-64 object-cover transform transition-transform duration-500 group-hover:scale-110"
+                             className="w-full h-64 object-cover transform transition-transform duration-500 group-hover:scale-110"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-                        </div>
-                        {/* Progress overlay */}
-                        <div className="absolute bottom-4 left-4 right-4">
-                          <div className="bg-white/90 backdrop-blur-sm rounded-lg p-3">
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-sm font-medium text-gray-700">
-                                Progress
-                              </span>
-                              <span className="text-sm font-bold text-blue-600">
-                                {course.overallProgress || 0}%
-                              </span>
-                            </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2">
-                              <div
-                                className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-500"
-                                style={{
-                                  width: `${course.overallProgress || 0}%`,
-                                }}
-                              ></div>
-                            </div>
-                          </div>
                         </div>
                       </div>
                     </div>
 
                     {/* Right Side - Course Stats with Modern Cards */}
-                    <div className="lg:col-span-2">
+                    <div className="lg:col-span-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         {/* Status Card */}
-                        <div className="bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200 rounded-xl p-4">
+                        <div className="bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200 rounded-xl p-3">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
                               <FaCheckCircle className="text-emerald-600 text-lg" />
@@ -746,7 +808,7 @@ export default function CourseTab() {
                         </div>
 
                         {/* Level Card */}
-                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4">
+                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-3">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                               <FaGraduationCap className="text-blue-600 text-lg" />
@@ -763,7 +825,7 @@ export default function CourseTab() {
                         </div>
 
                         {/* Price Card */}
-                        <div className="bg-gradient-to-br from-purple-50 to-violet-50 border border-purple-200 rounded-xl p-4">
+                        <div className="bg-gradient-to-br from-purple-50 to-violet-50 border border-purple-200 rounded-xl p-3">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
                               <FaStar className="text-purple-600 text-lg" />
@@ -780,7 +842,7 @@ export default function CourseTab() {
                         </div>
 
                         {/* Duration Card */}
-                        <div className="bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-200 rounded-xl p-4">
+                        <div className="bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-200 rounded-xl p-3">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
                               <FaClock className="text-orange-600 text-lg" />
@@ -797,16 +859,45 @@ export default function CourseTab() {
                         </div>
                       </div>
 
-                      {/* Action Button */}
-                      <button
-                        onClick={() => handleDetailedToggle(course._id)}
-                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-6 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-105 hover:from-blue-700 hover:to-purple-700"
-                      >
-                        <span className="flex items-center justify-center gap-2">
-                          <Book className="text-xl" />
-                          View Course Details
-                        </span>
-                      </button>
+                      {/* Action Buttons */}
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => handleDetailedToggle(course._id)}
+                          className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-6 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-105 hover:from-blue-700 hover:to-purple-700"
+                        >
+                          <span className="flex items-center justify-center gap-2">
+                            <Book className="text-xl" />
+                            View Course Details
+                          </span>
+                        </button>
+                        
+                        {/* Rating Button - Show only if course is completed and not already rated */}
+                        {isCourseCompleted(course) && !courseRatings[course._id] && (
+                          <button
+                            onClick={() => {
+                              setCourseToRate(course);
+                              setShowRatingModal(true);
+                            }}
+                            className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-4 px-6 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-105 hover:from-yellow-600 hover:to-orange-600"
+                          >
+                            <span className="flex items-center justify-center gap-2">
+                              <FaStar className="text-xl" />
+                              Rate Course
+                            </span>
+                          </button>
+                        )}
+                        
+                        {/* Show rating status if already rated */}
+                        {courseRatings[course._id] && (
+                          <div className="flex items-center justify-center px-6 py-4 bg-gray-100 rounded-xl">
+                            <span className="text-gray-600 font-medium">
+                              {courseRatings[course._id].status === "pending" ? "Rating Pending" : 
+                               courseRatings[course._id].status === "approved" ? "Rating Approved" : 
+                               "Rating Rejected"}
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -975,6 +1066,81 @@ export default function CourseTab() {
 
       {/* Form Modal */}
       {renderForm()}
+
+      {/* Rating Modal */}
+      {showRatingModal && courseToRate && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-hidden">
+            <div className="flex items-center justify-between p-6 border-b">
+              <h3 className="text-xl font-bold text-gray-900">Rate Course</h3>
+              <button
+                onClick={() => {
+                  setShowRatingModal(false);
+                  setCourseToRate(null);
+                  setRating(0);
+                  setReview("");
+                }}
+                className="text-gray-400 hover:text-gray-600 text-2xl"
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Course</label>
+                  <div className="text-lg font-semibold text-gray-900">
+                    {courseToRate.title}
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+                  <StarRating
+                    rating={rating}
+                    onRatingChange={setRating}
+                    interactive={true}
+                    size="text-2xl"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Review (Optional)</label>
+                  <textarea
+                    value={review}
+                    onChange={(e) => setReview(e.target.value)}
+                    rows={4}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Share your experience with this course..."
+                  />
+                </div>
+              </div>
+              
+              <div className="flex justify-end gap-3 mt-6">
+                <button
+                  onClick={() => {
+                    setShowRatingModal(false);
+                    setCourseToRate(null);
+                    setRating(0);
+                    setReview("");
+                  }}
+                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSubmitRating}
+                  disabled={submittingRating || rating === 0}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+                >
+                  {submittingRating ? "Submitting..." : "Submit Rating"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
