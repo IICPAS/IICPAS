@@ -38,6 +38,8 @@ export default function SearchCenter() {
         const transformedCenters = centersData.map((center, index) => ({
           id: center._id,
           name: center.name,
+          city: center.city,
+          state: center.state,
           location: `${center.address}, ${center.city}, ${center.state} - ${center.pincode}`,
           phone: center.phone,
           email: center.email,
@@ -50,6 +52,9 @@ export default function SearchCenter() {
           facilities: center.facilities || [],
           description: center.description || ""
         }));
+        
+        console.log("Transformed centers:", transformedCenters);
+        console.log("Available cities:", [...new Set(transformedCenters.map(center => center.city))]);
         
         setCenters(transformedCenters);
         setFilteredCenters(transformedCenters);
@@ -69,8 +74,25 @@ export default function SearchCenter() {
   // Dynamic locations from centers data
   const locations = [
     "All Locations",
-    ...Array.from(new Set(centers.map(center => center.location.split(',')[1]?.trim()).filter(Boolean)))
+    ...Array.from(new Set(centers.map(center => center.city).filter(Boolean)))
   ];
+
+  // Add fallback locations if no centers are loaded
+  const fallbackLocations = [
+    "All Locations",
+    "Delhi",
+    "Mumbai", 
+    "Bangalore",
+    "Chennai",
+    "Kolkata",
+    "Hyderabad",
+    "Pune",
+    "Ahmedabad",
+    "Jaipur",
+    "Lucknow"
+  ];
+
+  const finalLocations = locations.length > 1 ? locations : fallbackLocations;
 
   // Dynamic courses from centers data
   const courses = [
@@ -86,13 +108,15 @@ export default function SearchCenter() {
       filtered = filtered.filter(
         (center) =>
           center.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          center.location.toLowerCase().includes(searchTerm.toLowerCase())
+          center.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          center.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          center.state.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
     if (selectedLocation && selectedLocation !== "All Locations") {
       filtered = filtered.filter((center) =>
-        center.location.includes(selectedLocation)
+        center.city === selectedLocation
       );
     }
 
@@ -199,13 +223,14 @@ export default function SearchCenter() {
 
         {/* 3D Search Filters */}
         <motion.div 
-          className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl p-8 mb-12 border border-gray-200/50 transform-gpu"
+          className="search-container bg-white/95 rounded-3xl shadow-2xl p-8 mb-12 border border-gray-200/50 transform-gpu hover:bg-white hover:shadow-3xl hover:border-green-200/50 transition-all duration-500"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3 }}
           whileHover={{ 
-            scale: 1.02,
-            rotateY: 2
+            scale: 1.03,
+            rotateY: 3,
+            boxShadow: "0 35px 60px -12px rgba(34, 197, 94, 0.2)"
           }}
           style={{
             transform: 'translateZ(20px)',
@@ -221,18 +246,19 @@ export default function SearchCenter() {
               transition={{ duration: 0.6, delay: 0.4 }}
             >
               <motion.div
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white bg-green-500 p-3 rounded-xl shadow-lg"
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white bg-green-500 p-2 rounded-lg shadow-lg z-10 pointer-events-none"
                 animate={{ rotate: [0, 10, -10, 0] }}
                 transition={{ duration: 2 }}
+                style={{ zIndex: 10 }}
               >
-                <FaSearch className="text-xl font-bold" style={{ fontSize: '20px' }} />
+                <FaSearch className="text-sm font-bold" style={{ fontSize: '14px' }} />
               </motion.div>
               <input
                 type="text"
                 placeholder="Search centers..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-20 pr-4 py-4 border border-gray-300/50 rounded-2xl focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white/90 backdrop-blur-sm transition-all duration-300 hover:bg-white"
+                className="w-full pl-20 pr-4 py-4 border border-gray-300/50 rounded-2xl focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white transition-all duration-300 hover:bg-white hover:border-green-400 hover:shadow-lg hover:shadow-green-100 hover:scale-[1.02]"
               />
             </motion.div>
 
@@ -244,24 +270,30 @@ export default function SearchCenter() {
               transition={{ duration: 0.6, delay: 0.5 }}
             >
               <motion.div
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white bg-blue-500 p-3 rounded-xl shadow-lg"
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white bg-blue-500 p-2 rounded-lg shadow-lg z-10 pointer-events-none"
                 animate={{ scale: [1, 1.1, 1] }}
                 transition={{ duration: 3 }}
+                style={{ zIndex: 10 }}
               >
-                <FaMapMarkerAlt className="text-xl font-bold" style={{ fontSize: '20px' }} />
+                <FaMapMarkerAlt className="text-sm font-bold" style={{ fontSize: '14px' }} />
               </motion.div>
               <select
                 value={selectedLocation}
                 onChange={(e) => setSelectedLocation(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 border border-gray-300/50 rounded-2xl focus:ring-2 focus:ring-green-500 focus:border-transparent appearance-none bg-white/90 backdrop-blur-sm transition-all duration-300 hover:bg-white"
+                className="w-full pl-14 pr-4 py-4 border border-gray-300/50 rounded-2xl focus:ring-2 focus:ring-green-500 focus:border-transparent appearance-none bg-white transition-all duration-300 hover:bg-white hover:border-blue-400 hover:shadow-lg hover:shadow-blue-100 hover:scale-[1.02] cursor-pointer"
                 aria-label="Select location"
                 title="Select location"
+                disabled={loading}
               >
-                {locations.map((location) => (
-                  <option key={location} value={location}>
-                    {location}
-                  </option>
-                ))}
+                {loading ? (
+                  <option value="">Loading locations...</option>
+                ) : (
+                  finalLocations.map((location) => (
+                    <option key={location} value={location}>
+                      {location}
+                    </option>
+                  ))
+                )}
               </select>
             </motion.div>
 
@@ -273,16 +305,17 @@ export default function SearchCenter() {
               transition={{ duration: 0.6, delay: 0.6 }}
             >
               <motion.div
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white bg-purple-500 p-3 rounded-xl shadow-lg"
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white bg-purple-500 p-2 rounded-lg shadow-lg z-10 pointer-events-none"
                 animate={{ rotate: [0, 5, -5, 0] }}
                 transition={{ duration: 4 }}
+                style={{ zIndex: 10 }}
               >
-                <FaBookOpen className="text-xl font-bold" style={{ fontSize: '20px' }} />
+                <FaBookOpen className="text-sm font-bold" style={{ fontSize: '14px' }} />
               </motion.div>
               <select
                 value={selectedCourse}
                 onChange={(e) => setSelectedCourse(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 border border-gray-300/50 rounded-2xl focus:ring-2 focus:ring-green-500 focus:border-transparent appearance-none bg-white/90 backdrop-blur-sm transition-all duration-300 hover:bg-white"
+                className="w-full pl-14 pr-4 py-4 border border-gray-300/50 rounded-2xl focus:ring-2 focus:ring-green-500 focus:border-transparent appearance-none bg-white transition-all duration-300 hover:bg-white hover:border-purple-400 hover:shadow-lg hover:shadow-purple-100 hover:scale-[1.02] cursor-pointer"
                 aria-label="Select course"
                 title="Select course"
               >
@@ -297,13 +330,14 @@ export default function SearchCenter() {
             {/* 3D Search Button */}
             <motion.button
               onClick={handleSearch}
-              className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-8 py-4 rounded-2xl font-semibold shadow-xl transition-all duration-300 transform-gpu hover:scale-105 hover:shadow-green-500/25 border border-white/20"
+              className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-8 py-4 rounded-2xl font-semibold shadow-xl transition-all duration-300 transform-gpu hover:scale-110 hover:shadow-2xl hover:shadow-green-500/30 border border-white/20 hover:border-white/40"
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.7 }}
               whileHover={{ 
-                scale: 1.05,
-                rotateY: 5
+                scale: 1.1,
+                rotateY: 5,
+                boxShadow: "0 25px 50px -12px rgba(34, 197, 94, 0.4)"
               }}
               whileTap={{ scale: 0.95 }}
             >
@@ -536,6 +570,55 @@ export default function SearchCenter() {
       <style jsx>{`
         .perspective-1000 { perspective: 1000px; }
         .transform-gpu { transform-style: preserve-3d; }
+        .hover\\:shadow-3xl:hover { 
+          box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.25);
+        }
+        .hover\\:scale-110:hover { 
+          transform: scale(1.1);
+        }
+        .hover\\:scale-\\[1\\.02\\]:hover { 
+          transform: scale(1.02);
+        }
+        
+        /* Ensure text remains crisp */
+        input, select {
+          text-rendering: optimizeLegibility;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+        }
+        
+        /* Prevent blur on hover */
+        .search-container:hover input,
+        .search-container:hover select {
+          filter: none !important;
+          backdrop-filter: none !important;
+        }
+        
+        /* Icon positioning fixes */
+        .relative {
+          position: relative;
+        }
+        
+        /* Ensure icons stay visible and don't overlap */
+        .absolute {
+          position: absolute;
+          z-index: 10 !important;
+        }
+        
+        /* Prevent icon hiding on hover */
+        .search-container:hover .absolute {
+          opacity: 1 !important;
+          visibility: visible !important;
+        }
+        
+        /* Ensure proper spacing for icons */
+        input[type="text"] {
+          padding-left: 5rem !important;
+        }
+        
+        select {
+          padding-left: 3.5rem !important;
+        }
       `}</style>
     </section>
   );
