@@ -250,6 +250,8 @@ export default function CourseDetailPage({
   const [error, setError] = useState<string | null>(null);
   const [courseRatings, setCourseRatings] = useState<any>(null);
   const [ratingsLoading, setRatingsLoading] = useState(true);
+  const [student, setStudent] = useState<any>(null);
+  const [isEnrolling, setIsEnrolling] = useState(false);
 
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
@@ -283,6 +285,58 @@ export default function CourseDetailPage({
       fetchCourse();
     }
   }, [resolvedParams.courseId]);
+
+  // Check student authentication
+  useEffect(() => {
+    const checkStudentAuth = async () => {
+      try {
+        const response = await axios.get(`${API_BASE}/api/v1/students/isstudent`, {
+          withCredentials: true,
+        });
+        setStudent(response.data.student);
+      } catch (error) {
+        setStudent(null);
+      }
+    };
+    checkStudentAuth();
+  }, []);
+
+  // Handle Digital Hub+ enrollment
+  const handleDigitalHubPlusEnrollment = async () => {
+    if (!student) {
+      alert("Please login to enroll in Digital Hub+ Live Sessions");
+      return;
+    }
+
+    setIsEnrolling(true);
+    try {
+      // First, get all live sessions for this course category
+      const liveSessionsResponse = await axios.get(`${API_BASE}/api/live-sessions`);
+      const courseLiveSessions = liveSessionsResponse.data.filter(
+        (session: any) => session.category === course?.category || "CA Foundation"
+      );
+
+      // Enroll student in all live sessions for this course
+      for (const session of courseLiveSessions) {
+        try {
+          await axios.post(
+            `${API_BASE}/api/v1/students/enroll-live-session/${student._id}`,
+            { sessionId: session._id },
+            { withCredentials: true }
+          );
+        } catch (enrollError) {
+          console.error(`Failed to enroll in session ${session._id}:`, enrollError);
+        }
+      }
+
+      alert("Successfully enrolled in Digital Hub+ Live Sessions! You can now access live classes from your dashboard.");
+    } catch (error) {
+      console.error("Error enrolling in live sessions:", error);
+      alert("Failed to enroll in live sessions. Please try again.");
+    } finally {
+      setIsEnrolling(false);
+    }
+  };
 
   // Fetch course ratings from API
   useEffect(() => {
@@ -743,9 +797,12 @@ export default function CourseDetailPage({
                         </div>
                       </div>
                     </div>
-                    <button className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 text-lg">
-                      {course?.pricing?.liveSession?.buttonText ||
-                        "Add Digital Hub+"}
+                    <button 
+                      onClick={handleDigitalHubPlusEnrollment}
+                      disabled={isEnrolling}
+                      className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isEnrolling ? "Enrolling..." : (course?.pricing?.liveSession?.buttonText || "Add Digital Hub+")}
                     </button>
                   </div>
                 </div>

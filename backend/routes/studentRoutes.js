@@ -277,6 +277,19 @@ router.post("/verify-buy/:id", async (req, res) => {
       student.course.push(courseId);
     }
 
+    // Check if this course has live sessions and enroll student
+    const LiveSession = (await import("../../models/LiveSession/LiveSession.js")).default;
+    const courseLiveSessions = await LiveSession.find({ 
+      category: course.category || "CA Foundation" 
+    });
+    
+    // Enroll student in all live sessions for this course category
+    for (const session of courseLiveSessions) {
+      if (!student.enrolledLiveSessions.includes(session._id)) {
+        student.enrolledLiveSessions.push(session._id);
+      }
+    }
+
     // Generate + email receipt
     const receiptId = `R-${Date.now()}`;
     const pdfPath = await generateReceiptPDF(student, course, receiptId);
@@ -732,6 +745,70 @@ router.get("/get-wishlist/:id", async (req, res) => {
   } catch (err) {
     res.status(500).json({
       message: "Failed to get wishlist",
+      error: err.message,
+    });
+  }
+});
+
+// POST /api/v1/students/enroll-live-session/:id - Enroll student in live session
+router.post("/enroll-live-session/:id", async (req, res) => {
+  try {
+    const student = await Student.findById(req.params.id);
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    const { sessionId } = req.body;
+    if (!sessionId) {
+      return res.status(400).json({ message: "sessionId is required" });
+    }
+
+    // Check if live session exists
+    const LiveSession = (await import("../../models/LiveSession/LiveSession.js")).default;
+    const liveSession = await LiveSession.findById(sessionId);
+    if (!liveSession) {
+      return res.status(404).json({ message: "Live session not found" });
+    }
+
+    // Check if student is already enrolled
+    if (student.enrolledLiveSessions.includes(sessionId)) {
+      return res.status(400).json({ message: "Student is already enrolled in this live session" });
+    }
+
+    // Add live session to student's enrolled sessions
+    student.enrolledLiveSessions.push(sessionId);
+    await student.save();
+
+    res.json({
+      message: "Student enrolled in live session successfully",
+      studentId: student._id,
+      sessionId: sessionId,
+      enrolledLiveSessions: student.enrolledLiveSessions,
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: "Failed to enroll student in live session",
+      error: err.message,
+    });
+  }
+});
+
+// GET /api/v1/students/enrolled-live-sessions/:id - Get student's enrolled live sessions
+router.get("/enrolled-live-sessions/:id", async (req, res) => {
+  try {
+    const student = await Student.findById(req.params.id).populate("enrolledLiveSessions");
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    res.json({
+      message: "Enrolled live sessions retrieved successfully",
+      studentId: student._id,
+      enrolledLiveSessions: student.enrolledLiveSessions,
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: "Failed to get enrolled live sessions",
       error: err.message,
     });
   }
