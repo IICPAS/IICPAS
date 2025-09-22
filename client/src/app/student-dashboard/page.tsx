@@ -4,9 +4,11 @@ import StudentDashboard from "../components/StudentDashboard";
 
 const page = () => {
   return (
-    <div>
+    <div className="h-screen flex flex-col">
       <Header />
-      <StudentDashboard />
+      <div className="flex-1 overflow-y-auto">
+        <StudentDashboard />
+      </div>
     </div>
   );
 };

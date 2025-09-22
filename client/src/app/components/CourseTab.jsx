@@ -738,17 +738,19 @@ export default function CourseTab() {
   }
 
   return (
-    <div className="p-6 w-full max-w-full mt-16 bg-gradient-to-br from-gray-50 to-blue-50 min-h-screen">
+    <div className="w-full max-w-full bg-gradient-to-br from-gray-50 to-blue-50">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-800 to-blue-800 bg-clip-text text-transparent mb-2">
-          My Courses
-        </h1>
-        <p className="text-gray-600 text-lg">Continue your learning journey</p>
+      <div className="p-6 pb-0">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-800 to-blue-800 bg-clip-text text-transparent mb-2">
+            My Courses
+          </h1>
+          <p className="text-gray-600 text-lg">Continue your learning journey</p>
+        </div>
       </div>
 
       {/* Course Display with State Switching */}
-      <div className="space-y-8">
+      <div className="px-6 pb-6 space-y-8">
         {courses.map((course) => (
           <div key={course._id} className="group relative">
             {viewModes[course._id] !== "detailed" ? (
