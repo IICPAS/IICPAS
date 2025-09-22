@@ -18,15 +18,19 @@ export default function AdminLogin() {
     e.preventDefault();
     setLoading(true);
     try {
-      // const res = await axios.post(
-      //   `${process.env.NEXT_PUBLIC_API_BASE}/auth/admin/login`,
-      //   { email, password },
-      //   { withCredentials: true }
-      // );
-      if (email == "admin@example.com" && password == "test") {
-        alert("Login successful!");
-      }
-      router.push("/admin-dashboard"); // adjust if your admin page path is different
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8080/api'}/employees/login`,
+        { email, password }
+      );
+
+      const userData = response.data;
+      
+      // Store token and user data in localStorage
+      localStorage.setItem("adminToken", userData.token);
+      localStorage.setItem("adminUser", JSON.stringify(userData));
+      
+      alert("Login successful!");
+      router.push("/admin-dashboard");
     } catch (err: any) {
       alert(err?.response?.data?.message || "Login failed");
     } finally {

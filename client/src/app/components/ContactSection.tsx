@@ -78,7 +78,7 @@ export default function ContactSection() {
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
 
     try {
-      await axios.post(`${API_BASE_URL}/contact/submit`, formData);
+      await axios.post(`${API_BASE_URL}/contact`, formData);
       toast.success(contactData.form.successMessage);
       setFormData({ name: "", email: "", phone: "", message: "" });
     } catch (error: any) {

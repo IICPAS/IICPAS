@@ -7,15 +7,35 @@ export default function LiveClassTab() {
   const [liveClasses, setLiveClasses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [student, setStudent] = useState(null);
 
   useEffect(() => {
-    const fetchLiveClasses = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/live-sessions`
+        
+        // First, get the authenticated student
+        const studentResponse = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/students/isstudent`,
+          { withCredentials: true }
         );
-        setLiveClasses(response.data);
+        
+        if (studentResponse.data.student) {
+          setStudent(studentResponse.data.student);
+          
+          // Fetch enrolled live sessions for this student
+          const enrolledSessionsResponse = await axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL}/api/v1/students/enrolled-live-sessions/${studentResponse.data.student._id}`
+          );
+          
+          setLiveClasses(enrolledSessionsResponse.data.enrolledLiveSessions || []);
+        } else {
+          // If not logged in, show all live sessions
+          const response = await axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL}/api/live-sessions`
+          );
+          setLiveClasses(response.data);
+        }
       } catch (err) {
         console.error("Error fetching live classes:", err);
         setError("Failed to load live classes");
@@ -24,7 +44,7 @@ export default function LiveClassTab() {
       }
     };
 
-    fetchLiveClasses();
+    fetchData();
   }, []);
 
   const formatDate = (dateString) => {
@@ -94,9 +114,22 @@ export default function LiveClassTab() {
       <h1 className="text-2xl font-semibold mb-8">Live Classes</h1>
 
       {liveClasses.length === 0 ? (
-        <p className="text-center text-gray-500">
-          No live sessions available right now.
-        </p>
+        <div className="text-center py-12">
+          {student ? (
+            <div>
+              <p className="text-gray-500 text-lg mb-4">
+                You haven't enrolled in any live sessions yet.
+              </p>
+              <p className="text-gray-400">
+                Purchase a course with Digital Hub+ to get access to live sessions.
+              </p>
+            </div>
+          ) : (
+            <p className="text-gray-500">
+              No live sessions available right now.
+            </p>
+          )}
+        </div>
       ) : (
         <div className="space-y-6">
           {liveClasses.map((cls) => {

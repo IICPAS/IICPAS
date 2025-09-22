@@ -48,6 +48,10 @@ const CourseSchema = new Schema({
     simulator: { label: { type: String, default: "Simulator" } }
   },
   
+  // Rating fields
+  rating: { type: Number, default: 0 },
+  reviewCount: { type: Number, default: 0 },
+  
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });

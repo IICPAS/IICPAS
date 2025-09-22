@@ -27,10 +27,7 @@ export default function ContactSection() {
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE;
 
     try {
-      await axios.post(`${API_BASE_URL}/leads`, {
-        ...form,
-        type: "enquiries", // ✅ fixed type field
-      });
+      await axios.post(`${API_BASE_URL}/contact`, form);
 
       toast.success("Message sent successfully!");
       setForm({ name: "", email: "", phone: "", message: "" });

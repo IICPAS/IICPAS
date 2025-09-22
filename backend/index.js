@@ -27,6 +27,7 @@ import quizRoutes from "./routes/Content/quizRoutes.js";
 import revisionTestRoutes from "./routes/Content/revisionTestRoutes.js";
 import categoryRoutes from "./routes/Content/categoryRoutes.js";
 import LiveSessionRoutes from "./routes/LiveSessionRoutes/LiveSessionRoutes.js";
+import courseLevelsRoutes from "./routes/courseLevelsRoutes.js";
 
 //Extra Routes
 import metaTagRoutes from "./routes/metatagsRoute.js";
@@ -232,6 +233,13 @@ app.use("/api/v1/teachers", teacherRoutes);
 
 // Use employee routes
 app.use("/api/employees", employeeRoutes);
+
+// Course Rating Routes
+import courseRatingRoutes from "./routes/courseRatingRoutes.js";
+app.use("/api/v1/course-ratings", courseRatingRoutes);
+
+// Course Levels Routes
+app.use("/api/course-levels", courseLevelsRoutes);
 
 // Server
 const PORT = process.env.PORT || 8080;

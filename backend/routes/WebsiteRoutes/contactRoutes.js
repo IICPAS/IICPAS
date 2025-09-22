@@ -1,5 +1,7 @@
 import express from "express";
 import Contact from "../../models/Website/Contact.js";
+import ContactModel from "../../models/ContactModel.js";
+import Message from "../../models/Message.js";
 import { requireAuth } from "../../middleware/requireAuth.js";
 import { isAdmin } from "../../middleware/isAdmin.js";
 
@@ -68,8 +70,38 @@ router.post("/submit", async (req, res) => {
       return res.status(400).json({ error: "Name, email, and message are required" });
     }
     
-    // Here you would typically save to a database or send an email
-    // For now, we'll just log the submission
+    // Save to both Contact and Message models
+    const newContact = new ContactModel({ name, email, phone, message });
+    await newContact.save();
+
+    const newMessage = new Message({ email, phone, message });
+    await newMessage.save();
+    
+    console.log("Contact form submission:", { name, email, phone, message });
+    
+    res.status(200).json({ message: "Message sent successfully!" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Submit contact form (public endpoint) - direct POST to /contact
+router.post("/", async (req, res) => {
+  try {
+    const { name, email, phone, message } = req.body;
+    
+    // Basic validation
+    if (!name || !email || !message) {
+      return res.status(400).json({ error: "Name, email, and message are required" });
+    }
+    
+    // Save to both Contact and Message models
+    const newContact = new ContactModel({ name, email, phone, message });
+    await newContact.save();
+
+    const newMessage = new Message({ email, phone, message });
+    await newMessage.save();
+    
     console.log("Contact form submission:", { name, email, phone, message });
     
     res.status(200).json({ message: "Message sent successfully!" });
@@ -146,6 +178,49 @@ router.delete("/:id", requireAuth, isAdmin, async (req, res) => {
     res.json({ message: "Contact content deleted successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// Get All Messages (Admin only)
+router.get("/messages", requireAuth, isAdmin, async (req, res) => {
+  try {
+    const messages = await Message.find().sort({ createdAt: -1 });
+    res.status(200).json(messages);
+  } catch (error) {
+    console.error("Fetching messages failed:", error);
+    res.status(500).json({ error: "Server error." });
+  }
+});
+
+// Reply to Message (Admin only)
+router.put("/messages/:id/reply", requireAuth, isAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { adminReply, adminRepliedBy } = req.body;
+
+    if (!adminReply) {
+      return res.status(400).json({ error: "Reply message is required." });
+    }
+
+    const message = await Message.findByIdAndUpdate(
+      id,
+      {
+        adminReply,
+        adminRepliedBy: adminRepliedBy || req.user?.name || "Admin",
+        adminRepliedAt: new Date(),
+        status: "replied"
+      },
+      { new: true }
+    );
+
+    if (!message) {
+      return res.status(404).json({ error: "Message not found." });
+    }
+
+    res.status(200).json(message);
+  } catch (error) {
+    console.error("Replying to message failed:", error);
+    res.status(500).json({ error: "Server error." });
   }
 });
 

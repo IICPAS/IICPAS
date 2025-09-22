@@ -11,6 +11,7 @@ import {
   FaChalkboardTeacher,
   FaFileUpload,
   FaTachometerAlt,
+  FaArrowLeft,
 } from "react-icons/fa";
 import { PlusCircle, X } from "lucide-react";
 import BookingCalendar from "./BookingCalendar";
@@ -103,6 +104,10 @@ const IndividualDashboardPage = () => {
     }
   };
 
+  const handleBack = () => {
+    setActiveTab("dashboard");
+  };
+
   const renderTabContent = () => {
     switch (activeTab) {
       case "dashboard":
@@ -168,6 +173,18 @@ const IndividualDashboardPage = () => {
 
         {/* Main Content */}
         <main className="flex-1 bg-gray-100 min-h-screen">
+          {/* Back Button - Only show when not on dashboard */}
+          {activeTab !== "dashboard" && (
+            <div className="p-6 pb-0">
+              <button
+                onClick={handleBack}
+                className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors duration-200 font-medium"
+              >
+                <FaArrowLeft className="text-sm" />
+                Back to Dashboard
+              </button>
+            </div>
+          )}
           {renderTabContent()}
         </main>
       </div>

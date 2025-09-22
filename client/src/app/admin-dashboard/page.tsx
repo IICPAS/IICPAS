@@ -13,7 +13,6 @@ import Drawer from "react-modern-drawer";
 import ManageMetaTags from "./Course/ManageMetaTags";
 import BlogComponent from "./BlogComponent";
 import CollegeTab from "./CollegeTab";
-import CenterTab from "./CenterTab";
 import CalendarTab from "./CalendarTab";
 import AboutUsTab from "./AboutUsTab";
 import AboutUsSectionTab from "./AboutUsSectionTab";
@@ -31,6 +30,7 @@ import "react-modern-drawer/dist/index.css";
 import TopicsManager from "./Topic/TopicsManager";
 import GuidesTab from "./GuidesTab";
 import KitsTab from "./KitsTab";
+import CenterLocationTab from "./CenterLocationTab";
 
 import {
   FaBars,
@@ -61,8 +61,10 @@ import {
   FaShieldAlt,
   FaStar,
   FaChartBar,
+  FaMapMarkerAlt,
   FaList,
   FaUserTie,
+  FaArrowLeft,
 } from "react-icons/fa";
 import CompanyTab from "./CompanyTab";
 import CourseArea from "./CourseBuilder";
@@ -73,8 +75,11 @@ import RevisionTestsTab from "./RevisionTestsTab";
 import CourseDisplayTab from "./CourseDisplayTab";
 import IPLogsTab from "./IPLogsTab";
 import IPWhitelistTab from "./IPWhitelistTab";
-import StudyMaterialTab from "./StudyMaterialTab";
+import DemoDigitalHubTab from "./DemoDigitalHubTab";
 import FAQTab from "./FAQTab";
+import CourseRatingApprovalTab from "./CourseRatingApprovalTab";
+import CenterManagementTab from "./CenterManagementTab";
+import MessagesTab from "./MessagesTab";
 
 // All available modules with their permissions
 const ALL_MODULES = [
@@ -86,7 +91,6 @@ const ALL_MODULES = [
   { id: "enquiries", label: "Enquiries", icon: <FaEnvelope /> },
   { id: "jobs", label: "Jobs", icon: <FaBriefcase /> },
   { id: "news", label: "News", icon: <FaNewspaper /> },
-  { id: "center", label: "Center", icon: <FaHome /> },
   { id: "students", label: "Students", icon: <FaUserGraduate /> },
   { id: "payments", label: "Payments", icon: <FaCreditCard /> },
   { id: "staff", label: "Staff Management", icon: <FaUsers /> },
@@ -100,6 +104,8 @@ const ALL_MODULES = [
   { id: "revision-tests", label: "Revision Tests", icon: <FaSyncAlt /> },
   { id: "support", label: "Support Requests", icon: <FaEnvelope /> },
   { id: "audit", label: "IP Logs", icon: <FaShieldAlt /> },
+  { id: "course-ratings", label: "Course Rating Approval", icon: <FaStar /> },
+  { id: "center-location", label: "Center Locations", icon: <FaMapMarkerAlt /> },
 ];
 
 // Website Settings modules
@@ -117,8 +123,9 @@ const WEBSITE_SETTINGS_MODULES = [
   { id: "meta", label: "Manage Metatags", icon: <FaTags /> },
   { id: "alert", label: "Alert", icon: <FaBell /> },
   { id: "ip-whitelist", label: "IP Whitelisting", icon: <FaShieldAlt /> },
-  { id: "study-material", label: "Study Material", icon: <FaBook /> },
+  { id: "demo-digital-hub", label: "Demo Digital Hub", icon: <FaBook /> },
   { id: "faq", label: "FAQ", icon: <FaUserTie /> },
+  { id: "messages", label: "Messages", icon: <FaEnvelope /> },
 ];
 
 function AdminDashboardContent() {
@@ -163,6 +170,10 @@ function AdminDashboardContent() {
   const handleLogout = async () => {
     await logout();
     router.push("/admin");
+  };
+
+  const handleBack = () => {
+    setActiveTab("");
   };
 
   // SIDEBAR: scrollable, hidden scrollbar
@@ -360,7 +371,20 @@ function AdminDashboardContent() {
       </Drawer>
 
       {/* Main Content: scrolls independently of sidebar */}
-      <main className="min-h-screen p-6 pt-20 overflow-y-auto lg:ml-70 relative">
+      <main className="min-h-screen p-6 pt-8 overflow-y-auto lg:ml-70 relative">
+        {/* Back Button - Only show when not on dashboard home */}
+        {activeTab !== "" && (
+          <div className="mb-6">
+            <button
+              onClick={handleBack}
+              className="bg-white text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 text-sm flex items-center gap-2 font-medium shadow-md transition-all duration-200 border border-gray-200"
+            >
+              <FaArrowLeft className="text-sm" />
+              Back
+            </button>
+          </div>
+        )}
+        
         {/* Permission-based content rendering */}
         {activeTab === "live-session" ? (
           <LiveSessionAdmin />
@@ -410,8 +434,8 @@ function AdminDashboardContent() {
           <AlertsTab />
         ) : activeTab === "ip-whitelist" ? (
           <IPWhitelistTab />
-        ) : activeTab === "study-material" ? (
-          <StudyMaterialTab />
+        ) : activeTab === "demo-digital-hub" ? (
+          <DemoDigitalHubTab />
         ) : activeTab === "faq" ? (
           <FAQTab />
         ) : activeTab === "news" ? (
@@ -432,8 +456,12 @@ function AdminDashboardContent() {
           <KitsTab />
         ) : activeTab === "audit" ? (
           <IPLogsTab />
-        ) : activeTab === "center" ? (
-          <CenterTab />
+        ) : activeTab === "course-ratings" ? (
+          <CourseRatingApprovalTab />
+        ) : activeTab === "center-location" ? (
+          <CenterLocationTab />
+        ) : activeTab === "messages" ? (
+          <MessagesTab />
         ) : activeTab === "" ? (
           <div className="text-center py-20">
             <h2 className="text-2xl font-bold text-gray-600 mb-4">

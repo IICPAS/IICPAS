@@ -15,6 +15,7 @@ import {
   FaBars,
   FaTimes,
   FaQuoteLeft,
+  FaArrowLeft,
 } from "react-icons/fa";
 import toast from "react-hot-toast";
 
@@ -67,6 +68,11 @@ export default function StudentDashboard() {
       dot: true,
       dotColor: "green",
     },
+    { id: "dashboard", icon: <FaBook />, label: "Dashboard" },
+    { id: "reports", icon: <FaBook />, label: "Reports" },
+    { id: "help", icon: <FaBook />, label: "Help Center" },
+    { id: "feedback", icon: <FaBook />, label: "Feedback" },
+    { id: "notifications", icon: <FaBook />, label: "Notifications" },
     {
       id: "collapse",
       icon: <span>{sidebarCollapsed ? "→" : "←"}</span>,
@@ -139,6 +145,10 @@ export default function StudentDashboard() {
     }
   };
 
+  const handleBack = () => {
+    setActiveTab("courses");
+  };
+
   // Tab rendering
   const renderTabContent = () => {
     switch (activeTab) {
@@ -169,49 +179,42 @@ export default function StudentDashboard() {
   };
 
   const SidebarContent = () => (
-    <div
-      className={`flex flex-col justify-between h-full p-5 ${
-        sidebarCollapsed ? "w-16" : "w-64"
-      } pt-30 transition-all duration-300`}
-    >
-      <div>
-        <div
-          className={`flex items-center ${
-            sidebarCollapsed ? "justify-center" : "justify-between"
-          } mb-6`}
-        >
-          <h2
-            className={`font-bold text-blue-600 ${
-              sidebarCollapsed ? "text-lg" : "text-2xl"
-            }`}
-          >
-            {sidebarCollapsed ? "IICPA" : "IICPA INSTITUTE"}
-          </h2>
+    <div className="h-full flex flex-col">
+      <div className="p-6 pb-4">
+        <div className="flex items-center justify-center mb-6">
+          <div className="bg-white p-3 rounded-lg shadow-lg">
+            <img
+              src="/images/logo.png"
+              alt="IICPA Institute"
+              className="h-12 w-auto object-contain"
+            />
+          </div>
         </div>
-        {student && !sidebarCollapsed && (
-          <div className="mb-6">
-            <p className="font-semibold">{student.name}</p>
-            <p className="text-sm text-gray-600">{student.email}</p>
+        {/* User Info */}
+        {student && (
+          <div className="text-center mb-4 p-3 bg-blue-50 rounded-lg">
+            <p className="font-semibold text-blue-800">{student.name}</p>
+            <p className="text-sm text-blue-600">Student</p>
           </div>
         )}
-        <nav className="space-y-4">
-          {tabs.map((tab) => (
-            <NavItem
-              key={tab.id}
-              icon={tab.icon}
-              label={sidebarCollapsed ? "" : tab.label}
-              active={activeTab === tab.id}
-              dot={tab.dot}
-              dotColor={tab.dotColor}
-              collapsed={sidebarCollapsed}
-              onClick={() => {
-                setActiveTab(tab.id);
-                setIsDrawerOpen(false);
-              }}
-            />
-          ))}
-        </nav>
       </div>
+      <nav className="flex-1 overflow-y-auto px-3 custom-scrollbar">
+        {tabs.map((tab) => (
+          <NavItem
+            key={tab.id}
+            icon={tab.icon}
+            label={sidebarCollapsed ? "" : tab.label}
+            active={activeTab === tab.id}
+            dot={tab.dot}
+            dotColor={tab.dotColor}
+            collapsed={sidebarCollapsed}
+            onClick={() => {
+              setActiveTab(tab.id);
+              setIsDrawerOpen(false);
+            }}
+          />
+        ))}
+      </nav>
     </div>
   );
 
@@ -224,12 +227,12 @@ export default function StudentDashboard() {
   }
 
   return (
-    <div className="flex overflow-hidden font-sans">
+    <div className="bg-gray-50 h-full">
       {/* Desktop Sidebar */}
       <aside
-        className={`hidden lg:block bg-white border-r ${
-          sidebarCollapsed ? "w-16" : "w-64"
-        } transition-all duration-300`}
+        className={`hidden lg:block ${
+          sidebarCollapsed ? "w-16" : "w-70"
+        } h-screen fixed left-0 top-0 bg-gradient-to-b from-blue-100 to-blue-200 border-r border-blue-300 rounded-r-2xl shadow-xl overflow-y-auto custom-scrollbar z-50 transition-all duration-300`}
       >
         <SidebarContent />
       </aside>
@@ -243,33 +246,54 @@ export default function StudentDashboard() {
         <SidebarContent />
       </Drawer>
       {/* Main Content */}
-      <main className="flex-1 bg-[#f5f6fa] p-4 md:p-6 overflow-y-auto min-h-screen">
-        <div className="flex justify-between items-center mb-6">
-          <button
-            className="lg:hidden p-2 bg-gray-100 rounded"
-            onClick={() => setIsDrawerOpen(true)}
-          >
-            <FaBars />
-          </button>
-          <input
-            type="text"
-            placeholder="Search for a topic"
-            className="w-full md:w-1/2 px-4 py-2 border rounded"
-          />
-          <div className="hidden md:flex items-center gap-3 ml-4">
-            <button className="bg-yellow-500 text-white px-3 py-1 rounded text-sm">
-              Digital Hub
+      <main className={`lg:${sidebarCollapsed ? "ml-16" : "ml-70"} bg-[#f5f6fa] h-screen transition-all duration-300 overflow-y-auto thin-scrollbar`}>
+        {/* Fixed Header */}
+        <div className="sticky top-0 z-40 bg-[#f5f6fa] border-b border-gray-200 p-4 md:p-6">
+          <div className="flex justify-between items-center">
+            <button
+              className="lg:hidden p-2 bg-gray-100 rounded hover:bg-gray-200 transition-colors"
+              onClick={() => setIsDrawerOpen(true)}
+            >
+              <FaBars />
             </button>
-            <button className="bg-gray-800 text-white px-3 py-1 rounded text-sm">
-              Download App
-            </button>
-            <div className="bg-yellow-400 px-3 py-1 rounded-full font-semibold">
-              50
+            <input
+              type="text"
+              placeholder="Search for a topic"
+              className="w-full md:w-1/2 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+            <div className="hidden md:flex items-center gap-3 ml-4">
+              <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-base font-medium transition-colors">
+                Digital Hub
+              </button>
+              <button className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded text-base font-medium transition-colors">
+                Download App
+              </button>
+              <div className="bg-yellow-400 px-3 py-1 rounded-full font-semibold">
+                50
+              </div>
             </div>
           </div>
         </div>
+        
+        {/* Scrollable Content */}
+        <div className="p-4 md:p-6">
+        
+        {/* Back Button - Only show when not on courses tab */}
+        {activeTab !== "courses" && (
+          <div className="mb-4">
+            <button
+              onClick={handleBack}
+              className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors duration-200 font-medium"
+            >
+              <FaArrowLeft className="text-sm" />
+              Back to Courses
+            </button>
+          </div>
+        )}
+        
         {/* (optional: banners and prompts) */}
         {renderTabContent()}
+        </div>
       </main>
 
       {/* Floating Add Ticket Button */}
@@ -388,18 +412,22 @@ function NavItem({
   onClick,
 }) {
   return (
-    <div
+    <button
       onClick={onClick}
       className={`flex items-center ${
         collapsed ? "justify-center" : "gap-3"
-      } px-4 py-2 rounded cursor-pointer ${
+      } px-4 py-3 rounded-lg w-full text-left mb-2 transition-all duration-200 ${
         active
-          ? "bg-blue-100 text-blue-700 font-semibold"
-          : "text-gray-800 hover:bg-gray-100"
+          ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-md"
+          : "hover:bg-blue-50 text-gray-700 hover:text-blue-700"
       }`}
       title={collapsed ? label : ""}
     >
-      <div className="relative">
+      <span
+        className={`text-lg relative ${
+          active ? "text-white" : "text-blue-500"
+        }`}
+      >
         {icon}
         {dot && (
           <span
@@ -412,8 +440,8 @@ function NavItem({
             }`}
           />
         )}
-      </div>
-      {!collapsed && <span>{label}</span>}
-    </div>
+      </span>
+      {!collapsed && <span className="font-medium break-words">{label}</span>}
+    </button>
   );
 }

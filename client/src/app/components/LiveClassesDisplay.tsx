@@ -29,6 +29,7 @@ interface LiveClass {
   thumbnail?: string;
   price: number;
   category: string;
+  isEnrolled?: boolean;
 }
 
 // Dummy data for CA students
@@ -156,7 +157,43 @@ export default function LiveClassesDisplay() {
       const response = await fetch(`${API}/api/live-sessions`);
       if (response.ok) {
         const data = await response.json();
-        // Transform API data to match our interface
+        
+        // If user is logged in, also fetch their enrolled sessions
+        if (user) {
+          try {
+            const enrolledResponse = await fetch(`${API}/api/v1/students/enrolled-live-sessions/${user._id}`);
+            if (enrolledResponse.ok) {
+              const enrolledData = await enrolledResponse.json();
+              const enrolledSessionIds = enrolledData.enrolledLiveSessions.map(session => session._id);
+              
+              // Mark enrolled sessions
+              const transformedClasses = data.map((session: any) => ({
+                _id: session._id,
+                title: session.title,
+                instructor: session.instructor || "CA Instructor",
+                description: session.description || "Live class session",
+                startTime: session.time ? session.time.split(' - ')[0] : "10:00",
+                endTime: session.time ? session.time.split(' - ')[1] : "12:00",
+                date: session.date,
+                duration: 120, // Default duration
+                maxParticipants: session.maxParticipants || 50,
+                currentParticipants: Math.floor(Math.random() * (session.maxParticipants || 50)),
+                status: getSessionStatus(session),
+                meetingLink: session.link,
+                thumbnail: session.thumbnail || "/images/accounting.webp",
+                price: session.price || 0,
+                category: session.category || "CA Foundation",
+                isEnrolled: enrolledSessionIds.includes(session._id)
+              }));
+              setLiveClasses(transformedClasses);
+              return;
+            }
+          } catch (enrolledError) {
+            console.error("Error fetching enrolled sessions:", enrolledError);
+          }
+        }
+        
+        // Fallback: transform API data without enrollment info
         const transformedClasses = data.map((session: any) => ({
           _id: session._id,
           title: session.title,
@@ -172,9 +209,9 @@ export default function LiveClassesDisplay() {
           meetingLink: session.link,
           thumbnail: session.thumbnail || "/images/accounting.webp",
           price: session.price || 0,
-          category: session.category || "CA Foundation"
+          category: session.category || "CA Foundation",
+          isEnrolled: false
         }));
-        // Update data silently without loading state
         setLiveClasses(transformedClasses);
       }
       // If API fails, keep showing dummy data (no need to update)
@@ -217,18 +254,14 @@ export default function LiveClassesDisplay() {
     }
   };
 
-  const handleJoinClass = async (classId: string, meetingLink: string) => {
+  const handleJoinClass = async (classId: string, meetingLink: string, isEnrolled: boolean = false) => {
     if (!user) {
       alert("Please login to join the live class");
       return;
     }
 
-    // Check subscription status
-    // This would be implemented based on your subscription logic
-    const hasSubscription = true; // Placeholder
-
-    if (!hasSubscription) {
-      alert("Please subscribe to join live classes");
+    if (!isEnrolled) {
+      alert("You need to enroll in this live session first. Purchase a course with Digital Hub+ to get access.");
       return;
     }
 
@@ -387,18 +420,22 @@ export default function LiveClassesDisplay() {
 
                   {/* Action Button */}
                   <button
-                    onClick={() => handleJoinClass(liveClass._id, liveClass.meetingLink || '')}
+                    onClick={() => handleJoinClass(liveClass._id, liveClass.meetingLink || '', liveClass.isEnrolled || false)}
                     disabled={liveClass.status === 'completed'}
                     className={`w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
                       liveClass.status === 'live'
-                        ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg'
+                        ? liveClass.isEnrolled
+                          ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg'
+                          : 'bg-gradient-to-r from-gray-400 to-gray-500 text-white shadow-lg cursor-not-allowed'
                         : liveClass.status === 'upcoming'
-                        ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg'
+                        ? liveClass.isEnrolled
+                          ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg'
+                          : 'bg-gradient-to-r from-gray-400 to-gray-500 text-white shadow-lg cursor-not-allowed'
                         : 'bg-gradient-to-r from-blue-400 to-green-400 text-white shadow-lg cursor-default'
                     }`}
                   >
-                    {liveClass.status === 'live' && 'Join Live Class'}
-                    {liveClass.status === 'upcoming' && 'Join When Live'}
+                    {liveClass.status === 'live' && (liveClass.isEnrolled ? 'Join Live Class' : 'Not Enrolled')}
+                    {liveClass.status === 'upcoming' && (liveClass.isEnrolled ? 'Join When Live' : 'Not Enrolled')}
                     {liveClass.status === 'completed' && 'Class Completed'}
                   </button>
                 </div>
