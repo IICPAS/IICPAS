@@ -787,27 +787,6 @@ export default function CourseTab() {
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
                         </div>
-                        {/* Progress overlay */}
-                        <div className="absolute bottom-4 left-4 right-4">
-                          <div className="bg-white/90 backdrop-blur-sm rounded-lg p-3">
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-sm font-medium text-gray-700">
-                                Progress
-                              </span>
-                              <span className="text-sm font-bold text-blue-600">
-                                {course.overallProgress || 0}%
-                              </span>
-                            </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2">
-                              <div
-                                className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-500"
-                                style={{
-                                  width: `${course.overallProgress || 0}%`,
-                                }}
-                              ></div>
-                            </div>
-                          </div>
-                        </div>
                       </div>
                     </div>
 
