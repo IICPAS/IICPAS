@@ -246,32 +246,37 @@ export default function StudentDashboard() {
         <SidebarContent />
       </Drawer>
       {/* Main Content */}
-      <main className={`${sidebarCollapsed ? "ml-16" : "ml-70"} bg-[#f5f6fa] h-full transition-all duration-300`}>
-        <div className="p-4 md:p-6">
-        <div className="flex justify-between items-center mb-6">
-          <button
-            className="lg:hidden p-2 bg-gray-100 rounded"
-            onClick={() => setIsDrawerOpen(true)}
-          >
-            <FaBars />
-          </button>
-          <input
-            type="text"
-            placeholder="Search for a topic"
-            className="w-full md:w-1/2 px-4 py-2 border rounded"
-          />
-          <div className="hidden md:flex items-center gap-3 ml-4">
-            <button className="bg-yellow-500 text-white px-3 py-1 rounded text-sm">
-              Digital Hub
+      <main className={`lg:${sidebarCollapsed ? "ml-16" : "ml-70"} bg-[#f5f6fa] h-screen transition-all duration-300 overflow-y-auto`}>
+        {/* Fixed Header */}
+        <div className="sticky top-0 z-40 bg-[#f5f6fa] border-b border-gray-200 p-4 md:p-6">
+          <div className="flex justify-between items-center">
+            <button
+              className="lg:hidden p-2 bg-gray-100 rounded hover:bg-gray-200 transition-colors"
+              onClick={() => setIsDrawerOpen(true)}
+            >
+              <FaBars />
             </button>
-            <button className="bg-gray-800 text-white px-3 py-1 rounded text-sm">
-              Download App
-            </button>
-            <div className="bg-yellow-400 px-3 py-1 rounded-full font-semibold">
-              50
+            <input
+              type="text"
+              placeholder="Search for a topic"
+              className="w-full md:w-1/2 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+            <div className="hidden md:flex items-center gap-3 ml-4">
+              <button className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm transition-colors">
+                Digital Hub
+              </button>
+              <button className="bg-gray-800 hover:bg-gray-900 text-white px-3 py-1 rounded text-sm transition-colors">
+                Download App
+              </button>
+              <div className="bg-yellow-400 px-3 py-1 rounded-full font-semibold">
+                50
+              </div>
             </div>
           </div>
         </div>
+        
+        {/* Scrollable Content */}
+        <div className="p-4 md:p-6">
         
         {/* Back Button - Only show when not on courses tab */}
         {activeTab !== "courses" && (
