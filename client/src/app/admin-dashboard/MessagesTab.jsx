@@ -22,7 +22,7 @@ export default function MessagesTab() {
       setLoading(true);
       const response = await axios.get(`${API_BASE || 'http://localhost:8080'}/api/contact/messages`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
         }
       });
       setMessages(response.data);
@@ -50,7 +50,7 @@ export default function MessagesTab() {
         },
         {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
           }
         }
       );
