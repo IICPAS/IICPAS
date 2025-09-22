@@ -152,7 +152,7 @@ export default function StudentAuthForm() {
   // --- Render ---
   return (
     <div className="pt-36 flex justify-center items-center bg-gray-50 p-4 min-h-screen">
-      <div className="w-full max-w-lg  bg-white rounded-xl shadow p-5">
+      <div className="w-full max-w-lg bg-white rounded-xl shadow p-5 overflow-hidden">
         <div className="flex justify-center items-center">
           <h2 className="text-2xl font-bold text-center mb-6">
             <Image
@@ -167,7 +167,7 @@ export default function StudentAuthForm() {
         {mode === "register" && (
           <form
             onSubmit={handleRegister}
-            className="grid grid-cols-1 md:grid-cols-2 gap-6"
+            className="grid grid-cols-1 md:grid-cols-2 gap-6 px-4"
           >
             <Input
               label="Full Name"
@@ -253,7 +253,7 @@ export default function StudentAuthForm() {
         {mode === "login" && (
           <form
             onSubmit={handleLogin}
-            className="space-y-6 w-[30vw] p-4 mx-auto"
+            className="space-y-6 w-full max-w-md mx-auto px-4"
           >
             <Input
               label="Email"
@@ -304,7 +304,7 @@ export default function StudentAuthForm() {
             onSubmit={
               forgotStep === "email" ? handleSendOtp : handleResetPassword
             }
-            className="space-y-6 max-w-sm mx-auto"
+            className="space-y-6 w-full max-w-sm mx-auto px-4"
           >
             {forgotStep === "email" && (
               <Input
@@ -403,6 +403,7 @@ function SelectDropdown({ label, name, value, onChange, options }: any) {
         name={name}
         value={value}
         onChange={onChange}
+        title={label}
         className="w-full px-4 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-green-400 outline-none"
       >
         {options.map((opt: string) => (
