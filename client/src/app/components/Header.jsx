@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import axios from "axios";
 
-import { Menu, X, LogOut, ShoppingCart, Trash2, User, ChevronDown, Settings, BookOpen, Heart, Bell, Shield } from "lucide-react";
+import { Menu, X, LogOut, ShoppingCart, Trash2, User, ChevronDown, Settings, BookOpen, Heart, Bell, Shield, Star } from "lucide-react";
 import Drawer from "react-modern-drawer";
 import "react-modern-drawer/dist/index.css";
 import Swal from "sweetalert2";
@@ -371,42 +371,34 @@ export default function Header() {
 
           {/* Right side - Fixed at end */}
           <div className="hidden lg:flex items-center space-x-3 flex-shrink-0">
-            {/* Star Plus Icon Button - Wishlist */}
-            <button
-              onClick={() => {
-                // Always go to wishlist page - it will handle login check internally
-                window.location.href = '/wishlist';
-              }}
-              className="w-10 h-10 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg flex items-center justify-center transition-colors duration-200 shadow-md hover:shadow-lg border border-blue-200 relative"
-              title={student ? "My Wishlist" : "Login to view Wishlist"}
-            >
-              <svg
-                className="w-6 h-6"
-                fill="white"
-                stroke="currentColor"
-                strokeWidth="1"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                {/* Star shape */}
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-              </svg>
-            </button>
-            
             {/* Conditional rendering: Student Login button or Profile dropdown */}
             {student ? (
               <div className="relative profile-dropdown">
                 <button
                   onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-                  className="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 relative"
+                  className="flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 relative"
                   title={student.name || 'Profile'}
                 >
-                  <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-                    <User size={18} />
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden border-2 border-blue-800">
+                    {student.image ? (
+                      <img
+                        src={`${API}/${student.image}`}
+                        alt="Profile"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          console.log("Profile image failed to load:", `${API}/${student.image}`);
+                          e.target.style.display = 'none';
+                          e.target.nextElementSibling.style.display = 'flex';
+                        }}
+                      />
+                    ) : null}
+                    <div className={`w-full h-full flex items-center justify-center bg-blue-800 ${student.image ? 'hidden' : ''}`}>
+                      <User size={18} className="text-white" />
+                    </div>
                   </div>
                   <ChevronDown 
                     size={12} 
-                    className={`absolute -bottom-1 -right-1 bg-white text-green-600 rounded-full p-0.5 transition-transform duration-200 ${showProfileDropdown ? 'rotate-180' : ''}`} 
+                    className={`absolute -bottom-1 -right-1 bg-white text-blue-800 rounded-full p-0.5 transition-transform duration-200 ${showProfileDropdown ? 'rotate-180' : ''}`} 
                   />
                 </button>
                 
@@ -416,8 +408,22 @@ export default function Header() {
                     {/* Profile Header */}
                     <div className="px-4 py-3 border-b border-gray-100 bg-gradient-to-r from-green-50 to-emerald-50 rounded-t-2xl">
                       <div className="flex items-center space-x-3">
-                        <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                          {student.name ? student.name.charAt(0).toUpperCase() : 'U'}
+                        <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg overflow-hidden">
+                          {student.image ? (
+                            <img
+                              src={`${API}/${student.image}`}
+                              alt="Profile"
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                console.log("Desktop profile image failed to load:", `${API}/${student.image}`);
+                                e.target.style.display = 'none';
+                                e.target.nextElementSibling.style.display = 'flex';
+                              }}
+                            />
+                          ) : null}
+                          <div className={`w-full h-full flex items-center justify-center ${student.image ? 'hidden' : ''}`}>
+                            {student.name ? student.name.charAt(0).toUpperCase() : 'U'}
+                          </div>
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-gray-900 truncate">{student.name}</p>
@@ -448,7 +454,7 @@ export default function Header() {
                         onClick={() => setShowProfileDropdown(false)}
                       >
                         <div className="w-8 h-8 bg-purple-100 group-hover:bg-purple-200 rounded-lg flex items-center justify-center mr-3 transition-colors duration-200">
-                          <Heart size={16} className="text-purple-600" />
+                          <Star size={16} className="text-purple-600" />
                         </div>
                         <div>
                           <p className="font-medium">My Wishlist</p>
@@ -457,7 +463,7 @@ export default function Header() {
                       </Link>
                       
                       <Link
-                        href="/profile"
+                        href="/student-dashboard?tab=profile"
                         className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-all duration-200 group"
                         onClick={() => setShowProfileDropdown(false)}
                       >
@@ -569,8 +575,22 @@ export default function Header() {
                 {/* Enhanced Mobile Profile Header */}
                 <div className="px-4 py-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-100">
                   <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                      {student.name ? student.name.charAt(0).toUpperCase() : 'U'}
+                    <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg overflow-hidden">
+                      {student.image ? (
+                        <img
+                          src={`${API}/${student.image}`}
+                          alt="Profile"
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            console.log("Mobile profile image failed to load:", `${API}/${student.image}`);
+                            e.target.style.display = 'none';
+                            e.target.nextElementSibling.style.display = 'flex';
+                          }}
+                        />
+                      ) : null}
+                      <div className={`w-full h-full flex items-center justify-center ${student.image ? 'hidden' : ''}`}>
+                        {student.name ? student.name.charAt(0).toUpperCase() : 'U'}
+                      </div>
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-gray-900 truncate">{student.name}</p>
@@ -600,7 +620,7 @@ export default function Header() {
                   className="flex items-center w-full bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded-xl font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-[1.02]"
                 >
                   <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center mr-3">
-                    <Heart size={16} />
+                    <Star size={16} />
                   </div>
                   <div className="text-left">
                     <p className="font-medium">My Wishlist</p>
@@ -609,7 +629,7 @@ export default function Header() {
                 </Link>
                 
                 <Link
-                  href="/profile"
+                  href="/student-dashboard?tab=profile"
                   onClick={() => setDrawerOpen(false)}
                   className="flex items-center w-full bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-xl font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-[1.02]"
                 >

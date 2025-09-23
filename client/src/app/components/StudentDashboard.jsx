@@ -86,7 +86,7 @@ export default function StudentDashboard() {
   // Handle URL tab parameter
   useEffect(() => {
     const tab = searchParams.get("tab");
-    if (tab && ["courses", "revision", "live", "recorded", "news", "testimonial", "support", "certificates"].includes(tab)) {
+    if (tab && ["courses", "revision", "live", "recorded", "news", "testimonial", "support", "certificates", "profile"].includes(tab)) {
       setActiveTab(tab);
     }
   }, [searchParams]);
@@ -221,7 +221,23 @@ export default function StudentDashboard() {
               className="cursor-pointer hover:bg-blue-100 p-2 rounded-md transition-colors duration-200"
             >
               <div className="flex items-center justify-center gap-2">
-                <FaUser size={16} className="text-blue-600" />
+                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center overflow-hidden">
+                  {student.image ? (
+                    <img
+                      src={`${API}/${student.image}`}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        console.log("Sidebar profile image failed to load:", `${API}/${student.image}`);
+                        e.target.style.display = 'none';
+                        e.target.nextElementSibling.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  <div className={`w-full h-full flex items-center justify-center ${student.image ? 'hidden' : ''}`}>
+                    <FaUser size={16} className="text-white" />
+                  </div>
+                </div>
                 <p className="font-semibold text-blue-800">{student.name}</p>
               </div>
               <p className="text-sm text-blue-600 mt-1">Student</p>
