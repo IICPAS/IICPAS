@@ -302,6 +302,7 @@ export default function CourseDetailPage({
         );
         setStudent(response.data.student);
       } catch (err) {
+        console.error("Error checking student auth:", err);
         setStudent(null);
       }
     };
@@ -376,7 +377,7 @@ export default function CourseDetailPage({
 
       console.log("Enrollment response:", response.data);
       alert("Successfully enrolled in Digital Hub Recorded Sessions! You can now access recorded content from your dashboard.");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error enrolling in recorded sessions:", error);
       console.error("Error details:", error.response?.data);
       console.error("Error status:", error.response?.status);
@@ -884,11 +885,6 @@ export default function CourseDetailPage({
                       className="w-full bg-[#3cd664] hover:bg-[#33bb58] text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isEnrollingRecorded ? "Enrolling..." : (course?.pricing?.recordedSession?.buttonText || "Add Digital Hub")}
-
-                    <button className="w-full bg-[#3cd664] hover:bg-[#33bb58] text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 text-base">
-                      {course?.pricing?.recordedSession?.buttonText ||
-                        "Add Digital Hub"}
-
                     </button>
                   </div>
 
