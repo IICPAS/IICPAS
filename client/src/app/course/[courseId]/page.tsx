@@ -9,10 +9,8 @@ import {
   Star,
   Clock,
   Users,
-  Award,
   CheckCircle,
 } from "lucide-react";
-import Image from "next/image";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import axios from "axios";
@@ -295,16 +293,19 @@ export default function CourseDetailPage({
   useEffect(() => {
     const checkStudentAuth = async () => {
       try {
-        const response = await axios.get(`${API_BASE}/api/v1/students/isstudent`, {
-          withCredentials: true,
-        });
+        const response = await axios.get(
+          `${API_BASE}/api/v1/students/isstudent`,
+          {
+            withCredentials: true,
+          }
+        );
         setStudent(response.data.student);
-      } catch (error) {
+      } catch (err) {
         setStudent(null);
       }
     };
     checkStudentAuth();
-  }, []);
+  }, [API_BASE]);
 
   // Handle Digital Hub+ enrollment
   const handleDigitalHubPlusEnrollment = async () => {
@@ -316,9 +317,12 @@ export default function CourseDetailPage({
     setIsEnrolling(true);
     try {
       // First, get all live sessions for this course category
-      const liveSessionsResponse = await axios.get(`${API_BASE}/api/live-sessions`);
+      const liveSessionsResponse = await axios.get(
+        `${API_BASE}/api/live-sessions`
+      );
       const courseLiveSessions = liveSessionsResponse.data.filter(
-        (session: any) => session.category === course?.category || "CA Foundation"
+        (session: any) =>
+          session.category === course?.category || "CA Foundation"
       );
 
       // Enroll student in all live sessions for this course
@@ -330,11 +334,16 @@ export default function CourseDetailPage({
             { withCredentials: true }
           );
         } catch (enrollError) {
-          console.error(`Failed to enroll in session ${session._id}:`, enrollError);
+          console.error(
+            `Failed to enroll in session ${session._id}:`,
+            enrollError
+          );
         }
       }
 
-      alert("Successfully enrolled in Digital Hub+ Live Sessions! You can now access live classes from your dashboard.");
+      alert(
+        "Successfully enrolled in Digital Hub+ Live Sessions! You can now access live classes from your dashboard."
+      );
     } catch (error) {
       console.error("Error enrolling in live sessions:", error);
       alert("Failed to enroll in live sessions. Please try again.");
@@ -409,7 +418,7 @@ export default function CourseDetailPage({
           setCourseRatings({
             averageRating: course?.rating || 4.7,
             totalRatings: course?.reviewCount || 449,
-            data: []
+            data: [],
           });
         }
       } catch (err) {
@@ -418,7 +427,7 @@ export default function CourseDetailPage({
         setCourseRatings({
           averageRating: course?.rating || 4.7,
           totalRatings: course?.reviewCount || 449,
-          data: []
+          data: [],
         });
       } finally {
         setRatingsLoading(false);
@@ -428,7 +437,7 @@ export default function CourseDetailPage({
     if (resolvedParams.courseId) {
       fetchCourseRatings();
     }
-  }, [resolvedParams.courseId, course]);
+  }, [resolvedParams.courseId, course, API_BASE]);
 
   // Loading state
   if (loading) {
@@ -529,17 +538,18 @@ export default function CourseDetailPage({
                 className="bg-white rounded-lg shadow-lg p-6 mb-6"
               >
                 {/* Course Type Badge */}
-                <div className="inline-block bg-[#3cd664] text-white text-lg font-bold px-6 py-3 rounded-full mb-6">
+                <div className="inline-block bg-[#3cd664] text-white text-sm font-bold px-4 py-2 rounded-full mb-4">
                   {course.level || "Individual Course"}
                 </div>
 
                 {/* Course Title */}
-                <h1 className="text-5xl lg:text-6xl font-bold bg-gradient-to-r from-blue-500 to-emerald-500 bg-clip-text text-transparent mb-6 leading-tight">
+                <h1 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-500 to-emerald-500 bg-clip-text text-transparent mb-4 leading-tight">
                   {course.title}
                 </h1>
 
                 {/* Rating - Show if available */}
-                {(courseRatings?.averageRating || courseRatings?.totalRatings) && (
+                {(courseRatings?.averageRating ||
+                  courseRatings?.totalRatings) && (
                   <div className="flex items-center gap-3 mb-6">
                     <div className="flex items-center">
                       {[...Array(5)].map((_, i) => (
@@ -553,14 +563,16 @@ export default function CourseDetailPage({
                         />
                       ))}
                     </div>
-                    <span className="text-2xl font-bold text-gray-900">
+                    <span className="text-lg font-bold text-gray-900">
                       {courseRatings?.averageRating || 0}
                     </span>
-                    <span className="text-xl text-gray-600">
+                    <span className="text-base text-gray-600">
                       [{courseRatings?.totalRatings || 0}]
                     </span>
                     {ratingsLoading && (
-                      <span className="text-sm text-gray-500">Loading ratings...</span>
+                      <span className="text-sm text-gray-500">
+                        Loading ratings...
+                      </span>
                     )}
                   </div>
                 )}
@@ -595,11 +607,11 @@ export default function CourseDetailPage({
                 {/* Tab Content */}
                 {activeTab === "syllabus" && (
                   <div>
-                    <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-3xl font-bold bg-gradient-to-r from-blue-500 to-emerald-500 bg-clip-text text-transparent">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-500 to-emerald-500 bg-clip-text text-transparent">
                         Course Syllabus
                       </h3>
-                      <button className="text-[#3cd664] hover:text-[#33bb58] font-bold text-lg">
+                      <button className="text-[#3cd664] hover:text-[#33bb58] font-semibold text-base">
                         View Full Syllabus
                       </button>
                     </div>
@@ -638,7 +650,7 @@ export default function CourseDetailPage({
                                     chapter.topics.map((topic, topicIndex) => (
                                       <li
                                         key={topicIndex}
-                                        className="flex items-center text-lg text-gray-600"
+                                        className="flex items-center text-base text-gray-600"
                                       >
                                         <CheckCircle className="w-6 h-6 text-[#3cd664] mr-3 flex-shrink-0" />
                                         {topic.title || topic}
@@ -672,11 +684,11 @@ export default function CourseDetailPage({
 
                 {activeTab === "case-studies" && (
                   <div>
-                    <h3 className="text-3xl font-bold text-gray-900 mb-6">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-4">
                       Assignment
                     </h3>
                     <div
-                      className="text-xl text-gray-600"
+                      className="text-base text-gray-600"
                       dangerouslySetInnerHTML={{
                         __html:
                           course.caseStudy ||
@@ -688,11 +700,11 @@ export default function CourseDetailPage({
 
                 {activeTab === "exam" && (
                   <div>
-                    <h3 className="text-3xl font-bold text-gray-900 mb-6">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-4">
                       Assessment & Certificates
                     </h3>
                     <div
-                      className="text-xl text-gray-600"
+                      className="text-base text-gray-600"
                       dangerouslySetInnerHTML={{
                         __html:
                           course.examCert ||
@@ -704,11 +716,11 @@ export default function CourseDetailPage({
 
                 {activeTab === "schedule" && (
                   <div>
-                    <h3 className="text-3xl font-bold text-gray-900 mb-6">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-4">
                       Live Schedule
                     </h3>
                     {course.video ? (
-                      <div className="text-xl text-gray-600">
+                      <div className="text-base text-gray-600">
                         <p>Live session schedule will be available here.</p>
                         {course.video && (
                           <div className="mt-4">
@@ -733,10 +745,10 @@ export default function CourseDetailPage({
 
                 {activeTab === "simulation" && (
                   <div>
-                    <h3 className="text-3xl font-bold text-gray-900 mb-6">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-4">
                       Simulation & Ex.
                     </h3>
-                    <p className="text-xl text-gray-600">
+                    <p className="text-base text-gray-600">
                       Interactive simulations and experiments will be available
                       here.
                     </p>
@@ -790,22 +802,22 @@ export default function CourseDetailPage({
                   </div>
 
                   {/* Recorded Lecture Option */}
-                  <div className="border-2 border-[#3cd664] rounded-xl p-4 mb-4">
-                    <div className="mb-4">
-                      <div className="text-center mb-3">
-                        <span className="text-lg font-bold text-[#3cd664] block">
+                  <div className="border-2 border-[#3cd664] rounded-xl p-3 mb-3">
+                    <div className="mb-3">
+                      <div className="text-center mb-2">
+                        <span className="text-sm font-bold text-[#3cd664] block">
                           {course?.pricing?.recordedSession?.title?.split(
                             "+"
                           )[0] || "DIGITAL HUB+"}
                         </span>
-                        <span className="text-lg font-bold text-[#3cd664] block">
+                        <span className="text-sm font-bold text-[#3cd664] block">
                           {course?.pricing?.recordedSession?.title?.split(
                             "+"
                           )[1] || "RECORDED SESSION"}
                         </span>
                       </div>
                       <div className="text-center">
-                        <div className="text-3xl font-bold text-[#3cd664]">
+                        <div className="text-2xl font-bold text-[#3cd664]">
                           ₹
                           {course.price
                             ? course.price.toLocaleString()
@@ -821,30 +833,36 @@ export default function CourseDetailPage({
                         )}
                       </div>
                     </div>
+
                     <button 
                       onClick={handleDigitalHubRecordedEnrollment}
                       disabled={isEnrollingRecorded}
                       className="w-full bg-[#3cd664] hover:bg-[#33bb58] text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isEnrollingRecorded ? "Enrolling..." : (course?.pricing?.recordedSession?.buttonText || "Add Digital Hub")}
+
+                    <button className="w-full bg-[#3cd664] hover:bg-[#33bb58] text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 text-base">
+                      {course?.pricing?.recordedSession?.buttonText ||
+                        "Add Digital Hub"}
+
                     </button>
                   </div>
 
                   {/* Live Lecture Option */}
-                  <div className="border-2 border-blue-500 rounded-xl p-4">
-                    <div className="mb-4">
-                      <div className="text-center mb-3">
-                        <span className="text-lg font-bold text-blue-500 block">
+                  <div className="border-2 border-blue-500 rounded-xl p-3">
+                    <div className="mb-3">
+                      <div className="text-center mb-2">
+                        <span className="text-sm font-bold text-blue-500 block">
                           {course?.pricing?.liveSession?.title?.split("+")[0] ||
                             "DIGITAL HUB+"}
                         </span>
-                        <span className="text-lg font-bold text-blue-500 block">
+                        <span className="text-sm font-bold text-blue-500 block">
                           {course?.pricing?.liveSession?.title?.split("+")[1] ||
                             "LIVE SESSION"}
                         </span>
                       </div>
                       <div className="text-center">
-                        <div className="text-3xl font-bold text-blue-500">
+                        <div className="text-2xl font-bold text-blue-500">
                           ₹
                           {course.price
                             ? (
@@ -856,12 +874,16 @@ export default function CourseDetailPage({
                         </div>
                       </div>
                     </div>
-                    <button 
+
+                    <button
                       onClick={handleDigitalHubPlusEnrollment}
                       disabled={isEnrolling}
-                      className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 text-base disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {isEnrolling ? "Enrolling..." : (course?.pricing?.liveSession?.buttonText || "Add Digital Hub+")}
+                      {isEnrolling
+                        ? "Enrolling..."
+                        : course?.pricing?.liveSession?.buttonText ||
+                          "Add Digital Hub+"}
                     </button>
                   </div>
                 </div>
