@@ -106,9 +106,6 @@ export default function AboutUsSection() {
                 <source src="/videos/homehero.mp4" type="video/mp4" />
                 Your browser does not support the video tag.
               </video>
-              <p className="text-sm text-gray-500 mt-2">
-                Video URL: {aboutData.video?.url || "No video URL"}
-              </p>
             </div>
           </div>
 
