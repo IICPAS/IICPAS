@@ -43,6 +43,9 @@ import ipWhitelistRoutes from "./routes/ipWhitelistRoutes.js";
 //Individual Routes
 import individualRoutes from "./routes/individualRoutes.js";
 
+//Bulk Email Routes
+import bulkEmailRoutes from "./routes/bulkEmailRoutes.js";
+
 //Jobs Controllers
 import JobsCompanyRoutes from "./routes/jobCompanyRoutes.js";
 import JobApplicationRoute from "./routes/jobApplicationRoutes.js";
@@ -208,6 +211,9 @@ app.use("/api/v1/students", studentRoutes);
 
 //Center Routes
 app.use("/api/v1/centers", centerRoutes);
+
+//Bulk Email Routes
+app.use("/api/v1/bulk-email", bulkEmailRoutes);
 
 //Video Routes
 app.use("/api/upload", UploadRoutes);

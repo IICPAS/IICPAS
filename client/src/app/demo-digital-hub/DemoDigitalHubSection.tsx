@@ -2,13 +2,60 @@
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 import { FaPlayCircle, FaBookOpen, FaCalculator, FaChartBar, FaFileAlt, FaVideo, FaDownload, FaEye, FaTimes } from "react-icons/fa";
 
+interface DemoData {
+  mainSection?: {
+    title: string;
+    subtitle: string;
+    ctaTitle: string;
+    ctaDescription: string;
+    ctaButton1: { text: string; link: string };
+    ctaButton2: { text: string; link: string };
+  };
+  materials?: Array<{
+    icon: string;
+    title: string;
+    description: string;
+    feature: string;
+    link: string;
+    contentType?: string;
+    contentFile?: any;
+    contentUrl?: string;
+  }>;
+  demos?: Array<any>;
+}
+
+interface SelectedDemo {
+  title: string;
+  description: string;
+  duration: string;
+  type: string;
+  contentType?: string;
+  contentFile?: any;
+  contentUrl?: string;
+}
+
+interface Course {
+  _id: string;
+  title: string;
+  description: string;
+  image?: string;
+  level: string;
+  category: string;
+  price: number;
+  status: string;
+}
+
 const DemoDigitalHubSection = () => {
-  const [data, setData] = useState(null);
+  const router = useRouter();
+  const [data, setData] = useState<DemoData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedDemo, setSelectedDemo] = useState(null);
+  const [selectedDemo, setSelectedDemo] = useState<SelectedDemo | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [coursesLoading, setCoursesLoading] = useState(true);
 
   const iconMap = {
     FaPlayCircle: FaPlayCircle,
@@ -23,6 +70,7 @@ const DemoDigitalHubSection = () => {
 
   useEffect(() => {
     fetchData();
+    fetchCourses();
   }, []);
 
   const fetchData = async () => {
@@ -91,6 +139,81 @@ const DemoDigitalHubSection = () => {
     }
   };
 
+  const fetchCourses = async () => {
+    try {
+      setCoursesLoading(true);
+      const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+      const response = await axios.get(`${API}/api/courses/available`);
+      
+      if (response.data && response.data.length > 0) {
+        setCourses(response.data);
+      } else {
+        // Fallback to sample courses if API fails
+        setCourses([
+          {
+            _id: "1",
+            title: "Basic Accounting & Tally Foundation",
+            description: "Comprehensive accounting course covering all aspects of modern accounting practices.",
+            level: "Foundation",
+            category: "Accounting",
+            price: 999,
+            status: "Active"
+          },
+          {
+            _id: "2",
+            title: "HR Certification Course",
+            description: "Complete guide to human resource management and practices.",
+            level: "Executive Level",
+            category: "HR",
+            price: 1200,
+            status: "Active"
+          },
+          {
+            _id: "3",
+            title: "Excel Certification Course",
+            description: "Master Excel from basics to advanced functions and data analysis.",
+            level: "Core",
+            category: "Technology",
+            price: 800,
+            status: "Active"
+          },
+          {
+            _id: "4",
+            title: "Learn the Foundations of Visual Communication",
+            description: "Design principles and visual communication fundamentals.",
+            level: "Foundation",
+            category: "Design",
+            price: 1500,
+            status: "Active"
+          },
+          {
+            _id: "5",
+            title: "Cooking Made Easy: Essential Skills for Everyday Meals",
+            description: "Learn essential cooking techniques and recipes for daily meals.",
+            level: "Foundation",
+            category: "Lifestyle",
+            price: 600,
+            status: "Active"
+          },
+          {
+            _id: "6",
+            title: "How to Capture Stunning Photos with Ease",
+            description: "Photography fundamentals and techniques for beautiful photos.",
+            level: "Foundation",
+            category: "Photography",
+            price: 900,
+            status: "Active"
+          }
+        ]);
+      }
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+      // Keep fallback courses
+    } finally {
+      setCoursesLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="py-8 bg-gray-50">
@@ -123,7 +246,7 @@ const DemoDigitalHubSection = () => {
     ctaButton2: { text: "View Course Catalog", link: "/course" }
   };
 
-  const handleDemoClick = (demo) => {
+  const handleDemoClick = (demo: SelectedDemo) => {
     setSelectedDemo(demo);
     setShowModal(true);
   };
@@ -153,49 +276,63 @@ const DemoDigitalHubSection = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {materials.map((material, index) => {
-              const IconComponent = iconMap[material.icon] || FaPlayCircle;
-              const colors = [
-                { bg: "from-blue-500 to-purple-600", text: "text-purple-600", button: "bg-purple-600 hover:bg-purple-700" },
-                { bg: "from-green-500 to-blue-600", text: "text-green-600", button: "bg-green-600 hover:bg-green-700" },
-                { bg: "from-red-500 to-orange-600", text: "text-red-600", button: "bg-red-600 hover:bg-red-700" },
-                { bg: "from-indigo-500 to-purple-600", text: "text-indigo-600", button: "bg-indigo-600 hover:bg-indigo-700" },
-                { bg: "from-emerald-500 to-teal-600", text: "text-emerald-600", button: "bg-emerald-600 hover:bg-emerald-700" },
-                { bg: "from-amber-500 to-orange-600", text: "text-amber-600", button: "bg-amber-600 hover:bg-amber-700" }
-              ];
-              const colorScheme = colors[index % colors.length];
-              
-              return (
-                <div key={index} className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 group border border-gray-100">
+            {coursesLoading ? (
+              // Loading skeleton
+              Array.from({ length: 6 }).map((_, index) => (
+                <div key={index} className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 animate-pulse">
                   <div className="flex items-center justify-between mb-4">
-                    <div className={`bg-gradient-to-r ${colorScheme.bg} text-white px-3 py-1 rounded-full text-sm font-semibold`}>
-                      {material.title}
-                    </div>
-                    <IconComponent className={`text-2xl ${colorScheme.text} group-hover:scale-110 transition-transform`} />
+                    <div className="h-6 bg-gray-300 rounded-full w-24"></div>
+                    <div className="w-8 h-8 bg-gray-300 rounded"></div>
                   </div>
-                  <h4 className="text-xl font-bold text-gray-900 mb-3">{material.title} Demo</h4>
-                  <p className="text-gray-600 mb-4">{material.description}</p>
+                  <div className="h-6 bg-gray-300 rounded mb-3"></div>
+                  <div className="h-4 bg-gray-300 rounded mb-4"></div>
                   <div className="flex items-center justify-between">
-                    <div className="text-sm text-gray-500">
-                      <span className="font-medium">Type:</span> {material.contentType || 'PDF'}
-                    </div>
-                    <button 
-                      className={`${colorScheme.button} text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium`}
-                      onClick={() => handleDemoClick({
-                        title: `${material.title} Demo`,
-                        description: material.description,
-                        duration: material.contentType || 'PDF',
-                        type: material.title,
-                        contentFile: material.contentFile,
-                        contentUrl: material.contentUrl
-                      })}
-                    >
-                      Try Demo
-                    </button>
+                    <div className="h-4 bg-gray-300 rounded w-20"></div>
+                    <div className="h-8 bg-gray-300 rounded w-24"></div>
                   </div>
                 </div>
-              );
-            })}
+              ))
+            ) : (
+              courses.slice(0, 6).map((course: Course, index: number) => {
+                const IconComponent = iconMap[materials[index]?.icon as keyof typeof iconMap] || FaPlayCircle;
+                const colors = [
+                  { bg: "from-blue-500 to-purple-600", text: "text-purple-600", button: "bg-purple-600 hover:bg-purple-700" },
+                  { bg: "from-green-500 to-blue-600", text: "text-green-600", button: "bg-green-600 hover:bg-green-700" },
+                  { bg: "from-red-500 to-orange-600", text: "text-red-600", button: "bg-red-600 hover:bg-red-700" },
+                  { bg: "from-indigo-500 to-purple-600", text: "text-indigo-600", button: "bg-indigo-600 hover:bg-indigo-700" },
+                  { bg: "from-emerald-500 to-teal-600", text: "text-emerald-600", button: "bg-emerald-600 hover:bg-emerald-700" },
+                  { bg: "from-amber-500 to-orange-600", text: "text-amber-600", button: "bg-amber-600 hover:bg-amber-700" }
+                ];
+                const colorScheme = colors[index % colors.length];
+                
+                return (
+                  <div key={course._id} className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 group border border-gray-100">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className={`bg-gradient-to-r ${colorScheme.bg} text-white px-3 py-1 rounded-full text-sm font-semibold`}>
+                        {course.category}
+                      </div>
+                      <IconComponent className={`text-2xl ${colorScheme.text} group-hover:scale-110 transition-transform`} />
+                    </div>
+                    <h4 className="text-xl font-bold text-gray-900 mb-3">{course.title}</h4>
+                    <p className="text-gray-600 mb-4">{course.description}</p>
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm text-gray-500">
+                        <span className="font-medium">Level:</span> {course.level}
+                      </div>
+                      <button 
+                        className={`${colorScheme.button} text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium`}
+                        onClick={() => {
+                          // Navigate to digital hub with demo mode enabled using real course ID
+                          router.push(`/digital-hub?courseId=${course._id}&demo=true`);
+                        }}
+                      >
+                        Try Demo
+                      </button>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
         </div>
       </div>
@@ -209,6 +346,7 @@ const DemoDigitalHubSection = () => {
               <button
                 onClick={closeModal}
                 className="text-gray-400 hover:text-gray-600 text-2xl"
+                title="Close modal"
               >
                 <FaTimes />
               </button>
@@ -238,7 +376,7 @@ const DemoDigitalHubSection = () => {
                       Demo Content Available
                     </h4>
                     <p className="text-gray-600 mb-6">
-                      {selectedDemo.contentFile.name} ({selectedDemo.contentType})
+                      {selectedDemo.contentFile?.name} ({selectedDemo.contentType || 'PDF'})
                     </p>
                     <div className="bg-green-50 rounded-lg p-4 mb-6">
                       <p className="text-green-800 font-medium">
@@ -248,7 +386,15 @@ const DemoDigitalHubSection = () => {
                         Click "View Content" to access the demo
                       </p>
                     </div>
-                    <button className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors font-medium mr-4">
+                    <button 
+                      className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors font-medium mr-4"
+                      onClick={() => {
+                        closeModal();
+                        // Use the first available course for demo
+                        const demoCourseId = courses.length > 0 ? courses[0]._id : "demo-course-1";
+                        router.push(`/digital-hub?courseId=${demoCourseId}&demo=true`);
+                      }}
+                    >
                       View Content
                     </button>
                   </div>
@@ -288,8 +434,16 @@ const DemoDigitalHubSection = () => {
                 </div>
 
                 <div className="mt-6">
-                  <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                    Start Full Course
+                  <button 
+                    className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                    onClick={() => {
+                      closeModal();
+                      // Use the first available course for demo
+                      const demoCourseId = courses.length > 0 ? courses[0]._id : "demo-course-1";
+                      router.push(`/digital-hub?courseId=${demoCourseId}&demo=true`);
+                    }}
+                  >
+                    Start Demo Course
                   </button>
                 </div>
               </div>
