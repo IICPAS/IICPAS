@@ -89,7 +89,7 @@ export default function AboutUsSection() {
                 muted={aboutData.video?.muted !== false}
                 playsInline
                 preload="metadata"
-                controls={true}
+                controls={false}
                 poster={aboutData.video?.poster || "/images/video-poster.jpg"}
                 onError={(e) => {
                   console.error("Video error:", e);
