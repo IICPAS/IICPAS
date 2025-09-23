@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState, use, useEffect } from "react";
@@ -563,48 +564,91 @@ export default function CourseDetailPage({
                     {/* Dynamic syllabus from chapters */}
                     {course.chapters && course.chapters.length > 0 ? (
                       <div className="space-y-4">
-                        {course.chapters.map((chapter, index) => (
-                          <div
-                            key={index}
-                            className="border-2 border-gray-200 rounded-xl"
-                          >
-                            <button
-                              onClick={() => toggleSection(index)}
-                              className="w-full px-6 py-5 text-left flex items-center justify-between hover:bg-gray-50 rounded-xl"
-                            >
-                              <span className="font-bold text-xl text-gray-900">
-                                {chapter.title}
-                              </span>
-                              {expandedSections.includes(index) ? (
-                                <ChevronUp className="w-8 h-8 text-gray-500" />
-                              ) : (
-                                <ChevronDown className="w-8 h-8 text-gray-500" />
-                              )}
-                            </button>
-
-                            {expandedSections.includes(index) && (
-                              <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: "auto" }}
-                                exit={{ opacity: 0, height: 0 }}
-                                className="px-6 pb-5"
-                              >
-                                <ul className="space-y-3">
-                                  {chapter.topics &&
-                                    chapter.topics.map((topic, topicIndex) => (
-                                      <li
-                                        key={topicIndex}
-                                        className="flex items-center text-base text-gray-600"
+                        {course.chapters.map(
+                          (
+                            chapter: {
+                              title:
+                                | string
+                                | number
+                                | bigint
+                                | boolean
+                                | React.ReactElement<
+                                    unknown,
+                                    string | React.JSXElementConstructor<any>
+                                  >
+                                | Iterable<React.ReactNode>
+                                | React.ReactPortal
+                                | Promise<
+                                    | string
+                                    | number
+                                    | bigint
+                                    | boolean
+                                    | React.ReactPortal
+                                    | React.ReactElement<
+                                        unknown,
+                                        | string
+                                        | React.JSXElementConstructor<any>
                                       >
-                                        <CheckCircle className="w-6 h-6 text-[#3cd664] mr-3 flex-shrink-0" />
-                                        {topic.title || topic}
-                                      </li>
-                                    ))}
-                                </ul>
-                              </motion.div>
-                            )}
-                          </div>
-                        ))}
+                                    | Iterable<React.ReactNode>
+                                    | null
+                                    | undefined
+                                  >
+                                | null
+                                | undefined;
+                              topics: any[];
+                            },
+                            index: React.Key | null | undefined
+                          ) => (
+                            <div
+                              key={index}
+                              className="border-2 border-gray-200 rounded-xl"
+                            >
+                              <button
+                                onClick={() => toggleSection(Number(index))}
+                                className="w-full px-6 py-5 text-left flex items-center justify-between hover:bg-gray-50 rounded-xl"
+                              >
+                                <span className="font-bold text-xl text-gray-900">
+                                  {chapter.title}
+                                </span>
+                                {expandedSections.includes(Number(index)) ? (
+                                  <ChevronUp className="w-8 h-8 text-gray-500" />
+                                ) : (
+                                  <ChevronDown className="w-8 h-8 text-gray-500" />
+                                )}
+                              </button>
+
+                              {expandedSections.includes(Number(index)) && (
+                                <motion.div
+                                  initial={{ opacity: 0, height: 0 }}
+                                  animate={{ opacity: 1, height: "auto" }}
+                                  exit={{ opacity: 0, height: 0 }}
+                                  className="px-6 pb-5"
+                                >
+                                  <ul className="space-y-3">
+                                    {chapter.topics &&
+                                      chapter.topics.map(
+                                        (
+                                          topic: { title: any },
+                                          topicIndex:
+                                            | React.Key
+                                            | null
+                                            | undefined
+                                        ) => (
+                                          <li
+                                            key={topicIndex}
+                                            className="flex items-center text-base text-gray-600"
+                                          >
+                                            <CheckCircle className="w-6 h-6 text-[#3cd664] mr-3 flex-shrink-0" />
+                                            {topic.title || topic}
+                                          </li>
+                                        )
+                                      )}
+                                  </ul>
+                                </motion.div>
+                              )}
+                            </div>
+                          )
+                        )}
                       </div>
                     ) : (
                       <div className="text-center py-12">
@@ -835,7 +879,7 @@ export default function CourseDetailPage({
                     <div className="bg-[#3cd664] text-white px-4 py-3 rounded-lg text-lg font-bold">
                       {course.chapters
                         ? course.chapters.reduce(
-                            (total, chapter) =>
+                            (total: any, chapter: { topics: string | any[] }) =>
                               total +
                               (chapter.topics ? chapter.topics.length : 0),
                             0
