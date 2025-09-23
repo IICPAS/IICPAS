@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState, use, useEffect } from "react";
@@ -256,7 +257,10 @@ export default function CourseDetailPage({
 
   // Debug logging
   console.log("Course Page API_BASE:", API_BASE);
-  console.log("Course Page NEXT_PUBLIC_API_URL:", process.env.NEXT_PUBLIC_API_URL);
+  console.log(
+    "Course Page NEXT_PUBLIC_API_URL:",
+    process.env.NEXT_PUBLIC_API_URL
+  );
 
   // Unwrap the params Promise using React.use()
   const resolvedParams = use(params);
@@ -301,6 +305,7 @@ export default function CourseDetailPage({
         );
         setStudent(response.data.student);
       } catch (err) {
+        console.error("Error checking student auth:", err);
         setStudent(null);
       }
     };
@@ -365,7 +370,7 @@ export default function CourseDetailPage({
       console.log("Enrolling in recorded session with URL:", enrollUrl);
       console.log("Course ID:", course._id);
       console.log("Student ID:", student._id);
-      
+
       // Enroll student in recorded session (course content)
       const response = await axios.post(
         enrollUrl,
@@ -374,29 +379,34 @@ export default function CourseDetailPage({
       );
 
       console.log("Enrollment response:", response.data);
-      alert("Successfully enrolled in Digital Hub Recorded Sessions! You can now access recorded content from your dashboard.");
-    } catch (error) {
+      alert(
+        "Successfully enrolled in Digital Hub Recorded Sessions! You can now access recorded content from your dashboard."
+      );
+    } catch (error: any) {
       console.error("Error enrolling in recorded sessions:", error);
       console.error("Error details:", error.response?.data);
       console.error("Error status:", error.response?.status);
-      
+
       // Provide more specific error messages
-      let errorMessage = "Failed to enroll in recorded sessions. Please try again.";
-      
+      let errorMessage =
+        "Failed to enroll in recorded sessions. Please try again.";
+
       if (error.response?.status === 400) {
         if (error.response?.data?.message?.includes("already enrolled")) {
           errorMessage = "You are already enrolled in this recorded session.";
         } else if (error.response?.data?.message?.includes("Invalid")) {
-          errorMessage = "Invalid course or student information. Please refresh the page and try again.";
+          errorMessage =
+            "Invalid course or student information. Please refresh the page and try again.";
         } else {
           errorMessage = error.response?.data?.message || errorMessage;
         }
       } else if (error.response?.status === 404) {
-        errorMessage = "Course or student not found. Please refresh the page and try again.";
+        errorMessage =
+          "Course or student not found. Please refresh the page and try again.";
       } else if (error.response?.status === 401) {
         errorMessage = "Please login again to enroll in recorded sessions.";
       }
-      
+
       alert(errorMessage);
     } finally {
       setIsEnrollingRecorded(false);
@@ -619,48 +629,91 @@ export default function CourseDetailPage({
                     {/* Dynamic syllabus from chapters */}
                     {course.chapters && course.chapters.length > 0 ? (
                       <div className="space-y-4">
-                        {course.chapters.map((chapter, index) => (
-                          <div
-                            key={index}
-                            className="border-2 border-gray-200 rounded-xl"
-                          >
-                            <button
-                              onClick={() => toggleSection(index)}
-                              className="w-full px-6 py-5 text-left flex items-center justify-between hover:bg-gray-50 rounded-xl"
-                            >
-                              <span className="font-bold text-xl text-gray-900">
-                                {chapter.title}
-                              </span>
-                              {expandedSections.includes(index) ? (
-                                <ChevronUp className="w-8 h-8 text-gray-500" />
-                              ) : (
-                                <ChevronDown className="w-8 h-8 text-gray-500" />
-                              )}
-                            </button>
-
-                            {expandedSections.includes(index) && (
-                              <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: "auto" }}
-                                exit={{ opacity: 0, height: 0 }}
-                                className="px-6 pb-5"
-                              >
-                                <ul className="space-y-3">
-                                  {chapter.topics &&
-                                    chapter.topics.map((topic, topicIndex) => (
-                                      <li
-                                        key={topicIndex}
-                                        className="flex items-center text-base text-gray-600"
+                        {course.chapters.map(
+                          (
+                            chapter: {
+                              title:
+                                | string
+                                | number
+                                | bigint
+                                | boolean
+                                | React.ReactElement<
+                                    unknown,
+                                    string | React.JSXElementConstructor<any>
+                                  >
+                                | Iterable<React.ReactNode>
+                                | React.ReactPortal
+                                | Promise<
+                                    | string
+                                    | number
+                                    | bigint
+                                    | boolean
+                                    | React.ReactPortal
+                                    | React.ReactElement<
+                                        unknown,
+                                        | string
+                                        | React.JSXElementConstructor<any>
                                       >
-                                        <CheckCircle className="w-6 h-6 text-[#3cd664] mr-3 flex-shrink-0" />
-                                        {topic.title || topic}
-                                      </li>
-                                    ))}
-                                </ul>
-                              </motion.div>
-                            )}
-                          </div>
-                        ))}
+                                    | Iterable<React.ReactNode>
+                                    | null
+                                    | undefined
+                                  >
+                                | null
+                                | undefined;
+                              topics: any[];
+                            },
+                            index: React.Key | null | undefined
+                          ) => (
+                            <div
+                              key={index}
+                              className="border-2 border-gray-200 rounded-xl"
+                            >
+                              <button
+                                onClick={() => toggleSection(Number(index))}
+                                className="w-full px-6 py-5 text-left flex items-center justify-between hover:bg-gray-50 rounded-xl"
+                              >
+                                <span className="font-bold text-xl text-gray-900">
+                                  {chapter.title}
+                                </span>
+                                {expandedSections.includes(Number(index)) ? (
+                                  <ChevronUp className="w-8 h-8 text-gray-500" />
+                                ) : (
+                                  <ChevronDown className="w-8 h-8 text-gray-500" />
+                                )}
+                              </button>
+
+                              {expandedSections.includes(Number(index)) && (
+                                <motion.div
+                                  initial={{ opacity: 0, height: 0 }}
+                                  animate={{ opacity: 1, height: "auto" }}
+                                  exit={{ opacity: 0, height: 0 }}
+                                  className="px-6 pb-5"
+                                >
+                                  <ul className="space-y-3">
+                                    {chapter.topics &&
+                                      chapter.topics.map(
+                                        (
+                                          topic: { title: any },
+                                          topicIndex:
+                                            | React.Key
+                                            | null
+                                            | undefined
+                                        ) => (
+                                          <li
+                                            key={topicIndex}
+                                            className="flex items-center text-base text-gray-600"
+                                          >
+                                            <CheckCircle className="w-6 h-6 text-[#3cd664] mr-3 flex-shrink-0" />
+                                            {topic.title || topic}
+                                          </li>
+                                        )
+                                      )}
+                                  </ul>
+                                </motion.div>
+                              )}
+                            </div>
+                          )
+                        )}
                       </div>
                     ) : (
                       <div className="text-center py-12">
@@ -834,17 +887,15 @@ export default function CourseDetailPage({
                       </div>
                     </div>
 
-                    <button 
+                    <button
                       onClick={handleDigitalHubRecordedEnrollment}
                       disabled={isEnrollingRecorded}
                       className="w-full bg-[#3cd664] hover:bg-[#33bb58] text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {isEnrollingRecorded ? "Enrolling..." : (course?.pricing?.recordedSession?.buttonText || "Add Digital Hub")}
-
-                    <button className="w-full bg-[#3cd664] hover:bg-[#33bb58] text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 text-base">
-                      {course?.pricing?.recordedSession?.buttonText ||
-                        "Add Digital Hub"}
-
+                      {isEnrollingRecorded
+                        ? "Enrolling..."
+                        : course?.pricing?.recordedSession?.buttonText ||
+                          "Add Digital Hub"}
                     </button>
                   </div>
 
@@ -900,7 +951,7 @@ export default function CourseDetailPage({
                     <div className="bg-[#3cd664] text-white px-4 py-3 rounded-lg text-lg font-bold">
                       {course.chapters
                         ? course.chapters.reduce(
-                            (total, chapter) =>
+                            (total: any, chapter: { topics: string | any[] }) =>
                               total +
                               (chapter.topics ? chapter.topics.length : 0),
                             0
