@@ -257,7 +257,10 @@ export default function CourseDetailPage({
 
   // Debug logging
   console.log("Course Page API_BASE:", API_BASE);
-  console.log("Course Page NEXT_PUBLIC_API_URL:", process.env.NEXT_PUBLIC_API_URL);
+  console.log(
+    "Course Page NEXT_PUBLIC_API_URL:",
+    process.env.NEXT_PUBLIC_API_URL
+  );
 
   // Unwrap the params Promise using React.use()
   const resolvedParams = use(params);
@@ -367,7 +370,7 @@ export default function CourseDetailPage({
       console.log("Enrolling in recorded session with URL:", enrollUrl);
       console.log("Course ID:", course._id);
       console.log("Student ID:", student._id);
-      
+
       // Enroll student in recorded session (course content)
       const response = await axios.post(
         enrollUrl,
@@ -376,29 +379,34 @@ export default function CourseDetailPage({
       );
 
       console.log("Enrollment response:", response.data);
-      alert("Successfully enrolled in Digital Hub Recorded Sessions! You can now access recorded content from your dashboard.");
+      alert(
+        "Successfully enrolled in Digital Hub Recorded Sessions! You can now access recorded content from your dashboard."
+      );
     } catch (error: any) {
       console.error("Error enrolling in recorded sessions:", error);
       console.error("Error details:", error.response?.data);
       console.error("Error status:", error.response?.status);
-      
+
       // Provide more specific error messages
-      let errorMessage = "Failed to enroll in recorded sessions. Please try again.";
-      
+      let errorMessage =
+        "Failed to enroll in recorded sessions. Please try again.";
+
       if (error.response?.status === 400) {
         if (error.response?.data?.message?.includes("already enrolled")) {
           errorMessage = "You are already enrolled in this recorded session.";
         } else if (error.response?.data?.message?.includes("Invalid")) {
-          errorMessage = "Invalid course or student information. Please refresh the page and try again.";
+          errorMessage =
+            "Invalid course or student information. Please refresh the page and try again.";
         } else {
           errorMessage = error.response?.data?.message || errorMessage;
         }
       } else if (error.response?.status === 404) {
-        errorMessage = "Course or student not found. Please refresh the page and try again.";
+        errorMessage =
+          "Course or student not found. Please refresh the page and try again.";
       } else if (error.response?.status === 401) {
         errorMessage = "Please login again to enroll in recorded sessions.";
       }
-      
+
       alert(errorMessage);
     } finally {
       setIsEnrollingRecorded(false);
@@ -879,12 +887,15 @@ export default function CourseDetailPage({
                       </div>
                     </div>
 
-                    <button 
+                    <button
                       onClick={handleDigitalHubRecordedEnrollment}
                       disabled={isEnrollingRecorded}
                       className="w-full bg-[#3cd664] hover:bg-[#33bb58] text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {isEnrollingRecorded ? "Enrolling..." : (course?.pricing?.recordedSession?.buttonText || "Add Digital Hub")}
+                      {isEnrollingRecorded
+                        ? "Enrolling..."
+                        : course?.pricing?.recordedSession?.buttonText ||
+                          "Add Digital Hub"}
                     </button>
                   </div>
 
