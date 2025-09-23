@@ -16,6 +16,8 @@ import {
   FaTimes,
   FaQuoteLeft,
   FaArrowLeft,
+  FaPlay,
+  FaSignOutAlt,
 } from "react-icons/fa";
 import toast from "react-hot-toast";
 
@@ -25,6 +27,7 @@ import RevisionTab from "./RevisionTab";
 import TicketTab from "../components/TicketTab";
 import NewsTab from "./NewsTab";
 import LiveClassTab from "../components/LiveClassTab";
+import RecordedSessionTab from "./RecordedSessionTab";
 import ProfileTab from "../components/ProfileTab";
 import TestimonialTab from "./TestimonialTab";
 
@@ -57,6 +60,7 @@ export default function StudentDashboard() {
     { id: "courses", icon: <FaBook />, label: "Courses" },
     { id: "revision", icon: <FaBook />, label: "Assessment" },
     { id: "live", icon: <FaVideo />, label: "Live Class", dot: true },
+    { id: "recorded", icon: <FaPlay />, label: "Recorded Sessions", dot: true },
     { id: "news", icon: <FaNewspaper />, label: "News" },
     { id: "profile", icon: <FaUser />, label: "Profile" },
     { id: "testimonial", icon: <FaQuoteLeft />, label: "Testimonial" },
@@ -149,6 +153,19 @@ export default function StudentDashboard() {
     setActiveTab("courses");
   };
 
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      await axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/v1/students/logout`, {
+        withCredentials: true,
+      });
+      router.push("/student-login");
+    } catch (err) {
+      console.error("Logout error", err);
+      toast.error("Logout failed");
+    }
+  };
+
   // Tab rendering
   const renderTabContent = () => {
     switch (activeTab) {
@@ -158,6 +175,8 @@ export default function StudentDashboard() {
         return <RevisionTab />;
       case "live":
         return <LiveClassTab />;
+      case "recorded":
+        return <RecordedSessionTab />;
       case "news":
         return <NewsTab />;
       case "profile":
@@ -261,15 +280,33 @@ export default function StudentDashboard() {
               placeholder="Search for a topic"
               className="w-full md:w-1/2 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
-            <div className="hidden md:flex items-center gap-3 ml-4">
-              <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-base font-medium transition-colors">
-                Digital Hub
+            <div className="flex items-center gap-2 md:gap-3 ml-4">
+              {/* Mobile logout button */}
+              <button 
+                onClick={handleLogout}
+                className="md:hidden p-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+                title="Logout"
+              >
+                <FaSignOutAlt />
               </button>
-              <button className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded text-base font-medium transition-colors">
-                Download App
-              </button>
-              <div className="bg-yellow-400 px-3 py-1 rounded-full font-semibold">
-                50
+              {/* Desktop buttons */}
+              <div className="hidden md:flex items-center gap-3">
+                <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-base font-medium transition-colors">
+                  Digital Hub
+                </button>
+                <button className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded text-base font-medium transition-colors">
+                  Download App
+                </button>
+                <div className="bg-yellow-400 px-3 py-1 rounded-full font-semibold">
+                  50
+                </div>
+                <button 
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors font-medium"
+                >
+                  <FaSignOutAlt />
+                  <span>Logout</span>
+                </button>
               </div>
             </div>
           </div>

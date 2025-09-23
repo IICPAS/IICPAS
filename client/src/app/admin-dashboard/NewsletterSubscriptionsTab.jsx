@@ -13,9 +13,12 @@ import {
   FaCalendar,
   FaEye,
   FaFilter,
-  FaSyncAlt
+  FaSyncAlt,
+  FaPaperPlane,
+  FaChartLine
 } from "react-icons/fa";
 import { toast } from "react-hot-toast";
+import BulkEmailPage from "./BulkEmailPage";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
 
@@ -28,15 +31,29 @@ export default function NewsletterSubscriptionsTab() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [selectedSubscriptions, setSelectedSubscriptions] = useState([]);
+  const [showBulkEmailPage, setShowBulkEmailPage] = useState(false);
+  const [emailCampaigns, setEmailCampaigns] = useState([]);
+  const [showCampaigns, setShowCampaigns] = useState(false);
 
   useEffect(() => {
     fetchSubscriptions();
     fetchStats();
-  }, [currentPage, searchTerm, statusFilter]);
+    if (showCampaigns) {
+      fetchEmailCampaigns();
+    }
+  }, [currentPage, searchTerm, statusFilter, showCampaigns]);
 
   const fetchSubscriptions = async () => {
     try {
       setLoading(true);
+      const token = localStorage.getItem("adminToken");
+      
+      if (!token) {
+        toast.error("Authentication token not found. Please log in again.");
+        setLoading(false);
+        return;
+      }
+
       const params = new URLSearchParams({
         page: currentPage,
         limit: 20,
@@ -45,10 +62,23 @@ export default function NewsletterSubscriptionsTab() {
       });
 
       const response = await fetch(`${API_BASE}/newsletter-subscriptions?${params}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
         credentials: "include"
       });
 
-      if (!response.ok) throw new Error("Failed to fetch subscriptions");
+      if (!response.ok) {
+        if (response.status === 401) {
+          toast.error("Authentication failed. Please log in again.");
+        } else if (response.status === 403) {
+          toast.error("Access denied. Admin privileges required.");
+        } else {
+          throw new Error("Failed to fetch subscriptions");
+        }
+        return;
+      }
 
       const data = await response.json();
       setSubscriptions(data.data || []);
@@ -63,11 +93,31 @@ export default function NewsletterSubscriptionsTab() {
 
   const fetchStats = async () => {
     try {
+      const token = localStorage.getItem("adminToken");
+      
+      if (!token) {
+        console.error("Authentication token not found for stats");
+        return;
+      }
+
       const response = await fetch(`${API_BASE}/newsletter-subscriptions/stats`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
         credentials: "include"
       });
 
-      if (!response.ok) throw new Error("Failed to fetch stats");
+      if (!response.ok) {
+        if (response.status === 401) {
+          console.error("Authentication failed for stats");
+        } else if (response.status === 403) {
+          console.error("Access denied for stats");
+        } else {
+          throw new Error("Failed to fetch stats");
+        }
+        return;
+      }
 
       const data = await response.json();
       setStats(data.stats || {});
@@ -78,16 +128,33 @@ export default function NewsletterSubscriptionsTab() {
 
   const handleStatusUpdate = async (id, newStatus) => {
     try {
+      const token = localStorage.getItem("adminToken");
+      
+      if (!token) {
+        toast.error("Authentication token not found. Please log in again.");
+        return;
+      }
+
       const response = await fetch(`${API_BASE}/newsletter-subscriptions/${id}/status`, {
         method: "PUT",
         headers: {
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json"
         },
         credentials: "include",
         body: JSON.stringify({ status: newStatus })
       });
 
-      if (!response.ok) throw new Error("Failed to update status");
+      if (!response.ok) {
+        if (response.status === 401) {
+          toast.error("Authentication failed. Please log in again.");
+        } else if (response.status === 403) {
+          toast.error("Access denied. Admin privileges required.");
+        } else {
+          throw new Error("Failed to update status");
+        }
+        return;
+      }
 
       toast.success("Status updated successfully");
       fetchSubscriptions();
@@ -102,12 +169,32 @@ export default function NewsletterSubscriptionsTab() {
     if (!confirm("Are you sure you want to delete this subscription?")) return;
 
     try {
+      const token = localStorage.getItem("adminToken");
+      
+      if (!token) {
+        toast.error("Authentication token not found. Please log in again.");
+        return;
+      }
+
       const response = await fetch(`${API_BASE}/newsletter-subscriptions/${id}`, {
         method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
         credentials: "include"
       });
 
-      if (!response.ok) throw new Error("Failed to delete subscription");
+      if (!response.ok) {
+        if (response.status === 401) {
+          toast.error("Authentication failed. Please log in again.");
+        } else if (response.status === 403) {
+          toast.error("Access denied. Admin privileges required.");
+        } else {
+          throw new Error("Failed to delete subscription");
+        }
+        return;
+      }
 
       toast.success("Subscription deleted successfully");
       fetchSubscriptions();
@@ -127,14 +214,40 @@ export default function NewsletterSubscriptionsTab() {
     if (!confirm(`Are you sure you want to delete ${selectedSubscriptions.length} subscriptions?`)) return;
 
     try {
+      const token = localStorage.getItem("adminToken");
+      
+      if (!token) {
+        toast.error("Authentication token not found. Please log in again.");
+        return;
+      }
+
       const deletePromises = selectedSubscriptions.map(id =>
         fetch(`${API_BASE}/newsletter-subscriptions/${id}`, {
           method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
           credentials: "include"
         })
       );
 
-      await Promise.all(deletePromises);
+      const responses = await Promise.all(deletePromises);
+      
+      // Check if any requests failed
+      const failedRequests = responses.filter(response => !response.ok);
+      if (failedRequests.length > 0) {
+        const firstFailed = failedRequests[0];
+        if (firstFailed.status === 401) {
+          toast.error("Authentication failed. Please log in again.");
+        } else if (firstFailed.status === 403) {
+          toast.error("Access denied. Admin privileges required.");
+        } else {
+          throw new Error("Some deletions failed");
+        }
+        return;
+      }
+
       toast.success(`${selectedSubscriptions.length} subscriptions deleted successfully`);
       setSelectedSubscriptions([]);
       fetchSubscriptions();
@@ -194,6 +307,57 @@ export default function NewsletterSubscriptionsTab() {
         : [...prev, id]
     );
   };
+
+  const fetchEmailCampaigns = async () => {
+    try {
+      const token = localStorage.getItem("adminToken");
+      const response = await fetch(`${API_BASE}/newsletter-subscriptions/campaigns`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setEmailCampaigns(data.data || []);
+      }
+    } catch (error) {
+      console.error("Error fetching email campaigns:", error);
+      toast.error("Failed to fetch email campaigns");
+    }
+  };
+
+  const handleBulkEmailSuccess = (campaign) => {
+    toast.success(`Email campaign "${campaign.title}" sent successfully!`);
+    if (showCampaigns) {
+      fetchEmailCampaigns();
+    }
+  };
+
+  const handleBackFromBulkEmail = () => {
+    setShowBulkEmailPage(false);
+    // Refresh campaigns when coming back
+    if (showCampaigns) {
+      fetchEmailCampaigns();
+    }
+  };
+
+  const getCampaignStatusColor = (status) => {
+    switch (status) {
+      case "sent": return "bg-green-100 text-green-800";
+      case "sending": return "bg-blue-100 text-blue-800";
+      case "scheduled": return "bg-yellow-100 text-yellow-800";
+      case "failed": return "bg-red-100 text-red-800";
+      case "draft": return "bg-gray-100 text-gray-800";
+      default: return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  // Show bulk email page if requested
+  if (showBulkEmailPage) {
+    return <BulkEmailPage onBack={handleBackFromBulkEmail} />;
+  }
 
   return (
     <div className="p-6">
@@ -281,6 +445,20 @@ export default function NewsletterSubscriptionsTab() {
           </div>
 
           <div className="flex gap-2">
+            <button
+              onClick={() => setShowBulkEmailPage(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <FaPaperPlane />
+              Send Bulk Email
+            </button>
+            <button
+              onClick={() => setShowCampaigns(!showCampaigns)}
+              className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+            >
+              <FaChartLine />
+              {showCampaigns ? "Hide Campaigns" : "View Campaigns"}
+            </button>
             <button
               onClick={fetchSubscriptions}
               className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
@@ -481,6 +659,89 @@ export default function NewsletterSubscriptionsTab() {
           </>
         )}
       </div>
+
+      {/* Email Campaigns Section */}
+      {showCampaigns && (
+        <div className="bg-white rounded-lg shadow-sm border overflow-hidden mt-6">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h3 className="text-lg font-medium text-gray-900">Email Campaigns</h3>
+            <p className="text-sm text-gray-600">View and manage your email campaigns</p>
+          </div>
+          
+          {emailCampaigns.length === 0 ? (
+            <div className="p-6 text-center text-gray-500">
+              <FaPaperPlane size={48} className="mx-auto mb-4 text-gray-300" />
+              <p>No email campaigns found. Send your first bulk email to get started!</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Campaign
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Recipients
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Sent
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Opened
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Date
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {emailCampaigns.map((campaign) => (
+                    <tr key={campaign._id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {campaign.title}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {campaign.subject}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getCampaignStatusColor(campaign.status)}`}>
+                          {campaign.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {campaign.stats?.totalRecipients || 0}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {campaign.stats?.sent || 0}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {campaign.stats?.opened || 0}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {campaign.sentAt 
+                          ? new Date(campaign.sentAt).toLocaleDateString()
+                          : campaign.scheduledAt 
+                            ? new Date(campaign.scheduledAt).toLocaleDateString()
+                            : new Date(campaign.createdAt).toLocaleDateString()
+                        }
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
     </div>
   );
 }
