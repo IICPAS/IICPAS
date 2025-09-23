@@ -124,13 +124,21 @@ const BulkEmailPage = ({ onBack }) => {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("adminToken");
+      
+      // Prepare the data with both content and htmlContent
+      const requestData = {
+        ...formData,
+        content: formData.htmlContent, // Backend expects 'content' field
+        htmlContent: formData.htmlContent
+      };
+      
       const response = await fetch(`${API_BASE}/newsletter-subscriptions/send-bulk-email`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(requestData)
       });
 
       const data = await response.json();
