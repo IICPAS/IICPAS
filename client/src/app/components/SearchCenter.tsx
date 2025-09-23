@@ -59,8 +59,8 @@ export default function SearchCenter() {
         console.log("Sample center data:", transformedCenters[0]);
         
         setCenters(transformedCenters);
-        setFilteredCenters(transformedCenters);
-        setHasSearched(true); // Show results immediately after loading
+        setFilteredCenters([]); // Don't show any centers initially
+        setHasSearched(false); // Don't show results until user searches
       } catch (error) {
         console.error("Error fetching centers:", error);
         // Fallback to empty array if API fails
@@ -105,8 +105,8 @@ export default function SearchCenter() {
         ];
         
         setCenters(testCenters);
-        setFilteredCenters(testCenters);
-        setHasSearched(true);
+        setFilteredCenters([]); // Don't show any centers initially
+        setHasSearched(false); // Don't show results until user searches
       } finally {
         setLoading(false);
       }
@@ -152,13 +152,13 @@ export default function SearchCenter() {
     setFilteredCenters(filtered);
   }, [searchTerm, selectedLocation, selectedCourse, centers]);
 
-  // Auto-search when search parameters change
+  // Auto-search when search parameters change (only after user has searched at least once)
   useEffect(() => {
-    if (centers.length > 0) {
+    if (centers.length > 0 && hasSearched) {
       console.log("Auto-search triggered due to parameter change");
       handleSearch();
     }
-  }, [handleSearch]);
+  }, [handleSearch, hasSearched]);
 
   // Dynamic locations from centers data
   const locations = [

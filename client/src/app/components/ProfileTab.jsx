@@ -54,7 +54,7 @@ export default function ProfileTab() {
 
   const handleLogout = async () => {
     try {
-      await axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/student/logout`, {
+      await axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/v1/students/logout`, {
         withCredentials: true,
       });
       router.push("/student-login");

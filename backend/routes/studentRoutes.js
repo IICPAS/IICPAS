@@ -2,6 +2,7 @@ import Student from "../models/Students.js";
 import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 
 //FOR PDF Import
 import PDFDocument from "pdfkit";
@@ -275,6 +276,11 @@ router.post("/verify-buy/:id", async (req, res) => {
     // Add course if not already bought
     if (!student.course.includes(courseId)) {
       student.course.push(courseId);
+    }
+
+    // Enroll student in recorded sessions (course content)
+    if (!student.enrolledRecordedSessions.includes(courseId)) {
+      student.enrolledRecordedSessions.push(courseId);
     }
 
     // Check if this course has live sessions and enroll student
@@ -809,6 +815,97 @@ router.get("/enrolled-live-sessions/:id", async (req, res) => {
   } catch (err) {
     res.status(500).json({
       message: "Failed to get enrolled live sessions",
+      error: err.message,
+    });
+  }
+});
+
+// POST /api/v1/students/enroll-recorded-session/:id - Enroll student in recorded session (course)
+router.post("/enroll-recorded-session/:id", async (req, res) => {
+  try {
+    console.log("Enrollment request received:", {
+      studentId: req.params.id,
+      courseId: req.body.courseId,
+      body: req.body
+    });
+
+    // Validate student ID format
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      console.log("Invalid student ID format:", req.params.id);
+      return res.status(400).json({ message: "Invalid student ID format" });
+    }
+
+    const student = await Student.findById(req.params.id);
+    if (!student) {
+      console.log("Student not found:", req.params.id);
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    const { courseId } = req.body;
+    if (!courseId) {
+      console.log("Course ID missing from request body");
+      return res.status(400).json({ message: "courseId is required" });
+    }
+
+    // Validate course ID format
+    if (!mongoose.Types.ObjectId.isValid(courseId)) {
+      console.log("Invalid course ID format:", courseId);
+      return res.status(400).json({ message: "Invalid course ID format" });
+    }
+
+    // Check if course exists
+    const course = await Course.findById(courseId);
+    if (!course) {
+      console.log("Course not found:", courseId);
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    // Check if student is already enrolled in recorded sessions
+    if (student.enrolledRecordedSessions.includes(courseId)) {
+      console.log("Student already enrolled in course:", courseId);
+      return res.status(400).json({ message: "Student is already enrolled in this recorded session" });
+    }
+
+    // Add course to student's enrolled recorded sessions
+    student.enrolledRecordedSessions.push(courseId);
+    await student.save();
+
+    console.log("Enrollment successful:", {
+      studentId: student._id,
+      courseId: courseId
+    });
+
+    res.json({
+      message: "Student enrolled in recorded session successfully",
+      studentId: student._id,
+      courseId: courseId,
+      enrolledRecordedSessions: student.enrolledRecordedSessions,
+    });
+  } catch (err) {
+    console.error("Enrollment error:", err);
+    res.status(500).json({
+      message: "Failed to enroll student in recorded session",
+      error: err.message,
+    });
+  }
+});
+
+// GET /api/v1/students/enrolled-recorded-sessions/:id - Get student's enrolled recorded sessions
+router.get("/enrolled-recorded-sessions/:id", async (req, res) => {
+  try {
+    const student = await Student.findById(req.params.id).populate("enrolledRecordedSessions");
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    res.json({
+      message: "Enrolled recorded sessions retrieved successfully",
+      studentId: student._id,
+      enrolledRecordedSessions: student.enrolledRecordedSessions,
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: "Failed to get enrolled recorded sessions",
       error: err.message,
     });
   }
