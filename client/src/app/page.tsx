@@ -25,7 +25,7 @@ const page = () => {
         <HeroSection />
         <AboutUsSection />
 
-        <CoursesSection />
+        {/* <CoursesSection /> */}
         <WhyIICPA />
         <SearchCenter />
         <BlogSection />
