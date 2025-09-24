@@ -21,6 +21,7 @@ export default function CourseSection() {
   const router = useRouter();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
   // Sample course data
   const sampleCourses: Course[] = [
@@ -56,9 +57,7 @@ export default function CourseSection() {
         setLoading(true);
 
         // Fetch from production API
-        const API_BASE =
-          process.env.NEXT_PUBLIC_API_BASE || "https://api.iicpa.in/api";
-        const response = await fetch(`${API_BASE}/courses`);
+        const response = await fetch(`${API_BASE}/api/courses`);
 
         if (response.ok) {
           const data = await response.json();
@@ -148,7 +147,13 @@ export default function CourseSection() {
               {/* Course Image */}
               <div className="relative h-48 w-full">
                 <Image
-                  src={course.image}
+                  src={
+                    course.image
+                      ? course.image.startsWith("http")
+                        ? course.image
+                        : `${API_BASE}${course.image}`
+                      : "/images/accounting.webp"
+                  }
                   alt={course.title}
                   fill
                   className="object-cover"
@@ -208,7 +213,7 @@ export default function CourseSection() {
         {/* View All Courses Button */}
         <div className="text-center mt-12">
           <button
-            onClick={() => router.push("/courses")}
+            onClick={() => router.push("/course")}
             className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-300"
           >
             View All Courses ({courses.length})

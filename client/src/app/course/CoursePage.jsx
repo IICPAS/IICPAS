@@ -385,8 +385,8 @@ export default function CoursePage() {
                         course.image.startsWith("http")
                           ? course.image
                           : course.image.startsWith("/")
-                          ? course.image
-                          : `http://localhost:8080${course.image}`
+                          ? `${API_BASE}${course.image}`
+                          : `${API_BASE}${course.image}`
                       }
                       alt={course.title}
                       fill
