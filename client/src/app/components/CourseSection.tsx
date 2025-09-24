@@ -167,7 +167,7 @@ export default function CoursesSection() {
     }
   };
 
-
+  useEffect(() => {
     // Fetch chapter counts for all courses
     fetchCourseChapters();
     // eslint-disable-next-line react-hooks/exhaustive-deps
