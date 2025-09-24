@@ -6,9 +6,10 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import OurClassDay from "../components/OurClassDay";
+import Swal from "sweetalert2";
+import wishlistEventManager from "../../utils/wishlistEventManager";
 
-const skillLevels = ["Foundation", "Core", "Expert"];
+const skillLevels = ["Executive", "Professional"];
 
 export default function CoursePage() {
   const router = useRouter();
@@ -17,6 +18,8 @@ export default function CoursePage() {
   const [search, setSearch] = useState("");
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedLevels, setSelectedLevels] = useState([]);
+  const [student, setStudent] = useState(null);
+  const [wishlistCourseIds, setWishlistCourseIds] = useState([]);
 
   // Dummy courses data
   const dummyCourses = [
@@ -25,7 +28,7 @@ export default function CoursePage() {
       title: "Basic Accounting & Tally Foundation",
       slug: "basic-accounting-tally-foundation",
       category: "Accounting",
-      level: "Foundation",
+      level: "Professional",
       price: 5000,
       discount: 5,
       image: "/images/accounting.webp",
@@ -36,7 +39,7 @@ export default function CoursePage() {
       title: "HR Certification Course",
       slug: "hr-certification-course",
       category: "HR",
-      level: "Core",
+      level: "Executive",
       price: 1000,
       discount: 10,
       image: "/images/young-woman.jpg",
@@ -47,7 +50,7 @@ export default function CoursePage() {
       title: "Excel Certification Course",
       slug: "excel-certification-course",
       category: "Accounting",
-      level: "Expert",
+      level: "Professional",
       price: 2000,
       discount: 0,
       image: "/images/course.png",
@@ -58,7 +61,7 @@ export default function CoursePage() {
       title: "Finance Management Course",
       slug: "finance-management-course",
       category: "Finance",
-      level: "Core",
+      level: "Executive",
       price: 3500,
       discount: 15,
       image: "/images/finance.jpg",
@@ -69,7 +72,7 @@ export default function CoursePage() {
       title: "US CMA Certification Prep",
       slug: "us-cma-certification-prep",
       category: "US CMA",
-      level: "Expert",
+      level: "Executive",
       price: 8000,
       discount: 8,
       image: "/images/cma.jpg",
@@ -80,7 +83,7 @@ export default function CoursePage() {
       title: "Advanced Excel Mastery",
       slug: "advanced-excel-mastery",
       category: "Excel",
-      level: "Expert",
+      level: "Professional",
       price: 2800,
       discount: 12,
       image: "/images/excel-advanced.jpg",
@@ -99,19 +102,23 @@ export default function CoursePage() {
 
   // Fetch data
   useEffect(() => {
+    // Always set dummy courses first
+    setAllCourses(dummyCourses);
+    setCategories(dummyCategories);
+    
     // Try to fetch from API, but fallback to dummy data
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
     axios
-      .get(`${process.env.NEXT_PUBLIC_API_BASE}/courses`)
+      .get(`${API_BASE}/api/courses`)
       .then((res) => {
-        const apiCourses = res.data.courses || res.data;
+        const apiCourses = res.data;
         if (apiCourses && apiCourses.length > 0) {
           setAllCourses(apiCourses);
-        } else {
-          setAllCourses(dummyCourses);
         }
       })
       .catch(() => {
-        setAllCourses(dummyCourses);
+        // Keep dummy courses if API fails
+        console.log("API failed, using dummy courses");
       });
 
     axios
@@ -120,14 +127,57 @@ export default function CoursePage() {
         const apiCategories = res.data.categories || res.data;
         if (apiCategories && apiCategories.length > 0) {
           setCategories(apiCategories);
-        } else {
-          setCategories(dummyCategories);
         }
       })
       .catch(() => {
-        setCategories(dummyCategories);
+        // Keep dummy categories if API fails
+        console.log("Categories API failed, using dummy categories");
       });
-  }, []);
+
+    // Fetch wishlist state
+    fetchWishlistState();
+
+    // Subscribe to wishlist changes
+    const unsubscribe = wishlistEventManager.subscribe(({ studentId, courseId, action }) => {
+      if (student && student._id === studentId) {
+        console.log(`Wishlist ${action} event received for course ${courseId}`);
+        // Refresh wishlist state when other components make changes
+        fetchWishlistState();
+      }
+    });
+
+    // Cleanup subscription on unmount
+    return () => {
+      unsubscribe();
+    };
+  }, [student]);
+
+  // Fetch current wishlist state
+  const fetchWishlistState = async () => {
+    try {
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+      const studentRes = await axios.get(`${API_BASE}/api/v1/students/isstudent`, {
+        withCredentials: true,
+      });
+      
+      if (studentRes.data.student) {
+        setStudent(studentRes.data.student);
+        const studentId = studentRes.data.student._id;
+        
+        // Fetch wishlist
+        const wishlistRes = await axios.get(
+          `${API_BASE}/api/v1/students/get-wishlist/${studentId}`,
+          { withCredentials: true }
+        );
+        const wishlistIds = wishlistRes.data.wishlist || [];
+        setWishlistCourseIds(wishlistIds);
+      }
+    } catch (error) {
+      console.error("Error fetching wishlist state:", error);
+      // Don't show error to user for background operations
+      // Just log it and continue
+    }
+  };
 
   // Filtering
   const filteredCourses = allCourses.filter((course) => {
@@ -153,6 +203,92 @@ export default function CoursePage() {
     setSelectedLevels((prev) =>
       prev.includes(lvl) ? prev.filter((l) => l !== lvl) : [...prev, lvl]
     );
+
+  const toggleLike = async (courseId) => {
+    try {
+      // Check if student is logged in
+      if (!student) {
+        // Show login prompt instead of redirecting
+        const result = await Swal.fire({
+          title: "Login Required",
+          text: "Please login to add courses to your wishlist.",
+          icon: "info",
+          showCancelButton: true,
+          confirmButtonText: "Login",
+          cancelButtonText: "Cancel",
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33"
+        });
+        
+        if (result.isConfirmed) {
+          window.location.href = "/student-login?redirect=course";
+        }
+        return;
+      }
+      
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+      const studentId = student._id;
+      const isLiked = wishlistCourseIds.includes(courseId);
+      
+      console.log("Toggle wishlist:", {
+        studentId,
+        courseId,
+        isLiked,
+        API_BASE
+      });
+      
+      if (isLiked) {
+        // Remove from wishlist
+        const response = await axios.post(
+          `${API_BASE}/api/v1/students/remove-wishlist/${studentId}`,
+          { courseId },
+          { withCredentials: true }
+        );
+        
+        console.log("Remove wishlist response:", response.data);
+      } else {
+        // Add to wishlist
+        const response = await axios.post(
+          `${API_BASE}/api/v1/students/add-wishlist/${studentId}`,
+          { courseId },
+          { withCredentials: true }
+        );
+        
+        console.log("Add wishlist response:", response.data);
+      }
+      
+      // Refresh wishlist state from backend instead of optimistic update
+      await fetchWishlistState();
+      
+      // Notify other components of the change
+      wishlistEventManager.notifyChange(studentId, courseId, isLiked ? 'removed' : 'added');
+      
+    } catch (error) {
+      console.error("Error toggling wishlist:", error);
+      
+      // Extract specific error message
+      let errorMessage = "Failed to update wishlist. Please try again.";
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.status === 401) {
+        errorMessage = "Please login to add courses to your wishlist.";
+      } else if (error.response?.status === 404) {
+        errorMessage = "Course or student not found.";
+      } else if (error.response?.status === 400) {
+        errorMessage = error.response.data.message || "Invalid request. Please try again.";
+      }
+      
+      // Show user-friendly error message
+      await Swal.fire({
+        title: "Error",
+        text: errorMessage,
+        icon: "error",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#d33"
+      });
+    }
+  };
 
   return (
     <section className="bg-gradient-to-br from-[#f5fcfa] via-white to-[#eef7fc] min-h-screen text-[#0b1224]">
@@ -212,8 +348,6 @@ export default function CoursePage() {
             ))}
           </div>
 
-          {/* Our Class Day Component */}
-          <OurClassDay />
         </aside>
 
         {/* Course Cards */}
@@ -275,6 +409,35 @@ export default function CoursePage() {
                       {course.discount}% OFF
                     </div>
                   )}
+
+                  {/* Wishlist Star */}
+                  <div
+                    className="absolute top-3 left-3 cursor-pointer z-10"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleLike(course._id);
+                    }}
+                  >
+                    <button
+                      className={`w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 hover:scale-110 ${
+                        wishlistCourseIds.includes(course._id)
+                          ? 'bg-yellow-400 text-white shadow-lg' 
+                          : 'bg-white/80 text-gray-600 hover:bg-yellow-400 hover:text-white'
+                      }`}
+                      title={wishlistCourseIds.includes(course._id) ? "Remove from Wishlist" : "Add to Wishlist"}
+                    >
+                      <svg
+                        className="w-5 h-5"
+                        fill={wishlistCourseIds.includes(course._id) ? "currentColor" : "none"}
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                      </svg>
+                    </button>
+                  </div>
                 </div>
 
                 {/* Content Section */}

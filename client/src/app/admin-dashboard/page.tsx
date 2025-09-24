@@ -65,6 +65,7 @@ import {
   FaList,
   FaUserTie,
   FaArrowLeft,
+  FaComments,
 } from "react-icons/fa";
 import CompanyTab from "./CompanyTab";
 import CourseArea from "./CourseBuilder";
@@ -81,6 +82,7 @@ import CourseRatingApprovalTab from "./CourseRatingApprovalTab";
 import CenterManagementTab from "./CenterManagementTab";
 import MessagesTab from "./MessagesTab";
 import BulkEmailTab from "./BulkEmailTab";
+import ContactInfoTab from "./ContactInfoTab";
 
 // All available modules with their permissions
 const ALL_MODULES = [
@@ -94,6 +96,7 @@ const ALL_MODULES = [
     icon: <FaEnvelope />,
   },
   { id: "enquiries", label: "Enquiries", icon: <FaEnvelope /> },
+  { id: "messages", label: "Messages", icon: <FaComments /> },
   { id: "jobs", label: "Jobs", icon: <FaBriefcase /> },
   { id: "news", label: "News", icon: <FaNewspaper /> },
   { id: "students", label: "Students", icon: <FaUserGraduate /> },
@@ -146,8 +149,8 @@ const WEBSITE_SETTINGS_MODULES = [
   { id: "ip-whitelist", label: "IP Whitelisting", icon: <FaShieldAlt /> },
   { id: "demo-digital-hub", label: "Demo Digital Hub", icon: <FaBook /> },
   { id: "faq", label: "FAQ", icon: <FaUserTie /> },
-  { id: "messages", label: "Messages", icon: <FaEnvelope /> },
   { id: "bulk-email", label: "Bulk Email", icon: <FaEnvelope /> },
+  { id: "contact-info", label: "Contact Information", icon: <FaEnvelope /> },
 ];
 
 function AdminDashboardContent() {
@@ -486,6 +489,8 @@ function AdminDashboardContent() {
           <MessagesTab />
         ) : activeTab === "bulk-email" ? (
           <BulkEmailTab />
+        ) : activeTab === "contact-info" ? (
+          <ContactInfoTab />
         ) : activeTab === "" ? (
           <div className="text-center py-20">
             <h2 className="text-2xl font-bold text-gray-600 mb-4">

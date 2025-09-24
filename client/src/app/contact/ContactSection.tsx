@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { FaPaperPlane } from "react-icons/fa";
 import axios from "axios";
@@ -14,6 +14,76 @@ export default function ContactSection() {
     phone: "",
     message: "",
   });
+  const [formConfig, setFormConfig] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchFormConfig();
+  }, []);
+
+  const fetchFormConfig = async () => {
+    try {
+      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const response = await fetch(`${API_BASE}/contact-form/active`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      setFormConfig(data);
+    } catch (error) {
+      console.error("Error fetching form config:", error);
+      // Fallback to default configuration
+      setFormConfig({
+        smallText: "🎓 Get In Touch",
+        mainHeading: "We're Here To Help And Ready To Hear From You",
+        formFields: {
+          nameField: {
+            placeholder: "Enter your name",
+            required: true,
+            visible: true,
+          },
+          emailField: {
+            placeholder: "Enter your email",
+            required: true,
+            visible: true,
+          },
+          phoneField: {
+            placeholder: "Write about your phone",
+            required: true,
+            visible: true,
+          },
+          messageField: {
+            placeholder: "Write Your Message",
+            required: true,
+            visible: true,
+            rows: 5,
+          },
+        },
+        submitButton: {
+          text: "Submit",
+          icon: "FaPaperPlane",
+          color: "bg-green-500 hover:bg-green-600",
+        },
+        messages: {
+          successMessage: "Message sent successfully!",
+          errorMessage: "Submission failed",
+        },
+        colors: {
+          smallText: "text-green-600",
+          mainHeading: "text-slate-900",
+          buttonText: "text-white",
+        },
+        image: {
+          url: "/images/contact-section.jpg",
+          alt: "Contact Support",
+        },
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -29,12 +99,39 @@ export default function ContactSection() {
     try {
       await axios.post(`${API_BASE_URL}/contact`, form);
 
-      toast.success("Message sent successfully!");
+      toast.success(formConfig?.messages?.successMessage || "Message sent successfully!");
       setForm({ name: "", email: "", phone: "", message: "" });
     } catch (error: any) {
-      toast.error(error.response?.data?.error || "Submission failed");
+      toast.error(error.response?.data?.error || formConfig?.messages?.errorMessage || "Submission failed");
     }
   };
+
+  if (loading) {
+    return (
+      <section className="w-full bg-white pt-24 pb-10 px-4 md:px-10">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-10 items-center">
+          <div className="w-full h-full">
+            <div className="bg-gray-200 rounded-2xl w-full h-96 animate-pulse"></div>
+          </div>
+          <div className="space-y-4">
+            <div className="h-6 bg-gray-200 rounded animate-pulse"></div>
+            <div className="h-8 bg-gray-200 rounded animate-pulse"></div>
+            <div className="space-y-3">
+              <div className="h-12 bg-gray-200 rounded animate-pulse"></div>
+              <div className="h-12 bg-gray-200 rounded animate-pulse"></div>
+              <div className="h-12 bg-gray-200 rounded animate-pulse"></div>
+              <div className="h-32 bg-gray-200 rounded animate-pulse"></div>
+              <div className="h-12 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (!formConfig) {
+    return null;
+  }
 
   return (
     <section className="w-full bg-white pt-24 pb-10 px-4 md:px-10">
@@ -42,8 +139,8 @@ export default function ContactSection() {
         {/* Left Image */}
         <div className="w-full h-full">
           <Image
-            src="/images/contact-section.jpg"
-            alt="Contact Support"
+            src={formConfig.image?.url || "/images/contact-section.jpg"}
+            alt={formConfig.image?.alt || "Contact Support"}
             width={600}
             height={600}
             className="rounded-2xl w-full h-auto object-cover"
@@ -52,60 +149,68 @@ export default function ContactSection() {
 
         {/* Right Form */}
         <div>
-          <h4 className="text-green-600 font-semibold text-sm mb-2">
-            🎓 Get In Touch
+          <h4 className={`font-semibold text-sm mb-2 ${formConfig.colors.smallText}`}>
+            {formConfig.smallText}
           </h4>
-          <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-6">
-            We’re Here To Help And Ready To Hear From You
+          <h2 className={`text-3xl md:text-4xl font-bold mb-6 ${formConfig.colors.mainHeading}`}>
+            {formConfig.mainHeading}
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="flex flex-col md:flex-row gap-4">
-              <input
-                type="text"
-                name="name"
-                required
-                value={form.name}
-                onChange={handleChange}
-                placeholder="Enter your name"
-                className="w-full px-4 py-3 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <input
-                type="email"
-                name="email"
-                required
-                value={form.email}
-                onChange={handleChange}
-                placeholder="Enter your email"
-                className="w-full px-4 py-3 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              {formConfig.formFields.nameField.visible && (
+                <input
+                  type="text"
+                  name="name"
+                  required={formConfig.formFields.nameField.required}
+                  value={form.name}
+                  onChange={handleChange}
+                  placeholder={formConfig.formFields.nameField.placeholder}
+                  className="w-full px-4 py-3 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              )}
+              {formConfig.formFields.emailField.visible && (
+                <input
+                  type="email"
+                  name="email"
+                  required={formConfig.formFields.emailField.required}
+                  value={form.email}
+                  onChange={handleChange}
+                  placeholder={formConfig.formFields.emailField.placeholder}
+                  className="w-full px-4 py-3 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              )}
             </div>
 
-            <input
-              type="tel"
-              name="phone"
-              required
-              value={form.phone}
-              onChange={handleChange}
-              placeholder="Write about your phone"
-              className="w-full px-4 py-3 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            {formConfig.formFields.phoneField.visible && (
+              <input
+                type="tel"
+                name="phone"
+                required={formConfig.formFields.phoneField.required}
+                value={form.phone}
+                onChange={handleChange}
+                placeholder={formConfig.formFields.phoneField.placeholder}
+                className="w-full px-4 py-3 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            )}
 
-            <textarea
-              name="message"
-              rows={5}
-              required
-              value={form.message}
-              onChange={handleChange}
-              placeholder="Write Your Message"
-              className="w-full px-4 py-3 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            ></textarea>
+            {formConfig.formFields.messageField.visible && (
+              <textarea
+                name="message"
+                rows={formConfig.formFields.messageField.rows}
+                required={formConfig.formFields.messageField.required}
+                value={form.message}
+                onChange={handleChange}
+                placeholder={formConfig.formFields.messageField.placeholder}
+                className="w-full px-4 py-3 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            )}
 
             <button
               type="submit"
-              className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold px-6 py-3 rounded-full transition-all"
+              className={`flex items-center gap-2 ${formConfig.submitButton.color} ${formConfig.colors.buttonText} font-semibold px-6 py-3 rounded-full transition-all`}
             >
-              Submit <FaPaperPlane />
+              {formConfig.submitButton.text} <FaPaperPlane />
             </button>
           </form>
         </div>

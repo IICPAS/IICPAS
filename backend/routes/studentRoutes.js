@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import uploadStudentImage from "../middleware/studentImageUpload.js";
+import isStudent from "../middleware/isStudent.js";
 
 //FOR PDF Import
 import PDFDocument from "pdfkit";
@@ -714,32 +715,48 @@ router.post("/add-course/:id", async (req, res) => {
 });
 
 // POST /api/v1/students/add-wishlist/:id - Add course to student's wishlist
-router.post("/add-wishlist/:id", async (req, res) => {
+router.post("/add-wishlist/:id", isStudent, async (req, res) => {
   try {
+    console.log("Add wishlist request:", {
+      studentId: req.params.id,
+      courseId: req.body.courseId,
+      user: req.user
+    });
+
     const student = await Student.findById(req.params.id);
     if (!student) {
+      console.log("Student not found:", req.params.id);
       return res.status(404).json({ message: "Student not found" });
     }
 
     const { courseId } = req.body;
     if (!courseId) {
+      console.log("Missing courseId in request body");
       return res.status(400).json({ message: "courseId is required" });
     }
 
     // Check if course exists
     const course = await Course.findById(courseId);
     if (!course) {
+      console.log("Course not found:", courseId);
       return res.status(404).json({ message: "Course not found" });
     }
 
     // Check if course is already in wishlist
     if (student.wishlist.includes(courseId)) {
+      console.log("Course already in wishlist:", courseId);
       return res.status(400).json({ message: "Course is already in wishlist" });
     }
 
     // Add course to student's wishlist
     student.wishlist.push(courseId);
     await student.save();
+
+    console.log("Course added to wishlist successfully:", {
+      studentId: student._id,
+      courseId: courseId,
+      wishlistLength: student.wishlist.length
+    });
 
     res.json({
       message: "Course added to wishlist successfully",
@@ -748,6 +765,7 @@ router.post("/add-wishlist/:id", async (req, res) => {
       wishlist: student.wishlist,
     });
   } catch (err) {
+    console.error("Error adding to wishlist:", err);
     res.status(500).json({
       message: "Failed to add course to wishlist",
       error: err.message,
@@ -756,20 +774,29 @@ router.post("/add-wishlist/:id", async (req, res) => {
 });
 
 // POST /api/v1/students/remove-wishlist/:id - Remove course from student's wishlist
-router.post("/remove-wishlist/:id", async (req, res) => {
+router.post("/remove-wishlist/:id", isStudent, async (req, res) => {
   try {
+    console.log("Remove wishlist request:", {
+      studentId: req.params.id,
+      courseId: req.body.courseId,
+      user: req.user
+    });
+
     const student = await Student.findById(req.params.id);
     if (!student) {
+      console.log("Student not found:", req.params.id);
       return res.status(404).json({ message: "Student not found" });
     }
 
     const { courseId } = req.body;
     if (!courseId) {
+      console.log("Missing courseId in request body");
       return res.status(400).json({ message: "courseId is required" });
     }
 
     // Check if course is in wishlist
     if (!student.wishlist.includes(courseId)) {
+      console.log("Course not in wishlist:", courseId);
       return res.status(400).json({ message: "Course is not in wishlist" });
     }
 
@@ -779,6 +806,12 @@ router.post("/remove-wishlist/:id", async (req, res) => {
     );
     await student.save();
 
+    console.log("Course removed from wishlist successfully:", {
+      studentId: student._id,
+      courseId: courseId,
+      wishlistLength: student.wishlist.length
+    });
+
     res.json({
       message: "Course removed from wishlist successfully",
       studentId: student._id,
@@ -786,6 +819,7 @@ router.post("/remove-wishlist/:id", async (req, res) => {
       wishlist: student.wishlist,
     });
   } catch (err) {
+    console.error("Error removing from wishlist:", err);
     res.status(500).json({
       message: "Failed to remove course from wishlist",
       error: err.message,
@@ -794,7 +828,7 @@ router.post("/remove-wishlist/:id", async (req, res) => {
 });
 
 // GET /api/v1/students/get-wishlist/:id - Get student's wishlist
-router.get("/get-wishlist/:id", async (req, res) => {
+router.get("/get-wishlist/:id", isStudent, async (req, res) => {
   try {
     const student = await Student.findById(req.params.id).populate("wishlist");
     if (!student) {

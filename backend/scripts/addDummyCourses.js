@@ -23,7 +23,7 @@ const dummyCourses = [
     slug: "basic-accounting-tally",
     price: 5000,
     discount: 5,
-    level: "Foundation",
+    level: "Professional Level",
     status: "Active",
     description:
       "<p>Master the fundamentals of accounting and Tally software with practical examples and real-world scenarios.</p>",
@@ -61,7 +61,7 @@ const dummyCourses = [
     slug: "hr-certification",
     price: 1000,
     discount: 10,
-    level: "Core",
+    level: "Professional Level",
     status: "Active",
     description:
       "<p>Comprehensive HR certification with practical skills and industry insights.</p>",
@@ -99,7 +99,7 @@ const dummyCourses = [
     slug: "excel-certification",
     price: 2000,
     discount: 0,
-    level: "Expert",
+    level: "Executive Level",
     status: "Active",
     description:
       "<p>Advanced Excel skills for professionals. Master complex formulas, data analysis, and automation.</p>",
@@ -136,7 +136,7 @@ const dummyCourses = [
     slug: "finance-management",
     price: 3500,
     discount: 15,
-    level: "Core",
+    level: "Professional Level",
     status: "Active",
     description:
       "<p>Complete guide to financial management and analysis for business professionals.</p>",
@@ -174,7 +174,7 @@ const dummyCourses = [
     slug: "us-cma-certification",
     price: 8000,
     discount: 20,
-    level: "Expert",
+    level: "Executive Level",
     status: "Active",
     description:
       "<p>Comprehensive preparation for US CMA certification with expert guidance and practice tests.</p>",
