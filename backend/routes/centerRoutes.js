@@ -6,10 +6,8 @@ import {
   updateCenter,
   deleteCenter,
   getPublicCenters,
-  getAvailableCourses
+  getAvailableCourses,
 } from "../controllers/centerController.js";
-import { isAdmin } from "../middleware/isAdmin.js";
-import { requireAuth } from "../middleware/requireAuth.js";
 
 const router = express.Router();
 
@@ -17,11 +15,11 @@ const router = express.Router();
 router.get("/public", getPublicCenters);
 router.get("/courses", getAvailableCourses);
 
-// Admin routes (require authentication and admin role)
-router.get("/", requireAuth, isAdmin, getAllCenters);
-router.get("/:id", requireAuth, isAdmin, getCenterById);
-router.post("/", requireAuth, isAdmin, createCenter);
-router.put("/:id", requireAuth, isAdmin, updateCenter);
-router.delete("/:id", requireAuth, isAdmin, deleteCenter);
+// Admin routes (no authentication required)
+router.get("/", getAllCenters);
+router.get("/:id", getCenterById);
+router.post("/", createCenter);
+router.put("/:id", updateCenter);
+router.delete("/:id", deleteCenter);
 
 export default router;

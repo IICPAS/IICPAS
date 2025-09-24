@@ -1,7 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FaSave, FaEye, FaEdit, FaTrash, FaCheck, FaTimes, FaPhone, FaEnvelope, FaMapMarkerAlt } from "react-icons/fa";
+import {
+  FaSave,
+  FaEye,
+  FaEdit,
+  FaTrash,
+  FaCheck,
+  FaTimes,
+  FaPhone,
+  FaEnvelope,
+  FaMapMarkerAlt,
+} from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -17,28 +27,28 @@ export default function ContactTab() {
     contactInfo: {
       phone: {
         number: "",
-        label: ""
+        label: "",
       },
       email: {
         address: "",
-        label: ""
+        label: "",
       },
       address: {
         text: "",
-        label: ""
-      }
+        label: "",
+      },
     },
     form: {
       buttonText: "",
       successMessage: "",
-      errorMessage: ""
+      errorMessage: "",
     },
     colors: {
       title: "text-green-600",
       subtitle: "text-gray-900",
       description: "text-gray-600",
-      background: "bg-white"
-    }
+      background: "bg-white",
+    },
   });
 
   const colorOptions = [
@@ -50,7 +60,7 @@ export default function ContactTab() {
     { value: "text-red-600", label: "Red" },
     { value: "text-gray-600", label: "Gray" },
     { value: "text-gray-700", label: "Dark Gray" },
-    { value: "text-gray-900", label: "Black" }
+    { value: "text-gray-900", label: "Black" },
   ];
 
   const backgroundOptions = [
@@ -59,8 +69,14 @@ export default function ContactTab() {
     { value: "bg-blue-50", label: "Light Blue" },
     { value: "bg-green-50", label: "Light Green" },
     { value: "bg-purple-50", label: "Light Purple" },
-    { value: "bg-gradient-to-br from-blue-50 to-green-50", label: "Blue to Green Gradient" },
-    { value: "bg-gradient-to-br from-purple-50 to-pink-50", label: "Purple to Pink Gradient" }
+    {
+      value: "bg-gradient-to-br from-blue-50 to-green-50",
+      label: "Blue to Green Gradient",
+    },
+    {
+      value: "bg-gradient-to-br from-purple-50 to-pink-50",
+      label: "Purple to Pink Gradient",
+    },
   ];
 
   useEffect(() => {
@@ -71,13 +87,14 @@ export default function ContactTab() {
 
   const fetchContactEntries = async () => {
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const API_BASE =
+        process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
       const token = localStorage.getItem("adminToken");
-      
+
       if (!token) {
         throw new Error("No authentication token found");
       }
-      
+
       const response = await fetch(`${API_BASE}/contact/all`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -85,11 +102,11 @@ export default function ContactTab() {
         },
         credentials: "include",
       });
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const data = await response.json();
       setContactEntries(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -105,29 +122,29 @@ export default function ContactTab() {
     if (field.includes(".")) {
       const [parent, child, subChild] = field.split(".");
       if (subChild) {
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           [parent]: {
             ...prev[parent],
             [child]: {
               ...prev[parent][child],
-              [subChild]: value
-            }
-          }
+              [subChild]: value,
+            },
+          },
         }));
       } else {
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           [parent]: {
             ...prev[parent],
-            [child]: value
-          }
+            [child]: value,
+          },
         }));
       }
     } else {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        [field]: value
+        [field]: value,
       }));
     }
   };
@@ -135,14 +152,15 @@ export default function ContactTab() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const API_BASE =
+        process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
       const token = localStorage.getItem("adminToken");
-      
+
       if (!token) {
         toast.error("Authentication token not found. Please log in again.");
         return;
       }
-      
+
       const response = await fetch(`${API_BASE}/contact`, {
         method: "POST",
         headers: {
@@ -158,13 +176,19 @@ export default function ContactTab() {
         fetchContactEntries();
         resetForm();
       } else {
-        const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: "Unknown error" }));
         if (response.status === 401) {
           toast.error("Authentication failed. Please log in again.");
         } else if (response.status === 403) {
           toast.error("Access denied. Admin privileges required.");
         } else {
-          toast.error(`Failed to create Contact content: ${errorData.error || 'Unknown error'}`);
+          toast.error(
+            `Failed to create Contact content: ${
+              errorData.error || "Unknown error"
+            }`
+          );
         }
       }
     } catch (error) {
@@ -175,14 +199,15 @@ export default function ContactTab() {
 
   const handleUpdate = async (id) => {
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const API_BASE =
+        process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
       const token = localStorage.getItem("adminToken");
-      
+
       if (!token) {
         toast.error("Authentication token not found. Please log in again.");
         return;
       }
-      
+
       const response = await fetch(`${API_BASE}/contact/${id}`, {
         method: "PUT",
         headers: {
@@ -199,13 +224,19 @@ export default function ContactTab() {
         setEditingId(null);
         resetForm();
       } else {
-        const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: "Unknown error" }));
         if (response.status === 401) {
           toast.error("Authentication failed. Please log in again.");
         } else if (response.status === 403) {
           toast.error("Access denied. Admin privileges required.");
         } else {
-          toast.error(`Failed to update Contact content: ${errorData.error || 'Unknown error'}`);
+          toast.error(
+            `Failed to update Contact content: ${
+              errorData.error || "Unknown error"
+            }`
+          );
         }
       }
     } catch (error) {
@@ -215,17 +246,21 @@ export default function ContactTab() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this Contact content?")) return;
+    if (
+      !window.confirm("Are you sure you want to delete this Contact content?")
+    )
+      return;
 
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const API_BASE =
+        process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
       const token = localStorage.getItem("adminToken");
-      
+
       if (!token) {
         toast.error("Authentication token not found. Please log in again.");
         return;
       }
-      
+
       const response = await fetch(`${API_BASE}/contact/${id}`, {
         method: "DELETE",
         headers: {
@@ -238,13 +273,19 @@ export default function ContactTab() {
         toast.success("Contact content deleted successfully!");
         fetchContactEntries();
       } else {
-        const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: "Unknown error" }));
         if (response.status === 401) {
           toast.error("Authentication failed. Please log in again.");
         } else if (response.status === 403) {
           toast.error("Access denied. Admin privileges required.");
         } else {
-          toast.error(`Failed to delete Contact content: ${errorData.error || 'Unknown error'}`);
+          toast.error(
+            `Failed to delete Contact content: ${
+              errorData.error || "Unknown error"
+            }`
+          );
         }
       }
     } catch (error) {
@@ -255,14 +296,15 @@ export default function ContactTab() {
 
   const handleActivate = async (id) => {
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const API_BASE =
+        process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
       const token = localStorage.getItem("adminToken");
-      
+
       if (!token) {
         toast.error("Authentication token not found. Please log in again.");
         return;
       }
-      
+
       const response = await fetch(`${API_BASE}/contact/activate/${id}`, {
         method: "PUT",
         headers: {
@@ -275,13 +317,19 @@ export default function ContactTab() {
         toast.success("Contact content activated successfully!");
         fetchContactEntries();
       } else {
-        const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: "Unknown error" }));
         if (response.status === 401) {
           toast.error("Authentication failed. Please log in again.");
         } else if (response.status === 403) {
           toast.error("Access denied. Admin privileges required.");
         } else {
-          toast.error(`Failed to activate Contact content: ${errorData.error || 'Unknown error'}`);
+          toast.error(
+            `Failed to activate Contact content: ${
+              errorData.error || "Unknown error"
+            }`
+          );
         }
       }
     } catch (error) {
@@ -308,28 +356,28 @@ export default function ContactTab() {
       contactInfo: {
         phone: {
           number: "",
-          label: ""
+          label: "",
         },
         email: {
           address: "",
-          label: ""
+          label: "",
         },
         address: {
           text: "",
-          label: ""
-        }
+          label: "",
+        },
       },
       form: {
         buttonText: "",
         successMessage: "",
-        errorMessage: ""
+        errorMessage: "",
       },
       colors: {
         title: "text-green-600",
         subtitle: "text-gray-900",
         description: "text-gray-600",
-        background: "bg-white"
-      }
+        background: "bg-white",
+      },
     });
   };
 
@@ -344,8 +392,12 @@ export default function ContactTab() {
   return (
     <div className="p-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Contact Section Management</h1>
-        <p className="text-gray-600">Manage your website's Contact section content and styling</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          Contact Section Management
+        </h1>
+        <p className="text-gray-600">
+          Manage your website's Contact section content and styling
+        </p>
       </div>
 
       {/* Create New Contact Form */}
@@ -353,7 +405,7 @@ export default function ContactTab() {
         <h2 className="text-xl font-semibold mb-4">
           {editingId ? "Edit Contact Content" : "Create New Contact Content"}
         </h2>
-        
+
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Basic Content */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -402,7 +454,9 @@ export default function ContactTab() {
 
           {/* Contact Information */}
           <div>
-            <h3 className="text-lg font-medium text-gray-700 mb-4">Contact Information</h3>
+            <h3 className="text-lg font-medium text-gray-700 mb-4">
+              Contact Information
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Phone */}
               <div className="border border-gray-200 rounded-lg p-4">
@@ -414,14 +468,24 @@ export default function ContactTab() {
                   <input
                     type="text"
                     value={formData.contactInfo.phone.label}
-                    onChange={(e) => handleInputChange("contactInfo.phone.label", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange(
+                        "contactInfo.phone.label",
+                        e.target.value
+                      )
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Phone"
                   />
                   <input
                     type="text"
                     value={formData.contactInfo.phone.number}
-                    onChange={(e) => handleInputChange("contactInfo.phone.number", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange(
+                        "contactInfo.phone.number",
+                        e.target.value
+                      )
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="+91 98765 43210"
                   />
@@ -438,14 +502,24 @@ export default function ContactTab() {
                   <input
                     type="text"
                     value={formData.contactInfo.email.label}
-                    onChange={(e) => handleInputChange("contactInfo.email.label", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange(
+                        "contactInfo.email.label",
+                        e.target.value
+                      )
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Email"
                   />
                   <input
                     type="email"
                     value={formData.contactInfo.email.address}
-                    onChange={(e) => handleInputChange("contactInfo.email.address", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange(
+                        "contactInfo.email.address",
+                        e.target.value
+                      )
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="support@iicpa.org"
                   />
@@ -462,13 +536,23 @@ export default function ContactTab() {
                   <input
                     type="text"
                     value={formData.contactInfo.address.label}
-                    onChange={(e) => handleInputChange("contactInfo.address.label", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange(
+                        "contactInfo.address.label",
+                        e.target.value
+                      )
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Address"
                   />
                   <textarea
                     value={formData.contactInfo.address.text}
-                    onChange={(e) => handleInputChange("contactInfo.address.text", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange(
+                        "contactInfo.address.text",
+                        e.target.value
+                      )
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     rows="2"
                     placeholder="123 Knowledge Park, New Delhi, India"
@@ -480,7 +564,9 @@ export default function ContactTab() {
 
           {/* Form Settings */}
           <div>
-            <h3 className="text-lg font-medium text-gray-700 mb-4">Form Settings</h3>
+            <h3 className="text-lg font-medium text-gray-700 mb-4">
+              Form Settings
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -489,7 +575,9 @@ export default function ContactTab() {
                 <input
                   type="text"
                   value={formData.form.buttonText}
-                  onChange={(e) => handleInputChange("form.buttonText", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("form.buttonText", e.target.value)
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Send Message"
                 />
@@ -501,7 +589,9 @@ export default function ContactTab() {
                 <input
                   type="text"
                   value={formData.form.successMessage}
-                  onChange={(e) => handleInputChange("form.successMessage", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("form.successMessage", e.target.value)
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Message sent successfully!"
                 />
@@ -513,7 +603,9 @@ export default function ContactTab() {
                 <input
                   type="text"
                   value={formData.form.errorMessage}
-                  onChange={(e) => handleInputChange("form.errorMessage", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("form.errorMessage", e.target.value)
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Something went wrong. Please try again."
                 />
@@ -523,26 +615,33 @@ export default function ContactTab() {
 
           {/* Color Settings */}
           <div>
-            <h3 className="text-lg font-medium text-gray-700 mb-4">Color Settings</h3>
+            <h3 className="text-lg font-medium text-gray-700 mb-4">
+              Color Settings
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {Object.entries(formData.colors).map(([key, value]) => (
                 <div key={key}>
                   <label className="block text-sm font-medium text-gray-700 mb-2 capitalize">
-                    {key.replace(/([A-Z])/g, ' $1').trim()}
+                    {key.replace(/([A-Z])/g, " $1").trim()}
                   </label>
                   <select
                     value={value}
-                    onChange={(e) => handleInputChange(`colors.${key}`, e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange(`colors.${key}`, e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    {key === 'background' ? 
-                      backgroundOptions.map(option => (
-                        <option key={option.value} value={option.value}>{option.label}</option>
-                      )) :
-                      colorOptions.map(option => (
-                        <option key={option.value} value={option.value}>{option.label}</option>
-                      ))
-                    }
+                    {key === "background"
+                      ? backgroundOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))
+                      : colorOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
                   </select>
                 </div>
               ))}
@@ -578,7 +677,7 @@ export default function ContactTab() {
         <div className="p-6 border-b border-gray-200">
           <h2 className="text-xl font-semibold">Existing Contact Contents</h2>
         </div>
-        
+
         <div className="divide-y divide-gray-200">
           {contactEntries.map((entry) => (
             <div key={entry._id} className="p-6">
@@ -594,23 +693,24 @@ export default function ContactTab() {
                       </span>
                     )}
                   </div>
-                  
+
                   <div className="text-gray-600 mb-2">
                     <span className="font-medium">Subtitle: </span>
                     {entry.subtitle}
                   </div>
-                  
+
                   <p className="text-gray-600 mb-2">
                     <span className="font-medium">Description: </span>
                     {entry.description.substring(0, 100)}...
                   </p>
-                  
+
                   <div className="text-gray-600">
                     <span className="font-medium">Contact: </span>
-                    {entry.contactInfo.phone.number}, {entry.contactInfo.email.address}
+                    {entry.contactInfo.phone.number},{" "}
+                    {entry.contactInfo.email.address}
                   </div>
                 </div>
-                
+
                 <div className="flex space-x-2">
                   <button
                     onClick={() => startEdit(entry)}
@@ -619,7 +719,7 @@ export default function ContactTab() {
                   >
                     <FaEdit />
                   </button>
-                  
+
                   {!entry.isActive && (
                     <button
                       onClick={() => handleActivate(entry._id)}
@@ -629,7 +729,7 @@ export default function ContactTab() {
                       <FaCheck />
                     </button>
                   )}
-                  
+
                   <button
                     onClick={() => handleDelete(entry._id)}
                     className="p-2 text-red-600 hover:bg-red-100 rounded-md transition-colors"
