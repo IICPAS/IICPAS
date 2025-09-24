@@ -69,6 +69,9 @@ import teacherRoutes from "./routes/teacherRoutes.js";
 //Import employee routes
 import employeeRoutes from "./routes/employeeRoutes.js";
 
+//Contact Info Routes
+import contactInfoRoutes from "./routes/contactInfoRoutes.js";
+
 //App Configuration
 dotenv.config();
 connectDB();
@@ -240,6 +243,9 @@ app.use("/api/v1/course-ratings", courseRatingRoutes);
 
 // Course Levels Routes
 app.use("/api/course-levels", courseLevelsRoutes);
+
+//Contact Info Routes
+app.use("/api/contact-info", contactInfoRoutes);
 
 // Server
 const PORT = process.env.PORT || 8080;

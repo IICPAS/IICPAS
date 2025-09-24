@@ -81,6 +81,7 @@ import CourseRatingApprovalTab from "./CourseRatingApprovalTab";
 import CenterManagementTab from "./CenterManagementTab";
 import MessagesTab from "./MessagesTab";
 import BulkEmailTab from "./BulkEmailTab";
+import ContactInfoTab from "./ContactInfoTab";
 
 // All available modules with their permissions
 const ALL_MODULES = [
@@ -128,6 +129,7 @@ const WEBSITE_SETTINGS_MODULES = [
   { id: "faq", label: "FAQ", icon: <FaUserTie /> },
   { id: "messages", label: "Messages", icon: <FaEnvelope /> },
   { id: "bulk-email", label: "Bulk Email", icon: <FaEnvelope /> },
+  { id: "contact-info", label: "Contact Information", icon: <FaEnvelope /> },
 ];
 
 function AdminDashboardContent() {
@@ -466,6 +468,8 @@ function AdminDashboardContent() {
           <MessagesTab />
         ) : activeTab === "bulk-email" ? (
           <BulkEmailTab />
+        ) : activeTab === "contact-info" ? (
+          <ContactInfoTab />
         ) : activeTab === "" ? (
           <div className="text-center py-20">
             <h2 className="text-2xl font-bold text-gray-600 mb-4">
