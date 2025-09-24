@@ -9,7 +9,7 @@ import WhatsAppButton from "@/components/WhatsAppButton";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "IICPA Institute",
+  title: "IICPA Institute - Best Accounting Institute in India",
   description: "Professional Accounting Institute",
 };
 
