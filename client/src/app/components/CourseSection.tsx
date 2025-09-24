@@ -154,7 +154,7 @@ export default function CoursesSection() {
   const fetchWishlistState = async () => {
     try {
       const studentRes = await axios.get(
-        `${API_BASE}/api/v1/students/isstudent`,
+        `${API_BASE}/v1/students/isstudent`,
         {
           withCredentials: true,
         }
@@ -166,7 +166,7 @@ export default function CoursesSection() {
 
         // Fetch wishlist
         const wishlistRes = await axios.get(
-          `${API_BASE}/api/v1/students/get-wishlist/${studentId}`,
+          `${API_BASE}/v1/students/get-wishlist/${studentId}`,
           { withCredentials: true }
         );
         const wishlistIds = wishlistRes.data.wishlist || [];
@@ -200,7 +200,7 @@ export default function CoursesSection() {
       const chaptersPromises = coursesToFetch.map(async (course) => {
         try {
           const response = await axios.get(
-            `${API_BASE}/api/chapters/course/${course._id}`
+            `${API_BASE}/chapters/course/${course._id}`
           );
           if (response.data.success) {
             return {
@@ -319,7 +319,7 @@ export default function CoursesSection() {
       if (isLiked) {
         // Remove from wishlist
         const response = await axios.post(
-          `${API_BASE}/api/v1/students/remove-wishlist/${studentId}`,
+          `${API_BASE}/v1/students/remove-wishlist/${studentId}`,
           { courseId },
           { withCredentials: true }
         );
@@ -328,7 +328,7 @@ export default function CoursesSection() {
       } else {
         // Add to wishlist
         const response = await axios.post(
-          `${API_BASE}/api/v1/students/add-wishlist/${studentId}`,
+          `${API_BASE}/v1/students/add-wishlist/${studentId}`,
           { courseId },
           { withCredentials: true }
         );
