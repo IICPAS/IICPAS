@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import Image from "next/image";
-import { FaStar, FaTrash2, FaShoppingCart, FaHeart } from "react-icons/fa";
+import { FaStar, FaTrash, FaShoppingCart, FaHeart } from "react-icons/fa";
 import Swal from "sweetalert2";
 
 interface Course {
@@ -262,7 +262,7 @@ export default function WishlistPage() {
               onClick={handleClearWishlist}
               className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
             >
-              <FaTrash2 />
+              <FaTrash />
               Clear All
             </button>
           )}

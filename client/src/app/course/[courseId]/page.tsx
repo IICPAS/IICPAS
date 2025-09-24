@@ -892,10 +892,13 @@ export default function CourseDetailPage({
                       disabled={isEnrollingRecorded}
                       className="w-full bg-[#3cd664] hover:bg-[#33bb58] text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
+        {isEnrollingRecorded ? "Enrolling..." : (course?.pricing?.recordedSession?.buttonText || "Add Digital Hub")}
+
                       {isEnrollingRecorded
                         ? "Enrolling..."
                         : course?.pricing?.recordedSession?.buttonText ||
                           "Add Digital Hub"}
+
                     </button>
                   </div>
 

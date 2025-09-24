@@ -24,4 +24,4 @@ companySchema.pre("save", function (next) {
   next();
 });
 
-export const Company = mongoose.model("Company", companySchema);
+export default mongoose.model("Company", companySchema);
