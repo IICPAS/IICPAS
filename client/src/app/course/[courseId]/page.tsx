@@ -782,35 +782,45 @@ export default function CourseDetailPage({
                     {course.simulations && course.simulations.length > 0 ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {course.simulations
-                          .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
+                          .sort(
+                            (a: any, b: any) => (a.order || 0) - (b.order || 0)
+                          )
                           .map((simulation: any, index: number) => (
-                          <div key={index} className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-                            {simulation.imageUrl && (
-                              <div className="aspect-video bg-gray-100">
-                                <img
-                                  src={simulation.imageUrl.startsWith("http") 
-                                    ? simulation.imageUrl 
-                                    : `${process.env.NEXT_PUBLIC_API_URL || "https://api.iicpa.in"}${simulation.imageUrl}`
-                                  }
-                                  alt={simulation.title}
-                                  className="w-full h-full object-cover"
-                                />
+                            <div
+                              key={index}
+                              className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden"
+                            >
+                              {simulation.imageUrl && (
+                                <div className="aspect-video bg-gray-100">
+                                  <img
+                                    src={
+                                      simulation.imageUrl.startsWith("http")
+                                        ? simulation.imageUrl
+                                        : `${
+                                            process.env.NEXT_PUBLIC_API_URL ||
+                                            "https://api.iicpa.in"
+                                          }${simulation.imageUrl}`
+                                    }
+                                    alt={simulation.title}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                              )}
+                              <div className="p-4">
+                                <h4 className="text-lg font-semibold text-gray-900 mb-2">
+                                  {simulation.title}
+                                </h4>
+                                <p className="text-sm text-gray-600">
+                                  {simulation.description}
+                                </p>
                               </div>
-                            )}
-                            <div className="p-4">
-                              <h4 className="text-lg font-semibold text-gray-900 mb-2">
-                                {simulation.title}
-                              </h4>
-                              <p className="text-sm text-gray-600">
-                                {simulation.description}
-                              </p>
                             </div>
-                          </div>
-                        ))}
+                          ))}
                       </div>
                     ) : (
                       <p className="text-base text-gray-600">
-                        Interactive simulations and experiments will be available here.
+                        Interactive simulations and experiments will be
+                        available here.
                       </p>
                     )}
                   </div>
