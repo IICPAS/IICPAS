@@ -38,7 +38,7 @@ export default async function BlogDetail({ params }) {
     <>
       <Header />
       <BlogHero blogTitle={blog.title} />
-      <div className="max-w-3xl mx-auto py-12 px-4">
+      <div className="max-w-3xl mx-auto pt-20 pb-12 px-4">
         <h1 className="text-3xl font-bold mb-4">{blog.title}</h1>
         <div className="mb-3 text-sm text-gray-500">
           By {blog.author} •{" "}
