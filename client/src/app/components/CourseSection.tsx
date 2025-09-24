@@ -23,6 +23,8 @@ interface Course {
 export default function CoursesSection() {
   const router = useRouter();
   const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [courseRatings, setCourseRatings] = useState<{
     [key: string]: { averageRating: number; totalRatings: number };
@@ -111,43 +113,60 @@ export default function CoursesSection() {
   );
 
   useEffect(() => {
-    // Set fallback courses immediately for instant display
-    setCourses(fallbackCourses);
+    const initializeData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Set fallback courses immediately for instant display
+        setCourses(fallbackCourses);
 
-    // Optionally fetch from API in background (without loading state)
-    fetchCourses();
+        // Fetch courses from API
+        await fetchCourses();
 
-    // Fetch ratings for all courses
-    fetchCourseRatings();
+        // Fetch other data in parallel
+        Promise.allSettled([
+          fetchCourseRatings(),
+          fetchWishlistState(),
+        ]).catch((error) => {
+          console.error("Error in parallel data fetching:", error);
+        });
 
-    // Fetch current wishlist state
-    fetchWishlistState();
+        // Subscribe to wishlist changes
+        const unsubscribe = wishlistEventManager.subscribe(
+          ({
+            studentId,
+            courseId,
+            action,
+          }: {
+            studentId: string;
+            courseId: string;
+            action: "added" | "removed";
+          }) => {
+            if (student && student._id === studentId) {
+              console.log(
+                `Wishlist ${action} event received for course ${courseId}`
+              );
+              // Refresh wishlist state when other components make changes
+              fetchWishlistState();
+            }
+          }
+        );
 
-    // Subscribe to wishlist changes
-    const unsubscribe = wishlistEventManager.subscribe(
-      ({
-        studentId,
-        courseId,
-        action,
-      }: {
-        studentId: string;
-        courseId: string;
-        action: "added" | "removed";
-      }) => {
-        if (student && student._id === studentId) {
-          console.log(
-            `Wishlist ${action} event received for course ${courseId}`
-          );
-          // Refresh wishlist state when other components make changes
-          fetchWishlistState();
-        }
+        // Cleanup subscription on unmount
+        return () => {
+          unsubscribe();
+        };
+      } catch (error) {
+        console.error("Error initializing data:", error);
+        setError("Failed to load course data");
+        setCourses(fallbackCourses);
+      } finally {
+        setLoading(false);
       }
-    );
-
-    // Cleanup subscription on unmount
-    return () => {
-      unsubscribe();
     };
+
+    initializeData();
   }, [student]);
 
   // Fetch current wishlist state
@@ -194,37 +213,53 @@ export default function CoursesSection() {
       // Use current courses state or fallback courses
       const coursesToFetch = courses.length > 0 ? courses : fallbackCourses;
 
-      const chaptersPromises = coursesToFetch.map(async (course) => {
-        try {
-          const response = await axios.get(
-            `${API_BASE}/chapters/course/${course._id}`
-          );
-          if (response.data.success) {
-            return {
-              courseId: course._id,
-              chapterCount: response.data.chapters?.length || 0,
-            };
-          }
-        } catch (error) {
-          console.error(
-            `Error fetching chapters for course ${course._id}:`,
-            error
-          );
-        }
-        return {
-          courseId: course._id,
-          chapterCount: 0,
-        };
-      });
+      // Limit the number of concurrent requests to prevent overwhelming the server
+      const batchSize = 5;
+      const batches = [];
+      for (let i = 0; i < coursesToFetch.length; i += batchSize) {
+        batches.push(coursesToFetch.slice(i, i + batchSize));
+      }
 
-      const chapters = await Promise.all(chaptersPromises);
       const chaptersMap: { [key: string]: number } = {};
-      chapters.forEach((chapter) => {
-        chaptersMap[chapter.courseId] = chapter.chapterCount;
-      });
+
+      for (const batch of batches) {
+        const chaptersPromises = batch.map(async (course) => {
+          try {
+            const response = await axios.get(
+              `${API_BASE}/chapters/course/${course._id}`,
+              { timeout: 5000 } // 5 second timeout
+            );
+            if (response.data.success) {
+              return {
+                courseId: course._id,
+                chapterCount: response.data.chapters?.length || 0,
+              };
+            }
+          } catch (error) {
+            // Silently handle individual course chapter errors
+            console.warn(`Course ${course._id} chapters not available`);
+          }
+          return {
+            courseId: course._id,
+            chapterCount: 0,
+          };
+        });
+
+        try {
+          const batchResults = await Promise.all(chaptersPromises);
+          batchResults.forEach((result) => {
+            chaptersMap[result.courseId] = result.chapterCount;
+          });
+        } catch (error) {
+          console.error("Error processing batch:", error);
+        }
+      }
+
       setCourseChapters(chaptersMap);
     } catch (error) {
       console.error("Error fetching course chapters:", error);
+      // Set empty chapters map as fallback
+      setCourseChapters({});
     }
   }, [courses, fallbackCourses, API_BASE]);
 
@@ -233,6 +268,14 @@ export default function CoursesSection() {
       const response = await fetch(`${API_BASE}/courses/available`);
       if (response.ok) {
         const data = await response.json();
+        
+        // Validate data before processing
+        if (!Array.isArray(data) || data.length === 0) {
+          console.warn("No courses data received from API, using fallback");
+          setCourses(fallbackCourses);
+          return;
+        }
+        
         // Transform the data to match the expected format
         const transformedCourses = data.map(
           (course: {
@@ -264,19 +307,28 @@ export default function CoursesSection() {
                 .replace(/[^\w-]/g, ""),
           })
         );
+        
         // Update courses if API data is different from fallback
         if (transformedCourses.length > 0) {
           setCourses(transformedCourses);
-          // Fetch chapters for the new courses
-          setTimeout(() => fetchCourseChapters(), 100);
+          // Fetch chapters for the new courses with error handling
+          setTimeout(() => {
+            try {
+              fetchCourseChapters();
+            } catch (error) {
+              console.error("Error in fetchCourseChapters:", error);
+            }
+          }, 100);
+        } else {
+          setCourses(fallbackCourses);
         }
       } else {
-        // Fallback to dummy courses if API fails
+        console.warn(`API returned ${response.status}, using fallback courses`);
         setCourses(fallbackCourses);
       }
     } catch (error) {
       console.error("Error fetching courses:", error);
-      // Keep fallback courses if API fails
+      // Always fallback to dummy courses if API fails
       setCourses(fallbackCourses);
     }
   }, [fallbackCourses, fetchCourseChapters]);
@@ -369,6 +421,38 @@ export default function CoursesSection() {
       });
     }
   };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <section className="py-16 px-4 md:px-20 bg-[#f9fbfa]">
+        <div className="flex items-center justify-center min-h-96">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading courses...</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <section className="py-16 px-4 md:px-20 bg-[#f9fbfa]">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Our Courses</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            Retry
+          </button>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-16 px-4 md:px-20 bg-[#f9fbfa]">
