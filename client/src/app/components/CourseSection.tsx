@@ -153,12 +153,9 @@ export default function CoursesSection() {
   // Fetch current wishlist state
   const fetchWishlistState = async () => {
     try {
-      const studentRes = await axios.get(
-        `${API_BASE}/v1/students/isstudent`,
-        {
-          withCredentials: true,
-        }
-      );
+      const studentRes = await axios.get(`${API_BASE}/v1/students/isstudent`, {
+        withCredentials: true,
+      });
 
       if (studentRes.data.student) {
         setStudent(studentRes.data.student);
