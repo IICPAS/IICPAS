@@ -34,7 +34,8 @@ export default function CoursesSection() {
     [key: string]: number;
   }>({});
 
-  const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+  const API_BASE =
+    process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
 
   // Fallback data with real course IDs from database
   const fallbackCourses: Course[] = useMemo(
