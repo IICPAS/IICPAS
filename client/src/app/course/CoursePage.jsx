@@ -105,7 +105,7 @@ export default function CoursePage() {
     // Always set dummy courses first
     setAllCourses(dummyCourses);
     setCategories(dummyCategories);
-    
+
     // Try to fetch from API, but fallback to dummy data
     const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
     axios
@@ -138,13 +138,17 @@ export default function CoursePage() {
     fetchWishlistState();
 
     // Subscribe to wishlist changes
-    const unsubscribe = wishlistEventManager.subscribe(({ studentId, courseId, action }) => {
-      if (student && student._id === studentId) {
-        console.log(`Wishlist ${action} event received for course ${courseId}`);
-        // Refresh wishlist state when other components make changes
-        fetchWishlistState();
+    const unsubscribe = wishlistEventManager.subscribe(
+      ({ studentId, courseId, action }) => {
+        if (student && student._id === studentId) {
+          console.log(
+            `Wishlist ${action} event received for course ${courseId}`
+          );
+          // Refresh wishlist state when other components make changes
+          fetchWishlistState();
+        }
       }
-    });
+    );
 
     // Cleanup subscription on unmount
     return () => {
@@ -155,15 +159,19 @@ export default function CoursePage() {
   // Fetch current wishlist state
   const fetchWishlistState = async () => {
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
-      const studentRes = await axios.get(`${API_BASE}/api/v1/students/isstudent`, {
-        withCredentials: true,
-      });
-      
+      const API_BASE =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+      const studentRes = await axios.get(
+        `${API_BASE}/api/v1/students/isstudent`,
+        {
+          withCredentials: true,
+        }
+      );
+
       if (studentRes.data.student) {
         setStudent(studentRes.data.student);
         const studentId = studentRes.data.student._id;
-        
+
         // Fetch wishlist
         const wishlistRes = await axios.get(
           `${API_BASE}/api/v1/students/get-wishlist/${studentId}`,
@@ -217,26 +225,27 @@ export default function CoursePage() {
           confirmButtonText: "Login",
           cancelButtonText: "Cancel",
           confirmButtonColor: "#3085d6",
-          cancelButtonColor: "#d33"
+          cancelButtonColor: "#d33",
         });
-        
+
         if (result.isConfirmed) {
           window.location.href = "/student-login?redirect=course";
         }
         return;
       }
-      
-      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+
+      const API_BASE =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
       const studentId = student._id;
       const isLiked = wishlistCourseIds.includes(courseId);
-      
+
       console.log("Toggle wishlist:", {
         studentId,
         courseId,
         isLiked,
-        API_BASE
+        API_BASE,
       });
-      
+
       if (isLiked) {
         // Remove from wishlist
         const response = await axios.post(
@@ -244,7 +253,7 @@ export default function CoursePage() {
           { courseId },
           { withCredentials: true }
         );
-        
+
         console.log("Remove wishlist response:", response.data);
       } else {
         // Add to wishlist
@@ -253,22 +262,25 @@ export default function CoursePage() {
           { courseId },
           { withCredentials: true }
         );
-        
+
         console.log("Add wishlist response:", response.data);
       }
-      
+
       // Refresh wishlist state from backend instead of optimistic update
       await fetchWishlistState();
-      
+
       // Notify other components of the change
-      wishlistEventManager.notifyChange(studentId, courseId, isLiked ? 'removed' : 'added');
-      
+      wishlistEventManager.notifyChange(
+        studentId,
+        courseId,
+        isLiked ? "removed" : "added"
+      );
     } catch (error) {
       console.error("Error toggling wishlist:", error);
-      
+
       // Extract specific error message
       let errorMessage = "Failed to update wishlist. Please try again.";
-      
+
       if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
       } else if (error.response?.status === 401) {
@@ -276,16 +288,17 @@ export default function CoursePage() {
       } else if (error.response?.status === 404) {
         errorMessage = "Course or student not found.";
       } else if (error.response?.status === 400) {
-        errorMessage = error.response.data.message || "Invalid request. Please try again.";
+        errorMessage =
+          error.response.data.message || "Invalid request. Please try again.";
       }
-      
+
       // Show user-friendly error message
       await Swal.fire({
         title: "Error",
         text: errorMessage,
         icon: "error",
         confirmButtonText: "OK",
-        confirmButtonColor: "#d33"
+        confirmButtonColor: "#d33",
       });
     }
   };
@@ -347,7 +360,6 @@ export default function CoursePage() {
               </label>
             ))}
           </div>
-
         </aside>
 
         {/* Course Cards */}
@@ -421,20 +433,28 @@ export default function CoursePage() {
                     <button
                       className={`w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 hover:scale-110 ${
                         wishlistCourseIds.includes(course._id)
-                          ? 'bg-yellow-400 text-white shadow-lg' 
-                          : 'bg-white/80 text-gray-600 hover:bg-yellow-400 hover:text-white'
+                          ? "bg-yellow-400 text-white shadow-lg"
+                          : "bg-white/80 text-gray-600 hover:bg-yellow-400 hover:text-white"
                       }`}
-                      title={wishlistCourseIds.includes(course._id) ? "Remove from Wishlist" : "Add to Wishlist"}
+                      title={
+                        wishlistCourseIds.includes(course._id)
+                          ? "Remove from Wishlist"
+                          : "Add to Wishlist"
+                      }
                     >
                       <svg
                         className="w-5 h-5"
-                        fill={wishlistCourseIds.includes(course._id) ? "currentColor" : "none"}
+                        fill={
+                          wishlistCourseIds.includes(course._id)
+                            ? "currentColor"
+                            : "none"
+                        }
                         stroke="currentColor"
                         strokeWidth="2"
                         viewBox="0 0 24 24"
                         xmlns="http://www.w3.org/2000/svg"
                       >
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                       </svg>
                     </button>
                   </div>
