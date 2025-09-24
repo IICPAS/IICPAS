@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { Toaster } from "react-hot-toast";
+import Chatbot from "@/components/Chatbot";
+import WhatsAppButton from "@/components/WhatsAppButton";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -44,6 +46,8 @@ export default function RootLayout({
             },
           }}
         />
+        <Chatbot />
+        <WhatsAppButton />
       </body>
     </html>
   );

@@ -23,63 +23,69 @@ export default function CoursePage() {
     {
       _id: "1",
       title: "Basic Accounting & Tally Foundation",
+      slug: "basic-accounting-tally-foundation",
       category: "Accounting",
       level: "Foundation",
       price: 5000,
       discount: 5,
       image: "/images/accounting.webp",
-      description: "Master the fundamentals of accounting and Tally software"
+      description: "Master the fundamentals of accounting and Tally software",
     },
     {
-      _id: "2", 
+      _id: "2",
       title: "HR Certification Course",
+      slug: "hr-certification-course",
       category: "HR",
       level: "Core",
       price: 1000,
       discount: 10,
       image: "/images/young-woman.jpg",
-      description: "Comprehensive HR certification with practical skills"
+      description: "Comprehensive HR certification with practical skills",
     },
     {
       _id: "3",
-      title: "Excel Certification Course", 
+      title: "Excel Certification Course",
+      slug: "excel-certification-course",
       category: "Accounting",
       level: "Expert",
       price: 2000,
       discount: 0,
       image: "/images/course.png",
-      description: "Advanced Excel skills for professionals"
+      description: "Advanced Excel skills for professionals",
     },
     {
       _id: "4",
       title: "Finance Management Course",
+      slug: "finance-management-course",
       category: "Finance",
       level: "Core",
       price: 3500,
       discount: 15,
       image: "/images/finance.jpg",
-      description: "Complete guide to financial management and analysis"
+      description: "Complete guide to financial management and analysis",
     },
     {
       _id: "5",
       title: "US CMA Certification Prep",
+      slug: "us-cma-certification-prep",
       category: "US CMA",
       level: "Expert",
       price: 8000,
       discount: 8,
       image: "/images/cma.jpg",
-      description: "Prepare for US Certified Management Accountant exam"
+      description: "Prepare for US Certified Management Accountant exam",
     },
     {
       _id: "6",
       title: "Advanced Excel Mastery",
+      slug: "advanced-excel-mastery",
       category: "Excel",
       level: "Expert",
       price: 2800,
       discount: 12,
       image: "/images/excel-advanced.jpg",
-      description: "Master advanced Excel functions, macros, and data analysis"
-    }
+      description: "Master advanced Excel functions, macros, and data analysis",
+    },
   ];
 
   // Dummy categories
@@ -88,7 +94,7 @@ export default function CoursePage() {
     { _id: "2", category: "HR" },
     { _id: "3", category: "Finance" },
     { _id: "4", category: "US CMA" },
-    { _id: "5", category: "Excel" }
+    { _id: "5", category: "Excel" },
   ];
 
   // Fetch data
@@ -227,15 +233,13 @@ export default function CoursePage() {
                 whileHover={{ scale: 1.02 }}
                 className="bg-white rounded-xl shadow-lg hover:shadow-xl transition duration-300 ease-in-out group cursor-pointer"
                 onClick={() => {
-                  // Map course titles to our dummy course IDs
-                  let courseId = course.title.toLowerCase().replace(/\s+/g, "-");
-                  if (course.title.includes("Basic Accounting")) {
-                    courseId = "basic-accounting-tally";
-                  } else if (course.title.includes("HR Certification")) {
-                    courseId = "hr-certification";
-                  } else if (course.title.includes("Excel Certification")) {
-                    courseId = "excel-certification";
-                  }
+                  // Use course slug if available, otherwise generate from title
+                  const courseId =
+                    course.slug ||
+                    course.title
+                      .toLowerCase()
+                      .replace(/\s+/g, "-")
+                      .replace(/[^\w-]/g, "");
                   router.push(`/course/${courseId}`);
                 }}
               >
@@ -243,7 +247,13 @@ export default function CoursePage() {
                 <div className="relative h-48 w-full rounded-t-xl overflow-hidden">
                   {course.image ? (
                     <Image
-                      src={course.image.startsWith('http') ? course.image : course.image.startsWith('/') ? course.image : `http://localhost:8080${course.image}`}
+                      src={
+                        course.image.startsWith("http")
+                          ? course.image
+                          : course.image.startsWith("/")
+                          ? course.image
+                          : `http://localhost:8080${course.image}`
+                      }
                       alt={course.title}
                       fill
                       className="object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
@@ -258,7 +268,7 @@ export default function CoursePage() {
                       </div>
                     </div>
                   )}
-                  
+
                   {/* Discount Badge */}
                   {course.discount > 0 && (
                     <div className="absolute top-3 right-3 bg-green-500 text-white text-xs px-2 py-1 rounded-full font-medium">
@@ -273,12 +283,12 @@ export default function CoursePage() {
                   <p className="text-sm text-gray-500 font-medium">
                     {course.category}
                   </p>
-                  
+
                   {/* Title */}
                   <h3 className="text-lg font-bold text-gray-900 group-hover:text-green-600 transition-colors line-clamp-2">
                     {course.title}
                   </h3>
-                  
+
                   {/* Price Section */}
                   <div className="flex items-center justify-between">
                     <div>
@@ -291,20 +301,19 @@ export default function CoursePage() {
                         </p>
                       )}
                     </div>
-                    
+
                     {/* Enroll Button */}
                     <button
                       className="bg-gray-900 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
                       onClick={(e) => {
                         e.stopPropagation();
-                        let courseId = course.title.toLowerCase().replace(/\s+/g, "-");
-                        if (course.title.includes("Basic Accounting")) {
-                          courseId = "basic-accounting-tally";
-                        } else if (course.title.includes("HR Certification")) {
-                          courseId = "hr-certification";
-                        } else if (course.title.includes("Excel Certification")) {
-                          courseId = "excel-certification";
-                        }
+                        // Use course slug if available, otherwise generate from title
+                        const courseId =
+                          course.slug ||
+                          course.title
+                            .toLowerCase()
+                            .replace(/\s+/g, "-")
+                            .replace(/[^\w-]/g, "");
                         router.push(`/course/${courseId}`);
                       }}
                     >
