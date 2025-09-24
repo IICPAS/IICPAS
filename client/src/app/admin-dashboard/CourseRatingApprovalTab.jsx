@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
-import { FaStar, FaCheck, FaTimes, FaEye, FaUser, FaBook, FaCalendar } from "react-icons/fa";
+import {
+  FaStar,
+  FaCheck,
+  FaTimes,
+  FaEye,
+  FaUser,
+  FaBook,
+  FaCalendar,
+} from "react-icons/fa";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
@@ -20,16 +28,9 @@ export default function CourseRatingApprovalTab() {
   const fetchRatings = async () => {
     try {
       setLoading(true);
-      
-      const adminToken = localStorage.getItem("adminToken");
-      if (!adminToken) {
-        toast.error("Admin authentication required");
-        setLoading(false);
-        return;
-      }
-      
+
       let endpoint;
-      
+
       if (filter === "all") {
         endpoint = `/api/v1/course-ratings/admin/all`;
       } else if (filter === "approved") {
@@ -39,21 +40,19 @@ export default function CourseRatingApprovalTab() {
       } else {
         endpoint = `/api/v1/course-ratings/admin/pending`;
       }
-      
-      const response = await axios.get(`${API_BASE || 'http://localhost:8080'}${endpoint}`, {
-        headers: {
-          Authorization: `Bearer ${adminToken}`,
-          'Content-Type': 'application/json'
+
+      const response = await axios.get(
+        `${API_BASE || "http://localhost:8080"}${endpoint}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
-      });
+      );
       setRatings(response.data.data || []);
     } catch (error) {
       console.error("Error fetching ratings:", error);
-      if (error.response?.status === 401) {
-        toast.error("Admin authentication required. Please login as admin.");
-      } else {
-        toast.error("Failed to fetch ratings");
-      }
+      toast.error("Failed to fetch ratings");
       // Set empty array on error
       setRatings([]);
     } finally {
@@ -63,72 +62,54 @@ export default function CourseRatingApprovalTab() {
 
   const handleApprove = async (ratingId) => {
     try {
-      const adminToken = localStorage.getItem("adminToken");
-      const adminId = localStorage.getItem("adminId") || "admin";
-      
-      if (!adminToken) {
-        toast.error("Admin authentication required");
-        return;
-      }
-      
+      const adminId = "admin"; // Default admin ID since no authentication
+
       await axios.patch(
-        `${API_BASE || 'http://localhost:8080'}/api/v1/course-ratings/admin/approve/${ratingId}`,
+        `${
+          API_BASE || "http://localhost:8080"
+        }/api/v1/course-ratings/admin/approve/${ratingId}`,
         { adminId },
         {
           headers: {
-            Authorization: `Bearer ${adminToken}`,
-            'Content-Type': 'application/json'
-          }
+            "Content-Type": "application/json",
+          },
         }
       );
-      
+
       toast.success("Rating approved successfully!");
       fetchRatings();
     } catch (error) {
       console.error("Error approving rating:", error);
-      if (error.response?.status === 401) {
-        toast.error("Admin authentication required. Please login as admin.");
-      } else {
-        toast.error("Failed to approve rating");
-      }
+      toast.error("Failed to approve rating");
     }
   };
 
   const handleReject = async (ratingId) => {
     try {
-      const adminToken = localStorage.getItem("adminToken");
-      const adminId = localStorage.getItem("adminId") || "admin";
-      
-      if (!adminToken) {
-        toast.error("Admin authentication required");
-        return;
-      }
-      
+      const adminId = "admin"; // Default admin ID since no authentication
+
       await axios.patch(
-        `${API_BASE || 'http://localhost:8080'}/api/v1/course-ratings/admin/reject/${ratingId}`,
-        { 
+        `${
+          API_BASE || "http://localhost:8080"
+        }/api/v1/course-ratings/admin/reject/${ratingId}`,
+        {
           adminId,
-          rejectedReason: rejectReason || "Rating rejected by admin"
+          rejectedReason: rejectReason || "Rating rejected by admin",
         },
         {
           headers: {
-            Authorization: `Bearer ${adminToken}`,
-            'Content-Type': 'application/json'
-          }
+            "Content-Type": "application/json",
+          },
         }
       );
-      
+
       toast.success("Rating rejected successfully!");
       setShowModal(false);
       setRejectReason("");
       fetchRatings();
     } catch (error) {
       console.error("Error rejecting rating:", error);
-      if (error.response?.status === 401) {
-        toast.error("Admin authentication required. Please login as admin.");
-      } else {
-        toast.error("Failed to reject rating");
-      }
+      toast.error("Failed to reject rating");
     }
   };
 
@@ -141,11 +122,13 @@ export default function CourseRatingApprovalTab() {
     const badges = {
       pending: "bg-yellow-100 text-yellow-800",
       approved: "bg-green-100 text-green-800",
-      rejected: "bg-red-100 text-red-800"
+      rejected: "bg-red-100 text-red-800",
     };
-    
+
     return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${badges[status]}`}>
+      <span
+        className={`px-2 py-1 rounded-full text-xs font-medium ${badges[status]}`}
+      >
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
     );
@@ -178,7 +161,9 @@ export default function CourseRatingApprovalTab() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900">Course Rating Approval</h2>
+        <h2 className="text-2xl font-bold text-gray-900">
+          Course Rating Approval
+        </h2>
         <div className="flex gap-2">
           <button
             onClick={() => setFilter("pending")}
@@ -188,7 +173,7 @@ export default function CourseRatingApprovalTab() {
                 : "bg-gray-200 text-gray-700"
             }`}
           >
-            Pending ({ratings.filter(r => r.status === "pending").length})
+            Pending ({ratings.filter((r) => r.status === "pending").length})
           </button>
           <button
             onClick={() => setFilter("approved")}
@@ -198,7 +183,7 @@ export default function CourseRatingApprovalTab() {
                 : "bg-gray-200 text-gray-700"
             }`}
           >
-            Approved ({ratings.filter(r => r.status === "approved").length})
+            Approved ({ratings.filter((r) => r.status === "approved").length})
           </button>
           <button
             onClick={() => setFilter("rejected")}
@@ -208,7 +193,7 @@ export default function CourseRatingApprovalTab() {
                 : "bg-gray-200 text-gray-700"
             }`}
           >
-            Rejected ({ratings.filter(r => r.status === "rejected").length})
+            Rejected ({ratings.filter((r) => r.status === "rejected").length})
           </button>
           <button
             onClick={() => setFilter("all")}
@@ -348,7 +333,9 @@ export default function CourseRatingApprovalTab() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-hidden">
             <div className="flex items-center justify-between p-6 border-b">
-              <h3 className="text-xl font-bold text-gray-900">Rating Details</h3>
+              <h3 className="text-xl font-bold text-gray-900">
+                Rating Details
+              </h3>
               <button
                 onClick={() => {
                   setShowModal(false);
@@ -360,12 +347,14 @@ export default function CourseRatingApprovalTab() {
                 ×
               </button>
             </div>
-            
+
             <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Student</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Student
+                    </label>
                     <div className="text-sm text-gray-900">
                       {selectedRating.studentId?.name || "Unknown"}
                     </div>
@@ -374,7 +363,9 @@ export default function CourseRatingApprovalTab() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Course</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Course
+                    </label>
                     <div className="text-sm text-gray-900">
                       {selectedRating.courseId?.title || "Unknown Course"}
                     </div>
@@ -383,50 +374,64 @@ export default function CourseRatingApprovalTab() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Rating
+                  </label>
                   {renderStars(selectedRating.rating)}
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Review</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Review
+                  </label>
                   <div className="text-sm text-gray-900 bg-gray-50 p-3 rounded">
                     {selectedRating.review || "No review provided"}
                   </div>
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Status
+                  </label>
                   {getStatusBadge(selectedRating.status)}
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Submitted Date</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Submitted Date
+                  </label>
                   <div className="text-sm text-gray-900">
                     {new Date(selectedRating.createdAt).toLocaleString()}
                   </div>
                 </div>
 
-                {selectedRating.status === "rejected" && selectedRating.rejectedReason && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Rejection Reason</label>
-                    <div className="text-sm text-red-600 bg-red-50 p-3 rounded">
-                      {selectedRating.rejectedReason}
+                {selectedRating.status === "rejected" &&
+                  selectedRating.rejectedReason && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Rejection Reason
+                      </label>
+                      <div className="text-sm text-red-600 bg-red-50 p-3 rounded">
+                        {selectedRating.rejectedReason}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {selectedRating.status === "approved" && selectedRating.approvedAt && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Approved Date</label>
-                    <div className="text-sm text-gray-900">
-                      {new Date(selectedRating.approvedAt).toLocaleString()}
+                {selectedRating.status === "approved" &&
+                  selectedRating.approvedAt && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Approved Date
+                      </label>
+                      <div className="text-sm text-gray-900">
+                        {new Date(selectedRating.approvedAt).toLocaleString()}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
               </div>
-              
+
               <div className="flex justify-end gap-3 mt-6">
                 {selectedRating.status === "pending" && (
                   <>
@@ -456,7 +461,7 @@ export default function CourseRatingApprovalTab() {
                     </button>
                   </>
                 )}
-                
+
                 {selectedRating.status !== "pending" && (
                   <button
                     onClick={() => {
