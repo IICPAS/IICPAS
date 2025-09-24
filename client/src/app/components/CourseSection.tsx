@@ -17,38 +17,41 @@ interface Course {
   createdAt?: string;
 }
 
+// Sample course data
+const sampleCourses: Course[] = [
+  {
+    _id: "1",
+    title: "Basic Accounting & Tally Foundation",
+    image: "/images/a1.jpeg",
+    price: 240,
+    slug: "basic-accounting-tally-foundation",
+    category: "Accounting",
+    status: "Active",
+  },
+  {
+    _id: "2",
+    title: "Advanced Financial Management",
+    image: "/images/a1.jpeg",
+    price: 350,
+    slug: "advanced-financial-management",
+    category: "Finance",
+    status: "Active",
+  },
+  {
+    _id: "3",
+    title: "Corporate Tax Planning",
+    image: "/images/a1.jpeg",
+    price: 280,
+    slug: "corporate-tax-planning",
+    category: "Taxation",
+    status: "Active",
+  },
+];
+
 export default function CourseSection() {
   const router = useRouter();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // Sample course data
-  const sampleCourses: Course[] = [
-    {
-      _id: "1",
-      title: "Basic Accounting & Tally Foundation",
-      image: "/images/a1.jpeg",
-      price: 240,
-      slug: "basic-accounting-tally-foundation",
-      category: "Accounting",
-    },
-    {
-      _id: "2",
-      title: "Advanced Financial Management",
-      image: "/images/a1.jpeg",
-      price: 350,
-      slug: "advanced-financial-management",
-      category: "Finance",
-    },
-    {
-      _id: "3",
-      title: "Corporate Tax Planning",
-      image: "/images/a1.jpeg",
-      price: 280,
-      slug: "corporate-tax-planning",
-      category: "Taxation",
-    },
-  ];
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -64,26 +67,45 @@ export default function CourseSection() {
           const data = await response.json();
           if (Array.isArray(data) && data.length > 0) {
             // Transform API data to match our interface
-            const transformedCourses = data.map((course: any) => ({
-              _id: course._id,
-              title: course.title?.trim() || "Untitled Course",
-              image: course.image
-                ? `https://api.iicpa.in${course.image}`
-                : "/images/a1.jpeg",
-              price: course.price || 0,
-              slug:
-                course.slug ||
-                course.title
-                  ?.toLowerCase()
-                  .replace(/\s+/g, "-")
-                  .replace(/[^\w-]/g, "") ||
-                "course",
-              category: course.category || "General",
-              discount: course.discount || 0,
-              status: course.status || "Active",
-              description: course.description || "",
-              createdAt: course.createdAt || new Date().toISOString(),
-            }));
+            const transformedCourses = data.map(
+              (course: {
+                _id: string;
+                title?: string;
+                image?: string;
+                price?: number;
+                slug?: string;
+                category?: string;
+                discount?: number;
+                status?: string;
+                description?: string;
+                createdAt?: string;
+              }) => ({
+                _id: course._id,
+                title: course.title?.trim() || "Untitled Course",
+                image: course.image
+                  ? course.image.startsWith("http")
+                    ? course.image
+                    : course.image.startsWith("/uploads/")
+                    ? `https://api.iicpa.in${course.image}`
+                    : course.image.startsWith("/")
+                    ? course.image
+                    : `https://api.iicpa.in${course.image}`
+                  : "/images/a1.jpeg",
+                price: course.price || 0,
+                slug:
+                  course.slug ||
+                  course.title
+                    ?.toLowerCase()
+                    .replace(/\s+/g, "-")
+                    .replace(/[^\w-]/g, "") ||
+                  "course",
+                category: course.category || "General",
+                discount: course.discount || 0,
+                status: course.status || "Active",
+                description: course.description || "",
+                createdAt: course.createdAt || new Date().toISOString(),
+              })
+            );
 
             // Filter only active courses and sort by creation date (newest first)
             const activeCourses = transformedCourses
@@ -152,7 +174,30 @@ export default function CourseSection() {
                   alt={course.title}
                   fill
                   className="object-cover"
+                  onError={(e) => {
+                    console.log("Image failed to load:", e);
+                    console.log("Image src was:", e.currentTarget.src);
+                    // Fallback to placeholder
+                    e.currentTarget.style.display = "none";
+                    const placeholder = e.currentTarget
+                      .nextElementSibling as HTMLElement;
+                    if (placeholder) {
+                      placeholder.style.display = "flex";
+                    }
+                  }}
                 />
+
+                {/* Fallback placeholder */}
+                <div
+                  className="w-full h-full items-center justify-center text-gray-400 bg-gray-200"
+                  style={{ display: "none" }}
+                >
+                  <div className="text-center">
+                    <div className="text-4xl mb-2">📚</div>
+                    <div className="text-sm">Course Image</div>
+                  </div>
+                </div>
+
                 <div className="absolute top-4 left-4">
                   <span className="bg-[#3cd664] text-white px-3 py-1 rounded-full text-sm font-medium">
                     {course.category}
@@ -168,7 +213,7 @@ export default function CourseSection() {
 
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex flex-col">
-                    {course.discount > 0 ? (
+                    {course.discount && course.discount > 0 ? (
                       <>
                         <span className="text-lg font-bold text-[#3cd664]">
                           ₹
