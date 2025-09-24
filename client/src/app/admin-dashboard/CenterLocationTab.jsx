@@ -1,9 +1,18 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
-import { FaPlus, FaEdit, FaTrash, FaSave, FaMapMarkerAlt, FaBuilding, FaPhone, FaEnvelope } from "react-icons/fa";
+import {
+  FaPlus,
+  FaEdit,
+  FaTrash,
+  FaSave,
+  FaMapMarkerAlt,
+  FaBuilding,
+  FaPhone,
+  FaEnvelope,
+} from "react-icons/fa";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 export default function CenterLocationTab() {
   const [centers, setCenters] = useState([]);
@@ -22,12 +31,12 @@ export default function CenterLocationTab() {
     manager: {
       name: "",
       phone: "",
-      email: ""
+      email: "",
     },
     facilities: [],
     capacity: 50,
     status: "active",
-    description: ""
+    description: "",
   });
 
   useEffect(() => {
@@ -37,28 +46,16 @@ export default function CenterLocationTab() {
   const fetchCenters = async () => {
     try {
       setLoading(true);
-      
-      const adminToken = localStorage.getItem("adminToken");
-      if (!adminToken) {
-        toast.error("Admin authentication required");
-        setLoading(false);
-        return;
-      }
-      
+
       const response = await axios.get(`${API_BASE}/api/v1/centers`, {
         headers: {
-          Authorization: `Bearer ${adminToken}`,
-          'Content-Type': 'application/json'
-        }
+          "Content-Type": "application/json",
+        },
       });
       setCenters(response.data.data || []);
     } catch (error) {
       console.error("Error fetching centers:", error);
-      if (error.response?.status === 401) {
-        toast.error("Authentication failed. Please log in again.");
-      } else {
-        toast.error("Failed to fetch centers");
-      }
+      toast.error("Failed to fetch centers");
     } finally {
       setLoading(false);
     }
@@ -67,13 +64,7 @@ export default function CenterLocationTab() {
   const handleAddCenter = async () => {
     try {
       setSaving(true);
-      
-      const adminToken = localStorage.getItem("adminToken");
-      if (!adminToken) {
-        toast.error("Admin authentication required");
-        return;
-      }
-      
+
       // Validate required fields
       if (!newCenter.name.trim()) {
         toast.error("Please enter center name");
@@ -96,13 +87,16 @@ export default function CenterLocationTab() {
         return;
       }
 
-      const response = await axios.post(`${API_BASE}/api/v1/centers`, newCenter, {
-        headers: {
-          Authorization: `Bearer ${adminToken}`,
-          'Content-Type': 'application/json'
+      const response = await axios.post(
+        `${API_BASE}/api/v1/centers`,
+        newCenter,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
-      });
-      
+      );
+
       toast.success("Center added successfully!");
       setShowAddForm(false);
       setNewCenter({
@@ -116,21 +110,17 @@ export default function CenterLocationTab() {
         manager: {
           name: "",
           phone: "",
-          email: ""
+          email: "",
         },
         facilities: [],
         capacity: 50,
         status: "active",
-        description: ""
+        description: "",
       });
       fetchCenters();
     } catch (error) {
       console.error("Error adding center:", error);
-      if (error.response?.status === 401) {
-        toast.error("Authentication failed. Please log in again.");
-      } else {
-        toast.error("Failed to add center");
-      }
+      toast.error("Failed to add center");
     } finally {
       setSaving(false);
     }
@@ -139,30 +129,23 @@ export default function CenterLocationTab() {
   const handleUpdateCenter = async () => {
     try {
       setSaving(true);
-      
-      const adminToken = localStorage.getItem("adminToken");
-      if (!adminToken) {
-        toast.error("Admin authentication required");
-        return;
-      }
-      
-      const response = await axios.put(`${API_BASE}/api/v1/centers/${editingCenter._id}`, editingCenter, {
-        headers: {
-          Authorization: `Bearer ${adminToken}`,
-          'Content-Type': 'application/json'
+
+      const response = await axios.put(
+        `${API_BASE}/api/v1/centers/${editingCenter._id}`,
+        editingCenter,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
-      });
-      
+      );
+
       toast.success("Center updated successfully!");
       setEditingCenter(null);
       fetchCenters();
     } catch (error) {
       console.error("Error updating center:", error);
-      if (error.response?.status === 401) {
-        toast.error("Authentication failed. Please log in again.");
-      } else {
-        toast.error("Failed to update center");
-      }
+      toast.error("Failed to update center");
     } finally {
       setSaving(false);
     }
@@ -174,62 +157,51 @@ export default function CenterLocationTab() {
     }
 
     try {
-      const adminToken = localStorage.getItem("adminToken");
-      if (!adminToken) {
-        toast.error("Admin authentication required");
-        return;
-      }
-      
       await axios.delete(`${API_BASE}/api/v1/centers/${centerId}`, {
         headers: {
-          Authorization: `Bearer ${adminToken}`,
-          'Content-Type': 'application/json'
-        }
+          "Content-Type": "application/json",
+        },
       });
       toast.success("Center deleted successfully!");
       fetchCenters();
     } catch (error) {
       console.error("Error deleting center:", error);
-      if (error.response?.status === 401) {
-        toast.error("Authentication failed. Please log in again.");
-      } else {
-        toast.error("Failed to delete center");
-      }
+      toast.error("Failed to delete center");
     }
   };
 
   const handleInputChange = (field, value) => {
-    if (field.startsWith('manager.')) {
-      const managerField = field.split('.')[1];
-      setNewCenter(prev => ({
+    if (field.startsWith("manager.")) {
+      const managerField = field.split(".")[1];
+      setNewCenter((prev) => ({
         ...prev,
         manager: {
           ...prev.manager,
-          [managerField]: value
-        }
+          [managerField]: value,
+        },
       }));
     } else {
-      setNewCenter(prev => ({
+      setNewCenter((prev) => ({
         ...prev,
-        [field]: value
+        [field]: value,
       }));
     }
   };
 
   const handleEditInputChange = (field, value) => {
-    if (field.startsWith('manager.')) {
-      const managerField = field.split('.')[1];
-      setEditingCenter(prev => ({
+    if (field.startsWith("manager.")) {
+      const managerField = field.split(".")[1];
+      setEditingCenter((prev) => ({
         ...prev,
         manager: {
           ...prev.manager,
-          [managerField]: value
-        }
+          [managerField]: value,
+        },
       }));
     } else {
-      setEditingCenter(prev => ({
+      setEditingCenter((prev) => ({
         ...prev,
-        [field]: value
+        [field]: value,
       }));
     }
   };
@@ -245,7 +217,9 @@ export default function CenterLocationTab() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900">Center Location Management</h2>
+        <h2 className="text-2xl font-bold text-gray-900">
+          Center Location Management
+        </h2>
         <button
           onClick={() => setShowAddForm(true)}
           className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2"
@@ -261,120 +235,152 @@ export default function CenterLocationTab() {
           <h3 className="text-xl font-semibold mb-4">Add New Center</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Center Name *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Center Name *
+              </label>
               <input
                 type="text"
                 value={newCenter.name}
-                onChange={(e) => handleInputChange('name', e.target.value)}
+                onChange={(e) => handleInputChange("name", e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                 placeholder="Enter center name"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">City *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                City *
+              </label>
               <input
                 type="text"
                 value={newCenter.city}
-                onChange={(e) => handleInputChange('city', e.target.value)}
+                onChange={(e) => handleInputChange("city", e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                 placeholder="Enter city"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">State *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                State *
+              </label>
               <input
                 type="text"
                 value={newCenter.state}
-                onChange={(e) => handleInputChange('state', e.target.value)}
+                onChange={(e) => handleInputChange("state", e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                 placeholder="Enter state"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Pincode</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Pincode
+              </label>
               <input
                 type="text"
                 value={newCenter.pincode}
-                onChange={(e) => handleInputChange('pincode', e.target.value)}
+                onChange={(e) => handleInputChange("pincode", e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                 placeholder="Enter pincode"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Phone *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Phone *
+              </label>
               <input
                 type="text"
                 value={newCenter.phone}
-                onChange={(e) => handleInputChange('phone', e.target.value)}
+                onChange={(e) => handleInputChange("phone", e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                 placeholder="Enter phone number"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Email *
+              </label>
               <input
                 type="email"
                 value={newCenter.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
+                onChange={(e) => handleInputChange("email", e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                 placeholder="Enter email"
               />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Address
+              </label>
               <textarea
                 value={newCenter.address}
-                onChange={(e) => handleInputChange('address', e.target.value)}
+                onChange={(e) => handleInputChange("address", e.target.value)}
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                 placeholder="Enter full address"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Manager Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Manager Name
+              </label>
               <input
                 type="text"
                 value={newCenter.manager.name}
-                onChange={(e) => handleInputChange('manager.name', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("manager.name", e.target.value)
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                 placeholder="Enter manager name"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Manager Phone</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Manager Phone
+              </label>
               <input
                 type="text"
                 value={newCenter.manager.phone}
-                onChange={(e) => handleInputChange('manager.phone', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("manager.phone", e.target.value)
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                 placeholder="Enter manager phone"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Manager Email</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Manager Email
+              </label>
               <input
                 type="email"
                 value={newCenter.manager.email}
-                onChange={(e) => handleInputChange('manager.email', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("manager.email", e.target.value)
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                 placeholder="Enter manager email"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Capacity</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Capacity
+              </label>
               <input
                 type="number"
                 value={newCenter.capacity}
-                onChange={(e) => handleInputChange('capacity', parseInt(e.target.value))}
+                onChange={(e) =>
+                  handleInputChange("capacity", parseInt(e.target.value))
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                 placeholder="Enter capacity"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Status
+              </label>
               <select
                 value={newCenter.status}
-                onChange={(e) => handleInputChange('status', e.target.value)}
+                onChange={(e) => handleInputChange("status", e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
               >
                 <option value="active">Active</option>
@@ -383,17 +389,21 @@ export default function CenterLocationTab() {
               </select>
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Description
+              </label>
               <textarea
                 value={newCenter.description}
-                onChange={(e) => handleInputChange('description', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("description", e.target.value)
+                }
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                 placeholder="Enter center description"
               />
             </div>
           </div>
-          
+
           <div className="flex justify-end gap-3 mt-6">
             <button
               onClick={() => setShowAddForm(false)}
@@ -415,13 +425,19 @@ export default function CenterLocationTab() {
 
       {/* Centers List */}
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-xl font-semibold mb-4">Centers ({centers.length})</h3>
-        
+        <h3 className="text-xl font-semibold mb-4">
+          Centers ({centers.length})
+        </h3>
+
         {centers.length === 0 ? (
           <div className="text-center py-8">
             <FaBuilding className="text-6xl text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">No Centers Found</h3>
-            <p className="text-gray-500">Add your first center to get started.</p>
+            <h3 className="text-lg font-semibold text-gray-700 mb-2">
+              No Centers Found
+            </h3>
+            <p className="text-gray-500">
+              Add your first center to get started.
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -450,16 +466,24 @@ export default function CenterLocationTab() {
                   <tr key={center._id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
-                        <div className="text-sm font-medium text-gray-900">{center.name}</div>
-                        <div className="text-sm text-gray-500">Capacity: {center.capacity}</div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {center.name}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          Capacity: {center.capacity}
+                        </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <FaMapMarkerAlt className="text-green-500 mr-2" />
                         <div>
-                          <div className="text-sm text-gray-900">{center.city}, {center.state}</div>
-                          <div className="text-sm text-gray-500">{center.pincode}</div>
+                          <div className="text-sm text-gray-900">
+                            {center.city}, {center.state}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {center.pincode}
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -476,11 +500,15 @@ export default function CenterLocationTab() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        center.status === 'active' ? 'bg-green-100 text-green-800' :
-                        center.status === 'inactive' ? 'bg-red-100 text-red-800' :
-                        'bg-yellow-100 text-yellow-800'
-                      }`}>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          center.status === "active"
+                            ? "bg-green-100 text-green-800"
+                            : center.status === "inactive"
+                            ? "bg-red-100 text-red-800"
+                            : "bg-yellow-100 text-yellow-800"
+                        }`}
+                      >
                         {center.status}
                       </span>
                     </td>
@@ -523,113 +551,164 @@ export default function CenterLocationTab() {
                 ×
               </button>
             </div>
-            
+
             <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Center Name *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Center Name *
+                  </label>
                   <input
                     type="text"
                     value={editingCenter.name}
-                    onChange={(e) => handleEditInputChange('name', e.target.value)}
+                    onChange={(e) =>
+                      handleEditInputChange("name", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">City *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    City *
+                  </label>
                   <input
                     type="text"
                     value={editingCenter.city}
-                    onChange={(e) => handleEditInputChange('city', e.target.value)}
+                    onChange={(e) =>
+                      handleEditInputChange("city", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">State *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    State *
+                  </label>
                   <input
                     type="text"
                     value={editingCenter.state}
-                    onChange={(e) => handleEditInputChange('state', e.target.value)}
+                    onChange={(e) =>
+                      handleEditInputChange("state", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Pincode</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Pincode
+                  </label>
                   <input
                     type="text"
                     value={editingCenter.pincode}
-                    onChange={(e) => handleEditInputChange('pincode', e.target.value)}
+                    onChange={(e) =>
+                      handleEditInputChange("pincode", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Phone *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Phone *
+                  </label>
                   <input
                     type="text"
                     value={editingCenter.phone}
-                    onChange={(e) => handleEditInputChange('phone', e.target.value)}
+                    onChange={(e) =>
+                      handleEditInputChange("phone", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email *
+                  </label>
                   <input
                     type="email"
                     value={editingCenter.email}
-                    onChange={(e) => handleEditInputChange('email', e.target.value)}
+                    onChange={(e) =>
+                      handleEditInputChange("email", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Address
+                  </label>
                   <textarea
                     value={editingCenter.address}
-                    onChange={(e) => handleEditInputChange('address', e.target.value)}
+                    onChange={(e) =>
+                      handleEditInputChange("address", e.target.value)
+                    }
                     rows={3}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Manager Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Manager Name
+                  </label>
                   <input
                     type="text"
-                    value={editingCenter.manager?.name || ''}
-                    onChange={(e) => handleEditInputChange('manager.name', e.target.value)}
+                    value={editingCenter.manager?.name || ""}
+                    onChange={(e) =>
+                      handleEditInputChange("manager.name", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Manager Phone</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Manager Phone
+                  </label>
                   <input
                     type="text"
-                    value={editingCenter.manager?.phone || ''}
-                    onChange={(e) => handleEditInputChange('manager.phone', e.target.value)}
+                    value={editingCenter.manager?.phone || ""}
+                    onChange={(e) =>
+                      handleEditInputChange("manager.phone", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Manager Email</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Manager Email
+                  </label>
                   <input
                     type="email"
-                    value={editingCenter.manager?.email || ''}
-                    onChange={(e) => handleEditInputChange('manager.email', e.target.value)}
+                    value={editingCenter.manager?.email || ""}
+                    onChange={(e) =>
+                      handleEditInputChange("manager.email", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Capacity</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Capacity
+                  </label>
                   <input
                     type="number"
                     value={editingCenter.capacity}
-                    onChange={(e) => handleEditInputChange('capacity', parseInt(e.target.value))}
+                    onChange={(e) =>
+                      handleEditInputChange(
+                        "capacity",
+                        parseInt(e.target.value)
+                      )
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Status
+                  </label>
                   <select
                     value={editingCenter.status}
-                    onChange={(e) => handleEditInputChange('status', e.target.value)}
+                    onChange={(e) =>
+                      handleEditInputChange("status", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                   >
                     <option value="active">Active</option>
@@ -638,16 +717,20 @@ export default function CenterLocationTab() {
                   </select>
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Description
+                  </label>
                   <textarea
-                    value={editingCenter.description || ''}
-                    onChange={(e) => handleEditInputChange('description', e.target.value)}
+                    value={editingCenter.description || ""}
+                    onChange={(e) =>
+                      handleEditInputChange("description", e.target.value)
+                    }
                     rows={3}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                   />
                 </div>
               </div>
-              
+
               <div className="flex justify-end gap-3 mt-6">
                 <button
                   onClick={() => setEditingCenter(null)}

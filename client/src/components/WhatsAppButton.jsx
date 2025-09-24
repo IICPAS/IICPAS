@@ -20,11 +20,11 @@ const WhatsAppButton = () => {
 
   return (
     <div
-      className="fixed bottom-4 left-4 z-[60]"
+      className="fixed bottom-4 right-24 z-[60] sm:right-24 md:right-24"
       style={{
         position: "fixed",
         bottom: "1rem",
-        left: "1rem",
+        right: "6rem", // 6rem = 96px spacing from chatbot
         zIndex: 60,
       }}
     >
@@ -33,7 +33,7 @@ const WhatsAppButton = () => {
         whileTap={{ scale: 0.9 }}
         onClick={handleWhatsAppClick}
         className="bg-gradient-to-r from-green-400 to-green-500 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
-        title="Chat on WhatsApp"
+        title="Chat with us on WhatsApp"
       >
         <FaWhatsapp className="text-2xl" />
       </motion.button>
