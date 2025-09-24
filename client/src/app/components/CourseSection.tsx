@@ -117,7 +117,7 @@ export default function CoursesSection() {
       try {
         setLoading(true);
         setError(null);
-        
+
         // Set fallback courses immediately for instant display
         setCourses(fallbackCourses);
 
@@ -125,12 +125,11 @@ export default function CoursesSection() {
         await fetchCourses();
 
         // Fetch other data in parallel
-        Promise.allSettled([
-          fetchCourseRatings(),
-          fetchWishlistState(),
-        ]).catch((error) => {
-          console.error("Error in parallel data fetching:", error);
-        });
+        Promise.allSettled([fetchCourseRatings(), fetchWishlistState()]).catch(
+          (error) => {
+            console.error("Error in parallel data fetching:", error);
+          }
+        );
 
         // Subscribe to wishlist changes
         const unsubscribe = wishlistEventManager.subscribe(
@@ -268,14 +267,14 @@ export default function CoursesSection() {
       const response = await fetch(`${API_BASE}/courses/available`);
       if (response.ok) {
         const data = await response.json();
-        
+
         // Validate data before processing
         if (!Array.isArray(data) || data.length === 0) {
           console.warn("No courses data received from API, using fallback");
           setCourses(fallbackCourses);
           return;
         }
-        
+
         // Transform the data to match the expected format
         const transformedCourses = data.map(
           (course: {
@@ -307,7 +306,7 @@ export default function CoursesSection() {
                 .replace(/[^\w-]/g, ""),
           })
         );
-        
+
         // Update courses if API data is different from fallback
         if (transformedCourses.length > 0) {
           setCourses(transformedCourses);
@@ -443,8 +442,8 @@ export default function CoursesSection() {
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Our Courses</h2>
           <p className="text-gray-600 mb-4">{error}</p>
-          <button 
-            onClick={() => window.location.reload()} 
+          <button
+            onClick={() => window.location.reload()}
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
           >
             Retry
