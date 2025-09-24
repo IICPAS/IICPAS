@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 
 export default function LiveClassTab() {
   const [liveClasses, setLiveClasses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [student, setStudent] = useState(null);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -87,6 +89,10 @@ export default function LiveClassTab() {
     }
   };
 
+  const handleEnrollNewSessions = () => {
+    router.push('/live-session');
+  };
+
   if (loading) {
     return (
       <div className="min-h-[calc(100vh-80px)] px-6 py-8 bg-white text-black overflow-y-auto">
@@ -111,7 +117,15 @@ export default function LiveClassTab() {
 
   return (
     <div className="min-h-[calc(100vh-80px)] px-6 py-8 bg-white text-black overflow-y-auto">
-      <h1 className="text-2xl font-semibold mb-8">Live Classes</h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-2xl font-semibold">Live Classes</h1>
+        <button
+          onClick={handleEnrollNewSessions}
+          className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+        >
+          Enroll New Live Sessions
+        </button>
+      </div>
 
       {liveClasses.length === 0 ? (
         <div className="text-center py-12">
@@ -120,14 +134,28 @@ export default function LiveClassTab() {
               <p className="text-gray-500 text-lg mb-4">
                 You haven't enrolled in any live sessions yet.
               </p>
-              <p className="text-gray-400">
+              <p className="text-gray-400 mb-6">
                 Purchase a course with Digital Hub+ to get access to live sessions.
               </p>
+              <button
+                onClick={handleEnrollNewSessions}
+                className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white px-8 py-3 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+              >
+                Browse Available Sessions
+              </button>
             </div>
           ) : (
-            <p className="text-gray-500">
-              No live sessions available right now.
-            </p>
+            <div>
+              <p className="text-gray-500 mb-6">
+                No live sessions available right now.
+              </p>
+              <button
+                onClick={handleEnrollNewSessions}
+                className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white px-8 py-3 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+              >
+                View All Sessions
+              </button>
+            </div>
           )}
         </div>
       ) : (

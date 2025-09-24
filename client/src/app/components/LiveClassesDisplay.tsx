@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { 
   VideoIcon, 
@@ -12,21 +12,25 @@ import {
   AlertCircleIcon
 } from "lucide-react";
 import axios from "axios";
+import { io } from "socket.io-client";
 
 interface LiveClass {
   _id: string;
   title: string;
+  subtitle?: string;
   instructor: string;
+  instructorBio?: string;
   description: string;
   startTime: string;
   endTime: string;
   date: string;
   duration: number; // in minutes
   maxParticipants: number;
-  currentParticipants: number;
+  enrolledCount: number;
   status: 'upcoming' | 'live' | 'completed';
   meetingLink?: string;
   thumbnail?: string;
+  imageUrl?: string;
   price: number;
   category: string;
   isEnrolled?: boolean;
@@ -44,7 +48,7 @@ const dummyLiveClasses: LiveClass[] = [
       date: "2024-01-20",
       duration: 120,
       maxParticipants: 50,
-      currentParticipants: 23,
+      enrolledCount: 23,
       status: 'upcoming',
       meetingLink: "https://meet.google.com/abc-defg-hij",
       thumbnail: "/images/accounting.webp",
@@ -61,7 +65,7 @@ const dummyLiveClasses: LiveClass[] = [
       date: "2024-01-20",
       duration: 120,
       maxParticipants: 30,
-      currentParticipants: 30,
+      enrolledCount: 30,
       status: 'live',
       meetingLink: "https://meet.google.com/xyz-1234-abc",
       thumbnail: "/images/young-woman.jpg",
@@ -78,7 +82,7 @@ const dummyLiveClasses: LiveClass[] = [
       date: "2024-01-19",
       duration: 120,
       maxParticipants: 40,
-      currentParticipants: 40,
+      enrolledCount: 40,
       status: 'completed',
       meetingLink: "https://meet.google.com/def-5678-ghi",
       thumbnail: "/images/course.png",
@@ -95,7 +99,7 @@ const dummyLiveClasses: LiveClass[] = [
       date: "2024-01-21",
       duration: 120,
       maxParticipants: 35,
-      currentParticipants: 15,
+      enrolledCount: 15,
       status: 'upcoming',
       meetingLink: "https://meet.google.com/ghi-9012-jkl",
       thumbnail: "/images/a4.jpg",
@@ -112,7 +116,7 @@ const dummyLiveClasses: LiveClass[] = [
       date: "2024-01-22",
       duration: 120,
       maxParticipants: 45,
-      currentParticipants: 28,
+      enrolledCount: 28,
       status: 'upcoming',
       meetingLink: "https://meet.google.com/jkl-3456-mno",
       thumbnail: "/images/about.jpeg",
@@ -129,7 +133,7 @@ const dummyLiveClasses: LiveClass[] = [
       date: "2024-01-18",
       duration: 120,
       maxParticipants: 25,
-      currentParticipants: 25,
+      enrolledCount: 25,
       status: 'completed',
       meetingLink: "https://meet.google.com/mno-7890-pqr",
       thumbnail: "/images/s.jpg",
@@ -139,87 +143,80 @@ const dummyLiveClasses: LiveClass[] = [
   ];
 
 export default function LiveClassesDisplay() {
-  const [liveClasses, setLiveClasses] = useState<LiveClass[]>(dummyLiveClasses);
-  const [loading, setLoading] = useState(false);
+  const [liveClasses, setLiveClasses] = useState<LiveClass[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedTab, setSelectedTab] = useState<'upcoming' | 'live' | 'completed'>('upcoming');
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<any>(null);
+  const [socket, setSocket] = useState<any>(null);
 
   const API = process.env.NEXT_PUBLIC_API_URL;
 
-  useEffect(() => {
-    // Load data in background without blocking UI
-    fetchLiveClasses();
-    checkUserAuth();
-  }, []);
-
-  const fetchLiveClasses = async () => {
+  const fetchLiveClasses = useCallback(async () => {
     try {
-      const response = await fetch(`${API}/api/live-sessions`);
+      setLoading(true);
+      console.log('🔄 Fetching live sessions from:', `${API}/api/live-sessions`);
+      
+      const response = await fetch(`${API}/api/live-sessions`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
+      });
+      
+      console.log('📡 API Response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('✅ Received live sessions data:', data.length, 'sessions');
+        console.log('📊 Sample session statuses:', data.slice(0, 3).map((s: any) => ({ title: s.title, status: s.status })));
         
-        // If user is logged in, also fetch their enrolled sessions
-        if (user) {
-          try {
-            const enrolledResponse = await fetch(`${API}/api/v1/students/enrolled-live-sessions/${user._id}`);
-            if (enrolledResponse.ok) {
-              const enrolledData = await enrolledResponse.json();
-              const enrolledSessionIds = enrolledData.enrolledLiveSessions.map(session => session._id);
-              
-              // Mark enrolled sessions
+        // Transform API data to match our interface
               const transformedClasses = data.map((session: any) => ({
                 _id: session._id,
                 title: session.title,
+          subtitle: session.subtitle || session.category,
                 instructor: session.instructor || "CA Instructor",
+          instructorBio: session.instructorBio || "Expert CA Instructor",
                 description: session.description || "Live class session",
                 startTime: session.time ? session.time.split(' - ')[0] : "10:00",
                 endTime: session.time ? session.time.split(' - ')[1] : "12:00",
                 date: session.date,
-                duration: 120, // Default duration
+          duration: session.duration || 120,
                 maxParticipants: session.maxParticipants || 50,
-                currentParticipants: Math.floor(Math.random() * (session.maxParticipants || 50)),
-                status: getSessionStatus(session),
+          enrolledCount: session.enrolledCount || 0,
+          status: session.status,
                 meetingLink: session.link,
-                thumbnail: session.thumbnail || "/images/accounting.webp",
+          thumbnail: session.thumbnail || '/images/live-class.jpg',
+          imageUrl: session.imageUrl || session.thumbnail || '/images/live-class.jpg',
                 price: session.price || 0,
                 category: session.category || "CA Foundation",
-                isEnrolled: enrolledSessionIds.includes(session._id)
-              }));
-              setLiveClasses(transformedClasses);
-              return;
-            }
-          } catch (enrolledError) {
-            console.error("Error fetching enrolled sessions:", enrolledError);
-          }
-        }
-        
-        // Fallback: transform API data without enrollment info
-        const transformedClasses = data.map((session: any) => ({
-          _id: session._id,
-          title: session.title,
-          instructor: session.instructor || "CA Instructor",
-          description: session.description || "Live class session",
-          startTime: session.time ? session.time.split(' - ')[0] : "10:00",
-          endTime: session.time ? session.time.split(' - ')[1] : "12:00",
-          date: session.date,
-          duration: 120, // Default duration
-          maxParticipants: session.maxParticipants || 50,
-          currentParticipants: Math.floor(Math.random() * (session.maxParticipants || 50)),
-          status: getSessionStatus(session),
-          meetingLink: session.link,
-          thumbnail: session.thumbnail || "/images/accounting.webp",
-          price: session.price || 0,
-          category: session.category || "CA Foundation",
-          isEnrolled: false
+          isEnrolled: user ? session.enrolledStudents?.some((student: any) => student._id === user._id) : false
         }));
+        
+        console.log('🎯 Transformed classes:', transformedClasses.length, 'sessions');
         setLiveClasses(transformedClasses);
+      } else {
+        console.error('❌ API request failed with status:', response.status);
+        const errorText = await response.text();
+        console.error('❌ Error response:', errorText);
+        // Fallback to dummy data if API fails
+        setLiveClasses(dummyLiveClasses);
       }
-      // If API fails, keep showing dummy data (no need to update)
-    } catch (error) {
-      console.error("Error fetching live classes:", error);
-      // Keep showing dummy data if API fails
+    } catch (error: any) {
+      console.error("💥 Error fetching live classes:", error);
+      if (error.name === 'AbortError') {
+        console.error("Request timed out");
+        alert("Request timed out. Please check your connection and refresh the page.");
+      } else {
+        console.error("Network or server error:", error);
+      }
+      // Fallback to dummy data if API fails
+      setLiveClasses(dummyLiveClasses);
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [API, user]);
 
   const getSessionStatus = (session: any): 'upcoming' | 'live' | 'completed' => {
     const now = new Date();
@@ -243,14 +240,70 @@ export default function LiveClassesDisplay() {
     }
   };
 
-  const checkUserAuth = async () => {
+  const checkUserAuth = useCallback(async () => {
     try {
+      console.log('Checking user authentication...');
       const response = await axios.get(`${API}/api/v1/students/isstudent`, {
         withCredentials: true,
+        timeout: 10000, // 10 second timeout
       });
+      console.log('User auth response:', response.data);
       setUser(response.data.student);
-    } catch (error) {
+    } catch (error: any) {
+      console.log('User not authenticated or auth check failed:', error.response?.status);
       setUser(null);
+    }
+  }, [API]);
+
+  const handleEnroll = async (sessionId: string) => {
+    if (!user) {
+      alert("Please login to enroll in live sessions");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API}/api/live-sessions/${sessionId}/enroll`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ studentId: user._id }),
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        
+        // Update the local state
+        setLiveClasses(prevClasses => 
+          prevClasses.map(cls => 
+            cls._id === sessionId 
+              ? { 
+                  ...cls, 
+                  isEnrolled: true, 
+                  enrolledCount: result.session.enrolledCount 
+                }
+              : cls
+          )
+        );
+        
+        // Join socket room for real-time updates
+        if (socket) {
+          socket.emit('join-session', sessionId);
+        }
+        
+        alert("Successfully enrolled in the live session!");
+      } else {
+        const error = await response.json();
+        alert(error.error || "Failed to enroll in the session");
+      }
+    } catch (error: any) {
+      console.error("Error enrolling in session:", error);
+      if (error.name === 'AbortError') {
+        alert("Request timed out. Please check your connection and try again.");
+      } else {
+        alert("Failed to enroll in the session. Please try again.");
+      }
     }
   };
 
@@ -295,7 +348,89 @@ export default function LiveClassesDisplay() {
     }
   };
 
-  const filteredClasses = liveClasses.filter(cls => cls.status === selectedTab);
+  // useEffect hooks - defined after all functions
+  useEffect(() => {
+    console.log('Component mounted, initializing...');
+    checkUserAuth();
+    fetchLiveClasses();
+  }, [fetchLiveClasses]);
+
+  useEffect(() => {
+    if (user !== null) {
+      console.log('User state determined, refetching live classes...');
+      fetchLiveClasses();
+    }
+  }, [user, fetchLiveClasses]);
+
+  // Socket.io connection
+  useEffect(() => {
+    if (!API) {
+      console.warn('API URL not available, skipping Socket.io connection');
+      return;
+    }
+
+    const socketConnection = io(API, {
+      transports: ['polling', 'websocket'],
+      timeout: 20000,
+      forceNew: true,
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000
+    });
+    
+    setSocket(socketConnection);
+
+    // Connection event handlers
+    socketConnection.on('connect', () => {
+      console.log('✅ Socket.io connected:', socketConnection.id);
+    });
+
+    socketConnection.on('connect_error', (error) => {
+      console.error('❌ Socket.io connection error:', error);
+    });
+
+    socketConnection.on('disconnect', (reason) => {
+      console.log('🔌 Socket.io disconnected:', reason);
+    });
+
+    socketConnection.on('reconnect', (attemptNumber) => {
+      console.log('🔄 Socket.io reconnected after', attemptNumber, 'attempts');
+    });
+
+    socketConnection.on('reconnect_error', (error) => {
+      console.error('❌ Socket.io reconnection error:', error);
+    });
+
+    // Listen for enrollment updates
+    socketConnection.on('enrollment-update', (data) => {
+      console.log('📊 Received enrollment update:', data);
+      setLiveClasses(prevClasses => 
+        prevClasses.map(cls => 
+          cls._id === data.sessionId 
+            ? { 
+                ...cls, 
+                enrolledCount: data.enrolledCount 
+              }
+            : cls
+        )
+      );
+    });
+
+    return () => {
+      console.log('🔌 Disconnecting Socket.io...');
+      socketConnection.disconnect();
+    };
+  }, [API]);
+
+  const filteredClasses = liveClasses.filter(cls => {
+    const matches = cls.status === selectedTab;
+    if (liveClasses.length > 0) {
+      console.log(`🔍 Filtering: "${cls.title}" (${cls.status}) vs "${selectedTab}" = ${matches}`);
+    }
+    return matches;
+  });
+  
+  console.log(`📊 Filtered classes for "${selectedTab}":`, filteredClasses.length, 'out of', liveClasses.length);
 
 
   return (
@@ -330,8 +465,13 @@ export default function LiveClassesDisplay() {
           </div>
         </div>
 
-        {/* Live Classes Grid */}
-        {filteredClasses.length === 0 ? (
+        {/* Loading State */}
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <p className="mt-4 text-gray-600">Loading live sessions...</p>
+          </div>
+        ) : filteredClasses.length === 0 ? (
           <div className="text-center py-12">
             <VideoIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-600 mb-2">
@@ -344,25 +484,53 @@ export default function LiveClassesDisplay() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredClasses.map((liveClass, index) => (
               <motion.div
                 key={liveClass._id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
+                className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl hover:scale-105 transition-all duration-300"
               >
                 {/* Thumbnail */}
-                <div className="relative h-48 bg-gradient-to-br from-blue-500 to-green-500 overflow-hidden">
-                  {/* Background Image */}
-                  <div 
-                    className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                    style={{
-                      backgroundImage: `url(${liveClass.thumbnail || '/images/ca-default.jpg'})`
+                <div className="relative h-48 overflow-hidden">
+                  <img 
+                    src={liveClass.imageUrl || liveClass.thumbnail || '/images/live-class.jpg'} 
+                    alt={liveClass.title}
+                    className="w-full h-full object-cover transition-opacity duration-300"
+                    onLoad={(e) => {
+                      console.log('✅ Image loaded successfully:', liveClass.imageUrl || liveClass.thumbnail);
+                      e.currentTarget.style.opacity = '1';
+                      // Hide loading placeholder
+                      const loadingPlaceholder = e.currentTarget.parentElement?.querySelector('.loading-placeholder') as HTMLElement | null;
+                      if (loadingPlaceholder) {
+                        loadingPlaceholder.style.display = 'none';
+                      }
                     }}
+                    onError={(e) => {
+                      console.log('❌ Image failed to load:', liveClass.imageUrl || liveClass.thumbnail);
+                      // Try different fallback strategies
+                      const currentSrc = e.currentTarget.src;
+                      if (currentSrc.includes('/uploads/')) {
+                        // If it's an uploaded image that failed, try client fallback
+                        e.currentTarget.src = '/images/live-class.jpg';
+                      } else if (currentSrc.includes('/images/')) {
+                        // If it's a client image that failed, try a different fallback
+                        e.currentTarget.src = '/images/accounting.webp';
+                      } else {
+                        // If it's a full URL that failed, try default fallback
+                        e.currentTarget.src = '/images/live-class.jpg';
+                      }
+                    }}
+                    style={{ opacity: 0 }}
                   />
-                  <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+                  {/* Loading placeholder */}
+                  <div className="loading-placeholder absolute inset-0 bg-gray-200 flex items-center justify-center">
+                    <div className="text-gray-400 text-sm">Loading image...</div>
+                  </div>
+                  {/* Overlay for text readability */}
+                  <div className="absolute inset-0 bg-opacity-10"></div>
                   <div className="absolute top-4 left-4">
                     <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(liveClass.status)}`}>
                       {getStatusIcon(liveClass.status)}
@@ -370,11 +538,11 @@ export default function LiveClassesDisplay() {
                     </span>
                   </div>
                   <div className="absolute bottom-4 left-4 right-4">
-                    <h3 className="text-white font-bold text-lg mb-1">
+                    <h3 className="text-white font-bold text-lg mb-1 drop-shadow-lg">
                       {liveClass.title}
                     </h3>
-                    <p className="text-white text-sm opacity-90">
-                      {liveClass.category}
+                    <p className="text-white text-sm opacity-90 drop-shadow-md">
+                      {liveClass.subtitle || liveClass.category}
                     </p>
                   </div>
                 </div>
@@ -383,7 +551,12 @@ export default function LiveClassesDisplay() {
                 <div className="p-6">
                   <div className="flex items-center gap-2 mb-3">
                     <UserIcon className="w-4 h-4 text-gray-500" />
-                    <span className="text-sm text-gray-600">{liveClass.instructor}</span>
+                    <div>
+                      <span className="text-sm font-medium text-gray-700">{liveClass.instructor}</span>
+                      {liveClass.instructorBio && (
+                        <p className="text-xs text-gray-500">{liveClass.instructorBio}</p>
+                      )}
+                    </div>
                   </div>
 
                   <p className="text-gray-600 text-sm mb-4 line-clamp-2">
@@ -406,38 +579,55 @@ export default function LiveClassesDisplay() {
                     <div className="flex items-center gap-2">
                       <VideoIcon className="w-4 h-4 text-gray-500" />
                       <span className="text-sm text-gray-600">
-                        {liveClass.currentParticipants}/{liveClass.maxParticipants} participants
+                        {liveClass.enrolledCount}/{liveClass.maxParticipants} participants
                       </span>
+                    </div>
+                    {/* Progress bar */}
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${(liveClass.enrolledCount / liveClass.maxParticipants) * 100}%` }}
+                      ></div>
                     </div>
                   </div>
 
                   {/* Price */}
                   <div className="mb-4">
-                    <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
+                    <span className="text-2xl font-bold bg-gradient-to-r from-green-500 to-blue-500 bg-clip-text text-transparent">
                       {liveClass.price === 0 ? 'Free' : `₹${liveClass.price}`}
                     </span>
                   </div>
 
                   {/* Action Button */}
+                  {liveClass.isEnrolled ? (
                   <button
-                    onClick={() => handleJoinClass(liveClass._id, liveClass.meetingLink || '', liveClass.isEnrolled || false)}
+                      onClick={() => handleJoinClass(liveClass._id, liveClass.meetingLink || '', true)}
                     disabled={liveClass.status === 'completed'}
-                    className={`w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
+                      className={`w-full py-3 px-4 rounded-xl font-medium transition-all duration-200 ${
                       liveClass.status === 'live'
-                        ? liveClass.isEnrolled
                           ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg'
-                          : 'bg-gradient-to-r from-gray-400 to-gray-500 text-white shadow-lg cursor-not-allowed'
                         : liveClass.status === 'upcoming'
-                        ? liveClass.isEnrolled
                           ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg'
-                          : 'bg-gradient-to-r from-gray-400 to-gray-500 text-white shadow-lg cursor-not-allowed'
-                        : 'bg-gradient-to-r from-blue-400 to-green-400 text-white shadow-lg cursor-default'
+                          : 'bg-gray-300 text-gray-500 cursor-default'
                     }`}
                   >
-                    {liveClass.status === 'live' && (liveClass.isEnrolled ? 'Join Live Class' : 'Not Enrolled')}
-                    {liveClass.status === 'upcoming' && (liveClass.isEnrolled ? 'Join When Live' : 'Not Enrolled')}
+                      {liveClass.status === 'live' && 'Join Live Class'}
+                      {liveClass.status === 'upcoming' && 'Join When Live'}
                     {liveClass.status === 'completed' && 'Class Completed'}
                   </button>
+                  ) : (
+                    <button
+                      onClick={() => handleEnroll(liveClass._id)}
+                      disabled={liveClass.status === 'completed' || liveClass.enrolledCount >= liveClass.maxParticipants}
+                      className={`w-full py-3 px-4 rounded-xl font-medium transition-all duration-200 ${
+                        liveClass.status === 'completed' || liveClass.enrolledCount >= liveClass.maxParticipants
+                          ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                          : 'bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white shadow-lg'
+                      }`}
+                    >
+                      {liveClass.enrolledCount >= liveClass.maxParticipants ? 'Session Full' : 'Enroll Now'}
+                    </button>
+                  )}
                 </div>
               </motion.div>
             ))}
