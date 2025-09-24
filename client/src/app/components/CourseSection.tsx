@@ -148,7 +148,13 @@ export default function CourseSection() {
               {/* Course Image */}
               <div className="relative h-48 w-full">
                 <Image
-                  src={course.image}
+                  src={
+                    course.image
+                      ? course.image.startsWith("http")
+                        ? course.image
+                        : `${API_BASE}${course.image}`
+                      : "/images/accounting.webp"
+                  }
                   alt={course.title}
                   fill
                   className="object-cover"
@@ -208,7 +214,7 @@ export default function CourseSection() {
         {/* View All Courses Button */}
         <div className="text-center mt-12">
           <button
-            onClick={() => router.push("/courses")}
+            onClick={() => router.push("/course")}
             className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-300"
           >
             View All Courses ({courses.length})
