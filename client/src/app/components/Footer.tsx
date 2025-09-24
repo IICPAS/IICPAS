@@ -49,27 +49,27 @@ export default function Footer() {
     socialLinks: [
       {
         platform: "Facebook",
-        href: "https://facebook.com/iicpa",
+        href: "https://www.facebook.com/profile.php?id=61581453864987",
         icon: "FaFacebook",
       },
       {
         platform: "Twitter",
-        href: "https://twitter.com/iicpa",
+        href: "https://twitter.com/iicpainstitute",
         icon: "FaTwitter",
       },
       {
         platform: "LinkedIn",
-        href: "https://linkedin.com/company/iicpa",
+        href: "https://linkedin.com/company/iicpa-institute",
         icon: "FaLinkedin",
       },
       {
         platform: "Instagram",
-        href: "https://instagram.com/iicpa",
+        href: "https://instagram.com/iicpainstitute",
         icon: "FaInstagram",
       },
       {
         platform: "YouTube",
-        href: "https://youtube.com/iicpa",
+        href: "https://youtube.com/@iicpainstitute",
         icon: "FaYoutube",
       },
     ],
