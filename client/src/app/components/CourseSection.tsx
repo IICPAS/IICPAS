@@ -14,6 +14,7 @@ interface Course {
   discount?: number;
   status: string;
   description?: string;
+  createdAt?: string;
 }
 
 export default function CourseSection() {
@@ -81,12 +82,17 @@ export default function CourseSection() {
               discount: course.discount || 0,
               status: course.status || "Active",
               description: course.description || "",
+              createdAt: course.createdAt || new Date().toISOString(),
             }));
 
-            // Filter only active courses
-            const activeCourses = transformedCourses.filter(
-              (course) => course.status === "Active"
-            );
+            // Filter only active courses and sort by creation date (newest first)
+            const activeCourses = transformedCourses
+              .filter((course) => course.status === "Active")
+              .sort(
+                (a, b) =>
+                  new Date(b.createdAt || 0).getTime() -
+                  new Date(a.createdAt || 0).getTime()
+              );
             setCourses(activeCourses);
           } else {
             setCourses(sampleCourses);
@@ -134,7 +140,7 @@ export default function CourseSection() {
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {courses.map((course) => (
+          {courses.slice(0, 3).map((course) => (
             <div
               key={course._id}
               className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
@@ -205,7 +211,7 @@ export default function CourseSection() {
             onClick={() => router.push("/courses")}
             className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-300"
           >
-            View All Courses
+            View All Courses ({courses.length})
           </button>
         </div>
       </div>
