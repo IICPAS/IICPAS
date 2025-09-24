@@ -65,6 +65,7 @@ import {
   FaList,
   FaUserTie,
   FaArrowLeft,
+  FaComments,
 } from "react-icons/fa";
 import CompanyTab from "./CompanyTab";
 import CourseArea from "./CourseBuilder";
@@ -91,6 +92,7 @@ const ALL_MODULES = [
   { id: "live-session", label: "Live Session", icon: <FaCalendarAlt /> },
   { id: "newsletter-subscriptions", label: "Newsletter Subscriptions", icon: <FaEnvelope /> },
   { id: "enquiries", label: "Enquiries", icon: <FaEnvelope /> },
+  { id: "messages", label: "Messages", icon: <FaComments /> },
   { id: "jobs", label: "Jobs", icon: <FaBriefcase /> },
   { id: "news", label: "News", icon: <FaNewspaper /> },
   { id: "students", label: "Students", icon: <FaUserGraduate /> },
@@ -127,7 +129,6 @@ const WEBSITE_SETTINGS_MODULES = [
   { id: "ip-whitelist", label: "IP Whitelisting", icon: <FaShieldAlt /> },
   { id: "demo-digital-hub", label: "Demo Digital Hub", icon: <FaBook /> },
   { id: "faq", label: "FAQ", icon: <FaUserTie /> },
-  { id: "messages", label: "Messages", icon: <FaEnvelope /> },
   { id: "bulk-email", label: "Bulk Email", icon: <FaEnvelope /> },
   { id: "contact-info", label: "Contact Information", icon: <FaEnvelope /> },
 ];
