@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { College } from "../models/College.js";
+import College from "../models/College.js";
 import { generateToken } from "../utils/generateToken.js";
 import dotenv from "dotenv";
 

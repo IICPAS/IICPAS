@@ -186,6 +186,7 @@ function DigitalHubContent() {
   const router = useRouter();
   const courseId = searchParams.get("courseId");
   const chapterId = searchParams.get("chapterId");
+  const isDemo = searchParams.get("demo") === "true";
   const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
   const [chapterDropdownOpen, setChapterDropdownOpen] = useState(false);
@@ -214,6 +215,11 @@ function DigitalHubContent() {
   const [selectedTopic, setSelectedTopic] = useState<TopicData | null>(null);
   const [topicContent, setTopicContent] = useState("");
   const [loading, setLoading] = useState(true);
+  
+  // Demo mode state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [showDemoLimit, setShowDemoLimit] = useState(false);
 
   // New state for case studies and assignments
   const [caseStudies, setCaseStudies] = useState<CaseStudy[]>([]);
@@ -361,6 +367,25 @@ function DigitalHubContent() {
     [fetchCaseStudies, fetchAssignments]
   );
 
+  // Function to split content into pages
+  const splitContentIntoPages = (content: string, maxPages: number = 3) => {
+    if (!content) return { pages: [], totalPages: 0 };
+    
+    // Split content by paragraphs or sections
+    const paragraphs = content.split(/(?=<h[1-6]|<\/p>|<\/div>|<\/section>)/i);
+    const pages = [];
+    const itemsPerPage = Math.ceil(paragraphs.length / maxPages);
+    
+    for (let i = 0; i < paragraphs.length; i += itemsPerPage) {
+      const pageContent = paragraphs.slice(i, i + itemsPerPage).join('');
+      if (pageContent.trim()) {
+        pages.push(pageContent);
+      }
+    }
+    
+    return { pages, totalPages: Math.min(pages.length, maxPages) };
+  };
+
   // Handle topic selection
   const handleTopicSelect = (topic: TopicData) => {
     console.log("Topic selected:", topic);
@@ -372,10 +397,27 @@ function DigitalHubContent() {
     if (topic.content) {
       try {
         const decodedContent = atob(topic.content);
-        setTopicContent(decodedContent);
+        
+        if (isDemo) {
+          // For demo mode, split content into pages and limit to 3 pages
+          const { pages, totalPages } = splitContentIntoPages(decodedContent, 3);
+          setTotalPages(totalPages);
+          setCurrentPage(1);
+          setTopicContent(pages[0] || "Content not available");
+          setShowDemoLimit(totalPages > 0);
+        } else {
+          // For full mode, show all content
+          setTopicContent(decodedContent);
+          setTotalPages(1);
+          setCurrentPage(1);
+          setShowDemoLimit(false);
+        }
       } catch (error) {
         console.error("Error decoding topic content:", error);
         setTopicContent(topic.content || "Content not available");
+        setTotalPages(1);
+        setCurrentPage(1);
+        setShowDemoLimit(false);
       }
     }
 
@@ -1584,13 +1626,108 @@ function DigitalHubContent() {
                 <>
                   <h1 className="text-4xl font-bold text-green-600 mb-8">
                     {selectedTopic.title}
+                    {isDemo && (
+                      <span className="ml-4 text-sm bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full">
+                        DEMO MODE
+                      </span>
+                    )}
                   </h1>
+                  
+                  {/* Demo Limit Banner */}
+                  {isDemo && showDemoLimit && (
+                    <div className="mb-6 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center">
+                            <span className="text-yellow-800 font-bold text-sm">!</span>
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-semibold text-yellow-800">
+                              Demo Content - Page {currentPage} of {totalPages}
+                            </h3>
+                            <p className="text-yellow-700 text-sm">
+                              You're viewing a preview of this course content. 
+                              {totalPages > 1 && ` Only the first ${totalPages} pages are available in demo mode.`}
+                            </p>
+                          </div>
+                        </div>
+                        <button 
+                          onClick={() => router.push('/student-login')}
+                          className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-300 shadow-md hover:shadow-lg"
+                        >
+                          Get Full Access
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  
                   <div className="text-lg leading-relaxed bg-white border border-gray-200 rounded-lg p-8 shadow-sm text-gray-900">
                     <div
                       dangerouslySetInnerHTML={{
                         __html: topicContent,
                       }}
                     />
+                    
+                    {/* Pagination Controls for Demo Mode */}
+                    {isDemo && totalPages > 1 && (
+                      <div className="mt-8 flex items-center justify-between">
+                        <button
+                          onClick={() => {
+                            if (currentPage > 1) {
+                              const { pages } = splitContentIntoPages(atob(selectedTopic?.content || ""), 3);
+                              setCurrentPage(currentPage - 1);
+                              setTopicContent(pages[currentPage - 2] || "");
+                            }
+                          }}
+                          disabled={currentPage === 1}
+                          className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
+                            currentPage === 1
+                              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                              : "bg-blue-500 text-white hover:bg-blue-600 shadow-md hover:shadow-lg"
+                          }`}
+                        >
+                          ← Previous
+                        </button>
+                        
+                        <div className="flex items-center space-x-2">
+                          {Array.from({ length: totalPages }, (_, i) => (
+                            <button
+                              key={i}
+                              onClick={() => {
+                                const { pages } = splitContentIntoPages(atob(selectedTopic?.content || ""), 3);
+                                setCurrentPage(i + 1);
+                                setTopicContent(pages[i] || "");
+                              }}
+                              className={`w-8 h-8 rounded-full font-medium transition-all duration-300 ${
+                                currentPage === i + 1
+                                  ? "bg-blue-500 text-white shadow-md"
+                                  : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                              }`}
+                            >
+                              {i + 1}
+                            </button>
+                          ))}
+                        </div>
+                        
+                        <button
+                          onClick={() => {
+                            if (currentPage < totalPages) {
+                              const { pages } = splitContentIntoPages(atob(selectedTopic?.content || ""), 3);
+                              setCurrentPage(currentPage + 1);
+                              setTopicContent(pages[currentPage] || "");
+                            }
+                          }}
+                          disabled={currentPage === totalPages}
+                          className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
+                            currentPage === totalPages
+                              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                              : "bg-blue-500 text-white hover:bg-blue-600 shadow-md hover:shadow-lg"
+                          }`}
+                        >
+                          Next →
+                        </button>
+                      </div>
+                    )}
 
                     {/* Quiz Questions - Directly in main content */}
                     {quizLoading ? (

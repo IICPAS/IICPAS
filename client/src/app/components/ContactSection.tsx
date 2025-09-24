@@ -11,32 +11,33 @@ export default function ContactSection() {
   const [contactData, setContactData] = useState({
     title: "Contact Us",
     subtitle: "Let's Get in Touch",
-    description: "Ready to start your learning journey? Get in touch with us today!",
+    description:
+      "Ready to start your learning journey? Get in touch with us today!",
     contactInfo: {
       phone: {
         number: "+91 98765 43210",
-        label: "Phone"
+        label: "Phone",
       },
       email: {
         address: "support@iicpa.org",
-        label: "Email"
+        label: "Email",
       },
       address: {
         text: "123 Knowledge Park, New Delhi, India",
-        label: "Address"
-      }
+        label: "Address",
+      },
     },
     form: {
       buttonText: "Send Message",
       successMessage: "Message sent successfully!",
-      errorMessage: "Something went wrong. Please try again."
+      errorMessage: "Something went wrong. Please try again.",
     },
     colors: {
       title: "text-green-600",
       subtitle: "text-gray-900",
       description: "text-gray-600",
-      background: "bg-white"
-    }
+      background: "bg-white",
+    },
   });
   const [formData, setFormData] = useState({
     name: "",
@@ -52,7 +53,8 @@ export default function ContactSection() {
 
   const fetchContactData = async () => {
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const API_BASE =
+        process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
       const response = await fetch(`${API_BASE}/contact`);
       if (response.ok) {
         const data = await response.json();
@@ -75,7 +77,8 @@ export default function ContactSection() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+    const API_BASE_URL =
+      process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
 
     try {
       await axios.post(`${API_BASE_URL}/contact`, formData);
@@ -96,9 +99,10 @@ export default function ContactSection() {
     );
   }
 
-
   return (
-    <section className={`relative py-20 ${contactData.colors.background} overflow-hidden`}>
+    <section
+      className={`relative py-20 ${contactData.colors.background} overflow-hidden`}
+    >
       {/* Subtle Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
@@ -144,25 +148,30 @@ export default function ContactSection() {
             >
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-12 h-1 bg-gradient-to-r from-green-500 to-blue-500 rounded-full"></div>
-                <span className={`${contactData.colors.title} font-bold text-lg uppercase tracking-wider`}>
+                <span
+                  className={`${contactData.colors.title} font-bold text-lg uppercase tracking-wider`}
+                >
                   {contactData.title}
                 </span>
                 <div className="w-12 h-1 bg-gradient-to-r from-blue-500 to-green-500 rounded-full"></div>
               </div>
-              
 
-              <h2 className={`text-4xl lg:text-5xl font-bold ${contactData.colors.subtitle} leading-tight mb-6`}>
+              <h2
+                className={`text-4xl lg:text-5xl font-bold ${contactData.colors.subtitle} leading-tight mb-6`}
+              >
                 {contactData.subtitle}
               </h2>
-              
-              <p className={`text-lg ${contactData.colors.description} leading-relaxed`}>
+
+              <p
+                className={`text-lg ${contactData.colors.description} leading-relaxed`}
+              >
                 {contactData.description}
               </p>
             </motion.div>
 
             {/* Modern Form */}
-            <motion.form 
-              className="space-y-6" 
+            <motion.form
+              className="space-y-6"
               onSubmit={handleSubmit}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -238,14 +247,14 @@ export default function ContactSection() {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.02, delay: 0.01 }}
-                whileHover={{ 
+                whileHover={{
                   scale: 1.02,
-                  rotateY: 2
+                  rotateY: 2,
                 }}
                 whileTap={{ scale: 0.98 }}
                 style={{
-                  transform: 'translateZ(10px)',
-                  boxShadow: '0 10px 25px -5px rgba(34, 197, 94, 0.4)'
+                  transform: "translateZ(10px)",
+                  boxShadow: "0 10px 25px -5px rgba(34, 197, 94, 0.4)",
                 }}
               >
                 {contactData.form.buttonText}
@@ -265,13 +274,13 @@ export default function ContactSection() {
             initial={{ opacity: 0, x: 50 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.02, delay: 0.01 }}
-            whileHover={{ 
+            whileHover={{
               scale: 1.02,
-              rotateY: 2
+              rotateY: 2,
             }}
             style={{
-              transform: 'translateZ(20px)',
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)'
+              transform: "translateZ(20px)",
+              boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.15)",
             }}
           >
             <motion.div
@@ -281,7 +290,7 @@ export default function ContactSection() {
               transition={{ duration: 0.02, delay: 0.01 }}
             >
               {/* Phone Contact */}
-              <motion.div 
+              <motion.div
                 className="flex items-start gap-4 group"
                 initial={{ opacity: 0, x: 20 }}
                 whileInView={{ opacity: 1, x: 0 }}
@@ -290,33 +299,37 @@ export default function ContactSection() {
               >
                 <motion.div
                   className="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-500 to-blue-500 flex items-center justify-center text-white shadow-lg transform-gpu"
-                  whileHover={{ 
+                  whileHover={{
                     scale: 1.1,
-                    rotate: 5
+                    rotate: 5,
                   }}
                   animate={{
                     y: [0, -3, 0],
-                    rotate: [0, 1, -1, 0]
+                    rotate: [0, 1, -1, 0],
                   }}
                   transition={{
                     duration: 4,
-                    ease: "easeInOut"
+                    ease: "easeInOut",
                   }}
                   style={{
-                    transform: 'translateZ(20px)',
-                    boxShadow: '0 10px 25px -5px rgba(34, 197, 94, 0.4)'
+                    transform: "translateZ(20px)",
+                    boxShadow: "0 10px 25px -5px rgba(34, 197, 94, 0.4)",
                   }}
                 >
                   <PhoneCall size={20} />
                 </motion.div>
                 <div>
-                  <p className="font-bold text-gray-900 text-lg mb-1">{contactData.contactInfo.phone.label}</p>
-                  <p className="text-gray-600">{contactData.contactInfo.phone.number}</p>
+                  <p className="font-bold text-gray-900 text-lg mb-1">
+                    {contactData.contactInfo.phone.label}
+                  </p>
+                  <p className="text-gray-600">
+                    {contactData.contactInfo.phone.number}
+                  </p>
                 </div>
               </motion.div>
 
               {/* Email Contact */}
-              <motion.div 
+              <motion.div
                 className="flex items-start gap-4 group"
                 initial={{ opacity: 0, x: 20 }}
                 whileInView={{ opacity: 1, x: 0 }}
@@ -325,34 +338,38 @@ export default function ContactSection() {
               >
                 <motion.div
                   className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white shadow-lg transform-gpu"
-                  whileHover={{ 
+                  whileHover={{
                     scale: 1.1,
-                    rotate: 5
+                    rotate: 5,
                   }}
                   animate={{
                     y: [0, -3, 0],
-                    rotate: [0, 1, -1, 0]
+                    rotate: [0, 1, -1, 0],
                   }}
                   transition={{
                     duration: 4,
                     ease: "easeInOut",
-                    delay: 1
+                    delay: 1,
                   }}
                   style={{
-                    transform: 'translateZ(20px)',
-                    boxShadow: '0 10px 25px -5px rgba(59, 130, 246, 0.4)'
+                    transform: "translateZ(20px)",
+                    boxShadow: "0 10px 25px -5px rgba(59, 130, 246, 0.4)",
                   }}
                 >
                   <Mail size={20} />
                 </motion.div>
                 <div>
-                  <p className="font-bold text-gray-900 text-lg mb-1">{contactData.contactInfo.email.label}</p>
-                  <p className="text-gray-600">{contactData.contactInfo.email.address}</p>
+                  <p className="font-bold text-gray-900 text-lg mb-1">
+                    {contactData.contactInfo.email.label}
+                  </p>
+                  <p className="text-gray-600">
+                    {contactData.contactInfo.email.address}
+                  </p>
                 </div>
               </motion.div>
 
               {/* Address Contact */}
-              <motion.div 
+              <motion.div
                 className="flex items-start gap-4 group"
                 initial={{ opacity: 0, x: 20 }}
                 whileInView={{ opacity: 1, x: 0 }}
@@ -361,28 +378,30 @@ export default function ContactSection() {
               >
                 <motion.div
                   className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white shadow-lg transform-gpu"
-                  whileHover={{ 
+                  whileHover={{
                     scale: 1.1,
-                    rotate: 5
+                    rotate: 5,
                   }}
                   animate={{
                     y: [0, -3, 0],
-                    rotate: [0, 1, -1, 0]
+                    rotate: [0, 1, -1, 0],
                   }}
                   transition={{
                     duration: 4,
                     ease: "easeInOut",
-                    delay: 2
+                    delay: 2,
                   }}
                   style={{
-                    transform: 'translateZ(20px)',
-                    boxShadow: '0 10px 25px -5px rgba(147, 51, 234, 0.4)'
+                    transform: "translateZ(20px)",
+                    boxShadow: "0 10px 25px -5px rgba(147, 51, 234, 0.4)",
                   }}
                 >
                   <MapPin size={20} />
                 </motion.div>
                 <div>
-                  <p className="font-bold text-gray-900 text-lg mb-1">{contactData.contactInfo.address.label}</p>
+                  <p className="font-bold text-gray-900 text-lg mb-1">
+                    {contactData.contactInfo.address.label}
+                  </p>
                   <p className="text-gray-600">
                     {contactData.contactInfo.address.text}
                   </p>
@@ -401,8 +420,12 @@ export default function ContactSection() {
       </div>
 
       <style jsx>{`
-        .perspective-1000 { perspective: 1000px; }
-        .transform-gpu { transform-style: preserve-3d; }
+        .perspective-1000 {
+          perspective: 1000px;
+        }
+        .transform-gpu {
+          transform-style: preserve-3d;
+        }
       `}</style>
     </section>
   );

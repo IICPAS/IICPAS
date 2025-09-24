@@ -15,7 +15,7 @@ import {
   FaBookOpen,
 } from "react-icons/fa";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8080';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080";
 
 export default function SearchCenter() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -33,7 +33,7 @@ export default function SearchCenter() {
         setLoading(true);
         const response = await axios.get(`${API_BASE}/api/v1/centers/public`);
         const centersData = response.data.data || [];
-        
+
         // Transform API data to match component structure
         const transformedCenters = centersData.map((center, index) => ({
           id: center._id,
@@ -47,17 +47,21 @@ export default function SearchCenter() {
           students: center.capacity || 50, // Use capacity as student count
           courses: center.courses?.length || 0,
           image: "/images/college.jpg", // Default image
-          availableCourses: center.courses?.map(course => course.title) || [],
+          availableCourses: center.courses?.map((course) => course.title) || [],
           status: center.status,
           facilities: center.facilities || [],
-          description: center.description || ""
+          description: center.description || "",
         }));
-        
+
         console.log("Transformed centers:", transformedCenters);
-        console.log("Available cities:", [...new Set(transformedCenters.map(center => center.city))]);
-        console.log("Available states:", [...new Set(transformedCenters.map(center => center.state))]);
+        console.log("Available cities:", [
+          ...new Set(transformedCenters.map((center) => center.city)),
+        ]);
+        console.log("Available states:", [
+          ...new Set(transformedCenters.map((center) => center.state)),
+        ]);
         console.log("Sample center data:", transformedCenters[0]);
-        
+
         setCenters(transformedCenters);
         setFilteredCenters([]); // Don't show any centers initially
         setHasSearched(false); // Don't show results until user searches
@@ -65,7 +69,7 @@ export default function SearchCenter() {
         console.error("Error fetching centers:", error);
         // Fallback to empty array if API fails
         console.log("API failed, using fallback data for testing");
-        
+
         // Add some test data for debugging
         const testCenters = [
           {
@@ -83,10 +87,10 @@ export default function SearchCenter() {
             availableCourses: ["CA Foundation", "CA Intermediate", "CA Final"],
             status: "active",
             facilities: ["Library", "Computer Lab"],
-            description: "Premier CA coaching center in Delhi"
+            description: "Premier CA coaching center in Delhi",
           },
           {
-            id: "test2", 
+            id: "test2",
             name: "IICPA Mumbai Center",
             city: "Mumbai",
             state: "Maharashtra",
@@ -97,13 +101,18 @@ export default function SearchCenter() {
             students: 200,
             courses: 6,
             image: "/images/college.jpg",
-            availableCourses: ["CA Foundation", "CA Intermediate", "CA Final", "CS Foundation"],
+            availableCourses: [
+              "CA Foundation",
+              "CA Intermediate",
+              "CA Final",
+              "CS Foundation",
+            ],
             status: "active",
             facilities: ["Library", "Computer Lab", "Auditorium"],
-            description: "Leading CA coaching center in Mumbai"
-          }
+            description: "Leading CA coaching center in Mumbai",
+          },
         ];
-        
+
         setCenters(testCenters);
         setFilteredCenters([]); // Don't show any centers initially
         setHasSearched(false); // Don't show results until user searches
@@ -122,7 +131,7 @@ export default function SearchCenter() {
     console.log("Selected location:", selectedLocation);
     console.log("Selected course:", selectedCourse);
     console.log("Available centers:", centers.length);
-    
+
     setHasSearched(true);
     let filtered = centers;
 
@@ -137,8 +146,9 @@ export default function SearchCenter() {
     }
 
     if (selectedLocation && selectedLocation !== "All Locations") {
-      filtered = filtered.filter((center) =>
-        center.state === selectedLocation || center.city === selectedLocation
+      filtered = filtered.filter(
+        (center) =>
+          center.state === selectedLocation || center.city === selectedLocation
       );
     }
 
@@ -163,17 +173,19 @@ export default function SearchCenter() {
   // Dynamic locations from centers data
   const locations = [
     "All Locations",
-    ...Array.from(new Set([
-      ...centers.map(center => center.city).filter(Boolean),
-      ...centers.map(center => center.state).filter(Boolean)
-    ]))
+    ...Array.from(
+      new Set([
+        ...centers.map((center) => center.city).filter(Boolean),
+        ...centers.map((center) => center.state).filter(Boolean),
+      ])
+    ),
   ];
 
   // Add fallback locations if no centers are loaded
   const fallbackLocations = [
     "All Locations",
     "Delhi",
-    "Mumbai", 
+    "Mumbai",
     "Bangalore",
     "Chennai",
     "Kolkata",
@@ -181,7 +193,7 @@ export default function SearchCenter() {
     "Pune",
     "Ahmedabad",
     "Jaipur",
-    "Lucknow"
+    "Lucknow",
   ];
 
   const finalLocations = locations.length > 1 ? locations : fallbackLocations;
@@ -189,9 +201,12 @@ export default function SearchCenter() {
   // Dynamic courses from centers data
   const courses = [
     "All Courses",
-    ...Array.from(new Set(centers.flatMap(center => center.availableCourses).filter(Boolean)))
+    ...Array.from(
+      new Set(
+        centers.flatMap((center) => center.availableCourses).filter(Boolean)
+      )
+    ),
   ];
-
 
   const handleBookCourse = (centerId: number, courseName: string) => {
     // This would typically redirect to a booking page or open a modal
@@ -215,7 +230,9 @@ export default function SearchCenter() {
   return (
     <section className="relative py-20 bg-white overflow-hidden">
       <style jsx>{`
-        input, select, button {
+        input,
+        select,
+        button {
           pointer-events: auto !important;
           cursor: pointer !important;
           position: relative;
@@ -242,7 +259,8 @@ export default function SearchCenter() {
           opacity: 1 !important;
           visibility: visible !important;
         }
-        input, select {
+        input,
+        select {
           text-rendering: optimizeLegibility;
           -webkit-font-smoothing: antialiased;
           -moz-osx-font-smoothing: grayscale;
@@ -283,13 +301,13 @@ export default function SearchCenter() {
 
       <div className="relative max-w-7xl mx-auto px-6">
         {/* Section Header */}
-        <motion.div 
+        <motion.div
           className="text-center mb-12"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          <motion.div 
+          <motion.div
             className="flex items-center justify-center gap-3 mb-6"
             initial={{ opacity: 0, scale: 0.8 }}
             whileInView={{ opacity: 1, scale: 1 }}
@@ -301,19 +319,26 @@ export default function SearchCenter() {
             </span>
             <div className="w-12 h-1 bg-gradient-to-r from-blue-500 to-green-500 rounded-full"></div>
           </motion.div>
-          
-          <motion.h2 
+
+          <motion.h2
             className="text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-6"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1 }}
           >
             Search & Book
-            <span className="bg-gradient-to-r from-green-500 to-blue-500 bg-clip-text text-transparent"> Courses</span> at
-            <span className="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent"> IICPA Centers</span>
+            <span className="bg-gradient-to-r from-green-500 to-blue-500 bg-clip-text text-transparent">
+              {" "}
+              Courses
+            </span>{" "}
+            at
+            <span className="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
+              {" "}
+              IICPA Centers
+            </span>
           </motion.h2>
-          
-          <motion.p 
+
+          <motion.p
             className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -325,21 +350,24 @@ export default function SearchCenter() {
         </motion.div>
 
         {/* 3D Search Filters */}
-        <motion.div 
+        <motion.div
           className="search-container bg-white/95 rounded-3xl shadow-2xl p-8 mb-12 border border-gray-200/50 transform-gpu"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3 }}
           style={{
-            transform: 'translateZ(20px)',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)'
+            transform: "translateZ(20px)",
+            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.15)",
           }}
         >
           <div className="grid md:grid-cols-4 gap-6">
             {/* Search Input */}
             <div className="relative">
               <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white bg-green-500 p-2 rounded-lg shadow-lg z-10 pointer-events-none">
-                <FaSearch className="text-sm font-bold" style={{ fontSize: '14px' }} />
+                <FaSearch
+                  className="text-sm font-bold"
+                  style={{ fontSize: "14px" }}
+                />
               </div>
               <input
                 type="text"
@@ -351,14 +379,17 @@ export default function SearchCenter() {
                   console.log("Search term state updated");
                 }}
                 className="w-full pl-20 pr-4 py-4 border border-gray-300/50 rounded-2xl focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white transition-all duration-300 hover:bg-white hover:border-green-400 hover:shadow-lg hover:shadow-green-100 hover:scale-[1.02]"
-                style={{ pointerEvents: 'auto', zIndex: 10 }}
+                style={{ pointerEvents: "auto", zIndex: 10 }}
               />
             </div>
 
             {/* Location Filter */}
             <div className="relative">
               <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white bg-blue-500 p-2 rounded-lg shadow-lg z-10 pointer-events-none">
-                <FaMapMarkerAlt className="text-sm font-bold" style={{ fontSize: '14px' }} />
+                <FaMapMarkerAlt
+                  className="text-sm font-bold"
+                  style={{ fontSize: "14px" }}
+                />
               </div>
               <select
                 value={selectedLocation}
@@ -371,7 +402,7 @@ export default function SearchCenter() {
                 aria-label="Select location"
                 title="Select location"
                 disabled={loading}
-                style={{ pointerEvents: 'auto', zIndex: 10 }}
+                style={{ pointerEvents: "auto", zIndex: 10 }}
               >
                 {loading ? (
                   <option value="">Loading locations...</option>
@@ -388,7 +419,10 @@ export default function SearchCenter() {
             {/* Course Filter */}
             <div className="relative">
               <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white bg-purple-500 p-2 rounded-lg shadow-lg z-10 pointer-events-none">
-                <FaBookOpen className="text-sm font-bold" style={{ fontSize: '14px' }} />
+                <FaBookOpen
+                  className="text-sm font-bold"
+                  style={{ fontSize: "14px" }}
+                />
               </div>
               <select
                 value={selectedCourse}
@@ -399,7 +433,7 @@ export default function SearchCenter() {
                 className="w-full pl-14 pr-4 py-4 border border-gray-300/50 rounded-2xl focus:ring-2 focus:ring-green-500 focus:border-transparent appearance-none bg-white transition-all duration-300 hover:bg-white hover:border-purple-400 hover:shadow-lg hover:shadow-purple-100 hover:scale-[1.02] cursor-pointer"
                 aria-label="Select course"
                 title="Select course"
-                style={{ pointerEvents: 'auto', zIndex: 10 }}
+                style={{ pointerEvents: "auto", zIndex: 10 }}
               >
                 {courses.map((course) => (
                   <option key={course} value={course}>
@@ -421,10 +455,10 @@ export default function SearchCenter() {
                 handleSearch();
               }}
               className="bg-gradient-to-r from-green-500 to-blue-600 text-white px-8 py-4 rounded-2xl font-semibold shadow-xl cursor-pointer"
-              style={{ 
-                pointerEvents: 'auto',
+              style={{
+                pointerEvents: "auto",
                 zIndex: 1000,
-                position: 'relative'
+                position: "relative",
               }}
             >
               Search Centers
@@ -554,164 +588,74 @@ export default function SearchCenter() {
             )}
           </div>
         )}
-
-        {/* Animated CTA Section */}
-        <motion.div 
-          className="text-center mt-12"
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-        >
-          <motion.div 
-            className="bg-gradient-to-r from-green-500 to-blue-600 rounded-2xl p-8 text-white relative overflow-hidden"
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            whileHover={{ 
-              scale: 1.02,
-              rotateY: 2
-            }}
-            style={{
-              transform: 'translateZ(20px)',
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)'
-            }}
-          >
-            {/* Animated Background Elements */}
-            <motion.div
-              className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl"
-              animate={{
-                scale: [1, 1.2, 1],
-                opacity: [0.3, 0.6, 0.3],
-              }}
-              transition={{
-                duration: 4,
-                ease: "easeInOut",
-              }}
-            />
-            <motion.div
-              className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full blur-2xl"
-              animate={{
-                scale: [1, 0.8, 1],
-                opacity: [0.4, 0.7, 0.4],
-              }}
-              transition={{
-                duration: 5,
-                ease: "easeInOut",
-              }}
-            />
-
-            <motion.h3 
-              className="text-3xl font-bold mb-4 relative z-10"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-            >
-              Can&apos;t Find Your Location?
-            </motion.h3>
-            
-            <motion.p 
-              className="text-lg mb-6 opacity-90 relative z-10"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.5 }}
-            >
-              We&apos;re expanding! Contact us to request a new center in your
-              area or explore our online learning options.
-            </motion.p>
-            
-            <motion.div 
-              className="flex flex-col sm:flex-row gap-4 justify-center relative z-10"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
-            >
-              <motion.div
-                whileHover={{ scale: 1.05, rotateY: 5 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Link
-                  href="/contact"
-                  className="bg-white text-green-600 hover:bg-gray-100 px-8 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
-                >
-                  Request New Center
-                </Link>
-              </motion.div>
-              
-              <motion.div
-                whileHover={{ scale: 1.05, rotateY: -5 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Link
-                  href="/courses"
-                  className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-green-600 px-8 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
-                >
-                  Explore Online Courses
-                </Link>
-              </motion.div>
-            </motion.div>
-          </motion.div>
-        </motion.div>
       </div>
 
       <style jsx>{`
-        .perspective-1000 { perspective: 1000px; }
-        .transform-gpu { transform-style: preserve-3d; }
-        .hover\\:shadow-3xl:hover { 
+        .perspective-1000 {
+          perspective: 1000px;
+        }
+        .transform-gpu {
+          transform-style: preserve-3d;
+        }
+        .hover\\:shadow-3xl:hover {
           box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.25);
         }
-        .hover\\:scale-110:hover { 
+        .hover\\:scale-110:hover {
           transform: scale(1.1);
         }
-        .hover\\:scale-\\[1\\.02\\]:hover { 
+        .hover\\:scale-\\[1\\.02\\]:hover {
           transform: scale(1.02);
         }
-        
+
         /* Ensure text remains crisp */
-        input, select {
+        input,
+        select {
           text-rendering: optimizeLegibility;
           -webkit-font-smoothing: antialiased;
           -moz-osx-font-smoothing: grayscale;
         }
-        
+
         /* Prevent blur on hover */
         .search-container:hover input,
         .search-container:hover select {
           filter: none !important;
           backdrop-filter: none !important;
         }
-        
+
         /* Icon positioning fixes */
         .relative {
           position: relative;
         }
-        
+
         /* Ensure icons stay visible and don't overlap */
         .absolute {
           position: absolute;
           z-index: 10 !important;
         }
-        
+
         /* Prevent icon hiding on hover */
         .search-container:hover .absolute {
           opacity: 1 !important;
           visibility: visible !important;
         }
-        
+
         /* Ensure proper spacing for icons */
         input[type="text"] {
           padding-left: 5rem !important;
         }
-        
+
         select {
           padding-left: 3.5rem !important;
         }
-        
+
         /* Ensure all interactive elements are clickable */
-        button, input, select {
+        button,
+        input,
+        select {
           pointer-events: auto !important;
           cursor: pointer !important;
         }
-        
+
         /* Override any motion component interference */
         .search-container button,
         .search-container input,
@@ -720,7 +664,7 @@ export default function SearchCenter() {
           position: relative;
           z-index: 10;
         }
-        
+
         /* Ensure motion components don't block clicks */
         [data-framer-motion] {
           pointer-events: auto !important;

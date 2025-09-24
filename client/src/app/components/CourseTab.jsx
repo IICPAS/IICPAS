@@ -195,7 +195,7 @@ export default function CourseTab() {
       );
       if (response.data.success) {
         const existingRating = response.data.data.find(
-          rating => rating.courseId._id === courseId
+          (rating) => rating.courseId._id === courseId
         );
         return existingRating;
       }
@@ -225,27 +225,26 @@ export default function CourseTab() {
 
     setSubmittingRating(true);
     try {
-      const response = await axios.post(
-        `${API}/api/v1/course-ratings/submit`,
-        {
-          studentId: studentId,
-          courseId: courseToRate._id,
-          rating: rating,
-          review: review
-        }
-      );
+      const response = await axios.post(`${API}/api/v1/course-ratings/submit`, {
+        studentId: studentId,
+        courseId: courseToRate._id,
+        rating: rating,
+        review: review,
+      });
 
       if (response.data.success) {
-        toast.success("Rating submitted successfully! It will be reviewed by admin.");
+        toast.success(
+          "Rating submitted successfully! It will be reviewed by admin."
+        );
         setShowRatingModal(false);
         setRating(0);
         setReview("");
         setCourseToRate(null);
-        
+
         // Update local state
-        setCourseRatings(prev => ({
+        setCourseRatings((prev) => ({
           ...prev,
-          [courseToRate._id]: { rating, review, status: "pending" }
+          [courseToRate._id]: { rating, review, status: "pending" },
         }));
       }
     } catch (error) {
@@ -745,7 +744,9 @@ export default function CourseTab() {
           <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-800 to-blue-800 bg-clip-text text-transparent mb-2">
             My Courses
           </h1>
-          <p className="text-gray-600 text-lg">Continue your learning journey</p>
+          <p className="text-gray-600 text-lg">
+            Continue your learning journey
+          </p>
         </div>
       </div>
 
@@ -776,11 +777,25 @@ export default function CourseTab() {
                           <img
                             src={
                               course.image
-                                ? `${API}${course.image}`
+                                ? course.image.startsWith("http")
+                                  ? course.image
+                                  : course.image.startsWith("/uploads/")
+                                  ? `${API}${course.image}`
+                                  : course.image.startsWith("/")
+                                  ? course.image
+                                  : `${API}${course.image}`
                                 : "/images/a1.jpeg"
                             }
                             alt={course.title}
-                             className="w-full h-64 object-cover transform transition-transform duration-500 group-hover:scale-110"
+                            className="w-full h-64 object-cover transform transition-transform duration-500 group-hover:scale-110"
+                            onError={(e) => {
+                              console.log("Image failed to load:", e);
+                              console.log(
+                                "Image src was:",
+                                e.currentTarget.src
+                              );
+                              e.currentTarget.src = "/images/a1.jpeg";
+                            }}
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
                         </div>
@@ -870,30 +885,34 @@ export default function CourseTab() {
                             View Course Details
                           </span>
                         </button>
-                        
+
                         {/* Rating Button - Show only if course is completed and not already rated */}
-                        {isCourseCompleted(course) && !courseRatings[course._id] && (
-                          <button
-                            onClick={() => {
-                              setCourseToRate(course);
-                              setShowRatingModal(true);
-                            }}
-                            className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-4 px-6 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-105 hover:from-yellow-600 hover:to-orange-600"
-                          >
-                            <span className="flex items-center justify-center gap-2">
-                              <FaStar className="text-xl" />
-                              Rate Course
-                            </span>
-                          </button>
-                        )}
-                        
+                        {isCourseCompleted(course) &&
+                          !courseRatings[course._id] && (
+                            <button
+                              onClick={() => {
+                                setCourseToRate(course);
+                                setShowRatingModal(true);
+                              }}
+                              className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-4 px-6 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-105 hover:from-yellow-600 hover:to-orange-600"
+                            >
+                              <span className="flex items-center justify-center gap-2">
+                                <FaStar className="text-xl" />
+                                Rate Course
+                              </span>
+                            </button>
+                          )}
+
                         {/* Show rating status if already rated */}
                         {courseRatings[course._id] && (
                           <div className="flex items-center justify-center px-6 py-4 bg-gray-100 rounded-xl">
                             <span className="text-gray-600 font-medium">
-                              {courseRatings[course._id].status === "pending" ? "Rating Pending" : 
-                               courseRatings[course._id].status === "approved" ? "Rating Approved" : 
-                               "Rating Rejected"}
+                              {courseRatings[course._id].status === "pending"
+                                ? "Rating Pending"
+                                : courseRatings[course._id].status ===
+                                  "approved"
+                                ? "Rating Approved"
+                                : "Rating Rejected"}
                             </span>
                           </div>
                         )}
@@ -1085,18 +1104,22 @@ export default function CourseTab() {
                 ×
               </button>
             </div>
-            
+
             <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Course</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Course
+                  </label>
                   <div className="text-lg font-semibold text-gray-900">
                     {courseToRate.title}
                   </div>
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Rating
+                  </label>
                   <StarRating
                     rating={rating}
                     onRatingChange={setRating}
@@ -1104,9 +1127,11 @@ export default function CourseTab() {
                     size="text-2xl"
                   />
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Review (Optional)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Review (Optional)
+                  </label>
                   <textarea
                     value={review}
                     onChange={(e) => setReview(e.target.value)}
@@ -1116,7 +1141,7 @@ export default function CourseTab() {
                   />
                 </div>
               </div>
-              
+
               <div className="flex justify-end gap-3 mt-6">
                 <button
                   onClick={() => {

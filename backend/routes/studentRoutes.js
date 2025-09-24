@@ -3,6 +3,8 @@ import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
+import uploadStudentImage from "../middleware/studentImageUpload.js";
+import isStudent from "../middleware/isStudent.js";
 
 //FOR PDF Import
 import PDFDocument from "pdfkit";
@@ -16,7 +18,7 @@ dotenv.config();
 const createToken = (student) => {
   return jwt.sign(
     { id: student._id, role: "student" },
-    process.env.JWT_SECRET,
+    process.env.JWT_SECRET || "default_jwt_secret_for_development",
     {
       expiresIn: "7d",
     }
@@ -94,7 +96,7 @@ router.get("/isstudent", async (req, res) => {
   if (!token) return res.status(401).json({ student: null });
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "default_jwt_secret_for_development");
     const student = await Student.findById(decoded.id);
     if (!student) return res.status(404).json({ student: null });
 
@@ -475,6 +477,63 @@ router.post("/ticket/:id", async (req, res) => {
   }
 });
 
+// Profile update route with image upload support
+router.put("/profile", uploadStudentImage.single("profileImage"), async (req, res) => {
+  try {
+    console.log("Profile update request received");
+    console.log("Request body:", req.body);
+    console.log("Request file:", req.file);
+    console.log("Request cookies:", req.cookies);
+
+    const token = req.cookies.token;
+    if (!token) {
+      console.log("No token found in cookies");
+      return res.status(401).json({ message: "Unauthorized - No token found" });
+    }
+
+    console.log("Token found, verifying...");
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "default_jwt_secret_for_development");
+    console.log("Token decoded:", decoded);
+
+    const student = await Student.findById(decoded.id);
+    if (!student) {
+      console.log("Student not found with ID:", decoded.id);
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    console.log("Student found:", student.name);
+
+    // Handle image upload
+    if (req.file) {
+      console.log("Image file received:", req.file.filename);
+      student.image = req.file.path;
+    } else {
+      console.log("No image file in request");
+    }
+
+    await student.save();
+    console.log("Student saved successfully");
+
+    res.json({ 
+      message: "Profile updated successfully", 
+      student: {
+        id: student._id,
+        name: student.name,
+        email: student.email,
+        phone: student.phone,
+        image: student.image,
+        mode: student.mode,
+        location: student.location,
+        center: student.center
+      }
+    });
+  } catch (err) {
+    console.error("Profile update error:", err);
+    res.status(500).json({ message: "Update failed", error: err.message });
+  }
+});
+
+// Legacy profile update route (keeping for backward compatibility)
 router.patch("/student/profile/:id", async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
@@ -656,32 +715,48 @@ router.post("/add-course/:id", async (req, res) => {
 });
 
 // POST /api/v1/students/add-wishlist/:id - Add course to student's wishlist
-router.post("/add-wishlist/:id", async (req, res) => {
+router.post("/add-wishlist/:id", isStudent, async (req, res) => {
   try {
+    console.log("Add wishlist request:", {
+      studentId: req.params.id,
+      courseId: req.body.courseId,
+      user: req.user
+    });
+
     const student = await Student.findById(req.params.id);
     if (!student) {
+      console.log("Student not found:", req.params.id);
       return res.status(404).json({ message: "Student not found" });
     }
 
     const { courseId } = req.body;
     if (!courseId) {
+      console.log("Missing courseId in request body");
       return res.status(400).json({ message: "courseId is required" });
     }
 
     // Check if course exists
     const course = await Course.findById(courseId);
     if (!course) {
+      console.log("Course not found:", courseId);
       return res.status(404).json({ message: "Course not found" });
     }
 
     // Check if course is already in wishlist
     if (student.wishlist.includes(courseId)) {
+      console.log("Course already in wishlist:", courseId);
       return res.status(400).json({ message: "Course is already in wishlist" });
     }
 
     // Add course to student's wishlist
     student.wishlist.push(courseId);
     await student.save();
+
+    console.log("Course added to wishlist successfully:", {
+      studentId: student._id,
+      courseId: courseId,
+      wishlistLength: student.wishlist.length
+    });
 
     res.json({
       message: "Course added to wishlist successfully",
@@ -690,6 +765,7 @@ router.post("/add-wishlist/:id", async (req, res) => {
       wishlist: student.wishlist,
     });
   } catch (err) {
+    console.error("Error adding to wishlist:", err);
     res.status(500).json({
       message: "Failed to add course to wishlist",
       error: err.message,
@@ -698,20 +774,29 @@ router.post("/add-wishlist/:id", async (req, res) => {
 });
 
 // POST /api/v1/students/remove-wishlist/:id - Remove course from student's wishlist
-router.post("/remove-wishlist/:id", async (req, res) => {
+router.post("/remove-wishlist/:id", isStudent, async (req, res) => {
   try {
+    console.log("Remove wishlist request:", {
+      studentId: req.params.id,
+      courseId: req.body.courseId,
+      user: req.user
+    });
+
     const student = await Student.findById(req.params.id);
     if (!student) {
+      console.log("Student not found:", req.params.id);
       return res.status(404).json({ message: "Student not found" });
     }
 
     const { courseId } = req.body;
     if (!courseId) {
+      console.log("Missing courseId in request body");
       return res.status(400).json({ message: "courseId is required" });
     }
 
     // Check if course is in wishlist
     if (!student.wishlist.includes(courseId)) {
+      console.log("Course not in wishlist:", courseId);
       return res.status(400).json({ message: "Course is not in wishlist" });
     }
 
@@ -721,6 +806,12 @@ router.post("/remove-wishlist/:id", async (req, res) => {
     );
     await student.save();
 
+    console.log("Course removed from wishlist successfully:", {
+      studentId: student._id,
+      courseId: courseId,
+      wishlistLength: student.wishlist.length
+    });
+
     res.json({
       message: "Course removed from wishlist successfully",
       studentId: student._id,
@@ -728,6 +819,7 @@ router.post("/remove-wishlist/:id", async (req, res) => {
       wishlist: student.wishlist,
     });
   } catch (err) {
+    console.error("Error removing from wishlist:", err);
     res.status(500).json({
       message: "Failed to remove course from wishlist",
       error: err.message,
@@ -736,7 +828,7 @@ router.post("/remove-wishlist/:id", async (req, res) => {
 });
 
 // GET /api/v1/students/get-wishlist/:id - Get student's wishlist
-router.get("/get-wishlist/:id", async (req, res) => {
+router.get("/get-wishlist/:id", isStudent, async (req, res) => {
   try {
     const student = await Student.findById(req.params.id).populate("wishlist");
     if (!student) {
