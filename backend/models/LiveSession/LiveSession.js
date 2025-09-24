@@ -16,13 +16,15 @@ const liveSessionSchema = new mongoose.Schema(
     enrolledCount: { type: Number, default: 0 },
     thumbnail: { type: String, default: "" },
     imageUrl: { type: String, default: "" },
-    status: { 
-      type: String, 
-      enum: ["upcoming", "live", "completed", "active", "inactive"], 
-      default: "upcoming" 
+    status: {
+      type: String,
+      enum: ["upcoming", "live", "completed", "active", "inactive"],
+      default: "upcoming",
     },
     duration: { type: Number, default: 120 }, // in minutes
-    enrolledStudents: [{ type: mongoose.Schema.Types.ObjectId, ref: "Student" }],
+    enrolledStudents: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "Student" },
+    ],
   },
   { timestamps: true }
 );

@@ -71,41 +71,45 @@ export default function LiveSesionAdmin() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+
     let thumbnailUrl = form.thumbnail;
-    
+
     // If image is uploaded, upload it first
     if (uploadedImage) {
       try {
         const formData = new FormData();
-        formData.append('image', uploadedImage);
-        
+        formData.append("image", uploadedImage);
+
         const uploadResponse = await fetch(`${API}/api/upload/image`, {
-          method: 'POST',
+          method: "POST",
           body: formData,
         });
-        
+
         if (uploadResponse.ok) {
           const uploadData = await uploadResponse.json();
-          console.log('Upload response:', uploadData);
+          console.log("Upload response:", uploadData);
           thumbnailUrl = uploadData.imageUrl || uploadData.relativePath;
-          console.log('Using thumbnail URL:', thumbnailUrl);
+          console.log("Using thumbnail URL:", thumbnailUrl);
           Swal.fire("Success!", "Image uploaded successfully!", "success");
         } else {
           const errorData = await uploadResponse.json();
-          console.error('Upload failed:', errorData);
-          Swal.fire("Error", errorData.error || "Failed to upload image", "error");
+          console.error("Upload failed:", errorData);
+          Swal.fire(
+            "Error",
+            errorData.error || "Failed to upload image",
+            "error"
+          );
           setLoading(false);
           return;
         }
       } catch (error) {
-        console.error('Image upload failed:', error);
+        console.error("Image upload failed:", error);
         Swal.fire("Error", "Failed to upload image", "error");
         setLoading(false);
         return;
       }
     }
-    
+
     const payload = {
       title: form.title,
       instructor: form.instructor,
@@ -132,7 +136,13 @@ export default function LiveSesionAdmin() {
       await fetchSessions();
       resetForm();
       setTab("list");
-      Swal.fire("Success!", editId ? "Session updated successfully!" : "Session created successfully!", "success");
+      Swal.fire(
+        "Success!",
+        editId
+          ? "Session updated successfully!"
+          : "Session created successfully!",
+        "success"
+      );
     } else {
       const errorData = await res.json();
       Swal.fire("Error", errorData.error || "Failed to save session", "error");
@@ -241,18 +251,18 @@ export default function LiveSesionAdmin() {
     const file = e.target.files[0];
     if (file) {
       setUploadedImage(file);
-      
+
       // Create preview immediately
       const reader = new FileReader();
       reader.onload = (e) => {
         setImagePreview(e.target.result);
       };
       reader.readAsDataURL(file);
-      
+
       // Clear the URL input when file is uploaded
       setForm((f) => ({ ...f, thumbnail: "" }));
-      
-      console.log('File selected:', file.name, 'Size:', file.size);
+
+      console.log("File selected:", file.name, "Size:", file.size);
     }
   };
 
@@ -470,7 +480,8 @@ export default function LiveSesionAdmin() {
 
                   <div className="text-lg font-semibold mb-1">{s.title}</div>
                   <div className="text-sm text-gray-500 mb-1">
-                    <strong>Instructor:</strong> {s.instructor || "Not specified"}
+                    <strong>Instructor:</strong>{" "}
+                    {s.instructor || "Not specified"}
                   </div>
                   <div className="text-sm text-gray-500 mb-1">
                     <strong>Category:</strong> {s.category || "General"}
@@ -479,7 +490,8 @@ export default function LiveSesionAdmin() {
                     {new Date(s.date).toDateString()}, {formatTimeRange(s.time)}
                   </div>
                   <div className="text-sm mb-1">
-                    <strong>Max Participants:</strong> {s.maxParticipants || "Unlimited"}
+                    <strong>Max Participants:</strong>{" "}
+                    {s.maxParticipants || "Unlimited"}
                   </div>
                   <div className="text-sm mb-3">
                     <strong>Price:</strong> ₹{s.price}
@@ -539,11 +551,15 @@ export default function LiveSesionAdmin() {
                       />
                     </TableCell>
                     <TableCell sx={{ fontWeight: "bold" }}>Title</TableCell>
-                    <TableCell sx={{ fontWeight: "bold" }}>Instructor</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>
+                      Instructor
+                    </TableCell>
                     <TableCell sx={{ fontWeight: "bold" }}>Category</TableCell>
                     <TableCell sx={{ fontWeight: "bold" }}>Date</TableCell>
                     <TableCell sx={{ fontWeight: "bold" }}>Time</TableCell>
-                    <TableCell sx={{ fontWeight: "bold" }}>Max Participants</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>
+                      Max Participants
+                    </TableCell>
                     <TableCell sx={{ fontWeight: "bold" }}>Price</TableCell>
                     <TableCell sx={{ fontWeight: "bold" }}>Status</TableCell>
                     <TableCell sx={{ fontWeight: "bold" }}>Actions</TableCell>
@@ -559,13 +575,17 @@ export default function LiveSesionAdmin() {
                         />
                       </TableCell>
                       <TableCell>{session.title}</TableCell>
-                      <TableCell>{session.instructor || "Not specified"}</TableCell>
+                      <TableCell>
+                        {session.instructor || "Not specified"}
+                      </TableCell>
                       <TableCell>{session.category || "General"}</TableCell>
                       <TableCell>
                         {new Date(session.date).toDateString()}
                       </TableCell>
                       <TableCell>{formatTimeRange(session.time)}</TableCell>
-                      <TableCell>{session.maxParticipants || "Unlimited"}</TableCell>
+                      <TableCell>
+                        {session.maxParticipants || "Unlimited"}
+                      </TableCell>
                       <TableCell>₹{session.price}</TableCell>
                       <TableCell>
                         <Switch
@@ -575,7 +595,9 @@ export default function LiveSesionAdmin() {
                           size="small"
                         />
                         <span className="ml-2 text-xs">
-                          {session.status === "inactive" ? "Inactive" : "Active"}
+                          {session.status === "inactive"
+                            ? "Inactive"
+                            : "Active"}
                         </span>
                       </TableCell>
                       <TableCell>
@@ -618,19 +640,19 @@ export default function LiveSesionAdmin() {
           onSubmit={handleSubmit}
         >
           {[
-            "title", 
-            "instructor", 
-            "description", 
-            "category", 
-            "date", 
-            "startTime", 
-            "endTime", 
-            "link", 
-            "price", 
-            "maxParticipants"
+            "title",
+            "instructor",
+            "description",
+            "category",
+            "date",
+            "startTime",
+            "endTime",
+            "link",
+            "price",
+            "maxParticipants",
           ].map((name) => {
-              const label =
-                name === "title"
+            const label =
+              name === "title"
                 ? "Class Title"
                 : name === "instructor"
                 ? "Instructor Name"
@@ -638,32 +660,35 @@ export default function LiveSesionAdmin() {
                 ? "Description"
                 : name === "category"
                 ? "Category (e.g., CA Foundation, CA Intermediate)"
-                  : name === "date"
-                  ? "Date"
-                  : name === "startTime"
-                  ? "Start Time"
-                  : name === "endTime"
-                  ? "End Time"
-                  : name === "link"
+                : name === "date"
+                ? "Date"
+                : name === "startTime"
+                ? "Start Time"
+                : name === "endTime"
+                ? "End Time"
+                : name === "link"
                 ? "Meeting Link"
                 : name === "price"
                 ? "Price (In Rupees)"
                 : "Max Participants";
-            
-              const type =
-                name === "date" || name.includes("Time")
-                  ? name.includes("Time")
-                    ? "time"
-                    : "date"
+
+            const type =
+              name === "date" || name.includes("Time")
+                ? name.includes("Time")
+                  ? "time"
+                  : "date"
                 : name === "price" || name === "maxParticipants"
-                  ? "number"
-                  : "text";
-            
+                ? "number"
+                : "text";
+
             const isTextarea = name === "description";
-            
-              return (
-              <div key={name} className={name === "description" ? "md:col-span-2" : ""}>
-                  <label className="block font-semibold mb-2">{label}</label>
+
+            return (
+              <div
+                key={name}
+                className={name === "description" ? "md:col-span-2" : ""}
+              >
+                <label className="block font-semibold mb-2">{label}</label>
                 {isTextarea ? (
                   <textarea
                     className="w-full border px-4 py-3 rounded-lg bg-gray-50 h-24 resize-none"
@@ -684,8 +709,8 @@ export default function LiveSesionAdmin() {
                     }
                   />
                 )}
-                </div>
-              );
+              </div>
+            );
           })}
 
           {/* Thumbnail Section */}
@@ -748,7 +773,7 @@ export default function LiveSesionAdmin() {
                       alt="Thumbnail preview"
                       className="w-32 h-24 object-cover rounded border"
                       onError={(e) => {
-                        e.target.style.display = 'none';
+                        e.target.style.display = "none";
                       }}
                     />
                   </div>
