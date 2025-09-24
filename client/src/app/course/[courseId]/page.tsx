@@ -823,13 +823,7 @@ export default function CourseDetailPage({
                   <div className="aspect-video bg-gray-900 relative overflow-hidden">
                     {/* Course Thumbnail */}
                     <img
-                      src={
-                        course.image
-                          ? course.image.startsWith("http")
-                            ? course.image
-                            : `${API_BASE}${course.image}`
-                          : "/images/accounting.webp"
-                      }
+                      src={course.image || "/images/accounting.webp"}
                       alt={`${course.title} - Course Preview`}
                       className="w-full h-full object-cover"
                       onError={(e) => {
