@@ -80,14 +80,23 @@ export default function LiveSesionAdmin() {
         const formData = new FormData();
         formData.append('image', uploadedImage);
         
-        const uploadResponse = await fetch(`${API}/api/upload`, {
+        const uploadResponse = await fetch(`${API}/api/upload/image`, {
           method: 'POST',
           body: formData,
         });
         
         if (uploadResponse.ok) {
           const uploadData = await uploadResponse.json();
-          thumbnailUrl = uploadData.imageUrl;
+          console.log('Upload response:', uploadData);
+          thumbnailUrl = uploadData.imageUrl || uploadData.relativePath;
+          console.log('Using thumbnail URL:', thumbnailUrl);
+          Swal.fire("Success!", "Image uploaded successfully!", "success");
+        } else {
+          const errorData = await uploadResponse.json();
+          console.error('Upload failed:', errorData);
+          Swal.fire("Error", errorData.error || "Failed to upload image", "error");
+          setLoading(false);
+          return;
         }
       } catch (error) {
         console.error('Image upload failed:', error);
@@ -123,8 +132,10 @@ export default function LiveSesionAdmin() {
       await fetchSessions();
       resetForm();
       setTab("list");
+      Swal.fire("Success!", editId ? "Session updated successfully!" : "Session created successfully!", "success");
     } else {
-      Swal.fire("Error", "Failed to save session", "error");
+      const errorData = await res.json();
+      Swal.fire("Error", errorData.error || "Failed to save session", "error");
     }
     setLoading(false);
   };
@@ -190,10 +201,21 @@ export default function LiveSesionAdmin() {
   };
 
   const toggleStatus = async (id) => {
-    const res = await fetch(`${API}/api/live-sessions/toggle/${id}`, {
-      method: "PATCH",
-    });
-    if (res.ok) fetchSessions();
+    try {
+      const res = await fetch(`${API}/api/live-sessions/toggle/${id}`, {
+        method: "PATCH",
+      });
+      if (res.ok) {
+        await fetchSessions();
+        Swal.fire("Success!", "Session status updated.", "success");
+      } else {
+        const error = await res.json();
+        Swal.fire("Error!", error.error || "Failed to update status", "error");
+      }
+    } catch (error) {
+      console.error("Toggle error:", error);
+      Swal.fire("Error!", "Failed to update session status", "error");
+    }
   };
 
   const resetForm = () => {
@@ -219,11 +241,18 @@ export default function LiveSesionAdmin() {
     const file = e.target.files[0];
     if (file) {
       setUploadedImage(file);
+      
+      // Create preview immediately
       const reader = new FileReader();
       reader.onload = (e) => {
         setImagePreview(e.target.result);
       };
       reader.readAsDataURL(file);
+      
+      // Clear the URL input when file is uploaded
+      setForm((f) => ({ ...f, thumbnail: "" }));
+      
+      console.log('File selected:', file.name, 'Size:', file.size);
     }
   };
 
@@ -479,12 +508,12 @@ export default function LiveSesionAdmin() {
                     </div>
                     <div className="flex items-center gap-1">
                       <Switch
-                        checked={s.status === "active"}
+                        checked={s.status !== "inactive"}
                         onChange={() => toggleStatus(s._id)}
                         color="success"
                       />
                       <span className="text-xs font-medium">
-                        {s.status === "active" ? "Active" : "Inactive"}
+                        {s.status === "inactive" ? "Inactive" : "Active"}
                       </span>
                     </div>
                   </div>
@@ -540,13 +569,13 @@ export default function LiveSesionAdmin() {
                       <TableCell>₹{session.price}</TableCell>
                       <TableCell>
                         <Switch
-                          checked={session.status === "active"}
+                          checked={session.status !== "inactive"}
                           onChange={() => toggleStatus(session._id)}
                           color="success"
                           size="small"
                         />
                         <span className="ml-2 text-xs">
-                          {session.status === "active" ? "Active" : "Inactive"}
+                          {session.status === "inactive" ? "Inactive" : "Active"}
                         </span>
                       </TableCell>
                       <TableCell>
@@ -696,7 +725,14 @@ export default function LiveSesionAdmin() {
                   className="w-full border px-4 py-3 rounded-lg bg-gray-50"
                   placeholder="https://example.com/image.jpg"
                   value={form.thumbnail}
-                  onChange={(e) => setForm((f) => ({ ...f, thumbnail: e.target.value }))}
+                  onChange={(e) => {
+                    setForm((f) => ({ ...f, thumbnail: e.target.value }));
+                    // Clear file upload when URL is entered
+                    if (e.target.value) {
+                      setUploadedImage(null);
+                      setImagePreview("");
+                    }
+                  }}
                 />
               </div>
 

@@ -34,10 +34,10 @@
     "react-modern-drawer": "^1.4.0",
     "react-quill-new": "^3.4.6",
     "react-select": "^5.10.2",
-    "react-sweetalert2": "^0.6.0",
     "react-table": "^7.8.0",
     "react-toastify": "^11.0.5",
     "recharts": "^3.1.0",
+    "socket.io-client": "^4.8.1",
     "sweetalert2": "^11.22.2",
     "sweetalert2-react-content": "^5.1.0",
     "xlsx": "^0.18.5"

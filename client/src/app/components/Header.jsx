@@ -57,7 +57,11 @@ export default function Header() {
   const [wishlistCourses, setWishlistCourses] = useState([]);
   const [wishlistDrawer, setWishlistDrawer] = useState(false);
   const [isClient, setIsClient] = useState(false);
+
+  const [isAdmin, setIsAdmin] = useState(false);
+
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+
 
   const API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -71,6 +75,19 @@ export default function Header() {
 
   const fetchStudentAndCart = async () => {
     try {
+      // Check if admin is logged in first
+      const adminToken = localStorage.getItem("adminToken");
+      if (adminToken) {
+        // If admin is logged in, don't try to fetch student data
+        setIsAdmin(true);
+        setStudent(null);
+        setCartCourses([]);
+        setWishlistCourses([]);
+        return;
+      } else {
+        setIsAdmin(false);
+      }
+
       const res = await axios.get(`${API}/api/v1/students/isstudent`, {
         withCredentials: true,
       });
@@ -377,6 +394,48 @@ export default function Header() {
 
           {/* Right side - Fixed at end */}
           <div className="hidden lg:flex items-center space-x-3 flex-shrink-0">
+
+              {isAdmin ? (
+              // Admin is logged in - show admin dashboard link
+              <Link
+                href="/admin-dashboard"
+                className="bg-blue-600 hover:bg-blue-700 text-white text-base font-semibold px-4 py-2 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg"
+              >
+                Admin Dashboard
+              </Link>
+            ) : (
+              // Regular user - show wishlist and student login
+              <>
+                {/* Star Plus Icon Button - Wishlist */}
+                <button
+                  onClick={() => {
+                    // Always go to wishlist page - it will handle login check internally
+                    window.location.href = '/wishlist';
+                  }}
+                  className="w-10 h-10 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg flex items-center justify-center transition-colors duration-200 shadow-md hover:shadow-lg border border-blue-200 relative"
+                  title={student ? "My Wishlist" : "Login to view Wishlist"}
+                >
+                  <svg
+                    className="w-6 h-6"
+                    fill="white"
+                    stroke="currentColor"
+                    strokeWidth="1"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    {/* Star shape */}
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                </button>
+                
+                <Link
+                  href="/student-login"
+                  className="bg-green-600 hover:bg-green-700 text-white text-base font-semibold px-4 py-2 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg"
+                >
+                  Student Login
+                </Link>
+              </>
+=======
             {/* Conditional rendering: Student Login button or Profile dropdown */}
             {student ? (
               <div className="relative profile-dropdown">
@@ -576,6 +635,15 @@ export default function Header() {
             )
           )}
           <div className="pt-4 border-t">
+
+            {isAdmin ? (
+              <Link
+                href="/admin-dashboard"
+                onClick={() => setDrawerOpen(false)}
+                className="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center py-3 px-4 rounded-lg font-medium transition-colors duration-200 shadow-md"
+              >
+                Admin Dashboard
+              </Link>
             {student ? (
               <div className="space-y-3">
                 {/* Enhanced Mobile Profile Header */}
@@ -664,11 +732,16 @@ export default function Header() {
                   </div>
                 </button>
               </div>
+
             ) : (
               <Link
                 href="/student-login"
                 onClick={() => setDrawerOpen(false)}
+
+                className="block w-full bg-green-600 hover:bg-green-700 text-white text-center py-3 px-4 rounded-lg font-medium transition-colors duration-200 shadow-md"
+
                 className="block w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white text-center py-3 px-4 rounded-xl font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-[1.02]"
+
               >
                 Student Login
               </Link>
