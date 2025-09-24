@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import axios from "axios";
+import wishlistEventManager from "../../utils/wishlistEventManager";
 
 import { Menu, X, LogOut, ShoppingCart, Trash2, User, ChevronDown, Settings, BookOpen, Heart, Bell, Shield, Star } from "lucide-react";
 import Drawer from "react-modern-drawer";
@@ -274,7 +275,12 @@ export default function Header() {
           { courseId },
           { withCredentials: true }
         );
+        // Refresh all data from backend instead of optimistic update
         fetchStudentAndCart();
+        
+        // Notify other components of the change
+        wishlistEventManager.notifyChange(student._id, courseId, 'removed');
+        
         Swal.fire("Removed!", "Course removed from wishlist.", "success");
       } catch {
         Swal.fire("Error", "Failed to remove item.", "error");

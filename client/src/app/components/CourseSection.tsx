@@ -5,6 +5,8 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FaStar, FaBook, FaClock } from "react-icons/fa";
 import axios from "axios";
+import Swal from "sweetalert2";
+import wishlistEventManager from "../../utils/wishlistEventManager";
 
 interface Course {
   _id: string;
@@ -22,6 +24,8 @@ export default function CoursesSection() {
   const [likedIndexes, setLikedIndexes] = useState<number[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [courseRatings, setCourseRatings] = useState<{[key: string]: {averageRating: number, totalRatings: number}}>({});
+  const [student, setStudent] = useState<any>(null);
+  const [wishlistCourseIds, setWishlistCourseIds] = useState<string[]>([]);
 
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
@@ -98,7 +102,54 @@ export default function CoursesSection() {
     
     // Fetch ratings for all courses
     fetchCourseRatings();
-  }, []);
+    
+    // Fetch current wishlist state
+    fetchWishlistState();
+
+    // Subscribe to wishlist changes
+    const unsubscribe = wishlistEventManager.subscribe(({ studentId, courseId, action }: { studentId: string; courseId: string; action: 'added' | 'removed' }) => {
+      if (student && student._id === studentId) {
+        console.log(`Wishlist ${action} event received for course ${courseId}`);
+        // Refresh wishlist state when other components make changes
+        fetchWishlistState();
+      }
+    });
+
+    // Cleanup subscription on unmount
+    return () => {
+      unsubscribe();
+    };
+  }, [student]);
+
+  // Fetch current wishlist state
+  const fetchWishlistState = async () => {
+    try {
+      const studentRes = await axios.get(`${API_BASE}/api/v1/students/isstudent`, {
+        withCredentials: true,
+      });
+      
+      if (studentRes.data.student) {
+        setStudent(studentRes.data.student);
+        const studentId = studentRes.data.student._id;
+        
+        // Fetch wishlist
+        const wishlistRes = await axios.get(
+          `${API_BASE}/api/v1/students/get-wishlist/${studentId}`,
+          { withCredentials: true }
+        );
+        const wishlistIds = wishlistRes.data.wishlist || [];
+        setWishlistCourseIds(wishlistIds);
+        
+        // Update liked indexes based on wishlist
+        const likedIndexes = courses
+          .map((course, index) => wishlistIds.includes(course._id) ? index : -1)
+          .filter(index => index !== -1);
+        setLikedIndexes(likedIndexes);
+      }
+    } catch (error) {
+      console.error("Error fetching wishlist state:", error);
+    }
+  };
 
   // Fetch ratings for all courses
   const fetchCourseRatings = async () => {
@@ -141,74 +192,114 @@ export default function CoursesSection() {
 
   const fetchCourses = async () => {
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
-      const response = await fetch(`${API_BASE}/courses/available`);
-      if (response.ok) {
-        const data = await response.json();
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+      const response = await axios.get(`${API_BASE}/api/courses`);
+      if (response.data && response.data.length > 0) {
         // Transform the data to match the expected format
-        const transformedCourses = data.map((course: { _id: string; title: string; image?: string; price: number; level: string; discount?: number; status: string; chapters?: { _id: string; title: string }[] }) => ({
+        const transformedCourses = response.data.map((course: any) => ({
           _id: course._id,
           title: course.title,
           image: course.image || "/images/a1.jpeg",
           price: course.price || 240.00,
           lessons: course.chapters?.length ? `${course.chapters.length} Lesson` : "12 Lesson",
           duration: "620h, 20min", // This could be calculated from course content
-          rating: 4.5, // This could be fetched from reviews
-          reviews: 129, // This could be fetched from reviews
+          rating: course.rating || 4.5, // This could be fetched from reviews
+          reviews: course.reviewCount || 129, // This could be fetched from reviews
         }));
-        // Update courses if API data is different from fallback
-        if (transformedCourses.length > 0) {
-          setCourses(transformedCourses);
-        }
+        setCourses(transformedCourses);
+      } else {
+        // Fallback to dummy courses if API returns empty
+        setCourses(fallbackCourses);
       }
     } catch (error) {
       console.error("Error fetching courses:", error);
       // Keep fallback courses if API fails
+      setCourses(fallbackCourses);
     }
   };
 
   const toggleLike = async (courseId: string, index: number) => {
     try {
-      const API = process.env.NEXT_PUBLIC_API_URL;
-      
       // Check if student is logged in
-      const studentRes = await axios.get(`${API}/api/v1/students/isstudent`, {
-        withCredentials: true,
-      });
-      
-      if (!studentRes.data.student) {
-        // Redirect to wishlist page - it will show login prompt
-        window.location.href = "/wishlist";
+      if (!student) {
+        // Show login prompt instead of redirecting
+        const result = await Swal.fire({
+          title: "Login Required",
+          text: "Please login to add courses to your wishlist.",
+          icon: "info",
+          showCancelButton: true,
+          confirmButtonText: "Login",
+          cancelButtonText: "Cancel",
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33"
+        });
+        
+        if (result.isConfirmed) {
+          window.location.href = "/student-login?redirect=course";
+        }
         return;
       }
       
-      const studentId = studentRes.data.student._id;
-      const isLiked = likedIndexes.includes(index);
+      const studentId = student._id;
+      const isLiked = wishlistCourseIds.includes(courseId);
+      
+      console.log("Toggle wishlist:", {
+        studentId,
+        courseId,
+        isLiked,
+        API_BASE
+      });
       
       if (isLiked) {
         // Remove from wishlist
-        await axios.post(
-          `${API}/api/v1/students/remove-wishlist/${studentId}`,
+        const response = await axios.post(
+          `${API_BASE}/api/v1/students/remove-wishlist/${studentId}`,
           { courseId },
           { withCredentials: true }
         );
+        
+        console.log("Remove wishlist response:", response.data);
       } else {
         // Add to wishlist
-        await axios.post(
-          `${API}/api/v1/students/add-wishlist/${studentId}`,
+        const response = await axios.post(
+          `${API_BASE}/api/v1/students/add-wishlist/${studentId}`,
           { courseId },
           { withCredentials: true }
         );
+        
+        console.log("Add wishlist response:", response.data);
       }
       
-      // Update local state
-      setLikedIndexes((prev) =>
-        isLiked ? prev.filter((i) => i !== index) : [...prev, index]
-      );
+      // Refresh wishlist state from backend instead of optimistic update
+      await fetchWishlistState();
       
-    } catch (error) {
+      // Notify other components of the change
+      wishlistEventManager.notifyChange(studentId, courseId, isLiked ? 'removed' : 'added');
+      
+    } catch (error: any) {
       console.error("Error toggling wishlist:", error);
-      alert("Error updating wishlist. Please try again.");
+      
+      // Extract specific error message
+      let errorMessage = "Failed to update wishlist. Please try again.";
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.status === 401) {
+        errorMessage = "Please login to add courses to your wishlist.";
+      } else if (error.response?.status === 404) {
+        errorMessage = "Course or student not found.";
+      } else if (error.response?.status === 400) {
+        errorMessage = error.response.data.message || "Invalid request. Please try again.";
+      }
+      
+      // Show user-friendly error message
+      await Swal.fire({
+        title: "Error",
+        text: errorMessage,
+        icon: "error",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#d33"
+      });
     }
   };
 
@@ -286,25 +377,25 @@ export default function CoursesSection() {
             </div>
 
             <div
-              className="absolute top-6 right-6 cursor-pointer"
+              className="absolute top-6 right-6 cursor-pointer z-10"
               onClick={(e) => {
                 e.stopPropagation();
                 toggleLike(course._id, index);
               }}
             >
               <button
-                className={`w-10 h-10 flex items-center justify-center transition-all duration-300 ${
-                  likedIndexes.includes(index) 
-                    ? 'text-blue-600' 
-                    : 'text-blue-600'
+                className={`w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 hover:scale-110 ${
+                  wishlistCourseIds.includes(course._id)
+                    ? 'bg-yellow-400 text-white shadow-lg' 
+                    : 'bg-white/80 text-gray-600 hover:bg-yellow-400 hover:text-white'
                 }`}
-                title="Add to Favorites"
+                title={wishlistCourseIds.includes(course._id) ? "Remove from Wishlist" : "Add to Wishlist"}
               >
                 <svg
                   className="w-5 h-5"
-                  fill="white"
+                  fill={wishlistCourseIds.includes(course._id) ? "currentColor" : "none"}
                   stroke="currentColor"
-                  strokeWidth="1"
+                  strokeWidth="2"
                   viewBox="0 0 24 24"
                   xmlns="http://www.w3.org/2000/svg"
                 >
