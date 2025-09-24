@@ -34,7 +34,8 @@ export default function CoursesSection() {
     [key: string]: number;
   }>({});
 
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+  const API_BASE =
+    process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
 
   // Fallback data with real course IDs from database
   const fallbackCourses: Course[] = useMemo(
@@ -232,8 +233,6 @@ export default function CoursesSection() {
 
   const fetchCourses = useCallback(async () => {
     try {
-      const API_BASE =
-        process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
       const response = await fetch(`${API_BASE}/courses/available`);
       if (response.ok) {
         const data = await response.json();
