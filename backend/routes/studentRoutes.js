@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
+import uploadStudentImage from "../middleware/studentImageUpload.js";
 
 //FOR PDF Import
 import PDFDocument from "pdfkit";
@@ -16,7 +17,7 @@ dotenv.config();
 const createToken = (student) => {
   return jwt.sign(
     { id: student._id, role: "student" },
-    process.env.JWT_SECRET,
+    process.env.JWT_SECRET || "default_jwt_secret_for_development",
     {
       expiresIn: "7d",
     }
@@ -94,7 +95,7 @@ router.get("/isstudent", async (req, res) => {
   if (!token) return res.status(401).json({ student: null });
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "default_jwt_secret_for_development");
     const student = await Student.findById(decoded.id);
     if (!student) return res.status(404).json({ student: null });
 
@@ -475,6 +476,63 @@ router.post("/ticket/:id", async (req, res) => {
   }
 });
 
+// Profile update route with image upload support
+router.put("/profile", uploadStudentImage.single("profileImage"), async (req, res) => {
+  try {
+    console.log("Profile update request received");
+    console.log("Request body:", req.body);
+    console.log("Request file:", req.file);
+    console.log("Request cookies:", req.cookies);
+
+    const token = req.cookies.token;
+    if (!token) {
+      console.log("No token found in cookies");
+      return res.status(401).json({ message: "Unauthorized - No token found" });
+    }
+
+    console.log("Token found, verifying...");
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "default_jwt_secret_for_development");
+    console.log("Token decoded:", decoded);
+
+    const student = await Student.findById(decoded.id);
+    if (!student) {
+      console.log("Student not found with ID:", decoded.id);
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    console.log("Student found:", student.name);
+
+    // Handle image upload
+    if (req.file) {
+      console.log("Image file received:", req.file.filename);
+      student.image = req.file.path;
+    } else {
+      console.log("No image file in request");
+    }
+
+    await student.save();
+    console.log("Student saved successfully");
+
+    res.json({ 
+      message: "Profile updated successfully", 
+      student: {
+        id: student._id,
+        name: student.name,
+        email: student.email,
+        phone: student.phone,
+        image: student.image,
+        mode: student.mode,
+        location: student.location,
+        center: student.center
+      }
+    });
+  } catch (err) {
+    console.error("Profile update error:", err);
+    res.status(500).json({ message: "Update failed", error: err.message });
+  }
+});
+
+// Legacy profile update route (keeping for backward compatibility)
 router.patch("/student/profile/:id", async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);

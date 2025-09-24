@@ -80,6 +80,7 @@ import FAQTab from "./FAQTab";
 import CourseRatingApprovalTab from "./CourseRatingApprovalTab";
 import CenterManagementTab from "./CenterManagementTab";
 import MessagesTab from "./MessagesTab";
+import BulkEmailTab from "./BulkEmailTab";
 
 // All available modules with their permissions
 const ALL_MODULES = [
@@ -126,6 +127,7 @@ const WEBSITE_SETTINGS_MODULES = [
   { id: "demo-digital-hub", label: "Demo Digital Hub", icon: <FaBook /> },
   { id: "faq", label: "FAQ", icon: <FaUserTie /> },
   { id: "messages", label: "Messages", icon: <FaEnvelope /> },
+  { id: "bulk-email", label: "Bulk Email", icon: <FaEnvelope /> },
 ];
 
 function AdminDashboardContent() {
@@ -462,6 +464,8 @@ function AdminDashboardContent() {
           <CenterLocationTab />
         ) : activeTab === "messages" ? (
           <MessagesTab />
+        ) : activeTab === "bulk-email" ? (
+          <BulkEmailTab />
         ) : activeTab === "" ? (
           <div className="text-center py-20">
             <h2 className="text-2xl font-bold text-gray-600 mb-4">
