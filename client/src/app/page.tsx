@@ -20,7 +20,7 @@ const page = () => {
   return (
     <>
       <ScrollbarController />
-      <AlertMarquee showMarquee={undefined} />
+      <AlertMarquee />
       <div className="pt-10">
         <Header />
         <HeroSection />
