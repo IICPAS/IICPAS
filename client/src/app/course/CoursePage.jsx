@@ -64,7 +64,7 @@ export default function CoursePage() {
       level: "Executive",
       price: 3500,
       discount: 15,
-      image: "/images/finance.jpg",
+      image: "/images/a1.jpeg",
       description: "Complete guide to financial management and analysis",
     },
     {
@@ -75,7 +75,7 @@ export default function CoursePage() {
       level: "Executive",
       price: 8000,
       discount: 8,
-      image: "/images/cma.jpg",
+      image: "/images/a2.avif",
       description: "Prepare for US Certified Management Accountant exam",
     },
     {
@@ -86,7 +86,7 @@ export default function CoursePage() {
       level: "Professional",
       price: 2800,
       discount: 12,
-      image: "/images/excel-advanced.jpg",
+      image: "/images/a3.jpeg",
       description: "Master advanced Excel functions, macros, and data analysis",
     },
   ];
@@ -396,6 +396,8 @@ export default function CoursePage() {
                       src={
                         course.image.startsWith("http")
                           ? course.image
+                          : course.image.startsWith("/uploads/")
+                          ? `http://localhost:8080${course.image}`
                           : course.image.startsWith("/")
                           ? course.image
                           : `http://localhost:8080${course.image}`
@@ -405,15 +407,31 @@ export default function CoursePage() {
                       className="object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
                       sizes="(max-width: 768px) 100vw, 33vw"
                       priority={index < 2}
+                      onError={(e) => {
+                        console.log("Image failed to load:", e);
+                        console.log("Image src was:", e.currentTarget.src);
+                        // Fallback to placeholder
+                        e.currentTarget.style.display = "none";
+                        const placeholder = e.currentTarget.nextElementSibling;
+                        if (placeholder) {
+                          placeholder.style.display = "flex";
+                        }
+                      }}
                     />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-200">
-                      <div className="text-center">
-                        <div className="text-4xl mb-2">📚</div>
-                        <div className="text-sm">Course Image</div>
-                      </div>
+                  ) : null}
+
+                  {/* Fallback placeholder - always present but hidden when image loads */}
+                  <div
+                    className={`w-full h-full flex items-center justify-center text-gray-400 bg-gray-200 ${
+                      course.image ? "hidden" : ""
+                    }`}
+                    style={{ display: course.image ? "none" : "flex" }}
+                  >
+                    <div className="text-center">
+                      <div className="text-4xl mb-2">📚</div>
+                      <div className="text-sm">Course Image</div>
                     </div>
-                  )}
+                  </div>
 
                   {/* Discount Badge */}
                   {course.discount > 0 && (
