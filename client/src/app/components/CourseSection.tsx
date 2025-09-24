@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { FaStar, FaBook, FaClock } from "react-icons/fa";
+import { FaBook } from "react-icons/fa";
 import axios from "axios";
 
 interface Course {
@@ -20,11 +20,7 @@ interface Course {
 
 export default function CoursesSection() {
   const router = useRouter();
-  const [likedIndexes, setLikedIndexes] = useState<number[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
-  const [courseRatings, setCourseRatings] = useState<{
-    [key: string]: { averageRating: number; totalRatings: number };
-  }>({});
   const [courseChapters, setCourseChapters] = useState<{
     [key: string]: number;
   }>({});
@@ -32,68 +28,77 @@ export default function CoursesSection() {
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
   // Fallback data with real course IDs from database
-  const fallbackCourses: Course[] = [
-    {
-      _id: "68cba03ff6d6e18d9a7588f1",
-      title: "Basic Accounting & Tally Foundation",
-      image: "/images/accounting.webp",
-      price: 5000,
-      lessons: "28 Lessons",
-      duration: "40 hours",
-      rating: 4.7,
-      reviews: 449,
-    },
-    {
-      _id: "68cba03ff6d6e18d9a7588f2",
-      title: "HR Certification Course",
-      image: "/images/young-woman.jpg",
-      price: 1000,
-      lessons: "20 Lessons",
-      duration: "30 hours",
-      rating: 4.5,
-      reviews: 320,
-    },
-    {
-      _id: "68cba03ff6d6e18d9a7588f3",
-      title: "Excel Certification Course",
-      image: "/images/course.png",
-      price: 2000,
-      lessons: "35 Lessons",
-      duration: "35 hours",
-      rating: 4.8,
-      reviews: 680,
-    },
-    {
-      _id: "68cba03ff6d6e18d9a7588f4",
-      title: "Learn the Foundations of Visual Communication",
-      image: "/images/a4.jpg",
-      price: 240.0,
-      lessons: "12 Lesson",
-      duration: "620h, 20min",
-      rating: 4.5,
-      reviews: 129,
-    },
-    {
-      _id: "68cba03ff6d6e18d9a7588f5",
-      title: "Cooking Made Easy: Essential Skills for Everyday Meals",
-      image: "/images/about.jpeg",
-      price: 240.0,
-      lessons: "12 Lesson",
-      duration: "620h, 20min",
-      rating: 4.5,
-      reviews: 129,
-    },
-    {
-      _id: "68cba03ff6d6e18d9a7588f6",
-      title: "How to Capture Stunning Photos with Ease",
-      image: "/images/s.jpg",
-      price: 240.0,
-      lessons: "12 Lesson",
-      duration: "620h, 20min",
-      rating: 4.5,
-      reviews: 129,
-    },
-  ];
+  const fallbackCourses: Course[] = useMemo(
+    () => [
+      {
+        _id: "68cba03ff6d6e18d9a7588f1",
+        title: "Basic Accounting & Tally Foundation",
+        image: "/images/accounting.webp",
+        price: 5000,
+        lessons: "28 Lessons",
+        duration: "40 hours",
+        rating: 4.7,
+        reviews: 449,
+        slug: "basic-accounting-tally-foundation",
+      },
+      {
+        _id: "68cba03ff6d6e18d9a7588f2",
+        title: "HR Certification Course",
+        image: "/images/young-woman.jpg",
+        price: 1000,
+        lessons: "20 Lessons",
+        duration: "30 hours",
+        rating: 4.5,
+        reviews: 320,
+        slug: "hr-certification-course",
+      },
+      {
+        _id: "68cba03ff6d6e18d9a7588f3",
+        title: "Excel Certification Course",
+        image: "/images/course.png",
+        price: 2000,
+        lessons: "35 Lessons",
+        duration: "35 hours",
+        rating: 4.8,
+        reviews: 680,
+        slug: "excel-certification-course",
+      },
+      {
+        _id: "68cba03ff6d6e18d9a7588f4",
+        title: "Learn the Foundations of Visual Communication",
+        image: "/images/a4.jpg",
+        price: 240.0,
+        lessons: "12 Lesson",
+        duration: "620h, 20min",
+        rating: 4.5,
+        reviews: 129,
+        slug: "learn-foundations-visual-communication",
+      },
+      {
+        _id: "68cba03ff6d6e18d9a7588f5",
+        title: "Cooking Made Easy: Essential Skills for Everyday Meals",
+        image: "/images/about.jpeg",
+        price: 240.0,
+        lessons: "12 Lesson",
+        duration: "620h, 20min",
+        rating: 4.5,
+        reviews: 129,
+        slug: "cooking-made-easy-essential-skills",
+      },
+      {
+        _id: "68cba03ff6d6e18d9a7588f6",
+        title: "How to Capture Stunning Photos with Ease",
+        image: "/images/s.jpg",
+        price: 240.0,
+        lessons: "12 Lesson",
+        duration: "620h, 20min",
+        rating: 4.5,
+        reviews: 129,
+        slug: "capture-stunning-photos-ease",
+      },
+    ],
+    []
+  );
 
   useEffect(() => {
     // Set fallback courses immediately for instant display
@@ -102,15 +107,13 @@ export default function CoursesSection() {
     // Optionally fetch from API in background (without loading state)
     fetchCourses();
 
-    // Fetch ratings for all courses
-    fetchCourseRatings();
-
     // Fetch chapter counts for all courses
     fetchCourseChapters();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Fetch chapter counts for all courses
-  const fetchCourseChapters = async () => {
+  const fetchCourseChapters = useCallback(async () => {
     try {
       // Use current courses state or fallback courses
       const coursesToFetch = courses.length > 0 ? courses : fallbackCourses;
@@ -147,53 +150,9 @@ export default function CoursesSection() {
     } catch (error) {
       console.error("Error fetching course chapters:", error);
     }
-  };
+  }, [courses, fallbackCourses, API_BASE]);
 
-  // Fetch ratings for all courses
-  const fetchCourseRatings = async () => {
-    try {
-      const ratingsPromises = fallbackCourses.map(async (course) => {
-        try {
-          const response = await axios.get(
-            `${API_BASE}/api/v1/course-ratings/course/${course._id}`
-          );
-          if (response.data.success) {
-            return {
-              courseId: course._id,
-              averageRating: response.data.averageRating || course.rating,
-              totalRatings: response.data.totalRatings || course.reviews,
-            };
-          }
-        } catch (error) {
-          console.error(
-            `Error fetching ratings for course ${course._id}:`,
-            error
-          );
-        }
-        return {
-          courseId: course._id,
-          averageRating: course.rating,
-          totalRatings: course.reviews,
-        };
-      });
-
-      const ratings = await Promise.all(ratingsPromises);
-      const ratingsMap: {
-        [key: string]: { averageRating: number; totalRatings: number };
-      } = {};
-      ratings.forEach((rating) => {
-        ratingsMap[rating.courseId] = {
-          averageRating: rating.averageRating,
-          totalRatings: rating.totalRatings,
-        };
-      });
-      setCourseRatings(ratingsMap);
-    } catch (error) {
-      console.error("Error fetching course ratings:", error);
-    }
-  };
-
-  const fetchCourses = async () => {
+  const fetchCourses = useCallback(async () => {
     try {
       const API_BASE =
         process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
@@ -211,6 +170,7 @@ export default function CoursesSection() {
             discount?: number;
             status: string;
             chapters?: { _id: string; title: string }[];
+            slug?: string;
           }) => ({
             _id: course._id,
             title: course.title,
@@ -222,6 +182,12 @@ export default function CoursesSection() {
             duration: "620h, 20min", // This could be calculated from course content
             rating: 4.5, // This could be fetched from reviews
             reviews: 129, // This could be fetched from reviews
+            slug:
+              course.slug ||
+              course.title
+                .toLowerCase()
+                .replace(/\s+/g, "-")
+                .replace(/[^\w-]/g, ""),
           })
         );
         // Update courses if API data is different from fallback
@@ -235,51 +201,7 @@ export default function CoursesSection() {
       console.error("Error fetching courses:", error);
       // Keep fallback courses if API fails
     }
-  };
-
-  const toggleLike = async (courseId: string, index: number) => {
-    try {
-      const API = process.env.NEXT_PUBLIC_API_URL;
-
-      // Check if student is logged in
-      const studentRes = await axios.get(`${API}/api/v1/students/isstudent`, {
-        withCredentials: true,
-      });
-
-      if (!studentRes.data.student) {
-        // Redirect to wishlist page - it will show login prompt
-        window.location.href = "/wishlist";
-        return;
-      }
-
-      const studentId = studentRes.data.student._id;
-      const isLiked = likedIndexes.includes(index);
-
-      if (isLiked) {
-        // Remove from wishlist
-        await axios.post(
-          `${API}/api/v1/students/remove-wishlist/${studentId}`,
-          { courseId },
-          { withCredentials: true }
-        );
-      } else {
-        // Add to wishlist
-        await axios.post(
-          `${API}/api/v1/students/add-wishlist/${studentId}`,
-          { courseId },
-          { withCredentials: true }
-        );
-      }
-
-      // Update local state
-      setLikedIndexes((prev) =>
-        isLiked ? prev.filter((i) => i !== index) : [...prev, index]
-      );
-    } catch (error) {
-      console.error("Error toggling wishlist:", error);
-      alert("Error updating wishlist. Please try again.");
-    }
-  };
+  }, [fetchCourseChapters]);
 
   return (
     <section className="py-16 px-4 md:px-20 bg-[#f9fbfa]">
@@ -297,16 +219,14 @@ export default function CoursesSection() {
             className="relative bg-white rounded-2xl shadow-xl overflow-hidden group transition-all duration-300 hover:shadow-2xl animate-fade-in-up cursor-pointer"
             style={{ animationDelay: `${index * 0.1}s` }}
             onClick={() => {
-              // Map course titles to our dummy course IDs
-              let courseId = course.title.toLowerCase().replace(/\s+/g, "-");
-              if (course.title.includes("Basic Accounting")) {
-                courseId = "basic-accounting-tally";
-              } else if (course.title.includes("HR Certification")) {
-                courseId = "hr-certification";
-              } else if (course.title.includes("Excel Certification")) {
-                courseId = "excel-certification";
-              }
-              router.push(`/course/${courseId}`);
+              // Use course slug if available, otherwise generate from title
+              const courseSlug =
+                course.slug ||
+                course.title
+                  .toLowerCase()
+                  .replace(/\s+/g, "-")
+                  .replace(/[^\w-]/g, "");
+              router.push(`/course/${courseSlug}`);
             }}
           >
             <div className="relative w-full h-48 md:h-56 p-4 bg-white rounded-xl">
@@ -332,15 +252,17 @@ export default function CoursesSection() {
                 {course.title}
               </h3>
 
-              <button 
+              <button
                 className="mt-2 inline-flex items-center gap-2 bg-[#3cd664] hover:bg-[#33bb58] text-white text-sm font-semibold px-4 py-2 rounded-full transition-all"
                 onClick={(e) => {
                   e.stopPropagation();
                   // Use course slug if available, otherwise generate from title
-                  const courseSlug = course.slug || course.title
-                    .toLowerCase()
-                    .replace(/\s+/g, "-")
-                    .replace(/[^\w-]/g, "");
+                  const courseSlug =
+                    course.slug ||
+                    course.title
+                      .toLowerCase()
+                      .replace(/\s+/g, "-")
+                      .replace(/[^\w-]/g, "");
                   router.push(`/course/${courseSlug}`);
                 }}
               >
