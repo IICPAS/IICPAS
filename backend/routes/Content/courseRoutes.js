@@ -15,6 +15,8 @@ router.put("/:id/toggle-status", courseController.toggleCourseStatus);
 
 // Course Level Management Routes
 router.get("/course-levels", courseController.getCourseLevels);
-router.post("/course-levels", courseController.updateCourseLevels);
+
+// Simulation Image Upload Route
+router.post("/upload-simulation-image", upload.single("image"), courseController.uploadSimulationImage);
 
 export default router;

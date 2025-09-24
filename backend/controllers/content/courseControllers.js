@@ -112,6 +112,8 @@ export const createCourse = async (req, res) => {
       description,
       examCert,
       caseStudy,
+      assignment,
+      simulations,
       video,
       seoTitle,
       seoKeywords,
@@ -140,6 +142,8 @@ export const createCourse = async (req, res) => {
       description,
       examCert,
       caseStudy,
+      assignment,
+      simulations,
       video,
       seoTitle,
       seoKeywords,
@@ -164,6 +168,15 @@ export const updateCourse = async (req, res) => {
     // Handle uploaded image (if present)
     if (req.file) {
       updateData.image = `/uploads/${req.file.filename}`;
+    }
+
+    // Handle assignment and simulations data
+    if (req.body.assignment) {
+      updateData.assignment = req.body.assignment;
+    }
+
+    if (req.body.simulations) {
+      updateData.simulations = req.body.simulations;
     }
 
     const course = await Course.findByIdAndUpdate(req.params.id, updateData, {
@@ -220,32 +233,21 @@ export const getCourseLevels = async (req, res) => {
   }
 };
 
-export const updateCourseLevels = async (req, res) => {
+export const uploadSimulationImage = async (req, res) => {
   try {
-    const { levels } = req.body;
-
-    if (!Array.isArray(levels)) {
-      return res.status(400).json({ error: "Levels must be an array" });
+    if (!req.file) {
+      return res.status(400).json({ error: "No image file provided" });
     }
 
-    // Validate each level has required fields
-    for (const level of levels) {
-      if (!level.value || !level.label) {
-        return res.status(400).json({
-          error: "Each level must have both 'value' and 'label' fields",
-        });
-      }
-    }
-
-    // For now, just return success. In the future, this could be stored in a database
-    // You could create a CourseLevel model and store these levels
-
+    const imageUrl = `/uploads/${req.file.filename}`;
+    
     res.json({
-      message: "Course levels updated successfully",
-      levels: levels,
+      success: true,
+      imageUrl: imageUrl,
+      filename: req.file.filename
     });
   } catch (error) {
-    console.error("Error updating course levels:", error);
-    res.status(500).json({ error: "Failed to update course levels" });
+    console.error("Error uploading simulation image:", error);
+    res.status(500).json({ error: "Failed to upload simulation image" });
   }
 };

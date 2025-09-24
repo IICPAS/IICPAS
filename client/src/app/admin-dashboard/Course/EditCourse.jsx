@@ -25,6 +25,8 @@ export default function EditCourse({ courseId, onBack }) {
   const [levelOptions, setLevelOptions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [simulations, setSimulations] = useState([]);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const joditConfig = {
     readonly: false,
@@ -73,12 +75,16 @@ export default function EditCourse({ courseId, onBack }) {
           description: c.description || "",
           examCert: c.examCert || "",
           caseStudy: c.caseStudy || "",
+          assignment: c.assignment || "",
           seoTitle: c.seoTitle || "",
           seoKeywords: c.seoKeywords || "",
           seoDescription: c.seoDescription || "",
           image: null,
           imageUrl: c.image || "",
         });
+        
+        // Load simulations
+        setSimulations(c.simulations || []);
       });
     });
   }, [courseId]);
@@ -109,6 +115,68 @@ export default function EditCourse({ courseId, onBack }) {
   const handleLevelChange = (option) =>
     setForm((f) => ({ ...f, level: option }));
 
+  // Simulation image upload handler
+  const handleSimulationImageUpload = async (file) => {
+    setUploadingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+      
+      const response = await axios.post(`${API_BASE}/courses/upload-simulation-image`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      
+      return response.data.imageUrl;
+    } catch (error) {
+      console.error("Error uploading simulation image:", error);
+      MySwal.fire("Error", "Failed to upload simulation image", "error");
+      return null;
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  // Add new simulation
+  const addSimulation = async () => {
+    const title = prompt("Enter simulation title:");
+    if (!title) return;
+    
+    const description = prompt("Enter simulation description:");
+    if (!description) return;
+    
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = "image/*";
+    fileInput.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      const imageUrl = await handleSimulationImageUpload(file);
+      if (imageUrl) {
+        const newSimulation = {
+          title,
+          description,
+          imageUrl,
+          order: simulations.length
+        };
+        setSimulations([...simulations, newSimulation]);
+      }
+    };
+    fileInput.click();
+  };
+
+  // Remove simulation
+  const removeSimulation = (index) => {
+    setSimulations(simulations.filter((_, i) => i !== index));
+  };
+
+  // Update simulation order
+  const updateSimulationOrder = (index, newOrder) => {
+    const updatedSimulations = [...simulations];
+    updatedSimulations[index].order = newOrder;
+    setSimulations(updatedSimulations);
+  };
+
   const getFinalPrice = () => {
     const price = parseFloat(form.price) || 0;
     const discount = parseFloat(form.discount) || 0;
@@ -128,6 +196,9 @@ export default function EditCourse({ courseId, onBack }) {
         if (["category", "level", "imageUrl"].includes(k)) return;
         if (v !== null && v !== undefined) fd.append(k, v);
       });
+      
+      // Add simulations data
+      fd.append("simulations", JSON.stringify(simulations));
 
       await axios.put(`${API_BASE}/courses/${courseId}`, fd, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -304,6 +375,75 @@ export default function EditCourse({ courseId, onBack }) {
             onChange={debouncedJoditChange("caseStudy")}
             onBlur={handleJoditChange("caseStudy")}
           />
+        </div>
+        
+        <div>
+          <label className="block font-semibold mb-1">Assignment</label>
+          <JoditEditor
+            value={form.assignment}
+            config={joditConfig}
+            onChange={debouncedJoditChange("assignment")}
+            onBlur={handleJoditChange("assignment")}
+          />
+        </div>
+
+        {/* Simulations Section */}
+        <div className="pt-8 border-t mt-8">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">Simulations</h2>
+            <button
+              type="button"
+              onClick={addSimulation}
+              className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2"
+              disabled={uploadingImage}
+            >
+              {uploadingImage ? "Uploading..." : "+ Add Simulation"}
+            </button>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {simulations.map((simulation, index) => (
+              <div key={index} className="border rounded-lg p-4 bg-gray-50">
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="font-semibold text-sm">{simulation.title}</h3>
+                  <button
+                    type="button"
+                    onClick={() => removeSimulation(index)}
+                    className="text-red-600 hover:text-red-800 text-sm"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <p className="text-xs text-gray-600 mb-2">{simulation.description}</p>
+                {simulation.imageUrl && (
+                  <img
+                    src={simulation.imageUrl.startsWith("http") 
+                      ? simulation.imageUrl 
+                      : `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}${simulation.imageUrl}`
+                    }
+                    alt={simulation.title}
+                    className="w-full h-32 object-cover rounded"
+                  />
+                )}
+                <div className="mt-2">
+                  <label className="text-xs text-gray-500">Order:</label>
+                  <input
+                    type="number"
+                    value={simulation.order}
+                    onChange={(e) => updateSimulationOrder(index, parseInt(e.target.value))}
+                    className="w-full text-xs border rounded px-2 py-1"
+                    min="0"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {simulations.length === 0 && (
+            <p className="text-gray-500 text-center py-8">
+              No simulations added yet. Click "Add Simulation" to get started.
+            </p>
+          )}
         </div>
 
         {/* SEO Section */}
