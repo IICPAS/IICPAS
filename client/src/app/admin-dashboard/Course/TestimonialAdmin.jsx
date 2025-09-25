@@ -19,10 +19,12 @@ import {
   Delete as DeleteIcon,
   CheckCircle as CheckCircleIcon,
   Cancel as CancelIcon,
+  Download as DownloadIcon,
 } from "@mui/icons-material";
 import axios from "axios";
 import { useAuth } from "@/contexts/AuthContext";
 import Swal from "sweetalert2";
+import * as XLSX from "xlsx";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
 
@@ -210,17 +212,91 @@ export default function TestimonialAdmin() {
     setImagePreview(null);
   };
 
+  // Export testimonials to Excel
+  const exportToExcel = () => {
+    if (testimonials.length === 0) {
+      Swal.fire("No Data", "No testimonials to export", "info");
+      return;
+    }
+
+    try {
+      // Prepare data for Excel export
+      const excelData = testimonials.map((testimonial, index) => ({
+        'S.No': index + 1,
+        'Name': testimonial.name || '',
+        'Designation': testimonial.designation || '',
+        'Message': testimonial.message || '',
+        'Rating': testimonial.rating || 5,
+        'Status': testimonial.status ? 'Approved' : 'Pending',
+        'Featured': testimonial.featured ? 'Yes' : 'No',
+        'Submitted Date': testimonial.createdAt ? new Date(testimonial.createdAt).toLocaleDateString() : '',
+        'Submitted Time': testimonial.createdAt ? new Date(testimonial.createdAt).toLocaleTimeString() : '',
+        'Updated Date': testimonial.updatedAt ? new Date(testimonial.updatedAt).toLocaleDateString() : '',
+      }));
+
+      // Create workbook and worksheet
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(excelData);
+
+      // Set column widths
+      const colWidths = [
+        { wch: 8 },   // S.No
+        { wch: 20 },  // Name
+        { wch: 25 },  // Designation
+        { wch: 50 },  // Message
+        { wch: 10 },  // Rating
+        { wch: 12 },  // Status
+        { wch: 10 },  // Featured
+        { wch: 15 },  // Submitted Date
+        { wch: 15 },  // Submitted Time
+        { wch: 15 },  // Updated Date
+      ];
+      ws['!cols'] = colWidths;
+
+      // Add worksheet to workbook
+      XLSX.utils.book_append_sheet(wb, ws, 'Testimonials');
+
+      // Generate filename with current date
+      const currentDate = new Date().toISOString().split('T')[0];
+      const filename = `testimonials_export_${currentDate}.xlsx`;
+
+      // Save file
+      XLSX.writeFile(wb, filename);
+
+      Swal.fire("Success!", `${testimonials.length} testimonials exported to Excel successfully!`, "success");
+    } catch (error) {
+      console.error("Error exporting to Excel:", error);
+      Swal.fire("Error!", "Failed to export testimonials to Excel", "error");
+    }
+  };
+
   return (
     <div className="p-6">
       {mode === "list" && (
         <>
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold">Testimonials</h2>
-            {hasPermission("testimonials", "add") && (
-              <Button variant="contained" onClick={() => setMode("add")}>
-                Add Testimonial
+            <div className="flex gap-3">
+              <Button 
+                variant="contained" 
+                onClick={exportToExcel}
+                startIcon={<DownloadIcon />}
+                sx={{ 
+                  backgroundColor: '#10b981', 
+                  color: 'white',
+                  '&:hover': {
+                    backgroundColor: '#059669'
+                  }
+                }}
+              >
+                Export Excel
               </Button>
-            )}
+              {hasPermission("testimonials", "add") && (
+                <Button variant="contained" onClick={() => setMode("add")}>
+                  Add Testimonial
+                </Button>
+              )}
+            </div>
           </div>
 
           <Table>
