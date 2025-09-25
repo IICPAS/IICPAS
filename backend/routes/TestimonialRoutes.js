@@ -12,6 +12,7 @@ import {
   deleteTestimonial,
   updateTestimonial,
   getTestimonialStats,
+  createTestimonial,
 } from "../controllers/testimonialController.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import isStudent from "../middleware/isStudent.js";
@@ -53,6 +54,7 @@ router.get("/approved", getApprovedTestimonials);
 
 // Admin routes (protected)
 router.get("/", requireAuth, isAdmin, getAllTestimonials);
+router.post("/", requireAuth, isAdmin, upload.single('image'), createTestimonial);
 router.get("/stats", requireAuth, isAdmin, getTestimonialStats);
 router.patch("/approve/:id", requireAuth, isAdmin, approveTestimonial);
 router.patch("/reject/:id", requireAuth, isAdmin, rejectTestimonial);

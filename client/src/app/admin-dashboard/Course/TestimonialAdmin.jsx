@@ -24,7 +24,7 @@ import axios from "axios";
 import { useAuth } from "@/contexts/AuthContext";
 import Swal from "sweetalert2";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
 
 export default function TestimonialAdmin() {
   const [testimonials, setTestimonials] = useState([]);
@@ -34,6 +34,7 @@ export default function TestimonialAdmin() {
     name: "",
     designation: "",
     message: "",
+    rating: 5,
     image: null,
   });
   const [imagePreview, setImagePreview] = useState(null);
@@ -122,9 +123,15 @@ export default function TestimonialAdmin() {
       formData.append('name', form.name);
       formData.append('designation', form.designation);
       formData.append('message', form.message);
+      formData.append('rating', form.rating);
       
       if (form.image) {
         formData.append('image', form.image);
+      }
+
+      console.log("Form data entries:");
+      for (let [key, value] of formData.entries()) {
+        console.log(key, value);
       }
 
       const token = localStorage.getItem("adminToken");
@@ -141,6 +148,8 @@ export default function TestimonialAdmin() {
           }
         );
       } else {
+        console.log("API_BASE:", API_BASE);
+        console.log("Full URL:", `${API_BASE}/testimonials`);
         await axios.post(
           `${API_BASE}/testimonials`,
           formData,
@@ -168,6 +177,7 @@ export default function TestimonialAdmin() {
       name: data.name,
       designation: data.designation,
       message: data.message,
+      rating: data.rating || 5,
       image: null, // Don't pre-populate image for editing
     });
     setImagePreview(data.image ? `${API_BASE.replace('/api', '')}/${data.image}` : null);
@@ -176,7 +186,7 @@ export default function TestimonialAdmin() {
   };
 
   const resetForm = () => {
-    setForm({ name: "", designation: "", message: "", image: null });
+    setForm({ name: "", designation: "", message: "", rating: 5, image: null });
     setImagePreview(null);
     setEditingTestimonial(null);
   };
@@ -345,6 +355,23 @@ export default function TestimonialAdmin() {
               onChange={(e) =>
                 setForm({ ...form, message: e.target.value })
               }
+            />
+          </div>
+
+          {/* Rating Field */}
+          <div className="mt-6">
+            <TextField
+              label="Rating"
+              type="number"
+              min="1"
+              max="5"
+              required
+              fullWidth
+              value={form.rating}
+              onChange={(e) =>
+                setForm({ ...form, rating: parseInt(e.target.value) || 5 })
+              }
+              helperText="Rate from 1 to 5 stars"
             />
           </div>
 

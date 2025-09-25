@@ -1,5 +1,36 @@
 import Testimonial from "../models/Testimonials.js";
 
+// Create a new testimonial (admin only)
+export const createTestimonial = async (req, res) => {
+  try {
+    const { name, designation, message, rating } = req.body;
+    
+    // Handle image upload
+    let imagePath = "";
+    if (req.file) {
+      imagePath = req.file.path; // Path to uploaded file
+    }
+
+    // Validate rating
+    const validRating = rating ? Math.max(1, Math.min(5, parseInt(rating))) : 5;
+
+    const testimonial = new Testimonial({
+      name,
+      designation,
+      message,
+      rating: validRating,
+      image: imagePath,
+      status: true, // Admin-created testimonials are auto-approved
+    });
+
+    await testimonial.save();
+    res.status(201).json({ message: "Testimonial created successfully", testimonial });
+  } catch (error) {
+    console.error("Error creating testimonial:", error);
+    res.status(500).json({ error: "Failed to create testimonial" });
+  }
+};
+
 // Submit a new testimonial
 export const submitTestimonial = async (req, res) => {
   try {
