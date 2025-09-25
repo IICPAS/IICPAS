@@ -897,88 +897,91 @@ export default function CourseDetailPage({
                     </button>
                   </div>
 
-                  {/* Recorded Lecture Option */}
-                  <div className="border-2 border-[#3cd664] rounded-xl p-3 mb-3">
-                    <div className="mb-3">
-                      <div className="text-center mb-2">
-                        <span className="text-xs font-bold text-[#3cd664] block">
-                          {course?.pricing?.recordedSession?.title?.split(
-                            "+"
-                          )[0] || "DIGITAL HUB+"}
-                        </span>
-                        <span className="text-xs font-bold text-[#3cd664] block">
-                          {course?.pricing?.recordedSession?.title?.split(
-                            "+"
-                          )[1] || "RECORDED SESSION"}
-                        </span>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-lg font-bold text-[#3cd664]">
-                          ₹
-                          {course.price
-                            ? course.price.toLocaleString()
-                            : "10,800"}
+                  {/* Pricing Cards - Side by Side */}
+                  <div className="grid grid-cols-2 gap-2 mb-4">
+                    {/* Recorded Lecture Option */}
+                    <div className="border-2 border-[#3cd664] rounded-lg p-2">
+                      <div className="mb-2">
+                        <div className="text-center mb-1">
+                          <span className="text-xs font-bold text-[#3cd664] block">
+                            {course?.pricing?.recordedSession?.title?.split(
+                              "+"
+                            )[0] || "DIGITAL HUB+"}
+                          </span>
+                          <span className="text-xs font-bold text-[#3cd664] block">
+                            {course?.pricing?.recordedSession?.title?.split(
+                              "+"
+                            )[1] || "RECORDED SESSION"}
+                          </span>
                         </div>
-                        {course.discount > 0 && (
-                          <div className="text-sm text-gray-500 line-through">
+                        <div className="text-center">
+                          <div className="text-sm font-bold text-[#3cd664]">
                             ₹
-                            {course.originalPrice
-                              ? course.originalPrice.toLocaleString()
-                              : "12,000"}
+                            {course.price
+                              ? course.price.toLocaleString()
+                              : "10,800"}
                           </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={handleDigitalHubRecordedEnrollment}
-                      disabled={isEnrollingRecorded}
-                      className="w-full bg-[#3cd664] hover:bg-[#33bb58] text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isEnrollingRecorded
-                        ? "Enrolling..."
-                        : course?.pricing?.recordedSession?.buttonText ||
-                          "Add Digital Hub+"}
-                    </button>
-                  </div>
-
-                  {/* Live Lecture Option */}
-                  <div className="border-2 border-blue-500 rounded-xl p-3">
-                    <div className="mb-3">
-                      <div className="text-center mb-2">
-                        <span className="text-xs font-bold text-blue-500 block">
-                          {course?.pricing?.liveSession?.title?.split("+")[0] ||
-                            "DIGITAL HUB+"}
-                        </span>
-                        <span className="text-xs font-bold text-blue-500 block">
-                          {course?.pricing?.liveSession?.title?.split("+")[1] ||
-                            "LIVE SESSION"}
-                        </span>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-lg font-bold text-blue-500">
-                          ₹
-                          {course.price
-                            ? (
-                                course.price *
-                                (course?.pricing?.liveSession
-                                  ?.priceMultiplier || 1.5)
-                              ).toLocaleString()
-                            : "18,000"}
+                          {course.discount > 0 && (
+                            <div className="text-xs text-gray-500 line-through">
+                              ₹
+                              {course.originalPrice
+                                ? course.originalPrice.toLocaleString()
+                                : "12,000"}
+                            </div>
+                          )}
                         </div>
                       </div>
+
+                      <button
+                        onClick={handleDigitalHubRecordedEnrollment}
+                        disabled={isEnrollingRecorded}
+                        className="w-full bg-[#3cd664] hover:bg-[#33bb58] text-white font-bold py-1 px-2 rounded text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isEnrollingRecorded
+                          ? "Enrolling..."
+                          : course?.pricing?.recordedSession?.buttonText ||
+                            "Add Digital Hub+"}
+                      </button>
                     </div>
 
-                    <button
-                      onClick={handleDigitalHubPlusEnrollment}
-                      disabled={isEnrolling}
-                      className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-2 px-3 rounded-lg transition-all duration-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isEnrolling
-                        ? "Enrolling..."
-                        : course?.pricing?.liveSession?.buttonText ||
-                          "Add Digital Hub+"}
-                    </button>
+                    {/* Live Lecture Option */}
+                    <div className="border-2 border-blue-500 rounded-lg p-2">
+                      <div className="mb-2">
+                        <div className="text-center mb-1">
+                          <span className="text-xs font-bold text-blue-500 block">
+                            {course?.pricing?.liveSession?.title?.split("+")[0] ||
+                              "DIGITAL HUB+"}
+                          </span>
+                          <span className="text-xs font-bold text-blue-500 block">
+                            {course?.pricing?.liveSession?.title?.split("+")[1] ||
+                              "LIVE SESSION"}
+                          </span>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-sm font-bold text-blue-500">
+                            ₹
+                            {course.price
+                              ? (
+                                  course.price *
+                                  (course?.pricing?.liveSession
+                                    ?.priceMultiplier || 1.5)
+                                ).toLocaleString()
+                              : "18,000"}
+                          </div>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={handleDigitalHubPlusEnrollment}
+                        disabled={isEnrolling}
+                        className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-1 px-2 rounded text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isEnrolling
+                          ? "Enrolling..."
+                          : course?.pricing?.liveSession?.buttonText ||
+                            "Add Digital Hub+"}
+                      </button>
+                    </div>
                   </div>
                 </div>
 

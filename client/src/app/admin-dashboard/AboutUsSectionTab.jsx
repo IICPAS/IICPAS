@@ -752,7 +752,7 @@ export default function AboutUsSectionTab() {
                   handleInputChange("dateTime.publishDate", currentDateTime.date);
                   handleInputChange("dateTime.publishTime", currentDateTime.time);
                 }}
-                className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+                className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
               >
                 Set Current Time
               </button>
@@ -789,7 +789,7 @@ export default function AboutUsSectionTab() {
               <button
                 type="button"
                 onClick={cancelEdit}
-                className="px-4 py-2 text-gray-600 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
+                className="px-2 py-1 text-sm text-gray-600 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
               >
                 <FaTimes className="inline mr-2" />
                 Cancel
@@ -798,7 +798,7 @@ export default function AboutUsSectionTab() {
             <button
               type={editingId ? "button" : "submit"}
               onClick={editingId ? () => handleUpdate(editingId) : undefined}
-              className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
             >
               <FaSave className="inline mr-2" />
               {editingId ? "Update" : "Create"} About Us Content
@@ -843,7 +843,7 @@ export default function AboutUsSectionTab() {
                 <div className="flex space-x-2">
                   <button
                     onClick={() => startEdit(entry)}
-                    className="p-2 text-blue-600 hover:bg-blue-100 rounded-md transition-colors"
+                    className="p-1 text-blue-600 hover:bg-blue-100 rounded-md transition-colors"
                     title="Edit"
                   >
                     <FaEdit />
@@ -852,7 +852,7 @@ export default function AboutUsSectionTab() {
                   {!entry.isActive && (
                     <button
                       onClick={() => handleActivate(entry._id)}
-                      className="p-2 text-green-600 hover:bg-green-100 rounded-md transition-colors"
+                      className="p-1 text-green-600 hover:bg-green-100 rounded-md transition-colors"
                       title="Activate"
                     >
                       <FaCheck />
@@ -861,7 +861,7 @@ export default function AboutUsSectionTab() {
                   
                   <button
                     onClick={() => handleDelete(entry._id)}
-                    className="p-2 text-red-600 hover:bg-red-100 rounded-md transition-colors"
+                    className="p-1 text-red-600 hover:bg-red-100 rounded-md transition-colors"
                     title="Delete"
                   >
                     <FaTrash />
