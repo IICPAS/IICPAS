@@ -14,8 +14,12 @@ import {
 } from "lucide-react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
+
 import LiveSchedule from "../../components/LiveSchedule";
 import SimulatorDemo from "../../components/SimulatorDemo";
+
+import LiveSessionDisplay from "../../components/LiveSessionDisplay";
+
 import axios from "axios";
 
 // Dummy course data - in real app this would come from API
@@ -746,7 +750,7 @@ export default function CourseDetailPage({
                       className="text-base text-gray-600"
                       dangerouslySetInnerHTML={{
                         __html:
-                          course.caseStudy ||
+                          course.assignment ||
                           "Practical assignments will be available here.",
                       }}
                     />
@@ -771,19 +775,73 @@ export default function CourseDetailPage({
 
                 {activeTab === "schedule" && (
                   <div>
+
                     <LiveSchedule 
                       courseCategory={course.category || "CA Foundation"} 
                       student={student}
                     />
+
+                    <LiveSessionDisplay />
+
                   </div>
                 )}
 
                 {activeTab === "simulation" && (
                   <div>
+
                     <SimulatorDemo 
                       courseId={resolvedParams.courseId} 
                       student={student}
                     />
+
+                    <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                      Simulation & Ex.
+                    </h3>
+                    {course.simulations && course.simulations.length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {course.simulations
+                          .sort(
+                            (a: any, b: any) => (a.order || 0) - (b.order || 0)
+                          )
+                          .map((simulation: any, index: number) => (
+                            <div
+                              key={index}
+                              className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden"
+                            >
+                              {simulation.imageUrl && (
+                                <div className="aspect-video bg-gray-100">
+                                  <img
+                                    src={
+                                      simulation.imageUrl.startsWith("http")
+                                        ? simulation.imageUrl
+                                        : `${
+                                            process.env.NEXT_PUBLIC_API_URL ||
+                                            "https://api.iicpa.in"
+                                          }${simulation.imageUrl}`
+                                    }
+                                    alt={simulation.title}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                              )}
+                              <div className="p-4">
+                                <h4 className="text-lg font-semibold text-gray-900 mb-2">
+                                  {simulation.title}
+                                </h4>
+                                <p className="text-sm text-gray-600">
+                                  {simulation.description}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    ) : (
+                      <p className="text-base text-gray-600">
+                        Interactive simulations and experiments will be
+                        available here.
+                      </p>
+                    )}
+
                   </div>
                 )}
               </motion.div>
@@ -802,7 +860,17 @@ export default function CourseDetailPage({
                   <div className="aspect-video bg-gray-900 relative overflow-hidden">
                     {/* Course Thumbnail */}
                     <img
-                      src={course.image || "/images/accounting.webp"}
+                      src={
+                        course.image
+                          ? course.image.startsWith("http")
+                            ? course.image
+                            : course.image.startsWith("/uploads/")
+                            ? `http://localhost:8080${course.image}`
+                            : course.image.startsWith("/")
+                            ? course.image
+                            : `http://localhost:8080${course.image}`
+                          : "/images/accounting.webp"
+                      }
                       alt={`${course.title} - Course Preview`}
                       className="w-full h-full object-cover"
                       onError={(e) => {
@@ -874,7 +942,16 @@ export default function CourseDetailPage({
                       {isEnrollingRecorded
                         ? "Enrolling..."
                         : course?.pricing?.recordedSession?.buttonText ||
+
                           "Add Digital Hub+"}
+
+                          "Add Digital Hub"}
+
+                      {isEnrollingRecorded
+                        ? "Enrolling..."
+                        : course?.pricing?.recordedSession?.buttonText ||
+                          "Add Digital Hub"}
+
                     </button>
                   </div>
 

@@ -84,11 +84,20 @@ router.post("/image", requireAuth, isAdmin, uploadImage.single("image"), (req, r
   try {
     if (!req.file) return res.status(400).json({ error: "No file uploaded" });
 
-    // Use API_URL from environment if available, otherwise use request host
+    // Return the image path that can be used by the frontend
+    // Since images are served from /uploads, we return the full path
     const baseUrl = process.env.API_URL || `${req.protocol}://${req.get("host")}`;
     const imageUrl = `${baseUrl}/uploads/images/${req.file.filename}`;
+    
+    // Also return a relative path for frontend use
+    const relativePath = `/uploads/images/${req.file.filename}`;
 
-    res.json({ imageUrl });
+    res.json({ 
+      imageUrl: imageUrl,
+      relativePath: relativePath,
+      filename: req.file.filename,
+      originalName: req.file.originalname
+    });
   } catch (error) {
     console.error("Image upload error:", error);
     res.status(500).json({ error: "Failed to upload image" });

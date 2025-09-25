@@ -25,59 +25,45 @@ router.get("/", async (req, res) => {
           },
         },
         footerLinks: {
-          courses: [
-            { name: "Finance Courses", href: "/courses/finance" },
-            { name: "Accounting", href: "/courses/accounting" },
-            { name: "Taxation", href: "/courses/taxation" },
-            { name: "Auditing", href: "/courses/auditing" },
-            { name: "Investment Banking", href: "/courses/investment-banking" },
-          ],
-          resources: [
-            { name: "Blog", href: "/blog" },
-            { name: "Study Materials", href: "/resources" },
-            { name: "Practice Tests", href: "/practice" },
-            { name: "Career Guidance", href: "/career" },
-            { name: "Placement Support", href: "/placement" },
-          ],
-          company: [
-            { name: "About Us", href: "/about" },
-            { name: "Our Team", href: "/team" },
-            { name: "Success Stories", href: "/success" },
-            { name: "Partners", href: "/partners" },
-            { name: "Contact Us", href: "/contact" },
-          ],
-          support: [
-            { name: "Help Center", href: "/help" },
-            { name: "Live Sessions", href: "/live" },
-            { name: "Student Login", href: "/login" },
-            { name: "FAQ", href: "/faq" },
+          companyPolicies: [
             { name: "Privacy Policy", href: "/privacy" },
+            { name: "Refund Policy", href: "/refund" },
+            { name: "Terms & Conditions", href: "/terms" },
+            { name: "Return Policy", href: "/return" },
+          ],
+          generalLinks: [
+            { name: "About Us", href: "/about" },
+            { name: "Courses", href: "/courses" },
+            { name: "Blog", href: "/blog" },
+            { name: "Contact Us", href: "/contact" },
+            { name: "FAQ", href: "/faq" },
+            { name: "Help Center", href: "/help" },
           ],
         },
         socialLinks: [
           {
             platform: "Facebook",
-            href: "https://facebook.com/iicpa",
+            href: "https://www.facebook.com/profile.php?id=61581453864987",
             icon: "FaFacebook",
           },
           {
             platform: "Twitter",
-            href: "https://twitter.com/iicpa",
+            href: "https://twitter.com/iicpainstitute",
             icon: "FaTwitter",
           },
           {
             platform: "LinkedIn",
-            href: "https://linkedin.com/company/iicpa",
+            href: "https://linkedin.com/company/iicpa-institute",
             icon: "FaLinkedin",
           },
           {
             platform: "Instagram",
-            href: "https://instagram.com/iicpa",
+            href: "https://instagram.com/iicpainstitute",
             icon: "FaInstagram",
           },
           {
             platform: "YouTube",
-            href: "https://youtube.com/iicpa",
+            href: "https://youtube.com/@iicpainstitute",
             icon: "FaYoutube",
           },
         ],
@@ -103,19 +89,11 @@ router.get("/", async (req, res) => {
     const cleanFooter = {
       companyInfo: footer.companyInfo,
       footerLinks: {
-        courses: footer.footerLinks.courses.map((link) => ({
+        companyPolicies: footer.footerLinks.companyPolicies.map((link) => ({
           name: link.name,
           href: link.href,
         })),
-        resources: footer.footerLinks.resources.map((link) => ({
-          name: link.name,
-          href: link.href,
-        })),
-        company: footer.footerLinks.company.map((link) => ({
-          name: link.name,
-          href: link.href,
-        })),
-        support: footer.footerLinks.support.map((link) => ({
+        generalLinks: footer.footerLinks.generalLinks.map((link) => ({
           name: link.name,
           href: link.href,
         })),

@@ -36,7 +36,7 @@ export const submitTestimonial = async (req, res) => {
   try {
     const { name, designation, message, rating } = req.body;
     const studentId = req.user.id;
-    
+
     // Handle image upload
     let imagePath = "";
     if (req.file) {
@@ -57,10 +57,42 @@ export const submitTestimonial = async (req, res) => {
     });
 
     await testimonial.save();
-    res.status(201).json({ message: "Testimonial submitted successfully", testimonial });
+    res
+      .status(201)
+      .json({ message: "Testimonial submitted successfully", testimonial });
   } catch (error) {
     console.error("Error submitting testimonial:", error);
     res.status(500).json({ error: "Failed to submit testimonial" });
+  }
+};
+
+// Create a new testimonial (admin only)
+export const createTestimonial = async (req, res) => {
+  try {
+    const { name, designation, message } = req.body;
+
+    // Handle image upload
+    let imagePath = "";
+    if (req.file) {
+      imagePath = req.file.path; // Path to uploaded file
+    }
+
+    const testimonial = new Testimonial({
+      name,
+      designation,
+      message,
+      rating: 5, // Default rating for admin created testimonials
+      image: imagePath,
+      status: true, // Auto-approve admin created testimonials
+    });
+
+    await testimonial.save();
+    res
+      .status(201)
+      .json({ message: "Testimonial created successfully", testimonial });
+  } catch (error) {
+    console.error("Error creating testimonial:", error);
+    res.status(500).json({ error: "Failed to create testimonial" });
   }
 };
 
@@ -68,7 +100,9 @@ export const submitTestimonial = async (req, res) => {
 export const getStudentTestimonials = async (req, res) => {
   try {
     const studentId = req.user.id;
-    const testimonials = await Testimonial.find({ studentId }).sort({ createdAt: -1 });
+    const testimonials = await Testimonial.find({ studentId }).sort({
+      createdAt: -1,
+    });
     res.json(testimonials);
   } catch (error) {
     console.error("Error fetching student testimonials:", error);
@@ -90,7 +124,9 @@ export const getAllTestimonials = async (req, res) => {
 // Get approved testimonials for public display
 export const getApprovedTestimonials = async (req, res) => {
   try {
-    const testimonials = await Testimonial.find({ status: true }).sort({ createdAt: -1 });
+    const testimonials = await Testimonial.find({ status: true }).sort({
+      createdAt: -1,
+    });
     res.json(testimonials);
   } catch (error) {
     console.error("Error fetching approved testimonials:", error);
@@ -181,18 +217,22 @@ export const deleteTestimonial = async (req, res) => {
 export const updateTestimonial = async (req, res) => {
   try {
     const { id } = req.params;
-    const updateData = req.body;
-    
+    const updateData = { ...req.body };
+
+    // Handle image upload
+    if (req.file) {
+      updateData.image = req.file.path;
+    }
+
     // Validate rating if provided
     if (updateData.rating) {
       updateData.rating = Math.max(1, Math.min(5, parseInt(updateData.rating)));
     }
 
-    const testimonial = await Testimonial.findByIdAndUpdate(
-      id,
-      updateData,
-      { new: true, runValidators: true }
-    );
+    const testimonial = await Testimonial.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+    });
 
     if (!testimonial) {
       return res.status(404).json({ error: "Testimonial not found" });

@@ -19,6 +19,13 @@ const CourseSchema = new Schema({
   description: { type: String }, // HTML from ReactQuill
   examCert: { type: String }, // HTML from ReactQuill
   caseStudy: { type: String }, // HTML from ReactQuill
+  assignment: { type: String }, // HTML from Jodit Editor
+  simulations: [{ 
+    title: { type: String },
+    description: { type: String },
+    imageUrl: { type: String },
+    order: { type: Number, default: 0 }
+  }], // Array of simulation objects
 
   seoTitle: { type: String },
   seoKeywords: { type: String }, // Store as comma-separated or array (if needed)

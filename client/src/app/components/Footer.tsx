@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
@@ -16,7 +15,6 @@ import {
   FaPhone,
   FaEnvelope,
   FaMapMarkerAlt,
-  FaArrowRight,
 } from "react-icons/fa";
 
 export default function Footer() {
@@ -33,59 +31,45 @@ export default function Footer() {
       },
     },
     footerLinks: {
-      courses: [
-        { name: "Finance Courses", href: "/courses/finance" },
-        { name: "Accounting", href: "/courses/accounting" },
-        { name: "Taxation", href: "/courses/taxation" },
-        { name: "Auditing", href: "/courses/auditing" },
-        { name: "Investment Banking", href: "/courses/investment-banking" },
-      ],
-      resources: [
-        { name: "Blog", href: "/blog" },
-        { name: "Study Materials", href: "/resources" },
-        { name: "Practice Tests", href: "/practice" },
-        { name: "Career Guidance", href: "/career" },
-        { name: "Placement Support", href: "/placement" },
-      ],
-      company: [
-        { name: "About Us", href: "/about" },
-        { name: "Our Team", href: "/team" },
-        { name: "Success Stories", href: "/success" },
-        { name: "Partners", href: "/partners" },
-        { name: "Contact Us", href: "/contact" },
-      ],
-      support: [
-        { name: "Help Center", href: "/help" },
-        { name: "Live Sessions", href: "/live" },
-        { name: "Student Login", href: "/login" },
-        { name: "FAQ", href: "/faq" },
+      companyPolicies: [
         { name: "Privacy Policy", href: "/privacy" },
+        { name: "Refund Policy", href: "/refund" },
+        { name: "Terms & Conditions", href: "/terms" },
+        { name: "Return Policy", href: "/return" },
+      ],
+      generalLinks: [
+        { name: "About Us", href: "/about" },
+        { name: "Courses", href: "/courses" },
+        { name: "Blog", href: "/blog" },
+        { name: "Contact Us", href: "/contact" },
+        { name: "FAQ", href: "/faq" },
+        { name: "Help Center", href: "/help" },
       ],
     },
     socialLinks: [
       {
         platform: "Facebook",
-        href: "https://facebook.com/iicpa",
+        href: "https://www.facebook.com/profile.php?id=61581453864987",
         icon: "FaFacebook",
       },
       {
         platform: "Twitter",
-        href: "https://twitter.com/iicpa",
+        href: "https://twitter.com/iicpainstitute",
         icon: "FaTwitter",
       },
       {
         platform: "LinkedIn",
-        href: "https://linkedin.com/company/iicpa",
+        href: "https://linkedin.com/company/iicpa-institute",
         icon: "FaLinkedin",
       },
       {
         platform: "Instagram",
-        href: "https://instagram.com/iicpa",
+        href: "https://instagram.com/iicpainstitute",
         icon: "FaInstagram",
       },
       {
         platform: "YouTube",
-        href: "https://youtube.com/iicpa",
+        href: "https://youtube.com/@iicpainstitute",
         icon: "FaYoutube",
       },
     ],
@@ -149,36 +133,32 @@ export default function Footer() {
               },
             },
             footerLinks: {
-              courses: (data.footerLinks?.courses || []).map((link: any) => ({
-                name: link.name,
-                href: link.href,
-              })),
-              resources: (data.footerLinks?.resources || []).map(
-                (link: any) => ({
+              companyPolicies: (data.footerLinks?.companyPolicies || []).map(
+                (link: { name: string; href: string }) => ({
                   name: link.name,
                   href: link.href,
                 })
               ),
-              company: (data.footerLinks?.company || []).map((link: any) => ({
-                name: link.name,
-                href: link.href,
-              })),
-              support: (data.footerLinks?.support || []).map((link: any) => ({
-                name: link.name,
-                href: link.href,
-              })),
+              generalLinks: (data.footerLinks?.generalLinks || []).map(
+                (link: { name: string; href: string }) => ({
+                  name: link.name,
+                  href: link.href,
+                })
+              ),
             },
-            socialLinks: (data.socialLinks || []).map((social: any) => ({
-              platform: social.platform,
-              href: social.href,
-              icon: social.icon,
-            })),
+            socialLinks: (data.socialLinks || []).map(
+              (social: { platform: string; href: string; icon: string }) => ({
+                platform: social.platform,
+                href: social.href,
+                icon: social.icon,
+              })
+            ),
             bottomBar: {
               copyright:
                 data.bottomBar?.copyright ||
                 "IICPA Institute. All rights reserved.",
               legalLinks: (data.bottomBar?.legalLinks || []).map(
-                (link: any) => ({
+                (link: { name: string; href: string }) => ({
                   name: link.name,
                   href: link.href,
                 })
@@ -197,8 +177,8 @@ export default function Footer() {
           console.log("✅ Footer data updated successfully!");
           console.log("📊 Updated company name:", cleanedData.companyInfo.name);
           console.log(
-            "📚 Updated courses:",
-            cleanedData.footerLinks.courses.length,
+            "📚 Updated general links:",
+            cleanedData.footerLinks.generalLinks.length,
             "items"
           );
         } else {
@@ -208,9 +188,12 @@ export default function Footer() {
           );
           console.error("Response:", response);
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Error fetching footer data:", error);
-        console.error("Error details:", error.message);
+        console.error(
+          "Error details:",
+          error instanceof Error ? error.message : "Unknown error"
+        );
         // Keep using default data if API fails
       } finally {
         setLoading(false);
@@ -258,8 +241,8 @@ export default function Footer() {
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#3cd664] via-[#22c55e] to-[#16a34a]"></div>
 
       {/* Main Footer Content */}
-      <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-12 xl:px-16 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-12 xl:px-16 py-16 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
           {/* Company Info */}
           <motion.div
             className="lg:col-span-1"
@@ -333,7 +316,7 @@ export default function Footer() {
             </div>
           </motion.div>
 
-          {/* Courses */}
+          {/* Company Policies */}
           <motion.div
             className="lg:col-span-1"
             initial={{ y: 20, opacity: 0 }}
@@ -343,14 +326,18 @@ export default function Footer() {
             <h4
               className={`text-lg font-semibold ${footerData.colors.text} mb-4`}
             >
-              Courses
+              Company Policy
             </h4>
             <ul className="space-y-3">
-              {footerData.footerLinks.courses.map((link, index) => (
+              {footerData.footerLinks.companyPolicies.map((link, index) => (
                 <li key={index}>
                   <Link
                     href={link.href}
-                    className={`${footerData.colors.textSecondary} hover:text-green-500 transition-colors duration-300 text-sm cursor-pointer`}
+                    className={`${footerData.colors.textSecondary} hover:text-green-500 transition-colors duration-300 text-sm cursor-pointer relative z-20`}
+                    onClick={() =>
+                      console.log("Company Policy link clicked:", link.href)
+                    }
+                    style={{ pointerEvents: "auto" }}
                   >
                     {link.name}
                   </Link>
@@ -359,7 +346,7 @@ export default function Footer() {
             </ul>
           </motion.div>
 
-          {/* Resources */}
+          {/* General Links */}
           <motion.div
             className="lg:col-span-1"
             initial={{ y: 20, opacity: 0 }}
@@ -369,66 +356,18 @@ export default function Footer() {
             <h4
               className={`text-lg font-semibold ${footerData.colors.text} mb-4`}
             >
-              Resources
+              Links
             </h4>
             <ul className="space-y-3">
-              {footerData.footerLinks.resources.map((link, index) => (
+              {footerData.footerLinks.generalLinks.map((link, index) => (
                 <li key={index}>
                   <Link
                     href={link.href}
-                    className={`${footerData.colors.textSecondary} hover:text-green-500 transition-colors duration-300 text-sm cursor-pointer`}
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </motion.div>
-
-          {/* Company */}
-          <motion.div
-            className="lg:col-span-1"
-            initial={{ y: 20, opacity: 0 }}
-            whileInView={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-          >
-            <h4
-              className={`text-lg font-semibold ${footerData.colors.text} mb-4`}
-            >
-              Company
-            </h4>
-            <ul className="space-y-3">
-              {footerData.footerLinks.company.map((link, index) => (
-                <li key={index}>
-                  <Link
-                    href={link.href}
-                    className={`${footerData.colors.textSecondary} hover:text-green-500 transition-colors duration-300 text-sm cursor-pointer`}
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </motion.div>
-
-          {/* Support */}
-          <motion.div
-            className="lg:col-span-1"
-            initial={{ y: 20, opacity: 0 }}
-            whileInView={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            <h4
-              className={`text-lg font-semibold ${footerData.colors.text} mb-4`}
-            >
-              Support
-            </h4>
-            <ul className="space-y-3">
-              {footerData.footerLinks.support.map((link, index) => (
-                <li key={index}>
-                  <Link
-                    href={link.href}
-                    className={`${footerData.colors.textSecondary} hover:text-green-500 transition-colors duration-300 text-sm cursor-pointer`}
+                    className={`${footerData.colors.textSecondary} hover:text-green-500 transition-colors duration-300 text-sm cursor-pointer relative z-20`}
+                    onClick={() =>
+                      console.log("General link clicked:", link.href)
+                    }
+                    style={{ pointerEvents: "auto" }}
                   >
                     {link.name}
                   </Link>
@@ -441,7 +380,7 @@ export default function Footer() {
 
       {/* Bottom Bar */}
       <motion.div
-        className="bg-gray-900 border-t border-gray-700 py-6"
+        className="bg-gray-900 border-t border-gray-700 py-6 relative z-10"
         initial={{ y: 20, opacity: 0 }}
         whileInView={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.8 }}
@@ -458,7 +397,9 @@ export default function Footer() {
                 <Link
                   key={index}
                   href={link.href}
-                  className="hover:text-green-500 transition-colors duration-300 cursor-pointer"
+                  className="hover:text-green-500 transition-colors duration-300 cursor-pointer relative z-20"
+                  onClick={() => console.log("Legal link clicked:", link.href)}
+                  style={{ pointerEvents: "auto" }}
                 >
                   {link.name}
                 </Link>

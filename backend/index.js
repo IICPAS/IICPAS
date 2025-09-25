@@ -1,6 +1,7 @@
 import express from "express";
 import path from "path";
-
+import { createServer } from "http";
+import { Server } from "socket.io";
 import dotenv from "dotenv";
 import collegeRoutes from "./routes/collegeRoutes.js";
 import cookieParser from "cookie-parser";
@@ -247,6 +248,38 @@ app.use("/api/v1/course-ratings", courseRatingRoutes);
 // Course Levels Routes
 app.use("/api/course-levels", courseLevelsRoutes);
 
+// Create HTTP server and Socket.io
+const server = createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    methods: ["GET", "POST"]
+  }
+});
+
+// Socket.io connection handling
+io.on('connection', (socket) => {
+  console.log('User connected:', socket.id);
+
+  // Join live session room
+  socket.on('join-session', (sessionId) => {
+    socket.join(`session-${sessionId}`);
+    console.log(`User ${socket.id} joined session ${sessionId}`);
+  });
+
+  // Leave live session room
+  socket.on('leave-session', (sessionId) => {
+    socket.leave(`session-${sessionId}`);
+    console.log(`User ${socket.id} left session ${sessionId}`);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('User disconnected:', socket.id);
+  });
+});
+
+// Make io available globally for use in controllers
+global.io = io;
 //Contact Info Routes
 app.use("/api/contact-info", contactInfoRoutes);
 
@@ -255,6 +288,6 @@ app.use("/api/contact-form", contactFormRoutes);
 
 // Server
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () =>
+server.listen(PORT, () =>
   console.log(`🚀 Server running on http://localhost:${PORT}`)
 );

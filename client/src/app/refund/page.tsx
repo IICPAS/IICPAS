@@ -1,14 +1,12 @@
-export default function TermsPage() {
+export default function RefundPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-16">
       <div className="max-w-4xl mx-auto px-4">
-        <h1 className="text-4xl font-bold text-gray-900 mb-8">
-          Terms & Conditions
-        </h1>
+        <h1 className="text-4xl font-bold text-gray-900 mb-8">Refund Policy</h1>
         <div className="bg-white rounded-lg shadow-lg p-8">
           <p className="text-gray-600 mb-4">
             This page is currently under construction. Please check back later
-            for our complete terms and conditions.
+            for our complete refund policy.
           </p>
           <p className="text-gray-600">
             For immediate assistance, please contact us at{" "}

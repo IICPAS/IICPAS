@@ -32,10 +32,8 @@ export default function FooterTab() {
       },
     },
     footerLinks: {
-      courses: [],
-      resources: [],
-      company: [],
-      support: [],
+      companyPolicies: [],
+      generalLinks: [],
     },
     socialLinks: [],
     bottomBar: {
@@ -50,10 +48,8 @@ export default function FooterTab() {
     },
   });
   const [newLinks, setNewLinks] = useState({
-    courses: { name: "", href: "" },
-    resources: { name: "", href: "" },
-    company: { name: "", href: "" },
-    support: { name: "", href: "" },
+    companyPolicies: { name: "", href: "" },
+    generalLinks: { name: "", href: "" },
   });
   const [newSocialLink, setNewSocialLink] = useState({
     platform: "",
@@ -61,7 +57,7 @@ export default function FooterTab() {
     icon: "",
   });
   const [newLegalLink, setNewLegalLink] = useState({ name: "", href: "" });
-  const [activeLinkSection, setActiveLinkSection] = useState("courses");
+  const [activeLinkSection, setActiveLinkSection] = useState("companyPolicies");
 
   const socialIcons = [
     { value: "FaFacebook", label: "Facebook" },
@@ -75,10 +71,8 @@ export default function FooterTab() {
   ];
 
   const linkSections = [
-    { key: "courses", label: "Courses" },
-    { key: "resources", label: "Resources" },
-    { key: "company", label: "Company" },
-    { key: "support", label: "Support" },
+    { key: "companyPolicies", label: "Company Policies" },
+    { key: "generalLinks", label: "General Links" },
   ];
 
   const colorOptions = [
@@ -185,12 +179,18 @@ export default function FooterTab() {
 
   const handleLinkAdd = (section) => {
     const linkData = newLinks[section];
-    if (linkData.name.trim() && linkData.href.trim()) {
+    if (
+      linkData &&
+      linkData.name &&
+      linkData.href &&
+      linkData.name.trim() &&
+      linkData.href.trim()
+    ) {
       setFormData((prev) => ({
         ...prev,
         footerLinks: {
           ...prev.footerLinks,
-          [section]: [...prev.footerLinks[section], { ...linkData }],
+          [section]: [...(prev.footerLinks[section] || []), { ...linkData }],
         },
       }));
       setNewLinks((prev) => ({
@@ -205,7 +205,9 @@ export default function FooterTab() {
       ...prev,
       footerLinks: {
         ...prev.footerLinks,
-        [section]: prev.footerLinks[section].filter((_, i) => i !== index),
+        [section]: (prev.footerLinks[section] || []).filter(
+          (_, i) => i !== index
+        ),
       },
     }));
   };
@@ -575,64 +577,66 @@ export default function FooterTab() {
                     {section.label}
                   </h4>
                   <div className="space-y-2">
-                    {formData.footerLinks[section.key].map((link, index) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <input
-                          type="text"
-                          value={link.name}
-                          onChange={(e) => {
-                            const newLinks = [
-                              ...formData.footerLinks[section.key],
-                            ];
-                            newLinks[index].name = e.target.value;
-                            setFormData((prev) => ({
-                              ...prev,
-                              footerLinks: {
-                                ...prev.footerLinks,
-                                [section.key]: newLinks,
-                              },
-                            }));
-                          }}
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder="Link name"
-                        />
-                        <input
-                          type="text"
-                          value={link.href}
-                          onChange={(e) => {
-                            const newLinks = [
-                              ...formData.footerLinks[section.key],
-                            ];
-                            newLinks[index].href = e.target.value;
-                            setFormData((prev) => ({
-                              ...prev,
-                              footerLinks: {
-                                ...prev.footerLinks,
-                                [section.key]: newLinks,
-                              },
-                            }));
-                          }}
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder="Link URL"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => handleLinkRemove(section.key, index)}
-                          className="p-2 text-red-600 hover:bg-red-100 rounded-md"
-                        >
-                          <FaMinus />
-                        </button>
-                      </div>
-                    ))}
+                    {(formData.footerLinks[section.key] || []).map(
+                      (link, index) => (
+                        <div key={index} className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={link.name}
+                            onChange={(e) => {
+                              const newLinks = [
+                                ...(formData.footerLinks[section.key] || []),
+                              ];
+                              newLinks[index].name = e.target.value;
+                              setFormData((prev) => ({
+                                ...prev,
+                                footerLinks: {
+                                  ...prev.footerLinks,
+                                  [section.key]: newLinks,
+                                },
+                              }));
+                            }}
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Link name"
+                          />
+                          <input
+                            type="text"
+                            value={link.href}
+                            onChange={(e) => {
+                              const newLinks = [
+                                ...(formData.footerLinks[section.key] || []),
+                              ];
+                              newLinks[index].href = e.target.value;
+                              setFormData((prev) => ({
+                                ...prev,
+                                footerLinks: {
+                                  ...prev.footerLinks,
+                                  [section.key]: newLinks,
+                                },
+                              }));
+                            }}
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Link URL"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleLinkRemove(section.key, index)}
+                            className="p-2 text-red-600 hover:bg-red-100 rounded-md"
+                          >
+                            <FaMinus />
+                          </button>
+                        </div>
+                      )
+                    )}
                     <div className="flex items-center gap-2">
                       <input
                         type="text"
-                        value={newLinks[section.key].name}
+                        value={newLinks[section.key]?.name || ""}
                         onChange={(e) =>
                           setNewLinks((prev) => ({
                             ...prev,
                             [section.key]: {
-                              ...prev[section.key],
+                              ...(prev[section.key] || { name: "", href: "" }),
                               name: e.target.value,
                             },
                           }))
@@ -642,12 +646,12 @@ export default function FooterTab() {
                       />
                       <input
                         type="text"
-                        value={newLinks[section.key].href}
+                        value={newLinks[section.key]?.href || ""}
                         onChange={(e) =>
                           setNewLinks((prev) => ({
                             ...prev,
                             [section.key]: {
-                              ...prev[section.key],
+                              ...(prev[section.key] || { name: "", href: "" }),
                               href: e.target.value,
                             },
                           }))
