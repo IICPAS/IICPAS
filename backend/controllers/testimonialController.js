@@ -66,35 +66,6 @@ export const submitTestimonial = async (req, res) => {
   }
 };
 
-// Create a new testimonial (admin only)
-export const createTestimonial = async (req, res) => {
-  try {
-    const { name, designation, message } = req.body;
-
-    // Handle image upload
-    let imagePath = "";
-    if (req.file) {
-      imagePath = req.file.path; // Path to uploaded file
-    }
-
-    const testimonial = new Testimonial({
-      name,
-      designation,
-      message,
-      rating: 5, // Default rating for admin created testimonials
-      image: imagePath,
-      status: true, // Auto-approve admin created testimonials
-    });
-
-    await testimonial.save();
-    res
-      .status(201)
-      .json({ message: "Testimonial created successfully", testimonial });
-  } catch (error) {
-    console.error("Error creating testimonial:", error);
-    res.status(500).json({ error: "Failed to create testimonial" });
-  }
-};
 
 // Get testimonials submitted by a specific student
 export const getStudentTestimonials = async (req, res) => {

@@ -93,7 +93,7 @@ export default function CourseTab() {
         image: "/images/a1.jpeg",
         status: "Active",
         level: "Foundation",
-        price: 999,
+        price: 5000,
         overallProgress: 75,
         totalChapters: 8,
         chapters: [
@@ -104,6 +104,46 @@ export default function CourseTab() {
         assignments: [{ id: 1, name: "Assignment 1: Basic Principles" }],
         experiments: [{ id: 1, name: "Experiment 1: Ledger Creation" }],
         tests: [{ id: 1, name: "Basic Accounting Test", status: "Coming Soon" }],
+      },
+      {
+        _id: "2",
+        title: "HR Certification Course",
+        description:
+          "Complete HR certification course covering recruitment, training, and employee management.",
+        image: "/images/a1.jpeg",
+        status: "Active",
+        level: "Intermediate",
+        price: 1000,
+        overallProgress: 60,
+        totalChapters: 6,
+        chapters: [
+          { id: 1, name: "HR Fundamentals", completion: 100 },
+          { id: 2, name: "Recruitment Process", completion: 80 },
+          { id: 3, name: "Employee Relations", completion: 40 },
+        ],
+        assignments: [{ id: 1, name: "Assignment 1: HR Policies" }],
+        experiments: [{ id: 1, name: "Experiment 1: Interview Process" }],
+        tests: [{ id: 1, name: "HR Management Test", status: "Available" }],
+      },
+      {
+        _id: "3",
+        title: "Excel Certification Course",
+        description:
+          "Master Excel with advanced formulas, data analysis, and automation techniques.",
+        image: "/images/a1.jpeg",
+        status: "Active",
+        level: "Beginner",
+        price: 2000,
+        overallProgress: 45,
+        totalChapters: 10,
+        chapters: [
+          { id: 1, name: "Excel Basics", completion: 100 },
+          { id: 2, name: "Formulas & Functions", completion: 60 },
+          { id: 3, name: "Data Analysis", completion: 20 },
+        ],
+        assignments: [{ id: 1, name: "Assignment 1: Basic Formulas" }],
+        experiments: [{ id: 1, name: "Experiment 1: Data Visualization" }],
+        tests: [{ id: 1, name: "Excel Proficiency Test", status: "Coming Soon" }],
       },
     ];
     setCourses(demoCourses);
@@ -234,23 +274,21 @@ export default function CourseTab() {
 
   return (
     <div className="w-full max-w-full bg-gradient-to-br from-gray-50 to-blue-50">
-      <div className="p-6 pb-0">
+      <div className="p-6 pb-0 mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">My Courses</h1>
         <p className="text-gray-600 text-lg">Continue your learning journey</p>
       </div>
 
-      <div className="px-6 pb-6 space-y-8">
+      <div className="px-6 pb-6 space-y-6">
         {courses.map((course) => (
           <div key={course._id}>
             {viewModes[course._id] !== "detailed" ? (
-              // Overview Card
-              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden hover:scale-[1.02] transition-all">
-                <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-4 text-white">
-                  <h2 className="text-2xl font-bold">{course.title}</h2>
-                </div>
+              // Overview Card - Matching Screenshot Design
+              <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300">
                 <div className="p-6">
                   <div className="flex gap-6">
-                    <div className="w-64 h-40 rounded-lg overflow-hidden bg-gray-100">
+                    {/* Course Image - Left Side */}
+                    <div className="w-64 h-40 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                       <img
                         src={
                           course.image
@@ -264,46 +302,42 @@ export default function CourseTab() {
                         onError={(e) => (e.currentTarget.src = "/images/a1.jpeg")}
                       />
                     </div>
-                    <div className="flex-1">
-                      <div className="grid grid-cols-3 gap-3 mb-4">
-                        <div className="bg-gray-50 border p-2 text-center rounded-lg">
-                          <p className="text-xs text-gray-600">Status</p>
-                          <p className="text-sm font-bold text-green-600">
-                            {course.status}
-                          </p>
-                        </div>
-                        <div className="bg-gray-50 border p-2 text-center rounded-lg">
-                          <p className="text-xs text-gray-600">Price</p>
-                          <p className="text-sm font-bold text-purple-600">
-                            ₹{course.price}
-                          </p>
-                        </div>
-                        <div className="bg-gray-50 border p-2 text-center rounded-lg">
-                          <p className="text-xs text-gray-600">Duration</p>
-                          <p className="text-sm font-bold text-orange-600">
-                            8 Weeks
-                          </p>
+                    
+                    {/* Course Content - Right Side */}
+                    <div className="flex-1 flex flex-col justify-between">
+                      {/* Course Title Card */}
+                      <div className="mb-6">
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 shadow-sm">
+                          <h2 className="text-xl font-semibold text-blue-900 text-center">
+                            {course.title}
+                          </h2>
                         </div>
                       </div>
-                      <button
-                        onClick={() => handleDetailedToggle(course._id)}
-                        className="text-blue-600 font-medium hover:underline"
-                      >
-                        View Course Details
-                      </button>
-                      {isCourseCompleted(course) &&
-                        !courseRatings[course._id] && (
+                      
+                      {/* View Course Details Card */}
+                      <div className="mt-auto">
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-4 shadow-sm">
                           <button
-                            onClick={() => {
-                              setCourseToRate(course);
-                              setShowRatingModal(true);
-                            }}
-                            className="ml-4 bg-yellow-500 text-white px-4 py-2 rounded-lg"
+                            onClick={() => handleDetailedToggle(course._id)}
+                            className="text-green-900 font-medium hover:underline text-sm w-full text-center"
                           >
-                            <FaStar className="inline mr-2" />
-                            Rate Course
+                            View Course Details
                           </button>
-                        )}
+                          {isCourseCompleted(course) &&
+                            !courseRatings[course._id] && (
+                              <button
+                                onClick={() => {
+                                  setCourseToRate(course);
+                                  setShowRatingModal(true);
+                                }}
+                                className="mt-2 bg-yellow-500 text-white px-3 py-1 rounded text-sm w-full"
+                              >
+                                <FaStar className="inline mr-1" />
+                                Rate Course
+                              </button>
+                            )}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
