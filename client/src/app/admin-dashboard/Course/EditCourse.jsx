@@ -76,6 +76,9 @@ export default function EditCourse({ courseId, onBack }) {
           seoTitle: c.seoTitle || "",
           seoKeywords: c.seoKeywords || "",
           seoDescription: c.seoDescription || "",
+          metaTitle: c.metaTitle || "",
+          metaKeywords: c.metaKeywords || "",
+          metaDescription: c.metaDescription || "",
           image: null,
           imageUrl: c.image || "",
         });
@@ -329,6 +332,34 @@ export default function EditCourse({ courseId, onBack }) {
             value={form.seoKeywords}
             onChange={handleInputChange}
             className="w-full border p-2 rounded"
+          />
+        </div>
+
+        {/* Meta Tags Section */}
+        <div className="pt-8 border-t mt-8">
+          <h2 className="text-xl font-semibold mb-3">Meta Tags</h2>
+          <label>Meta Title</label>
+          <input
+            name="metaTitle"
+            value={form.metaTitle}
+            onChange={handleInputChange}
+            className="w-full border p-2 rounded"
+            placeholder="Enter meta title for additional SEO"
+          />
+          <label>Meta Description</label>
+          <JoditEditor
+            value={form.metaDescription}
+            config={joditConfig}
+            onChange={debouncedJoditChange("metaDescription")}
+            onBlur={handleJoditChange("metaDescription")}
+          />
+          <label>Meta Keywords</label>
+          <textarea
+            name="metaKeywords"
+            value={form.metaKeywords}
+            onChange={handleInputChange}
+            className="w-full border p-2 rounded"
+            placeholder="Enter meta keywords separated by commas"
           />
         </div>
 

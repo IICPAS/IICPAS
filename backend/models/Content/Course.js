@@ -24,6 +24,11 @@ const CourseSchema = new Schema({
   seoKeywords: { type: String }, // Store as comma-separated or array (if needed)
   seoDescription: { type: String }, // HTML from ReactQuill
 
+  // Meta tags for additional SEO
+  metaTitle: { type: String },
+  metaKeywords: { type: String },
+  metaDescription: { type: String },
+
   chapters: [{ type: Schema.Types.ObjectId, ref: "Chapter" }],
   
   // Dynamic pricing and UI configuration

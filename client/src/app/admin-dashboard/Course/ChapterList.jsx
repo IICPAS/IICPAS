@@ -178,7 +178,13 @@ const ChapterList = forwardRef(
         await axios.post(`${API_BASE}/chapters/by-course/${courseId}`, {
           title: newTitle.trim(),
           order: chapters.length + 1,
-          status: "Active"
+          status: "Active",
+          seoTitle: "",
+          seoKeywords: "",
+          seoDescription: "",
+          metaTitle: "",
+          metaKeywords: "",
+          metaDescription: ""
         });
         setNewTitle("");
         setAddingChapter(false);

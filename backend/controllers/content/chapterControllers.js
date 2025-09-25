@@ -38,6 +38,17 @@ export const getChapter = async (req, res) => {
 export const createChapter = async (req, res) => {
   try {
     const { courseId } = req.params;
+    const { 
+      title, 
+      status, 
+      order, 
+      seoTitle, 
+      seoKeywords, 
+      seoDescription,
+      metaTitle, 
+      metaKeywords, 
+      metaDescription 
+    } = req.body;
 
     // Handle course lookup by both ObjectId and slug
     let course;
@@ -53,7 +64,17 @@ export const createChapter = async (req, res) => {
       return res.status(404).json({ message: "Course not found" });
     }
 
-    const chapter = new Chapter(req.body);
+    const chapter = new Chapter({
+      title,
+      status: status || "Active",
+      order: order || 0,
+      seoTitle,
+      seoKeywords,
+      seoDescription,
+      metaTitle,
+      metaKeywords,
+      metaDescription,
+    });
     await chapter.save();
 
     // Add chapter to course using the course's _id
@@ -68,11 +89,43 @@ export const createChapter = async (req, res) => {
 };
 
 export const updateChapter = async (req, res) => {
-  const chapter = await Chapter.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-  });
-  if (!chapter) return res.status(404).json({ error: "Chapter not found" });
-  res.json(chapter);
+  try {
+    const { id } = req.params;
+    const { 
+      title, 
+      status, 
+      order, 
+      seoTitle, 
+      seoKeywords, 
+      seoDescription,
+      metaTitle, 
+      metaKeywords, 
+      metaDescription 
+    } = req.body;
+
+    const chapter = await Chapter.findByIdAndUpdate(
+      id,
+      {
+        title,
+        status,
+        order,
+        seoTitle,
+        seoKeywords,
+        seoDescription,
+        metaTitle,
+        metaKeywords,
+        metaDescription,
+        updatedAt: new Date(),
+      },
+      { new: true }
+    );
+    
+    if (!chapter) return res.status(404).json({ error: "Chapter not found" });
+    res.json(chapter);
+  } catch (error) {
+    console.error("Error updating chapter:", error);
+    res.status(500).json({ error: "Failed to update chapter" });
+  }
 };
 
 export const deleteChapter = async (req, res) => {

@@ -116,6 +116,9 @@ export const createCourse = async (req, res) => {
       seoTitle,
       seoKeywords,
       seoDescription,
+      metaTitle,
+      metaKeywords,
+      metaDescription,
       chapters, // optional
       pricing, // dynamic pricing configuration
       tabs, // dynamic tab configuration
@@ -144,6 +147,9 @@ export const createCourse = async (req, res) => {
       seoTitle,
       seoKeywords,
       seoDescription,
+      metaTitle,
+      metaKeywords,
+      metaDescription,
       chapters,
       pricing,
       tabs,
