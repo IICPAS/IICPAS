@@ -3,13 +3,29 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { FaChevronDown, FaChevronUp, FaQuestionCircle, FaGraduationCap, FaCreditCard, FaUser, FaBook, FaCertificate } from "react-icons/fa";
+import { IconType } from "react-icons";
+
+interface FAQ {
+  question: string;
+  answer: string;
+}
+
+interface FAQCategory {
+  title: string;
+  icon: string;
+  faqs: FAQ[];
+}
+
+interface FAQData {
+  categories: FAQCategory[];
+}
 
 const FAQSection = () => {
-  const [data, setData] = useState(null);
+  const [data, setData] = useState<FAQData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [expandedItems, setExpandedItems] = useState({});
+  const [expandedItems, setExpandedItems] = useState<{ [key: string]: boolean }>({});
 
-  const iconMap = {
+  const iconMap: { [key: string]: IconType } = {
     FaQuestionCircle: FaQuestionCircle,
     FaGraduationCap: FaGraduationCap,
     FaCreditCard: FaCreditCard,
@@ -110,7 +126,7 @@ const FAQSection = () => {
     }
   };
 
-  const toggleExpanded = (categoryIndex, faqIndex) => {
+  const toggleExpanded = (categoryIndex: number, faqIndex: number) => {
     const key = `${categoryIndex}-${faqIndex}`;
     setExpandedItems(prev => ({
       ...prev,
@@ -156,7 +172,7 @@ const FAQSection = () => {
         </div>
 
         <div className="space-y-8">
-          {categories.map((category, categoryIndex) => {
+          {categories.map((category: FAQCategory, categoryIndex: number) => {
             const IconComponent = iconMap[category.icon] || FaQuestionCircle;
             
             return (
@@ -171,7 +187,7 @@ const FAQSection = () => {
                 </div>
                 
                 <div className="divide-y divide-gray-200">
-                  {category.faqs.map((faq, faqIndex) => {
+                  {category.faqs.map((faq: FAQ, faqIndex: number) => {
                     const key = `${categoryIndex}-${faqIndex}`;
                     const isExpanded = expandedItems[key];
                     

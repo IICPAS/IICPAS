@@ -54,24 +54,12 @@ router.get("/approved", getApprovedTestimonials);
 
 // Admin routes (protected)
 router.get("/", requireAuth, isAdmin, getAllTestimonials);
-router.post(
-  "/",
-  requireAuth,
-  isAdmin,
-  upload.single("image"),
-  createTestimonial
-);
+router.post("/", requireAuth, isAdmin, upload.single("image"), createTestimonial);
 router.get("/stats", requireAuth, isAdmin, getTestimonialStats);
 router.patch("/approve/:id", requireAuth, isAdmin, approveTestimonial);
 router.patch("/reject/:id", requireAuth, isAdmin, rejectTestimonial);
 router.patch("/toggle-featured/:id", requireAuth, isAdmin, toggleFeatured);
-router.put(
-  "/:id",
-  requireAuth,
-  isAdmin,
-  upload.single("image"),
-  updateTestimonial
-);
+router.put("/:id", requireAuth, isAdmin, upload.single("image"), updateTestimonial);
 router.delete("/:id", requireAuth, isAdmin, deleteTestimonial);
 
 export default router;

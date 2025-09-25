@@ -17,12 +17,30 @@ import {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080";
 
+interface Center {
+  id: string;
+  name: string;
+  city: string;
+  state: string;
+  location: string;
+  phone: string;
+  email: string;
+  rating: number;
+  students: number;
+  courses: number;
+  image: string;
+  availableCourses: string[];
+  status: string;
+  facilities: string[];
+  description: string;
+}
+
 export default function SearchCenter() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("");
   const [selectedCourse, setSelectedCourse] = useState("");
-  const [centers, setCenters] = useState([]);
-  const [filteredCenters, setFilteredCenters] = useState([]);
+  const [centers, setCenters] = useState<Center[]>([]);
+  const [filteredCenters, setFilteredCenters] = useState<Center[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -35,7 +53,7 @@ export default function SearchCenter() {
         const centersData = response.data.data || [];
 
         // Transform API data to match component structure
-        const transformedCenters = centersData.map((center, index) => ({
+        const transformedCenters = centersData.map((center: any, index: number) => ({
           id: center._id,
           name: center.name,
           city: center.city,
@@ -47,7 +65,7 @@ export default function SearchCenter() {
           students: center.capacity || 50, // Use capacity as student count
           courses: center.courses?.length || 0,
           image: "/images/college.jpg", // Default image
-          availableCourses: center.courses?.map((course) => course.title) || [],
+          availableCourses: center.courses?.map((course: any) => course.title) || [],
           status: center.status,
           facilities: center.facilities || [],
           description: center.description || "",
@@ -55,10 +73,10 @@ export default function SearchCenter() {
 
         console.log("Transformed centers:", transformedCenters);
         console.log("Available cities:", [
-          ...new Set(transformedCenters.map((center) => center.city)),
+          ...new Set(transformedCenters.map((center: Center) => center.city)),
         ]);
         console.log("Available states:", [
-          ...new Set(transformedCenters.map((center) => center.state)),
+          ...new Set(transformedCenters.map((center: Center) => center.state)),
         ]);
         console.log("Sample center data:", transformedCenters[0]);
 
@@ -175,8 +193,8 @@ export default function SearchCenter() {
     "All Locations",
     ...Array.from(
       new Set([
-        ...centers.map((center) => center.city).filter(Boolean),
-        ...centers.map((center) => center.state).filter(Boolean),
+        ...centers.map((center: Center) => center.city).filter(Boolean),
+        ...centers.map((center: Center) => center.state).filter(Boolean),
       ])
     ),
   ];
@@ -203,12 +221,12 @@ export default function SearchCenter() {
     "All Courses",
     ...Array.from(
       new Set(
-        centers.flatMap((center) => center.availableCourses).filter(Boolean)
+        centers.flatMap((center: Center) => center.availableCourses).filter(Boolean)
       )
     ),
   ];
 
-  const handleBookCourse = (centerId: number, courseName: string) => {
+  const handleBookCourse = (centerId: string, courseName: string) => {
     // This would typically redirect to a booking page or open a modal
     console.log(`Booking ${courseName} at center ${centerId}`);
     // You can implement the booking logic here
@@ -543,7 +561,7 @@ export default function SearchCenter() {
                           Available Courses
                         </h4>
                         <div className="space-y-2">
-                          {center.availableCourses.map((course, index) => (
+                          {center.availableCourses.map((course: string, index: number) => (
                             <div
                               key={index}
                               className="flex items-center justify-between bg-gray-50 rounded-lg p-3"

@@ -95,7 +95,7 @@ export default function HeroSection() {
           className="w-full h-full object-cover"
           onError={(e) => {
             console.error("Video error:", e);
-            console.error("Video src:", e.target.src);
+            console.error("Video src:", (e.target as HTMLVideoElement).src);
           }}
           onLoadStart={() => console.log("Video loading started")}
           onCanPlay={() => console.log("Video can play")}

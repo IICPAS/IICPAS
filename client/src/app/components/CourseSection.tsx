@@ -17,7 +17,7 @@ interface Course {
   createdAt?: string;
 }
 
-// Sample course data
+// Fallback data
 const sampleCourses: Course[] = [
   {
     _id: "1",
@@ -57,8 +57,6 @@ export default function CourseSection() {
     const fetchCourses = async () => {
       try {
         setLoading(true);
-
-        // Fetch from production API
         const API_BASE =
           process.env.NEXT_PUBLIC_API_BASE || "https://api.iicpa.in/api";
         const response = await fetch(`${API_BASE}/courses`);
@@ -66,20 +64,8 @@ export default function CourseSection() {
         if (response.ok) {
           const data = await response.json();
           if (Array.isArray(data) && data.length > 0) {
-            // Transform API data to match our interface
             const transformedCourses = data.map(
-              (course: {
-                _id: string;
-                title?: string;
-                image?: string;
-                price?: number;
-                slug?: string;
-                category?: string;
-                discount?: number;
-                status?: string;
-                description?: string;
-                createdAt?: string;
-              }) => ({
+              (course: any): Course => ({
                 _id: course._id,
                 title: course.title?.trim() || "Untitled Course",
                 image: course.image
@@ -87,9 +73,7 @@ export default function CourseSection() {
                     ? course.image
                     : course.image.startsWith("/uploads/")
                     ? `https://api.iicpa.in${course.image}`
-                    : course.image.startsWith("/")
-                    ? course.image
-                    : `https://api.iicpa.in${course.image}`
+                    : `https://api.iicpa.in/${course.image}`
                   : "/images/a1.jpeg",
                 price: course.price || 0,
                 slug:
@@ -107,20 +91,19 @@ export default function CourseSection() {
               })
             );
 
-            // Filter only active courses and sort by creation date (newest first)
             const activeCourses = transformedCourses
-              .filter((course) => course.status === "Active")
+              .filter((c) => c.status === "Active")
               .sort(
                 (a, b) =>
                   new Date(b.createdAt || 0).getTime() -
                   new Date(a.createdAt || 0).getTime()
               );
+
             setCourses(activeCourses);
           } else {
             setCourses(sampleCourses);
           }
         } else {
-          console.warn(`API returned ${response.status}, using sample data`);
           setCourses(sampleCourses);
         }
       } catch (error) {
@@ -167,7 +150,6 @@ export default function CourseSection() {
               key={course._id}
               className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
             >
-              {/* Course Image */}
               <div className="relative h-48 w-full">
                 <Image
                   src={course.image}
@@ -175,19 +157,12 @@ export default function CourseSection() {
                   fill
                   className="object-cover"
                   onError={(e) => {
-                    console.log("Image failed to load:", e);
-                    console.log("Image src was:", e.currentTarget.src);
-                    // Fallback to placeholder
                     e.currentTarget.style.display = "none";
                     const placeholder = e.currentTarget
                       .nextElementSibling as HTMLElement;
-                    if (placeholder) {
-                      placeholder.style.display = "flex";
-                    }
+                    if (placeholder) placeholder.style.display = "flex";
                   }}
                 />
-
-                {/* Fallback placeholder */}
                 <div
                   className="w-full h-full items-center justify-center text-gray-400 bg-gray-200"
                   style={{ display: "none" }}
@@ -197,7 +172,6 @@ export default function CourseSection() {
                     <div className="text-sm">Course Image</div>
                   </div>
                 </div>
-
                 <div className="absolute top-4 left-4">
                   <span className="bg-[#3cd664] text-white px-3 py-1 rounded-full text-sm font-medium">
                     {course.category}
@@ -205,12 +179,10 @@ export default function CourseSection() {
                 </div>
               </div>
 
-              {/* Course Content */}
               <div className="p-6">
                 <h3 className="text-xl font-bold text-gray-800 mb-3 line-clamp-2">
                   {course.title}
                 </h3>
-
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex flex-col">
                     {course.discount && course.discount > 0 ? (
@@ -237,8 +209,6 @@ export default function CourseSection() {
                     )}
                   </div>
                 </div>
-
-                {/* Enroll Button */}
                 <button
                   onClick={() => handleEnrollNow(course)}
                   className="w-full bg-[#3cd664] text-white py-3 px-4 rounded-lg font-semibold hover:bg-[#2ea54a] transition-colors duration-300"
@@ -250,7 +220,6 @@ export default function CourseSection() {
           ))}
         </div>
 
-        {/* View All Courses Button */}
         <div className="text-center mt-12">
           <button
             onClick={() => router.push("/course")}

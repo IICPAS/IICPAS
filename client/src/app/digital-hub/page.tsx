@@ -1668,64 +1668,82 @@ function DigitalHubContent() {
                       }}
                     />
                     
-                    {/* Pagination Controls for Demo Mode */}
-                    {isDemo && totalPages > 1 && (
-                      <div className="mt-8 flex items-center justify-between">
-                        <button
-                          onClick={() => {
-                            if (currentPage > 1) {
-                              const { pages } = splitContentIntoPages(atob(selectedTopic?.content || ""), 3);
-                              setCurrentPage(currentPage - 1);
-                              setTopicContent(pages[currentPage - 2] || "");
-                            }
-                          }}
-                          disabled={currentPage === 1}
-                          className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
-                            currentPage === 1
-                              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                              : "bg-blue-500 text-white hover:bg-blue-600 shadow-md hover:shadow-lg"
-                          }`}
-                        >
-                          ← Previous
-                        </button>
-                        
-                        <div className="flex items-center space-x-2">
-                          {Array.from({ length: totalPages }, (_, i) => (
+                    {/* Demo Mode Controls */}
+                    {isDemo && (
+                      <div className="mt-8">
+                        {/* Pagination Controls for Multi-page Content */}
+                        {totalPages > 1 && (
+                          <div className="flex items-center justify-between mb-4">
                             <button
-                              key={i}
                               onClick={() => {
-                                const { pages } = splitContentIntoPages(atob(selectedTopic?.content || ""), 3);
-                                setCurrentPage(i + 1);
-                                setTopicContent(pages[i] || "");
+                                if (currentPage > 1) {
+                                  const { pages } = splitContentIntoPages(atob(selectedTopic?.content || ""), 3);
+                                  setCurrentPage(currentPage - 1);
+                                  setTopicContent(pages[currentPage - 2] || "");
+                                }
                               }}
-                              className={`w-8 h-8 rounded-full font-medium transition-all duration-300 ${
-                                currentPage === i + 1
-                                  ? "bg-blue-500 text-white shadow-md"
-                                  : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                              disabled={currentPage === 1}
+                              className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
+                                currentPage === 1
+                                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                  : "bg-blue-500 text-white hover:bg-blue-600 shadow-md hover:shadow-lg"
                               }`}
                             >
-                              {i + 1}
+                              ← Previous
                             </button>
-                          ))}
-                        </div>
+                            
+                            <div className="flex items-center space-x-2">
+                              {Array.from({ length: totalPages }, (_, i) => (
+                                <button
+                                  key={i}
+                                  onClick={() => {
+                                    const { pages } = splitContentIntoPages(atob(selectedTopic?.content || ""), 3);
+                                    setCurrentPage(i + 1);
+                                    setTopicContent(pages[i] || "");
+                                  }}
+                                  className={`w-8 h-8 rounded-full font-medium transition-all duration-300 ${
+                                    currentPage === i + 1
+                                      ? "bg-blue-500 text-white shadow-md"
+                                      : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                                  }`}
+                                >
+                                  {i + 1}
+                                </button>
+                              ))}
+                            </div>
+                            
+                            <button
+                              onClick={() => {
+                                if (currentPage < totalPages) {
+                                  const { pages } = splitContentIntoPages(atob(selectedTopic?.content || ""), 3);
+                                  setCurrentPage(currentPage + 1);
+                                  setTopicContent(pages[currentPage] || "");
+                                }
+                              }}
+                              disabled={currentPage === totalPages}
+                              className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
+                                currentPage === totalPages
+                                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                  : "bg-blue-500 text-white hover:bg-blue-600 shadow-md hover:shadow-lg"
+                              }`}
+                            >
+                              Next →
+                            </button>
+                          </div>
+                        )}
                         
-                        <button
-                          onClick={() => {
-                            if (currentPage < totalPages) {
-                              const { pages } = splitContentIntoPages(atob(selectedTopic?.content || ""), 3);
-                              setCurrentPage(currentPage + 1);
-                              setTopicContent(pages[currentPage] || "");
-                            }
-                          }}
-                          disabled={currentPage === totalPages}
-                          className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
-                            currentPage === totalPages
-                              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                              : "bg-blue-500 text-white hover:bg-blue-600 shadow-md hover:shadow-lg"
-                          }`}
-                        >
-                          Next →
-                        </button>
+                        {/* Purchase Button - Always visible in demo mode */}
+                        <div className="flex justify-center">
+                          <button
+                            onClick={() => {
+                              // Redirect to course purchase or payment page
+                              router.push('/course');
+                            }}
+                            className="px-8 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-300 shadow-md hover:shadow-lg text-lg"
+                          >
+                            💳 Purchase Full Course Access
+                          </button>
+                        </div>
                       </div>
                     )}
 

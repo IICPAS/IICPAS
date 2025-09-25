@@ -46,6 +46,23 @@ router.get("/course/:courseId", async (req, res) => {
   }
 });
 
+// Get a specific chapter by ID
+router.get("/:chapterId", async (req, res) => {
+  try {
+    const { chapterId } = req.params;
+
+    const chapter = await Chapter.findById(chapterId);
+    if (!chapter) {
+      return res.status(404).json({ message: "Chapter not found" });
+    }
+
+    res.json(chapter);
+  } catch (error) {
+    console.error("Error fetching chapter:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 // Get topics for a specific chapter
 router.get("/:chapterId/topics", async (req, res) => {
   try {
@@ -92,7 +109,17 @@ router.get("/topics/:topicId", async (req, res) => {
 router.post("/by-course/:courseId", async (req, res) => {
   try {
     const { courseId } = req.params;
-    const { title, order, status } = req.body;
+    const { 
+      title, 
+      order, 
+      status, 
+      seoTitle, 
+      seoKeywords, 
+      seoDescription,
+      metaTitle, 
+      metaKeywords, 
+      metaDescription 
+    } = req.body;
 
     // Validate input
     if (!title || !title.trim()) {
@@ -104,6 +131,12 @@ router.post("/by-course/:courseId", async (req, res) => {
       title: title.trim(),
       order: order || 0,
       status: status || "Active",
+      seoTitle: seoTitle || "",
+      seoKeywords: seoKeywords || "",
+      seoDescription: seoDescription || "",
+      metaTitle: metaTitle || "",
+      metaKeywords: metaKeywords || "",
+      metaDescription: metaDescription || "",
       topics: [],
     });
 
@@ -134,7 +167,17 @@ router.post("/by-course/:courseId", async (req, res) => {
 router.put("/:chapterId", async (req, res) => {
   try {
     const { chapterId } = req.params;
-    const { title, order, status } = req.body;
+    const { 
+      title, 
+      order, 
+      status, 
+      seoTitle, 
+      seoKeywords, 
+      seoDescription,
+      metaTitle, 
+      metaKeywords, 
+      metaDescription 
+    } = req.body;
 
     const chapter = await Chapter.findById(chapterId);
     if (!chapter) {
@@ -144,6 +187,12 @@ router.put("/:chapterId", async (req, res) => {
     if (title) chapter.title = title.trim();
     if (order !== undefined) chapter.order = order;
     if (status) chapter.status = status;
+    if (seoTitle !== undefined) chapter.seoTitle = seoTitle;
+    if (seoKeywords !== undefined) chapter.seoKeywords = seoKeywords;
+    if (seoDescription !== undefined) chapter.seoDescription = seoDescription;
+    if (metaTitle !== undefined) chapter.metaTitle = metaTitle;
+    if (metaKeywords !== undefined) chapter.metaKeywords = metaKeywords;
+    if (metaDescription !== undefined) chapter.metaDescription = metaDescription;
 
     const updatedChapter = await chapter.save();
 

@@ -22,3 +22,42 @@ export const getLeads = async (req, res) => {
     res.status(500).json({ success: false, error: "Server error" });
   }
 };
+
+export const updateLead = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
+    
+    const lead = await Lead.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true, runValidators: true }
+    );
+    
+    if (!lead) {
+      return res.status(404).json({ success: false, error: "Lead not found" });
+    }
+    
+    res.status(200).json({ success: true, lead });
+  } catch (err) {
+    console.error("Error updating lead:", err);
+    res.status(500).json({ success: false, error: "Server error" });
+  }
+};
+
+export const deleteLead = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const lead = await Lead.findByIdAndDelete(id);
+    
+    if (!lead) {
+      return res.status(404).json({ success: false, error: "Lead not found" });
+    }
+    
+    res.status(200).json({ success: true, message: "Lead deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting lead:", err);
+    res.status(500).json({ success: false, error: "Server error" });
+  }
+};

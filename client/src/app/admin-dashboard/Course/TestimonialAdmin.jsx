@@ -19,12 +19,14 @@ import {
   Delete as DeleteIcon,
   CheckCircle as CheckCircleIcon,
   Cancel as CancelIcon,
+  Download as DownloadIcon,
 } from "@mui/icons-material";
 import axios from "axios";
 import { useAuth } from "@/contexts/AuthContext";
 import Swal from "sweetalert2";
+import * as XLSX from "xlsx";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
 
 export default function TestimonialAdmin() {
   const [testimonials, setTestimonials] = useState([]);
@@ -34,6 +36,7 @@ export default function TestimonialAdmin() {
     name: "",
     designation: "",
     message: "",
+    rating: 5,
     image: null,
   });
   const [imagePreview, setImagePreview] = useState(null);
@@ -122,9 +125,15 @@ export default function TestimonialAdmin() {
       formData.append('name', form.name);
       formData.append('designation', form.designation);
       formData.append('message', form.message);
+      formData.append('rating', form.rating);
       
       if (form.image) {
         formData.append('image', form.image);
+      }
+
+      console.log("Form data entries:");
+      for (let [key, value] of formData.entries()) {
+        console.log(key, value);
       }
 
       const token = localStorage.getItem("adminToken");
@@ -141,6 +150,8 @@ export default function TestimonialAdmin() {
           }
         );
       } else {
+        console.log("API_BASE:", API_BASE);
+        console.log("Full URL:", `${API_BASE}/testimonials`);
         await axios.post(
           `${API_BASE}/testimonials`,
           formData,
@@ -168,6 +179,7 @@ export default function TestimonialAdmin() {
       name: data.name,
       designation: data.designation,
       message: data.message,
+      rating: data.rating || 5,
       image: null, // Don't pre-populate image for editing
     });
     setImagePreview(data.image ? `${API_BASE.replace('/api', '')}/${data.image}` : null);
@@ -176,7 +188,7 @@ export default function TestimonialAdmin() {
   };
 
   const resetForm = () => {
-    setForm({ name: "", designation: "", message: "", image: null });
+    setForm({ name: "", designation: "", message: "", rating: 5, image: null });
     setImagePreview(null);
     setEditingTestimonial(null);
   };
@@ -200,17 +212,91 @@ export default function TestimonialAdmin() {
     setImagePreview(null);
   };
 
+  // Export testimonials to Excel
+  const exportToExcel = () => {
+    if (testimonials.length === 0) {
+      Swal.fire("No Data", "No testimonials to export", "info");
+      return;
+    }
+
+    try {
+      // Prepare data for Excel export
+      const excelData = testimonials.map((testimonial, index) => ({
+        'S.No': index + 1,
+        'Name': testimonial.name || '',
+        'Designation': testimonial.designation || '',
+        'Message': testimonial.message || '',
+        'Rating': testimonial.rating || 5,
+        'Status': testimonial.status ? 'Approved' : 'Pending',
+        'Featured': testimonial.featured ? 'Yes' : 'No',
+        'Submitted Date': testimonial.createdAt ? new Date(testimonial.createdAt).toLocaleDateString() : '',
+        'Submitted Time': testimonial.createdAt ? new Date(testimonial.createdAt).toLocaleTimeString() : '',
+        'Updated Date': testimonial.updatedAt ? new Date(testimonial.updatedAt).toLocaleDateString() : '',
+      }));
+
+      // Create workbook and worksheet
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(excelData);
+
+      // Set column widths
+      const colWidths = [
+        { wch: 8 },   // S.No
+        { wch: 20 },  // Name
+        { wch: 25 },  // Designation
+        { wch: 50 },  // Message
+        { wch: 10 },  // Rating
+        { wch: 12 },  // Status
+        { wch: 10 },  // Featured
+        { wch: 15 },  // Submitted Date
+        { wch: 15 },  // Submitted Time
+        { wch: 15 },  // Updated Date
+      ];
+      ws['!cols'] = colWidths;
+
+      // Add worksheet to workbook
+      XLSX.utils.book_append_sheet(wb, ws, 'Testimonials');
+
+      // Generate filename with current date
+      const currentDate = new Date().toISOString().split('T')[0];
+      const filename = `testimonials_export_${currentDate}.xlsx`;
+
+      // Save file
+      XLSX.writeFile(wb, filename);
+
+      Swal.fire("Success!", `${testimonials.length} testimonials exported to Excel successfully!`, "success");
+    } catch (error) {
+      console.error("Error exporting to Excel:", error);
+      Swal.fire("Error!", "Failed to export testimonials to Excel", "error");
+    }
+  };
+
   return (
     <div className="p-6">
       {mode === "list" && (
         <>
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold">Testimonials</h2>
-            {hasPermission("testimonials", "add") && (
-              <Button variant="contained" onClick={() => setMode("add")}>
-                Add Testimonial
+            <div className="flex gap-3">
+              <Button 
+                variant="contained" 
+                onClick={exportToExcel}
+                startIcon={<DownloadIcon />}
+                sx={{ 
+                  backgroundColor: '#10b981', 
+                  color: 'white',
+                  '&:hover': {
+                    backgroundColor: '#059669'
+                  }
+                }}
+              >
+                Export Excel
               </Button>
-            )}
+              {hasPermission("testimonials", "add") && (
+                <Button variant="contained" onClick={() => setMode("add")}>
+                  Add Testimonial
+                </Button>
+              )}
+            </div>
           </div>
 
           <Table>
@@ -263,7 +349,7 @@ export default function TestimonialAdmin() {
                     )}
                   </TableCell>
                   <TableCell>
-                    {new Date(item.createdAt).toLocaleDateString()}
+                    {new Date(item.createdAt).toLocaleDateString()} at {new Date(item.createdAt).toLocaleTimeString()}
                   </TableCell>
                   <TableCell align="center">
                     <div className="flex items-center justify-center space-x-1">
@@ -345,6 +431,23 @@ export default function TestimonialAdmin() {
               onChange={(e) =>
                 setForm({ ...form, message: e.target.value })
               }
+            />
+          </div>
+
+          {/* Rating Field */}
+          <div className="mt-6">
+            <TextField
+              label="Rating"
+              type="number"
+              min="1"
+              max="5"
+              required
+              fullWidth
+              value={form.rating}
+              onChange={(e) =>
+                setForm({ ...form, rating: parseInt(e.target.value) || 5 })
+              }
+              helperText="Rate from 1 to 5 stars"
             />
           </div>
 

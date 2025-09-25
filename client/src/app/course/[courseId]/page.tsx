@@ -14,7 +14,12 @@ import {
 } from "lucide-react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
+
+import LiveSchedule from "../../components/LiveSchedule";
+import SimulatorDemo from "../../components/SimulatorDemo";
+
 import LiveSessionDisplay from "../../components/LiveSessionDisplay";
+
 import axios from "axios";
 
 // Dummy course data - in real app this would come from API
@@ -770,12 +775,25 @@ export default function CourseDetailPage({
 
                 {activeTab === "schedule" && (
                   <div>
+
+                    <LiveSchedule 
+                      courseCategory={course.category || "CA Foundation"} 
+                      student={student}
+                    />
+
                     <LiveSessionDisplay />
+
                   </div>
                 )}
 
                 {activeTab === "simulation" && (
                   <div>
+
+                    <SimulatorDemo 
+                      courseId={resolvedParams.courseId} 
+                      student={student}
+                    />
+
                     <h3 className="text-2xl font-bold text-gray-900 mb-4">
                       Simulation & Ex.
                     </h3>
@@ -823,6 +841,7 @@ export default function CourseDetailPage({
                         available here.
                       </p>
                     )}
+
                   </div>
                 )}
               </motion.div>
@@ -923,12 +942,16 @@ export default function CourseDetailPage({
                       {isEnrollingRecorded
                         ? "Enrolling..."
                         : course?.pricing?.recordedSession?.buttonText ||
+
+                          "Add Digital Hub+"}
+
                           "Add Digital Hub"}
 
                       {isEnrollingRecorded
                         ? "Enrolling..."
                         : course?.pricing?.recordedSession?.buttonText ||
                           "Add Digital Hub"}
+
                     </button>
                   </div>
 

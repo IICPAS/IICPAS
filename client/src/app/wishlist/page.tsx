@@ -20,9 +20,15 @@ interface Course {
   reviews?: number;
 }
 
+interface Student {
+  _id: string;
+  name?: string;
+  email?: string;
+}
+
 export default function WishlistPage() {
   const router = useRouter();
-  const [student, setStudent] = useState(null);
+  const [student, setStudent] = useState<Student | null>(null);
   const [wishlistCourses, setWishlistCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
 

@@ -24,6 +24,9 @@ const initialForm = {
   seoTitle: "",
   seoKeywords: "",
   seoDescription: "",
+  metaTitle: "",
+  metaKeywords: "",
+  metaDescription: "",
   image: null,
   pricing: {
     recordedSession: {
@@ -594,6 +597,42 @@ export default function CourseAddTab({ onBack }) {
               placeholder="Enter keywords"
               className="w-full border p-2 rounded min-h-[48px]"
               value={form.seoKeywords}
+              onChange={handleInputChange}
+            />
+          </div>
+        </div>
+
+        {/* Meta Tags Section */}
+        <div className="border-t pt-8 mt-8">
+          <h2 className="text-xl font-semibold mb-3">Meta Tags</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+            <div>
+              <label className="block mb-1 font-semibold">Meta Title</label>
+              <input
+                name="metaTitle"
+                placeholder="Enter meta title for additional SEO"
+                className="w-full border p-2 rounded"
+                value={form.metaTitle}
+                onChange={handleInputChange}
+              />
+            </div>
+            <div>
+              <label className="block mb-1 font-semibold">Meta Description</label>
+              <JoditEditor
+                value={form.metaDescription}
+                config={{ ...joditConfig, height: 120 }}
+                onChange={debouncedJoditChange("metaDescription")}
+                onBlur={handleJoditChange("metaDescription")}
+              />
+            </div>
+          </div>
+          <div className="mt-5">
+            <label className="block mb-1 font-semibold">Meta Keywords</label>
+            <textarea
+              name="metaKeywords"
+              placeholder="Enter meta keywords separated by commas"
+              className="w-full border p-2 rounded min-h-[48px]"
+              value={form.metaKeywords}
               onChange={handleInputChange}
             />
           </div>
