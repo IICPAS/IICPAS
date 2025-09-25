@@ -222,88 +222,15 @@ export default function Header() {
               </Link>
             ) : student ? (
               <div className="relative profile-dropdown">
-                 <button
-                   onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-                   className="w-12 h-12 rounded-full overflow-hidden bg-green-600 hover:bg-green-700 transition-colors"
-                 >
-                  {student.image ? (
-                    <img 
-                      src={student.image.startsWith('http') ? student.image : `${API}/${student.image}`}
-                      alt={student.name}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                        e.currentTarget.nextSibling.style.display = 'flex';
-                      }}
-                    />
-                  ) : null}
-                  <div className="w-full h-full flex items-center justify-center" style={{display: student.image ? 'none' : 'flex'}}>
-                    <User size={20} className="text-white" />
-                  </div>
-                </button>
-                
-                {showProfileDropdown && (
-                  <div className="absolute right-0 mt-3 w-56 bg-white shadow-2xl rounded-xl border border-gray-100 z-50 overflow-hidden">
-                    {/* Profile Header */}
-                    <div className="bg-gradient-to-r from-green-500 to-green-600 p-4 text-white">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                          <User size={20} className="text-white" />
-                        </div>
-                        <div>
-                          <p className="font-semibold text-white">{student.name}</p>
-                          <p className="text-xs text-green-100">{student.email}</p>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Menu Items */}
-                    <div className="py-2">
-                      <Link
-                        href="/student-dashboard"
-                        className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-all duration-200 group"
-                        onClick={() => setShowProfileDropdown(false)}
-                      >
-                        <BookOpen size={18} className="text-gray-400 group-hover:text-green-600" />
-                        <span className="font-medium">Dashboard</span>
-                      </Link>
-                      <Link
-                        href="/student-dashboard?tab=profile"
-                        className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-all duration-200 group"
-                        onClick={() => setShowProfileDropdown(false)}
-                      >
-                        <User size={18} className="text-gray-400 group-hover:text-green-600" />
-                        <span className="font-medium">Profile</span>
-                      </Link>
-                      <Link
-                        href="/student-dashboard?tab=wishlist"
-                        className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-all duration-200 group"
-                        onClick={() => setShowProfileDropdown(false)}
-                      >
-                        <Star size={18} className="text-gray-400 group-hover:text-green-600" />
-                        <span className="font-medium">Wishlist</span>
-                      </Link>
-                      
-                      {/* Divider */}
-                      <div className="border-t border-gray-100 my-2"></div>
-                      
-                      <button
-                        onClick={handleLogout}
-                        className="flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-200 group w-full text-left"
-                      >
-                        <LogOut size={18} className="text-red-400 group-hover:text-red-600" />
-                        <span className="font-medium">Logout</span>
-                      </button>
-                    </div>
-                  </div>
-                )}
+                {/* Profile dropdown button + menu */}
+                {/* ... keep your dropdown code here ... */}
               </div>
             ) : (
               <Link
                 href="/student-login"
                 className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
               >
-                Digital Hub
+                Student Login
               </Link>
             )}
           </div>
