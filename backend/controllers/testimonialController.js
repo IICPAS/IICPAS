@@ -4,7 +4,7 @@ import Testimonial from "../models/Testimonials.js";
 export const createTestimonial = async (req, res) => {
   try {
     const { name, designation, message, rating } = req.body;
-    
+
     // Handle image upload
     let imagePath = "";
     if (req.file) {
@@ -24,7 +24,9 @@ export const createTestimonial = async (req, res) => {
     });
 
     await testimonial.save();
-    res.status(201).json({ message: "Testimonial created successfully", testimonial });
+    res
+      .status(201)
+      .json({ message: "Testimonial created successfully", testimonial });
   } catch (error) {
     console.error("Error creating testimonial:", error);
     res.status(500).json({ error: "Failed to create testimonial" });
@@ -63,36 +65,6 @@ export const submitTestimonial = async (req, res) => {
   } catch (error) {
     console.error("Error submitting testimonial:", error);
     res.status(500).json({ error: "Failed to submit testimonial" });
-  }
-};
-
-// Create a new testimonial (admin only)
-export const createTestimonial = async (req, res) => {
-  try {
-    const { name, designation, message } = req.body;
-
-    // Handle image upload
-    let imagePath = "";
-    if (req.file) {
-      imagePath = req.file.path; // Path to uploaded file
-    }
-
-    const testimonial = new Testimonial({
-      name,
-      designation,
-      message,
-      rating: 5, // Default rating for admin created testimonials
-      image: imagePath,
-      status: true, // Auto-approve admin created testimonials
-    });
-
-    await testimonial.save();
-    res
-      .status(201)
-      .json({ message: "Testimonial created successfully", testimonial });
-  } catch (error) {
-    console.error("Error creating testimonial:", error);
-    res.status(500).json({ error: "Failed to create testimonial" });
   }
 };
 
