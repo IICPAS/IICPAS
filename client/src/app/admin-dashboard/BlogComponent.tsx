@@ -84,7 +84,7 @@ const joditConfig = {
 export default function BlogComponent() {
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
-  const [mode, setMode] = useState("list"); // list, add, edit, preview
+  const [mode, setMode] = useState("list"); // list, add, edit, preview, excel-export
   const [selectedBlog, setSelectedBlog] = useState<Blog | null>(null);
   const [form, setForm] = useState<BlogForm>({
     title: "",
@@ -150,6 +150,57 @@ export default function BlogComponent() {
     resetForm();
     setMode("add");
   };
+
+  const handleExcelExport = () => {
+    // Export all blogs to CSV
+    const headers = ['title', 'author', 'content', 'status', 'createdDate', 'createdTime'];
+    const csvContent = [
+      headers.join(','),
+      ...blogs.map(blog => 
+        headers.map(header => {
+          let value = '';
+          switch(header) {
+            case 'title':
+              value = blog.title || '';
+              break;
+            case 'author':
+              value = blog.author || '';
+              break;
+            case 'content':
+              value = blog.content || '';
+              break;
+            case 'status':
+              value = blog.status || '';
+              break;
+            case 'createdDate':
+              value = blog.createdAt ? new Date(blog.createdAt).toISOString().split('T')[0] : '';
+              break;
+            case 'createdTime':
+              value = blog.createdAt ? new Date(blog.createdAt).toTimeString().split(' ')[0] : '';
+              break;
+          }
+          // Escape quotes and wrap in quotes if contains comma
+          return value.includes(',') || value.includes('"') 
+            ? `"${value.replace(/"/g, '""')}"` 
+            : value;
+        }).join(',')
+      )
+    ].join('\n');
+
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `blogs_export_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showSuccess("Exported!", `Successfully exported ${blogs.length} blogs to CSV file.`);
+  };
+
 
   const handleEdit = (blog: Blog) => {
     setSelectedBlog(blog);
@@ -233,27 +284,50 @@ export default function BlogComponent() {
     <div className="bg-white rounded-lg shadow-lg p-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-800">All Blogs</h2>
-        {hasPermission("blogs", "add") && (
-          <button
-            onClick={handleAdd}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
-            Add Blog
-          </button>
-        )}
+        <div className="flex gap-3">
+          {hasPermission("blogs", "add") && (
+            <>
+              <button
+                onClick={handleExcelExport}
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+                Export Excel
+              </button>
+              <button
+                onClick={handleAdd}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+                Add Blog
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {loading ? (
@@ -582,6 +656,7 @@ export default function BlogComponent() {
       )}
     </div>
   );
+
 
   // Main render
   return (
