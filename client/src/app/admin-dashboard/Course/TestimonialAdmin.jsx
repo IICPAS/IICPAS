@@ -263,7 +263,7 @@ export default function TestimonialAdmin() {
                     )}
                   </TableCell>
                   <TableCell>
-                    {new Date(item.createdAt).toLocaleDateString()}
+                    {new Date(item.createdAt).toLocaleDateString()} at {new Date(item.createdAt).toLocaleTimeString()}
                   </TableCell>
                   <TableCell align="center">
                     <div className="flex items-center justify-center space-x-1">

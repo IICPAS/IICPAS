@@ -400,7 +400,7 @@ export default function TestimonialTab({ student }) {
                       </div>
                       <p className="text-gray-700 italic">"{testimonial.message}"</p>
                       <p className="text-xs text-gray-500 mt-2">
-                        Submitted on {new Date(testimonial.createdAt).toLocaleDateString()}
+                        Submitted on {new Date(testimonial.createdAt).toLocaleDateString()} at {new Date(testimonial.createdAt).toLocaleTimeString()}
                       </p>
                     </div>
                   </div>
