@@ -898,7 +898,7 @@ export default function CourseDetailPage({
                   </div>
 
                   {/* Recorded Lecture Option */}
-                  <div className="border-2 border-[#3cd664] rounded-xl p-3 mb-3">
+                  <div className="border-2 border-[#3cd664] rounded-xl p-3 mb-3 max-w-xs mx-auto">
                     <div className="mb-3">
                       <div className="text-center mb-2">
                         <span className="text-xs font-bold text-[#3cd664] block">
@@ -933,7 +933,7 @@ export default function CourseDetailPage({
                     <button
                       onClick={handleDigitalHubRecordedEnrollment}
                       disabled={isEnrollingRecorded}
-                      className="w-full bg-[#3cd664] hover:bg-[#33bb58] text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-32 bg-[#3cd664] hover:bg-[#33bb58] text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed mx-auto block"
                     >
                       {isEnrollingRecorded
                         ? "Enrolling..."
@@ -943,7 +943,7 @@ export default function CourseDetailPage({
                   </div>
 
                   {/* Live Lecture Option */}
-                  <div className="border-2 border-blue-500 rounded-xl p-3">
+                  <div className="border-2 border-blue-500 rounded-xl p-3 max-w-xs mx-auto">
                     <div className="mb-3">
                       <div className="text-center mb-2">
                         <span className="text-xs font-bold text-blue-500 block">
@@ -972,7 +972,7 @@ export default function CourseDetailPage({
                     <button
                       onClick={handleDigitalHubPlusEnrollment}
                       disabled={isEnrolling}
-                      className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-2 px-3 rounded-lg transition-all duration-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-32 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-2 px-3 rounded-lg transition-all duration-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed mx-auto block"
                     >
                       {isEnrolling
                         ? "Enrolling..."

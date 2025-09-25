@@ -55,6 +55,30 @@ router.post("/register", async (req, res) => {
   }
 });
 
+// Get all students (for admin dashboard)
+router.get("/", async (req, res) => {
+  try {
+    const students = await Student.find({})
+      .populate('course', 'title')
+      .populate('enrolledLiveSessions', 'title')
+      .populate('enrolledRecordedSessions', 'title')
+      .select('-password -otp -otpExpiry')
+      .sort({ createdAt: -1 });
+
+    res.json({ 
+      message: "Students retrieved successfully", 
+      students,
+      count: students.length 
+    });
+  } catch (err) {
+    console.error("Error fetching students:", err);
+    res.status(500).json({ 
+      message: "Failed to fetch students", 
+      error: err.message 
+    });
+  }
+});
+
 //Login
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
