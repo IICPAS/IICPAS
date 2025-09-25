@@ -25,19 +25,33 @@ router.get("/", async (req, res) => {
           },
         },
         footerLinks: {
-          companyPolicies: [
-            { name: "Privacy Policy", href: "/privacy" },
-            { name: "Refund Policy", href: "/refund" },
-            { name: "Terms & Conditions", href: "/terms" },
-            { name: "Return Policy", href: "/return" },
+          courses: [
+            { name: "Finance Courses", href: "/courses/finance" },
+            { name: "Accounting", href: "/courses/accounting" },
+            { name: "Taxation", href: "/courses/taxation" },
+            { name: "Auditing", href: "/courses/auditing" },
+            { name: "Investment Banking", href: "/courses/investment-banking" },
           ],
-          generalLinks: [
-            { name: "About Us", href: "/about" },
-            { name: "Courses", href: "/courses" },
+          resources: [
             { name: "Blog", href: "/blog" },
+            { name: "Study Materials", href: "/resources" },
+            { name: "Practice Tests", href: "/practice" },
+            { name: "Career Guidance", href: "/career" },
+            { name: "Placement Support", href: "/placement" },
+          ],
+          company: [
+            { name: "About Us", href: "/about" },
+            { name: "Our Team", href: "/team" },
+            { name: "Success Stories", href: "/success" },
+            { name: "Partners", href: "/partners" },
             { name: "Contact Us", href: "/contact" },
-            { name: "FAQ", href: "/faq" },
+          ],
+          support: [
             { name: "Help Center", href: "/help" },
+            { name: "Live Sessions", href: "/live" },
+            { name: "Student Login", href: "/login" },
+            { name: "FAQ", href: "/faq" },
+            { name: "Privacy Policy", href: "/privacy" },
           ],
         },
         socialLinks: [
@@ -89,11 +103,19 @@ router.get("/", async (req, res) => {
     const cleanFooter = {
       companyInfo: footer.companyInfo,
       footerLinks: {
-        companyPolicies: footer.footerLinks.companyPolicies.map((link) => ({
+        courses: footer.footerLinks.courses.map((link) => ({
           name: link.name,
           href: link.href,
         })),
-        generalLinks: footer.footerLinks.generalLinks.map((link) => ({
+        resources: footer.footerLinks.resources.map((link) => ({
+          name: link.name,
+          href: link.href,
+        })),
+        company: footer.footerLinks.company.map((link) => ({
+          name: link.name,
+          href: link.href,
+        })),
+        support: footer.footerLinks.support.map((link) => ({
           name: link.name,
           href: link.href,
         })),

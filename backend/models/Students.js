@@ -6,7 +6,6 @@ const StudentSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true },
     phone: { type: String, required: true },
     password: { type: String, required: true },
-    image: { type: String }, // profile image path
     mode: { type: String }, // online or offline
     location: { type: String },
     center: { type: String },

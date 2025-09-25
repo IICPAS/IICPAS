@@ -10,41 +10,38 @@ const router = express.Router();
 // Get current Contact content (public endpoint)
 router.get("/", async (req, res) => {
   try {
-    const contact = await Contact.findOne({ isActive: true }).sort({
-      createdAt: -1,
-    });
+    const contact = await Contact.findOne({ isActive: true }).sort({ createdAt: -1 });
     if (!contact) {
       // Return default content if no content found
       return res.json({
         title: "Contact Us",
         subtitle: "Let's Get in Touch",
-        description:
-          "Ready to start your learning journey? Get in touch with us today!",
+        description: "Ready to start your learning journey? Get in touch with us today!",
         contactInfo: {
           phone: {
             number: "+91 98765 43210",
-            label: "Phone",
+            label: "Phone"
           },
           email: {
             address: "support@iicpa.org",
-            label: "Email",
+            label: "Email"
           },
           address: {
             text: "123 Knowledge Park, New Delhi, India",
-            label: "Address",
-          },
+            label: "Address"
+          }
         },
         form: {
           buttonText: "Send Message",
           successMessage: "Message sent successfully!",
-          errorMessage: "Something went wrong. Please try again.",
+          errorMessage: "Something went wrong. Please try again."
         },
         colors: {
           title: "text-green-600",
           subtitle: "text-gray-900",
           description: "text-gray-600",
-          background: "bg-white",
-        },
+          background: "bg-white"
+        }
       });
     }
     res.json(contact);
@@ -67,23 +64,21 @@ router.get("/all", requireAuth, isAdmin, async (req, res) => {
 router.post("/submit", async (req, res) => {
   try {
     const { name, email, phone, message } = req.body;
-
+    
     // Basic validation
     if (!name || !email || !message) {
-      return res
-        .status(400)
-        .json({ error: "Name, email, and message are required" });
+      return res.status(400).json({ error: "Name, email, and message are required" });
     }
-
+    
     // Save to both Contact and Message models
     const newContact = new ContactModel({ name, email, phone, message });
     await newContact.save();
 
     const newMessage = new Message({ email, phone, message });
     await newMessage.save();
-
+    
     console.log("Contact form submission:", { name, email, phone, message });
-
+    
     res.status(200).json({ message: "Message sent successfully!" });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -94,23 +89,21 @@ router.post("/submit", async (req, res) => {
 router.post("/", async (req, res) => {
   try {
     const { name, email, phone, message } = req.body;
-
+    
     // Basic validation
     if (!name || !email || !message) {
-      return res
-        .status(400)
-        .json({ error: "Name, email, and message are required" });
+      return res.status(400).json({ error: "Name, email, and message are required" });
     }
-
+    
     // Save to both Contact and Message models
     const newContact = new ContactModel({ name, email, phone, message });
     await newContact.save();
 
     const newMessage = new Message({ email, phone, message });
     await newMessage.save();
-
+    
     console.log("Contact form submission:", { name, email, phone, message });
-
+    
     res.status(200).json({ message: "Message sent successfully!" });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -122,7 +115,7 @@ router.post("/", requireAuth, isAdmin, async (req, res) => {
   try {
     // Deactivate all existing entries
     await Contact.updateMany({}, { isActive: false });
-
+    
     // Create new entry
     const contact = await Contact.create(req.body);
     res.status(201).json(contact);
@@ -134,15 +127,16 @@ router.post("/", requireAuth, isAdmin, async (req, res) => {
 // Update Contact content (admin only)
 router.put("/:id", requireAuth, isAdmin, async (req, res) => {
   try {
-    const contact = await Contact.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
-
+    const contact = await Contact.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
+    
     if (!contact) {
       return res.status(404).json({ error: "Contact content not found" });
     }
-
+    
     res.json(contact);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -154,18 +148,18 @@ router.put("/activate/:id", requireAuth, isAdmin, async (req, res) => {
   try {
     // Deactivate all entries first
     await Contact.updateMany({}, { isActive: false });
-
+    
     // Activate the selected entry
     const contact = await Contact.findByIdAndUpdate(
       req.params.id,
       { isActive: true },
       { new: true }
     );
-
+    
     if (!contact) {
       return res.status(404).json({ error: "Contact content not found" });
     }
-
+    
     res.json(contact);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -176,11 +170,11 @@ router.put("/activate/:id", requireAuth, isAdmin, async (req, res) => {
 router.delete("/:id", requireAuth, isAdmin, async (req, res) => {
   try {
     const contact = await Contact.findByIdAndDelete(req.params.id);
-
+    
     if (!contact) {
       return res.status(404).json({ error: "Contact content not found" });
     }
-
+    
     res.json({ message: "Contact content deleted successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -214,7 +208,7 @@ router.put("/messages/:id/reply", requireAuth, isAdmin, async (req, res) => {
         adminReply,
         adminRepliedBy: adminRepliedBy || req.user?.name || "Admin",
         adminRepliedAt: new Date(),
-        status: "replied",
+        status: "replied"
       },
       { new: true }
     );

@@ -40,25 +40,6 @@ export default function HeroSection() {
 
         if (response.ok) {
           const data = await response.json();
-
-          // Fix video path handling
-          if (data.videoFile && data.videoFile.startsWith("/uploads/")) {
-            // If videoFile is a relative path, make it absolute
-            const baseUrl =
-              process.env.NEXT_PUBLIC_API_BASE?.replace("/api", "") ||
-              "http://localhost:8080";
-            data.videoFile = `${baseUrl}${data.videoFile}`;
-          }
-
-          if (data.videoUrl && data.videoUrl.startsWith("/uploads/")) {
-            // If videoUrl is a relative path, make it absolute
-            const baseUrl =
-              process.env.NEXT_PUBLIC_API_BASE?.replace("/api", "") ||
-              "http://localhost:8080";
-            data.videoUrl = `${baseUrl}${data.videoUrl}`;
-          }
-
-          console.log("Hero data loaded:", data);
           setHeroData(data);
         } else {
           console.error("Failed to fetch hero data");
@@ -93,13 +74,6 @@ export default function HeroSection() {
           loop
           playsInline
           className="w-full h-full object-cover"
-          onError={(e) => {
-            console.error("Video error:", e);
-            console.error("Video src:", e.target.src);
-          }}
-          onLoadStart={() => console.log("Video loading started")}
-          onCanPlay={() => console.log("Video can play")}
-          onLoadedData={() => console.log("Video data loaded")}
         >
           <source
             src={heroData.videoFile || heroData.videoUrl}

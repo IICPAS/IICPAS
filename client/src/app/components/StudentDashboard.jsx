@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Drawer from "react-modern-drawer";
 import "react-modern-drawer/dist/index.css";
 import axios from "axios";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   FaBook,
   FaVideo,
@@ -15,6 +15,7 @@ import {
   FaBars,
   FaTimes,
   FaQuoteLeft,
+  FaArrowLeft,
   FaPlay,
   FaSignOutAlt,
 } from "react-icons/fa";
@@ -31,8 +32,6 @@ import ProfileTab from "../components/ProfileTab";
 import TestimonialTab from "./TestimonialTab";
 
 export default function StudentDashboard() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState("courses");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [student, setStudent] = useState(null);
@@ -49,10 +48,11 @@ export default function StudentDashboard() {
   });
   const [submitting, setSubmitting] = useState(false);
 
-  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+  const router = useRouter();
+  const API = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
 
   // Debug environment variable
-  console.log("NEXT_PUBLIC_API_URL:", process.env.NEXT_PUBLIC_API_URL);
+  console.log("NEXT_PUBLIC_API_BASE:", process.env.NEXT_PUBLIC_API_BASE);
   console.log("API variable:", API);
 
   // Sidebar tabs
@@ -62,6 +62,7 @@ export default function StudentDashboard() {
     { id: "live", icon: <FaVideo />, label: "Live Class", dot: true },
     { id: "recorded", icon: <FaPlay />, label: "Recorded Sessions", dot: true },
     { id: "news", icon: <FaNewspaper />, label: "News" },
+    { id: "profile", icon: <FaUser />, label: "Profile" },
     { id: "testimonial", icon: <FaQuoteLeft />, label: "Testimonial" },
     { id: "support", icon: <FaHeadset />, label: "Support" },
     {
@@ -83,20 +84,12 @@ export default function StudentDashboard() {
     },
   ];
 
-  // Handle URL tab parameter
-  useEffect(() => {
-    const tab = searchParams.get("tab");
-    if (tab && ["courses", "revision", "live", "recorded", "news", "testimonial", "support", "certificates", "profile"].includes(tab)) {
-      setActiveTab(tab);
-    }
-  }, [searchParams]);
-
   // Student auth check
   useEffect(() => {
     const fetchStudent = async () => {
       try {
         const res = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/students/isstudent`,
+          `${process.env.NEXT_PUBLIC_API_BASE}/v1/students/isstudent`,
           { withCredentials: true }
         );
         // Authenticated: set student
@@ -120,7 +113,7 @@ export default function StudentDashboard() {
       }
     };
     fetchStudent();
-  }, [router]);
+  }, []);
 
   // Handle ticket submission
   const handleTicketSubmit = async (e) => {
@@ -133,10 +126,10 @@ export default function StudentDashboard() {
 
     setSubmitting(true);
     try {
-      console.log("API URL:", `${process.env.NEXT_PUBLIC_API_URL}/api/tickets`);
+      console.log("API URL:", `${process.env.NEXT_PUBLIC_API_BASE}/tickets`);
       console.log("Ticket data:", { name, email, phone, message });
 
-      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/tickets`, {
+      await axios.post(`${process.env.NEXT_PUBLIC_API_BASE}/tickets`, {
         name,
         email,
         phone,
@@ -156,11 +149,14 @@ export default function StudentDashboard() {
     }
   };
 
+  const handleBack = () => {
+    setActiveTab("courses");
+  };
 
   // Handle logout
   const handleLogout = async () => {
     try {
-      await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/students/logout`, {
+      await axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/v1/students/logout`, {
         withCredentials: true,
       });
       router.push("/student-login");
@@ -216,32 +212,8 @@ export default function StudentDashboard() {
         {/* User Info */}
         {student && (
           <div className="text-center mb-4 p-3 bg-blue-50 rounded-lg">
-            <div 
-              onClick={() => setActiveTab("profile")}
-              className="cursor-pointer hover:bg-blue-100 p-2 rounded-md transition-colors duration-200"
-            >
-              <div className="flex items-center justify-center gap-2">
-                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center overflow-hidden">
-                  {student.image ? (
-                    <img
-                      src={`${API}/${student.image}`}
-                      alt="Profile"
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        console.log("Sidebar profile image failed to load:", `${API}/${student.image}`);
-                        e.target.style.display = 'none';
-                        e.target.nextElementSibling.style.display = 'flex';
-                      }}
-                    />
-                  ) : null}
-                  <div className={`w-full h-full flex items-center justify-center ${student.image ? 'hidden' : ''}`}>
-                    <FaUser size={16} className="text-white" />
-                  </div>
-                </div>
-                <p className="font-semibold text-blue-800">{student.name}</p>
-              </div>
-              <p className="text-sm text-blue-600 mt-1">Student</p>
-            </div>
+            <p className="font-semibold text-blue-800">{student.name}</p>
+            <p className="text-sm text-blue-600">Student</p>
           </div>
         )}
       </div>
@@ -295,7 +267,7 @@ export default function StudentDashboard() {
       {/* Main Content */}
       <main className={`lg:${sidebarCollapsed ? "ml-16" : "ml-70"} bg-[#f5f6fa] h-screen transition-all duration-300 overflow-y-auto thin-scrollbar`}>
         {/* Fixed Header */}
-        <div className="sticky top-0 z-40 bg-[#f5f6fa] border-b border-gray-200 p-2 md:p-3">
+        <div className="sticky top-0 z-40 bg-[#f5f6fa] border-b border-gray-200 p-4 md:p-6">
           <div className="flex justify-between items-center">
             <button
               className="lg:hidden p-2 bg-gray-100 rounded hover:bg-gray-200 transition-colors"
@@ -341,9 +313,20 @@ export default function StudentDashboard() {
         </div>
         
         {/* Scrollable Content */}
-        <div className="p-2 md:p-3">
+        <div className="p-4 md:p-6">
         
         {/* Back Button - Only show when not on courses tab */}
+        {activeTab !== "courses" && (
+          <div className="mb-4">
+            <button
+              onClick={handleBack}
+              className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors duration-200 font-medium"
+            >
+              <FaArrowLeft className="text-sm" />
+              Back to Courses
+            </button>
+          </div>
+        )}
         
         {/* (optional: banners and prompts) */}
         {renderTabContent()}

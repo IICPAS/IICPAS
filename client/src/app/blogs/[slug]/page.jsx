@@ -2,7 +2,6 @@
 
 import BlogHero from "./BlogHero";
 import Header from "../../components/Header";
-import Footer from "../../components/Footer";
 import axios from "axios";
 
 const API_BASE =
@@ -37,8 +36,8 @@ export default async function BlogDetail({ params }) {
   return (
     <>
       <Header />
-      <BlogHero blogTitle={blog.title} />
-      <div className="max-w-3xl mx-auto pt-20 pb-12 px-4">
+      <BlogHero />
+      <div className="max-w-3xl mx-auto py-12 px-4">
         <h1 className="text-3xl font-bold mb-4">{blog.title}</h1>
         <div className="mb-3 text-sm text-gray-500">
           By {blog.author} •{" "}
@@ -61,7 +60,6 @@ export default async function BlogDetail({ params }) {
           dangerouslySetInnerHTML={{ __html: blog.content }}
         />
       </div>
-      <Footer />
     </>
   );
 }

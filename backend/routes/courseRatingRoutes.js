@@ -6,18 +6,18 @@ import {
   rejectRating,
   submitRating,
   getCourseRatings,
-  getStudentRatings,
+  getStudentRatings
 } from "../controllers/courseRatingController.js";
 import { isAdmin } from "../middleware/isAdmin.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 
 const router = express.Router();
 
-// Admin routes (no authentication required)
-router.get("/admin/pending", getPendingRatings);
-router.get("/admin/all", getAllRatings);
-router.patch("/admin/approve/:ratingId", approveRating);
-router.patch("/admin/reject/:ratingId", rejectRating);
+// Admin routes (require admin authentication)
+router.get("/admin/pending", requireAuth, isAdmin, getPendingRatings);
+router.get("/admin/all", requireAuth, isAdmin, getAllRatings);
+router.patch("/admin/approve/:ratingId", requireAuth, isAdmin, approveRating);
+router.patch("/admin/reject/:ratingId", requireAuth, isAdmin, rejectRating);
 
 // Public routes
 router.post("/submit", submitRating);
