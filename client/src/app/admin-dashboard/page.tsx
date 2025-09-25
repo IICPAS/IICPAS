@@ -66,6 +66,7 @@ import {
   FaUserTie,
   FaArrowLeft,
   FaComments,
+  FaUser,
 } from "react-icons/fa";
 import CompanyTab from "./CompanyTab";
 import CourseArea from "./CourseBuilder";
@@ -83,6 +84,7 @@ import CenterManagementTab from "./CenterManagementTab";
 import MessagesTab from "./MessagesTab";
 import BulkEmailTab from "./BulkEmailTab";
 import ContactInfoTab from "./ContactInfoTab";
+import AdminProfileTab from "./AdminProfileTab";
 
 // All available modules with their permissions
 const ALL_MODULES = [
@@ -151,6 +153,7 @@ const WEBSITE_SETTINGS_MODULES = [
   { id: "faq", label: "FAQ", icon: <FaUserTie /> },
   { id: "bulk-email", label: "Bulk Email", icon: <FaEnvelope /> },
   { id: "contact-info", label: "Contact Information", icon: <FaEnvelope /> },
+  { id: "profile", label: "Profile", icon: <FaUserTie /> },
 ];
 
 function AdminDashboardContent() {
@@ -215,9 +218,35 @@ function AdminDashboardContent() {
           </div>
         </div>
         {/* User Info */}
-        <div className="text-center mb-4 p-3 bg-blue-50 rounded-lg">
-          <p className="font-semibold text-blue-800">{user?.name}</p>
-          <p className="text-sm text-blue-600">{user?.role}</p>
+        <div 
+          className="text-center mb-4 p-3 bg-blue-50 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors"
+          onClick={() => {
+            setActiveTab("profile");
+            if (isMobile) setDrawerOpen(false);
+          }}
+        >
+          <div className="flex items-center justify-center gap-3 mb-2">
+            <div className="w-10 h-10 rounded-full overflow-hidden bg-blue-600 flex items-center justify-center">
+              {user?.image ? (
+                <img
+                  src={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}${user.image}`}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.nextElementSibling.style.display = 'flex';
+                  }}
+                />
+              ) : null}
+              <div className={`w-full h-full flex items-center justify-center ${user?.image ? 'hidden' : ''}`}>
+                <FaUser size={16} className="text-white" />
+              </div>
+            </div>
+            <div className="text-left">
+              <p className="font-semibold text-blue-800">{user?.name}</p>
+              <p className="text-sm text-blue-600">{user?.role}</p>
+            </div>
+          </div>
         </div>
       </div>
       <nav className="flex-1 overflow-y-auto px-3 custom-scrollbar">
@@ -491,6 +520,8 @@ function AdminDashboardContent() {
           <BulkEmailTab />
         ) : activeTab === "contact-info" ? (
           <ContactInfoTab />
+        ) : activeTab === "profile" ? (
+          <AdminProfileTab />
         ) : activeTab === "" ? (
           <div className="text-center py-20">
             <h2 className="text-2xl font-bold text-gray-600 mb-4">

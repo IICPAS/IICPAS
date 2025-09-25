@@ -89,9 +89,56 @@ export const userLogin = async (req, res) => {
         name: user.name,
         email: user.email,
         phone: user.phone,
-      },
     });
   } catch (err) {
     res.status(500).json({ message: "Error", error: err.message });
+  }
+};
+
+// Admin profile update
+export const updateAdminProfile = async (req, res) => {
+  try {
+    const { name, email, phone, role, image } = req.body;
+    const adminId = req.user.id; // From isAdmin middleware
+
+    // Check if email is being changed and if it already exists
+    if (email) {
+      const existingAdmin = await Admin.findOne({ email, _id: { $ne: adminId } });
+      if (existingAdmin) {
+        return res.status(400).json({ message: "Email already exists" });
+      }
+    }
+
+    // Update admin profile
+    const updatedAdmin = await Admin.findByIdAndUpdate(
+      adminId,
+      { 
+        name, 
+        email, 
+        phone, 
+        role, 
+        image 
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedAdmin) {
+      return res.status(404).json({ message: "Admin not found" });
+    }
+
+    res.json({
+      message: "Profile updated successfully",
+      admin: {
+        id: updatedAdmin._id,
+        name: updatedAdmin.name,
+        email: updatedAdmin.email,
+        phone: updatedAdmin.phone,
+        role: updatedAdmin.role,
+        image: updatedAdmin.image,
+      },
+    });
+  } catch (err) {
+    console.error("Admin profile update error:", err);
+    res.status(500).json({ message: "Error updating profile", error: err.message });
   }
 };
