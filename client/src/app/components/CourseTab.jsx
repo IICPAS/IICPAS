@@ -21,10 +21,6 @@ import {
 } from "@mui/icons-material";
 import {
   FaStar,
-  FaClock,
-  FaGraduationCap,
-  FaCheckCircle,
-  FaExclamationTriangle,
 } from "react-icons/fa";
 import StarRating from "./StarRating";
 import { toast } from "react-hot-toast";
@@ -754,149 +750,63 @@ export default function CourseTab() {
         {courses.map((course) => (
           <div key={course._id} className="group relative">
             {viewModes[course._id] !== "detailed" ? (
-              // State 1: Modern Course Overview Card
-              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden transform transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl">
-                {/* Course Header with Gradient */}
-                <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 p-3 text-white relative overflow-hidden">
-                  <div className="absolute inset-0 bg-black opacity-10"></div>
-                  <div className="relative z-10">
-                    <h2 className="text-2xl font-bold mb-2">{course.title}</h2>
-                  </div>
-                  {/* Decorative elements */}
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full -translate-y-16 translate-x-16"></div>
-                  <div className="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-5 rounded-full translate-y-12 -translate-x-12"></div>
-                </div>
-
-                <div className="p-8">
-                  <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-                    {/* Left Side - Course Image with Modern Styling */}
-                    <div className="lg:col-span-1">
-                      <div className="relative group">
-                        <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-100 to-gray-200">
-                          <img
-                            src={
-                              course.image
-                                ? `${API}${course.image}`
-                                : "/images/a1.jpeg"
-                            }
-                            alt={course.title}
-                             className="w-full h-64 object-cover transform transition-transform duration-500 group-hover:scale-110"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-                        </div>
+              // State 1: Simple Course Card (Wireframe Design)
+              <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:shadow-md hover:scale-102 transition-all duration-300 ease-in-out">
+                <div className="p-4">
+                  <div className="flex gap-4">
+                    {/* Left Side - Course Image */}
+                    <div className="flex-shrink-0">
+                      <div className="w-64 h-full bg-gray-100 rounded-lg overflow-hidden hover:scale-105 transition-transform duration-300 ease-in-out">
+                        <img
+                          src={
+                            course.image
+                              ? `${API}${course.image}`
+                              : "/images/a1.jpeg"
+                          }
+                          alt={course.title}
+                          className="w-full h-full object-cover"
+                        />
                       </div>
                     </div>
 
-                    {/* Right Side - Course Stats with Modern Cards */}
-                    <div className="lg:col-span-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                        {/* Status Card */}
-                        <div className="bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200 rounded-xl p-3">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
-                              <FaCheckCircle className="text-emerald-600 text-lg" />
-                            </div>
-                            <div>
-                              <p className="text-sm text-gray-600 font-medium">
-                                Status
-                              </p>
-                              <p className="text-lg font-bold text-emerald-700">
-                                {course.status}
-                              </p>
-                            </div>
-                          </div>
+                    {/* Right Side - Course Info */}
+                    <div className="flex-1">
+                      {/* Course Title */}
+                      <div className="mb-3">
+                        <h2 className="text-lg font-semibold text-gray-900 mb-1">
+                          {course.title}
+                        </h2>
+                      </div>
+
+                      {/* Course Details - Three Boxes */}
+                      <div className="grid grid-cols-3 gap-3 mb-4">
+                        {/* Status Box */}
+                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-2 text-center">
+                          <p className="text-xs text-gray-600 font-medium mb-1">Status</p>
+                          <p className="text-sm font-bold text-green-600">{course.status}</p>
                         </div>
 
-                        {/* Level Card */}
-                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-3">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                              <FaGraduationCap className="text-blue-600 text-lg" />
-                            </div>
-                            <div>
-                              <p className="text-sm text-gray-600 font-medium">
-                                Level
-                              </p>
-                              <p className="text-lg font-bold text-blue-700">
-                                {course.level}
-                              </p>
-                            </div>
-                          </div>
+                        {/* Price Box */}
+                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-2 text-center">
+                          <p className="text-xs text-gray-600 font-medium mb-1">Price</p>
+                          <p className="text-sm font-bold text-purple-600">₹{course.price}</p>
                         </div>
 
-                        {/* Price Card */}
-                        <div className="bg-gradient-to-br from-purple-50 to-violet-50 border border-purple-200 rounded-xl p-3">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                              <FaStar className="text-purple-600 text-lg" />
-                            </div>
-                            <div>
-                              <p className="text-sm text-gray-600 font-medium">
-                                Price
-                              </p>
-                              <p className="text-lg font-bold text-purple-700">
-                                ₹{course.price}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Duration Card */}
-                        <div className="bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-200 rounded-xl p-3">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
-                              <FaClock className="text-orange-600 text-lg" />
-                            </div>
-                            <div>
-                              <p className="text-sm text-gray-600 font-medium">
-                                Duration
-                              </p>
-                              <p className="text-lg font-bold text-orange-700">
-                                8 Weeks
-                              </p>
-                            </div>
-                          </div>
+                        {/* Duration Box */}
+                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-2 text-center">
+                          <p className="text-xs text-gray-600 font-medium mb-1">Duration</p>
+                          <p className="text-sm font-bold text-orange-600">8 Weeks</p>
                         </div>
                       </div>
 
-                      {/* Action Buttons */}
-                      <div className="flex gap-3">
+                      {/* View Course Details Button */}
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-2 text-center">
                         <button
                           onClick={() => handleDetailedToggle(course._id)}
-                          className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-6 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-105 hover:from-blue-700 hover:to-purple-700"
+                          className="text-blue-600 font-medium hover:text-blue-700 transition-colors text-sm"
                         >
-                          <span className="flex items-center justify-center gap-2">
-                            <Book className="text-xl" />
-                            View Course Details
-                          </span>
+                          View Course Details
                         </button>
-                        
-                        {/* Rating Button - Show only if course is completed and not already rated */}
-                        {isCourseCompleted(course) && !courseRatings[course._id] && (
-                          <button
-                            onClick={() => {
-                              setCourseToRate(course);
-                              setShowRatingModal(true);
-                            }}
-                            className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-4 px-6 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-105 hover:from-yellow-600 hover:to-orange-600"
-                          >
-                            <span className="flex items-center justify-center gap-2">
-                              <FaStar className="text-xl" />
-                              Rate Course
-                            </span>
-                          </button>
-                        )}
-                        
-                        {/* Show rating status if already rated */}
-                        {courseRatings[course._id] && (
-                          <div className="flex items-center justify-center px-6 py-4 bg-gray-100 rounded-xl">
-                            <span className="text-gray-600 font-medium">
-                              {courseRatings[course._id].status === "pending" ? "Rating Pending" : 
-                               courseRatings[course._id].status === "approved" ? "Rating Approved" : 
-                               "Rating Rejected"}
-                            </span>
-                          </div>
-                        )}
                       </div>
                     </div>
                   </div>
