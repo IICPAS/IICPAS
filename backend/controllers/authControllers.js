@@ -58,17 +58,15 @@ export const userSignup = async (req, res) => {
     const user = await Individual.create({ name, email, password, phone });
     const token = signJwt(user._id, user.email, user.name);
     res.cookie("jwt", token, cookieOptions);
-    res
-      .status(201)
-      .json({
-        message: "Registered",
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          phone: user.phone,
-        },
-      });
+    res.status(201).json({
+      message: "Registered",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+      },
+    });
   } catch (err) {
     res.status(500).json({ message: "Error", error: err.message });
   }
@@ -89,6 +87,7 @@ export const userLogin = async (req, res) => {
         name: user.name,
         email: user.email,
         phone: user.phone,
+      },
     });
   } catch (err) {
     res.status(500).json({ message: "Error", error: err.message });
@@ -103,7 +102,10 @@ export const updateAdminProfile = async (req, res) => {
 
     // Check if email is being changed and if it already exists
     if (email) {
-      const existingAdmin = await Admin.findOne({ email, _id: { $ne: adminId } });
+      const existingAdmin = await Admin.findOne({
+        email,
+        _id: { $ne: adminId },
+      });
       if (existingAdmin) {
         return res.status(400).json({ message: "Email already exists" });
       }
@@ -112,12 +114,12 @@ export const updateAdminProfile = async (req, res) => {
     // Update admin profile
     const updatedAdmin = await Admin.findByIdAndUpdate(
       adminId,
-      { 
-        name, 
-        email, 
-        phone, 
-        role, 
-        image 
+      {
+        name,
+        email,
+        phone,
+        role,
+        image,
       },
       { new: true, runValidators: true }
     );
@@ -139,6 +141,8 @@ export const updateAdminProfile = async (req, res) => {
     });
   } catch (err) {
     console.error("Admin profile update error:", err);
-    res.status(500).json({ message: "Error updating profile", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Error updating profile", error: err.message });
   }
 };
