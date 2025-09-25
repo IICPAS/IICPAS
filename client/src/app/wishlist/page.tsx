@@ -4,8 +4,9 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import Image from "next/image";
-import { FaStar, FaTrash2, FaShoppingCart, FaHeart } from "react-icons/fa";
+import { FaStar, FaTrash, FaShoppingCart, FaHeart } from "react-icons/fa";
 import Swal from "sweetalert2";
+import wishlistEventManager from "../../utils/wishlistEventManager";
 
 interface Course {
   _id: string;
@@ -78,11 +79,17 @@ export default function WishlistPage() {
     if (result.isConfirmed) {
       try {
         await axios.post(
-          `${API}/api/v1/students/remove-wishlist/${student._id}`,
+          `${API}/api/v1/students/remove-wishlist/${student?._id}`,
           { courseId },
           { withCredentials: true }
         );
         fetchWishlist();
+        
+        // Notify other components of the change
+        if (student) {
+          wishlistEventManager.notifyChange(student._id, courseId, 'removed');
+        }
+        
         Swal.fire("Removed!", "Course removed from wishlist.", "success");
       } catch (error) {
         console.error("Error removing from wishlist:", error);
@@ -103,7 +110,7 @@ export default function WishlistPage() {
 
     try {
       await axios.post(
-        `${API}/api/v1/students/add-cart/${student._id}`,
+        `${API}/api/v1/students/add-cart/${student?._id}`,
         { courseId },
         { withCredentials: true }
       );
@@ -167,7 +174,7 @@ export default function WishlistPage() {
 
     if (result.isConfirmed) {
       try {
-        await axios.delete(`${API}/api/v1/students/clear-wishlist/${student._id}`, {
+        await axios.delete(`${API}/api/v1/students/clear-wishlist/${student?._id}`, {
           withCredentials: true,
         });
         fetchWishlist();
@@ -262,7 +269,7 @@ export default function WishlistPage() {
               onClick={handleClearWishlist}
               className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
             >
-              <FaTrash2 />
+              <FaTrash />
               Clear All
             </button>
           )}

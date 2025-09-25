@@ -7,7 +7,6 @@ import AboutUsSection from "../components/AboutUsSection";
 import CoursesSection from "../components/CourseSection";
 import BlogSection from "../components/BlogsSection";
 import YellowStatsStrip from "../components/YellowStrip";
-import FinanceCourseCategorySection from "../components/CourseCategorySection";
 import LiveClassSection from "../components/LiveClassSection";
 import TestimonialCarousel from "../components/TestimonialSection";
 import NewsletterSection from "../components/Newsletter";
@@ -26,7 +25,6 @@ const page = () => {
       <CoursesSection />
       <BlogSection />
       <YellowStatsStrip />
-      <FinanceCourseCategorySection />
       <LiveClassSection />
       <TestimonialCarousel />
       <NewsletterSection />

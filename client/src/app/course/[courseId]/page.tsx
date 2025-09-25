@@ -823,7 +823,17 @@ export default function CourseDetailPage({
                   <div className="aspect-video bg-gray-900 relative overflow-hidden">
                     {/* Course Thumbnail */}
                     <img
-                      src={course.image || "/images/accounting.webp"}
+                      src={
+                        course.image
+                          ? course.image.startsWith("http")
+                            ? course.image
+                            : course.image.startsWith("/uploads/")
+                            ? `http://localhost:8080${course.image}`
+                            : course.image.startsWith("/")
+                            ? course.image
+                            : `http://localhost:8080${course.image}`
+                          : "/images/accounting.webp"
+                      }
                       alt={`${course.title} - Course Preview`}
                       className="w-full h-full object-cover"
                       onError={(e) => {
@@ -892,6 +902,11 @@ export default function CourseDetailPage({
                       disabled={isEnrollingRecorded}
                       className="w-full bg-[#3cd664] hover:bg-[#33bb58] text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
+                      {isEnrollingRecorded
+                        ? "Enrolling..."
+                        : course?.pricing?.recordedSession?.buttonText ||
+                          "Add Digital Hub"}
+
                       {isEnrollingRecorded
                         ? "Enrolling..."
                         : course?.pricing?.recordedSession?.buttonText ||
