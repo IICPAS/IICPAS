@@ -6,6 +6,7 @@ import {
   logout,
   userSignup,
   userLogin,
+  updateAdminProfile,
 } from "../controllers/authControllers.js";
 import { isAdmin } from "../middleware/isAdmin.js";
 
@@ -23,5 +24,8 @@ router.post("/user/logout", logout); // user logout
 router.get("/admin-only", isAdmin, (req, res) => {
   res.json({ message: "Hello superadmin!", user: req.user });
 });
+
+// Admin profile update route
+router.put("/profile", isAdmin, updateAdminProfile);
 
 export default router;
