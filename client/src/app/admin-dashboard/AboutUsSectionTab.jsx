@@ -7,47 +7,70 @@ import { useAuth } from "@/contexts/AuthContext";
 
 export default function AboutUsSectionTab() {
   const { user } = useAuth();
+  
+  // Function to get current date and time
+  const getCurrentDateTime = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    
+    return {
+      date: `${year}-${month}-${day}`,
+      time: `${hours}:${minutes}`
+    };
+  };
+
   const [aboutUsEntries, setAboutUsEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
-  const [formData, setFormData] = useState({
-    hero: {
-      title: "",
-      breadcrumb: ""
-    },
-    mainContent: {
-      badge: "",
-      title: "",
-      description: ""
-    },
-    images: {
-      mainImage: {
-        url: "",
-        alt: ""
+  const [formData, setFormData] = useState(() => {
+    const currentDateTime = getCurrentDateTime();
+    return {
+      hero: {
+        title: "",
+        breadcrumb: ""
       },
-      secondaryImage: {
-        url: "",
-        alt: ""
+      mainContent: {
+        badge: "",
+        title: "",
+        description: ""
+      },
+      images: {
+        mainImage: {
+          url: "",
+          alt: ""
+        },
+        secondaryImage: {
+          url: "",
+          alt: ""
+        }
+      },
+      experienceBadge: {
+        icon: "",
+        years: "",
+        text: ""
+      },
+      mission: {
+        title: "",
+        description: ""
+      },
+      vision: {
+        title: "",
+        description: ""
+      },
+      colors: {
+        primary: "text-green-600",
+        secondary: "text-gray-600",
+        accent: "bg-green-600"
+      },
+      dateTime: {
+        publishDate: currentDateTime.date,
+        publishTime: currentDateTime.time
       }
-    },
-    experienceBadge: {
-      icon: "",
-      years: "",
-      text: ""
-    },
-    mission: {
-      title: "",
-      description: ""
-    },
-    vision: {
-      title: "",
-      description: ""
-    },
-    colors: {
-      primary: "text-green-600",
-      secondary: "text-gray-600",
-      accent: "bg-green-600"
-    }
+    };
   });
 
   const [uploadingMainImage, setUploadingMainImage] = useState(false);
@@ -325,6 +348,7 @@ export default function AboutUsSectionTab() {
   };
 
   const resetForm = () => {
+    const currentDateTime = getCurrentDateTime();
     setFormData({
       hero: {
         title: "",
@@ -362,6 +386,10 @@ export default function AboutUsSectionTab() {
         primary: "text-green-600",
         secondary: "text-gray-600",
         accent: "bg-green-600"
+      },
+      dateTime: {
+        publishDate: currentDateTime.date,
+        publishTime: currentDateTime.time
       }
     });
     setUploadingMainImage(false);
@@ -709,6 +737,48 @@ export default function AboutUsSectionTab() {
                     <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
                 </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Date and Time Settings */}
+          <div>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium text-gray-700">Publishing Schedule</h3>
+              <button
+                type="button"
+                onClick={() => {
+                  const currentDateTime = getCurrentDateTime();
+                  handleInputChange("dateTime.publishDate", currentDateTime.date);
+                  handleInputChange("dateTime.publishTime", currentDateTime.time);
+                }}
+                className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+              >
+                Set Current Time
+              </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Publish Date
+                </label>
+                <input
+                  type="date"
+                  value={formData.dateTime.publishDate}
+                  onChange={(e) => handleInputChange("dateTime.publishDate", e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Publish Time
+                </label>
+                <input
+                  type="time"
+                  value={formData.dateTime.publishTime}
+                  onChange={(e) => handleInputChange("dateTime.publishTime", e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
               </div>
             </div>
           </div>
