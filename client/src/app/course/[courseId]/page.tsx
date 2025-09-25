@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
+import LiveSchedule from "../../components/LiveSchedule";
 import axios from "axios";
 
 // Dummy course data - in real app this would come from API
@@ -769,30 +770,10 @@ export default function CourseDetailPage({
 
                 {activeTab === "schedule" && (
                   <div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                      Live Schedule
-                    </h3>
-                    {course.video ? (
-                      <div className="text-base text-gray-600">
-                        <p>Live session schedule will be available here.</p>
-                        {course.video && (
-                          <div className="mt-4">
-                            <a
-                              href={course.video}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-[#3cd664] hover:text-[#33bb58] font-semibold"
-                            >
-                              Watch Live Session →
-                            </a>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <p className="text-xl text-gray-600">
-                        Live session schedule will be available here.
-                      </p>
-                    )}
+                    <LiveSchedule 
+                      courseCategory={course.category || "CA Foundation"} 
+                      student={student}
+                    />
                   </div>
                 )}
 
