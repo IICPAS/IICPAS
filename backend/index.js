@@ -181,6 +181,10 @@ import newsletterSectionRoutes from "./routes/WebsiteRoutes/newsletterSectionRou
 app.use("/api/newsletter-section", newsletterSectionRoutes);
 app.use("/api/newsletter-subscriptions", newsletterSubscriptionRoutes);
 
+//Location Routes
+import locationRoutes from "./routes/WebsiteRoutes/locationRoutes.js";
+app.use("/api/location", locationRoutes);
+
 //Study Material Routes
 import studyMaterialRoutes from "./routes/WebsiteRoutes/studyMaterialRoutes.js";
 app.use("/api/v1/website/study-material", studyMaterialRoutes);

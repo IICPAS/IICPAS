@@ -23,6 +23,7 @@ import NewsletterSectionTab from "./NewsletterSectionTab";
 import NewsletterSubscriptionsTab from "./NewsletterSubscriptionsTab";
 import HeroTab from "./HeroTab";
 import WhyIICPATab from "./WhyIICPATab";
+import LocationTab from "./LocationTab";
 import StudentsTab from "./StudentsTab";
 import PaymentsTab from "./PaymentsTab";
 import { useRouter } from "next/navigation";
@@ -118,6 +119,7 @@ const WEBSITE_SETTINGS_MODULES = [
   { id: "footer", label: "Footer Section", icon: <FaList /> },
   { id: "yellow-stats-strip", label: "Stats Strip Section", icon: <FaChartBar /> },
   { id: "newsletter-section", label: "Newsletter Section", icon: <FaEnvelope /> },
+  { id: "location", label: "Location", icon: <FaMapMarkerAlt /> },
   { id: "blogs", label: "Blogs", icon: <FaBlogger /> },
   { id: "testimonials", label: "Testimonials", icon: <FaQuoteRight /> },
   { id: "meta", label: "Manage Metatags", icon: <FaTags /> },
@@ -414,6 +416,8 @@ function AdminDashboardContent() {
           <YellowStatsStripTab />
         ) : activeTab === "newsletter-section" ? (
           <NewsletterSectionTab />
+        ) : activeTab === "location" ? (
+          <LocationTab />
         ) : activeTab === "newsletter-subscriptions" ? (
           <NewsletterSubscriptionsTab />
         ) : activeTab === "colleges" ? (
