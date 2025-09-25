@@ -4,7 +4,7 @@ import Testimonial from "../models/Testimonials.js";
 export const createTestimonial = async (req, res) => {
   try {
     const { name, designation, message, rating } = req.body;
-    
+
     // Handle image upload
     let imagePath = "";
     if (req.file) {
@@ -24,7 +24,9 @@ export const createTestimonial = async (req, res) => {
     });
 
     await testimonial.save();
-    res.status(201).json({ message: "Testimonial created successfully", testimonial });
+    res
+      .status(201)
+      .json({ message: "Testimonial created successfully", testimonial });
   } catch (error) {
     console.error("Error creating testimonial:", error);
     res.status(500).json({ error: "Failed to create testimonial" });
