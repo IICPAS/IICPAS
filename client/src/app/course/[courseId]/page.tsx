@@ -775,22 +775,19 @@ export default function CourseDetailPage({
 
                 {activeTab === "schedule" && (
                   <div>
-
-                    <LiveSchedule 
-                      courseCategory={course.category || "CA Foundation"} 
+                    <LiveSchedule
+                      courseCategory={course.category || "CA Foundation"}
                       student={student}
                     />
 
                     <LiveSessionDisplay />
-
                   </div>
                 )}
 
                 {activeTab === "simulation" && (
                   <div>
-
-                    <SimulatorDemo 
-                      courseId={resolvedParams.courseId} 
+                    <SimulatorDemo
+                      courseId={resolvedParams.courseId}
                       student={student}
                     />
 
@@ -841,7 +838,6 @@ export default function CourseDetailPage({
                         available here.
                       </p>
                     )}
-
                   </div>
                 )}
               </motion.div>
@@ -942,16 +938,7 @@ export default function CourseDetailPage({
                       {isEnrollingRecorded
                         ? "Enrolling..."
                         : course?.pricing?.recordedSession?.buttonText ||
-
                           "Add Digital Hub+"}
-
-                          "Add Digital Hub"}
-
-                      {isEnrollingRecorded
-                        ? "Enrolling..."
-                        : course?.pricing?.recordedSession?.buttonText ||
-                          "Add Digital Hub"}
-
                     </button>
                   </div>
 

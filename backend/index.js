@@ -253,28 +253,28 @@ const server = createServer(app);
 const io = new Server(server, {
   cors: {
     origin: process.env.CLIENT_URL || "http://localhost:3000",
-    methods: ["GET", "POST"]
-  }
+    methods: ["GET", "POST"],
+  },
 });
 
 // Socket.io connection handling
-io.on('connection', (socket) => {
-  console.log('User connected:', socket.id);
+io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
 
   // Join live session room
-  socket.on('join-session', (sessionId) => {
+  socket.on("join-session", (sessionId) => {
     socket.join(`session-${sessionId}`);
     console.log(`User ${socket.id} joined session ${sessionId}`);
   });
 
   // Leave live session room
-  socket.on('leave-session', (sessionId) => {
+  socket.on("leave-session", (sessionId) => {
     socket.leave(`session-${sessionId}`);
     console.log(`User ${socket.id} left session ${sessionId}`);
   });
 
-  socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
+  socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.id);
   });
 });
 
