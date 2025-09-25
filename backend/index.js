@@ -70,6 +70,12 @@ import teacherRoutes from "./routes/teacherRoutes.js";
 //Import employee routes
 import employeeRoutes from "./routes/employeeRoutes.js";
 
+//Contact Info Routes
+import contactInfoRoutes from "./routes/contactInfoRoutes.js";
+
+//Contact Form Routes
+import contactFormRoutes from "./routes/contactFormRoutes.js";
+
 //App Configuration
 dotenv.config();
 connectDB();
@@ -181,6 +187,10 @@ import newsletterSectionRoutes from "./routes/WebsiteRoutes/newsletterSectionRou
 app.use("/api/newsletter-section", newsletterSectionRoutes);
 app.use("/api/newsletter-subscriptions", newsletterSubscriptionRoutes);
 
+//Location Routes
+import locationRoutes from "./routes/WebsiteRoutes/locationRoutes.js";
+app.use("/api/location", locationRoutes);
+
 //Study Material Routes
 import studyMaterialRoutes from "./routes/WebsiteRoutes/studyMaterialRoutes.js";
 app.use("/api/v1/website/study-material", studyMaterialRoutes);
@@ -274,6 +284,11 @@ io.on('connection', (socket) => {
 
 // Make io available globally for use in controllers
 global.io = io;
+//Contact Info Routes
+app.use("/api/contact-info", contactInfoRoutes);
+
+//Contact Form Routes
+app.use("/api/contact-form", contactFormRoutes);
 
 // Server
 const PORT = process.env.PORT || 8080;

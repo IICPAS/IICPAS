@@ -23,6 +23,7 @@ import NewsletterSectionTab from "./NewsletterSectionTab";
 import NewsletterSubscriptionsTab from "./NewsletterSubscriptionsTab";
 import HeroTab from "./HeroTab";
 import WhyIICPATab from "./WhyIICPATab";
+import LocationTab from "./LocationTab";
 import StudentsTab from "./StudentsTab";
 import PaymentsTab from "./PaymentsTab";
 import { useRouter } from "next/navigation";
@@ -65,6 +66,7 @@ import {
   FaList,
   FaUserTie,
   FaArrowLeft,
+  FaComments,
 } from "react-icons/fa";
 import CompanyTab from "./CompanyTab";
 import CourseArea from "./CourseBuilder";
@@ -80,6 +82,8 @@ import FAQTab from "./FAQTab";
 import CourseRatingApprovalTab from "./CourseRatingApprovalTab";
 import CenterManagementTab from "./CenterManagementTab";
 import MessagesTab from "./MessagesTab";
+import BulkEmailTab from "./BulkEmailTab";
+import ContactInfoTab from "./ContactInfoTab";
 
 // All available modules with their permissions
 const ALL_MODULES = [
@@ -87,8 +91,13 @@ const ALL_MODULES = [
   { id: "course", label: "Course", icon: <FaLayerGroup /> },
   { id: "course-display", label: "Course Display", icon: <FaEye /> },
   { id: "live-session", label: "Live Session", icon: <FaCalendarAlt /> },
-  { id: "newsletter-subscriptions", label: "Newsletter Subscriptions", icon: <FaEnvelope /> },
+  {
+    id: "newsletter-subscriptions",
+    label: "Newsletter Subscriptions",
+    icon: <FaEnvelope />,
+  },
   { id: "enquiries", label: "Enquiries", icon: <FaEnvelope /> },
+  { id: "messages", label: "Messages", icon: <FaComments /> },
   { id: "jobs", label: "Jobs", icon: <FaBriefcase /> },
   { id: "news", label: "News", icon: <FaNewspaper /> },
   { id: "students", label: "Students", icon: <FaUserGraduate /> },
@@ -105,7 +114,11 @@ const ALL_MODULES = [
   { id: "support", label: "Support Requests", icon: <FaEnvelope /> },
   { id: "audit", label: "IP Logs", icon: <FaShieldAlt /> },
   { id: "course-ratings", label: "Course Rating Approval", icon: <FaStar /> },
-  { id: "center-location", label: "Center Locations", icon: <FaMapMarkerAlt /> },
+  {
+    id: "center-location",
+    label: "Center Locations",
+    icon: <FaMapMarkerAlt />,
+  },
 ];
 
 // Website Settings modules
@@ -113,11 +126,26 @@ const WEBSITE_SETTINGS_MODULES = [
   { id: "hero", label: "Hero Section", icon: <FaHome /> },
   { id: "why-iicpa", label: "WhyIICPA Section", icon: <FaStar /> },
   { id: "about-us", label: "About Us Section", icon: <FaBook /> },
-  { id: "about-us-section", label: "About Us Section Management", icon: <FaUserTie /> },
+  {
+    id: "about-us-section",
+    label: "About Us Section Management",
+    icon: <FaUserTie />,
+  },
   { id: "contact", label: "Contact Section", icon: <FaEnvelope /> },
   { id: "footer", label: "Footer Section", icon: <FaList /> },
   { id: "yellow-stats-strip", label: "Stats Strip Section", icon: <FaChartBar /> },
   { id: "newsletter-section", label: "Newsletter Section", icon: <FaEnvelope /> },
+  { id: "location", label: "Location", icon: <FaMapMarkerAlt /> },
+  {
+    id: "yellow-stats-strip",
+    label: "Stats Strip Section",
+    icon: <FaChartBar />,
+  },
+  {
+    id: "newsletter-section",
+    label: "Newsletter Section",
+    icon: <FaEnvelope />,
+  },
   { id: "blogs", label: "Blogs", icon: <FaBlogger /> },
   { id: "testimonials", label: "Testimonials", icon: <FaQuoteRight /> },
   { id: "meta", label: "Manage Metatags", icon: <FaTags /> },
@@ -125,7 +153,8 @@ const WEBSITE_SETTINGS_MODULES = [
   { id: "ip-whitelist", label: "IP Whitelisting", icon: <FaShieldAlt /> },
   { id: "demo-digital-hub", label: "Demo Digital Hub", icon: <FaBook /> },
   { id: "faq", label: "FAQ", icon: <FaUserTie /> },
-  { id: "messages", label: "Messages", icon: <FaEnvelope /> },
+  { id: "bulk-email", label: "Bulk Email", icon: <FaEnvelope /> },
+  { id: "contact-info", label: "Contact Information", icon: <FaEnvelope /> },
 ];
 
 function AdminDashboardContent() {
@@ -384,7 +413,7 @@ function AdminDashboardContent() {
             </button>
           </div>
         )}
-        
+
         {/* Permission-based content rendering */}
         {activeTab === "live-session" ? (
           <LiveSessionAdmin />
@@ -414,6 +443,8 @@ function AdminDashboardContent() {
           <YellowStatsStripTab />
         ) : activeTab === "newsletter-section" ? (
           <NewsletterSectionTab />
+        ) : activeTab === "location" ? (
+          <LocationTab />
         ) : activeTab === "newsletter-subscriptions" ? (
           <NewsletterSubscriptionsTab />
         ) : activeTab === "colleges" ? (
@@ -462,6 +493,10 @@ function AdminDashboardContent() {
           <CenterLocationTab />
         ) : activeTab === "messages" ? (
           <MessagesTab />
+        ) : activeTab === "bulk-email" ? (
+          <BulkEmailTab />
+        ) : activeTab === "contact-info" ? (
+          <ContactInfoTab />
         ) : activeTab === "" ? (
           <div className="text-center py-20">
             <h2 className="text-2xl font-bold text-gray-600 mb-4">

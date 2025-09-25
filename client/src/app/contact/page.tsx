@@ -4,6 +4,7 @@ import Footer from "../components/Footer";
 import ContactHero from "./ContactHero";
 import ContactBoxes from "./ContactBoxes";
 import ContactSection from "./ContactSection";
+import MapsSection from "./MapsSection";
 import NewsletterSection from "../components/Newsletter";
 
 const page = () => {
@@ -14,6 +15,7 @@ const page = () => {
       <ContactBoxes />
       <ContactSection />
       <NewsletterSection />
+      <MapsSection />
       <Footer />
     </div>
   );
