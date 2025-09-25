@@ -672,11 +672,11 @@ export default function CourseDetailPage({
                           ) => (
                             <div
                               key={index}
-                              className="border border-gray-200 rounded-lg"
+                              className="border border-gray-100 rounded-lg shadow-md hover:scale-[1.02] transition-all duration-200"
                             >
                               <button
                                 onClick={() => toggleSection(Number(index))}
-                                className="w-full px-3 py-2 text-left flex items-center justify-between hover:bg-gray-50 rounded-lg"
+                                className="w-full px-2 py-1 text-left flex items-center justify-between hover:bg-gray-50 rounded-lg"
                               >
                                 <span className="font-semibold text-sm text-gray-900">
                                   {chapter.title}
@@ -693,7 +693,7 @@ export default function CourseDetailPage({
                                   initial={{ opacity: 0, height: 0 }}
                                   animate={{ opacity: 1, height: "auto" }}
                                   exit={{ opacity: 0, height: 0 }}
-                                  className="px-3 pb-2"
+                                  className="px-2 pb-1"
                                 >
                                   <ul className="space-y-1">
                                     {chapter.topics &&
@@ -865,14 +865,14 @@ export default function CourseDetailPage({
                             : course.image.startsWith("/")
                             ? course.image
                             : `http://localhost:8080${course.image}`
-                          : "/images/accounting.webp"
+                          : course.videoThumbnail || "/images/accounting.webp"
                       }
                       alt={`${course.title} - Course Preview`}
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         console.log("Image failed to load:", e);
                         console.log("Image src was:", e.currentTarget.src);
-                        e.currentTarget.src = "/images/accounting.webp";
+                        e.currentTarget.src = course.videoThumbnail || "/images/accounting.webp";
                       }}
                       onLoad={() => {
                         console.log("Course thumbnail loaded successfully!");

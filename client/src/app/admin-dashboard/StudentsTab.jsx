@@ -7,7 +7,6 @@ import {
   UserPlus,
   Mail,
   Smartphone,
-  MessageCircle,
   List as ListIcon,
   PlusCircle,
   Download,
@@ -15,6 +14,7 @@ import {
   Trash2,
   UserX,
 } from "lucide-react";
+import { FaWhatsapp } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import * as XLSX from 'xlsx';
 import { toast } from 'react-hot-toast';
@@ -222,12 +222,24 @@ function StudentsTable({ students, onStudentUpdated }) {
   const handleDeleteStudent = async (student) => {
     if (window.confirm(`Are you sure you want to delete ${student.name}? This action cannot be undone.`)) {
       try {
-        await axios.delete(`${process.env.NEXT_PUBLIC_API_BASE}/v1/students/${student._id}`);
+        console.log("Deleting student with ID:", student._id);
+        console.log("API Base:", process.env.NEXT_PUBLIC_API_BASE);
+        console.log("Full URL:", `${process.env.NEXT_PUBLIC_API_BASE}/v1/students/${student._id}`);
+        
+        const response = await axios.delete(`${process.env.NEXT_PUBLIC_API_BASE}/v1/students/${student._id}`);
+        console.log("Delete response:", response.data);
+        
         toast.success(`${student.name} has been deleted successfully!`);
         if (onStudentUpdated) onStudentUpdated();
       } catch (error) {
         console.error("Error deleting student:", error);
-        toast.error("Failed to delete student");
+        console.error("Error details:", {
+          message: error.message,
+          status: error.response?.status,
+          data: error.response?.data,
+          studentId: student._id
+        });
+        toast.error(`Failed to delete student: ${error.response?.data?.message || error.message}`);
       }
     }
   };
@@ -246,7 +258,13 @@ function StudentsTable({ students, onStudentUpdated }) {
         if (onStudentUpdated) onStudentUpdated();
       } catch (error) {
         console.error(`Error ${action}ing student:`, error);
-        toast.error(`Failed to ${action} student`);
+        console.error("Error details:", {
+          message: error.message,
+          status: error.response?.status,
+          data: error.response?.data,
+          studentId: student._id
+        });
+        toast.error(`Failed to ${action} student: ${error.response?.data?.message || error.message}`);
       }
     }
   };
@@ -442,58 +460,52 @@ function StudentsTable({ students, onStudentUpdated }) {
                         target="_blank"
                         rel="noopener noreferrer"
                         title="Send Email"
-                        className="bg-indigo-500 hover:bg-indigo-600 text-white px-2 py-1 rounded text-xs transition-colors flex items-center space-x-1"
+                        className="bg-indigo-500 hover:bg-indigo-600 text-white p-2 rounded transition-colors flex items-center justify-center"
                       >
-                        <Mail size={10} />
-                        <span>Email</span>
+                        <Mail size={14} />
                       </a>
                       <a
                         href={getWhatsAppLink(student.phone)}
                         target="_blank"
                         rel="noopener noreferrer"
                         title="WhatsApp"
-                        className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs transition-colors flex items-center space-x-1"
+                        className="bg-green-500 hover:bg-green-600 text-white p-2 rounded transition-colors flex items-center justify-center"
                       >
-                        <MessageCircle size={10} />
-                        <span>WhatsApp</span>
+                        <FaWhatsapp size={14} />
                       </a>
                       <a
                         href={`tel:${student.phone}`}
                         title="Call"
-                        className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs transition-colors flex items-center space-x-1"
+                        className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded transition-colors flex items-center justify-center"
                       >
-                        <Smartphone size={10} />
-                        <span>Call</span>
+                        <Smartphone size={14} />
                       </a>
                       
                       {/* Management Actions */}
                       <button
                         onClick={() => handleEditStudent(student)}
                         title="Edit Student"
-                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded text-xs transition-colors flex items-center space-x-1"
+                        className="bg-yellow-500 hover:bg-yellow-600 text-white p-2 rounded transition-colors flex items-center justify-center"
                       >
-                        <Edit size={10} />
-                        <span>Edit</span>
+                        <Edit size={14} />
                       </button>
                       <button
                         onClick={() => handleSuspendStudent(student)}
                         title={student.status === 'suspended' ? 'Unsuspend Student' : 'Suspend Student'}
-                        className={`px-2 py-1 rounded text-xs transition-colors flex items-center space-x-1 ${
+                        className={`p-2 rounded transition-colors flex items-center justify-center ${
                           student.status === 'suspended' 
                             ? 'bg-orange-500 hover:bg-orange-600 text-white' 
                             : 'bg-red-500 hover:bg-red-600 text-white'
                         }`}
                       >
-                        <UserX size={10} />
-                        <span>{student.status === 'suspended' ? 'Unsuspend' : 'Suspend'}</span>
+                        <UserX size={14} />
                       </button>
                       <button
                         onClick={() => handleDeleteStudent(student)}
                         title="Delete Student"
-                        className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs transition-colors flex items-center space-x-1"
+                        className="bg-red-600 hover:bg-red-700 text-white p-2 rounded transition-colors flex items-center justify-center"
                       >
-                        <Trash2 size={10} />
-                        <span>Delete</span>
+                        <Trash2 size={14} />
                       </button>
                     </div>
                   </td>
