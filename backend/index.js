@@ -71,7 +71,7 @@ import teacherRoutes from "./routes/teacherRoutes.js";
 import employeeRoutes from "./routes/employeeRoutes.js";
 
 //Contact Info Routes
-import contactInfoRoutes from "./routes/contactInfoRoutes.js";
+// import contactInfoRoutes from "./routes/contactInfoRoutes.js";
 
 //Contact Form Routes
 import contactFormRoutes from "./routes/contactFormRoutes.js";
@@ -285,7 +285,7 @@ io.on('connection', (socket) => {
 // Make io available globally for use in controllers
 global.io = io;
 //Contact Info Routes
-app.use("/api/contact-info", contactInfoRoutes);
+// app.use("/api/contact-info", contactInfoRoutes);
 
 //Contact Form Routes
 app.use("/api/contact-form", contactFormRoutes);
