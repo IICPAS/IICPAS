@@ -82,8 +82,8 @@ import FAQTab from "./FAQTab";
 import CourseRatingApprovalTab from "./CourseRatingApprovalTab";
 import CenterManagementTab from "./CenterManagementTab";
 import MessagesTab from "./MessagesTab";
-import BulkEmailTab from "./BulkEmailTab";
-import ContactInfoTab from "./ContactInfoTab";
+import BulkEmailTab from "./BulkEmailPage";
+// import ContactInfoTab from "./ContactInfoTab";
 
 // All available modules with their permissions
 const ALL_MODULES = [
@@ -494,9 +494,16 @@ function AdminDashboardContent() {
         ) : activeTab === "messages" ? (
           <MessagesTab />
         ) : activeTab === "bulk-email" ? (
-          <BulkEmailTab />
+          <BulkEmailTab onBack={handleBack} />
         ) : activeTab === "contact-info" ? (
-          <ContactInfoTab />
+          <div className="text-center py-20">
+            <h2 className="text-2xl font-bold text-gray-600 mb-4">
+              Contact Info Tab
+            </h2>
+            <p className="text-gray-500">
+              Contact information management coming soon.
+            </p>
+          </div>
         ) : activeTab === "" ? (
           <div className="text-center py-20">
             <h2 className="text-2xl font-bold text-gray-600 mb-4">
