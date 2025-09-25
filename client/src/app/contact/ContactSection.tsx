@@ -7,6 +7,44 @@ import { FaPaperPlane } from "react-icons/fa";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 
+interface FormField {
+  placeholder: string;
+  required: boolean;
+  visible: boolean;
+}
+
+interface MessageField extends FormField {
+  rows: number;
+}
+
+interface FormConfig {
+  smallText: string;
+  mainHeading: string;
+  formFields: {
+    nameField: FormField;
+    emailField: FormField;
+    phoneField: FormField;
+    messageField: MessageField;
+  };
+  submitButton: {
+    text: string;
+    color: string;
+  };
+  colors: {
+    smallText: string;
+    mainHeading: string;
+    buttonText: string;
+  };
+  image?: {
+    url: string;
+    alt: string;
+  };
+  messages?: {
+    successMessage: string;
+    errorMessage: string;
+  };
+}
+
 export default function ContactSection() {
   const [form, setForm] = useState({
     name: "",
@@ -14,7 +52,7 @@ export default function ContactSection() {
     phone: "",
     message: "",
   });
-  const [formConfig, setFormConfig] = useState(null);
+  const [formConfig, setFormConfig] = useState<FormConfig | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -63,7 +101,6 @@ export default function ContactSection() {
         },
         submitButton: {
           text: "Submit",
-          icon: "FaPaperPlane",
           color: "bg-green-500 hover:bg-green-600",
         },
         messages: {

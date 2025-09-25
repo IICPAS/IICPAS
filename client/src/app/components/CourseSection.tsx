@@ -27,6 +27,7 @@ export default function CoursesSection() {
   const [courseRatings, setCourseRatings] = useState<{[key: string]: {averageRating: number, totalRatings: number}}>({});
   const [student, setStudent] = useState<any>(null);
   const [wishlistCourseIds, setWishlistCourseIds] = useState<string[]>([]);
+  const [likedIndexes, setLikedIndexes] = useState<number[]>([]);
 
   const [courseChapters, setCourseChapters] = useState<{
     [key: string]: number;
@@ -108,6 +109,51 @@ export default function CoursesSection() {
     []
   );
 
+  // Fetch course ratings
+  const fetchCourseRatings = useCallback(async () => {
+    try {
+      // Use current courses state or fallback courses
+      const coursesToFetch = courses.length > 0 ? courses : fallbackCourses;
+
+      const ratingsPromises = coursesToFetch.map(async (course) => {
+        try {
+          const response = await axios.get(
+            `${API_BASE}/api/v1/course-ratings/course/${course._id}`
+          );
+          if (response.data.success) {
+            return {
+              courseId: course._id,
+              averageRating: response.data.averageRating || 0,
+              totalRatings: response.data.totalRatings || 0,
+            };
+          }
+        } catch (error) {
+          console.error(
+            `Error fetching ratings for course ${course._id}:`,
+            error
+          );
+        }
+        return {
+          courseId: course._id,
+          averageRating: course.rating || 4.5, // Use fallback rating
+          totalRatings: course.reviews || 0, // Use fallback reviews
+        };
+      });
+
+      const ratings = await Promise.all(ratingsPromises);
+      const ratingsMap: { [key: string]: { averageRating: number; totalRatings: number } } = {};
+      ratings.forEach((rating) => {
+        ratingsMap[rating.courseId] = {
+          averageRating: rating.averageRating,
+          totalRatings: rating.totalRatings,
+        };
+      });
+      setCourseRatings(ratingsMap);
+    } catch (error) {
+      console.error("Error fetching course ratings:", error);
+    }
+  }, [courses, fallbackCourses, API_BASE]);
+
   useEffect(() => {
     // Set fallback courses immediately for instant display
     setCourses(fallbackCourses);
@@ -167,7 +213,7 @@ export default function CoursesSection() {
     }
   };
 
-
+  useEffect(() => {
     // Fetch chapter counts for all courses
     fetchCourseChapters();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -215,29 +261,9 @@ export default function CoursesSection() {
 
   const fetchCourses = useCallback(async () => {
     try {
-
-      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
-      const response = await axios.get(`${API_BASE}/api/courses`);
-      if (response.data && response.data.length > 0) {
-        // Transform the data to match the expected format
-        const transformedCourses = response.data.map((course: any) => ({
-          _id: course._id,
-          title: course.title,
-          image: course.image || "/images/a1.jpeg",
-          price: course.price || 240.00,
-          lessons: course.chapters?.length ? `${course.chapters.length} Lesson` : "12 Lesson",
-          duration: "620h, 20min", // This could be calculated from course content
-          rating: course.rating || 4.5, // This could be fetched from reviews
-          reviews: course.reviewCount || 129, // This could be fetched from reviews
-        }));
-        setCourses(transformedCourses);
-      } else {
-        // Fallback to dummy courses if API returns empty
-        setCourses(fallbackCourses);
-
-      const API_BASE =
-        process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
       const response = await fetch(`${API_BASE}/courses/available`);
+      
       if (response.ok) {
         const data = await response.json();
         // Transform the data to match the expected format
@@ -277,15 +303,16 @@ export default function CoursesSection() {
           // Fetch chapters for the new courses
           setTimeout(() => fetchCourseChapters(), 100);
         }
-
+      } else {
+        // Fallback to dummy courses if API fails
+        setCourses(fallbackCourses);
       }
     } catch (error) {
       console.error("Error fetching courses:", error);
       // Keep fallback courses if API fails
       setCourses(fallbackCourses);
     }
-
-  };
+  }, [fallbackCourses, fetchCourseChapters]);
 
   const toggleLike = async (courseId: string, index: number) => {
     try {
@@ -372,7 +399,6 @@ export default function CoursesSection() {
     }
   };
 
-  }, [fetchCourseChapters]);
 
   return (
     <section className="py-16 px-4 md:px-20 bg-[#f9fbfa]">

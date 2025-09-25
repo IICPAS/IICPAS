@@ -138,11 +138,17 @@ const dummyLiveClasses: LiveClass[] = [
     }
   ];
 
+interface User {
+  _id: string;
+  name?: string;
+  email?: string;
+}
+
 export default function LiveClassesDisplay() {
   const [liveClasses, setLiveClasses] = useState<LiveClass[]>(dummyLiveClasses);
   const [loading, setLoading] = useState(false);
   const [selectedTab, setSelectedTab] = useState<'upcoming' | 'live' | 'completed'>('upcoming');
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
 
   const API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -164,7 +170,7 @@ export default function LiveClassesDisplay() {
             const enrolledResponse = await fetch(`${API}/api/v1/students/enrolled-live-sessions/${user._id}`);
             if (enrolledResponse.ok) {
               const enrolledData = await enrolledResponse.json();
-              const enrolledSessionIds = enrolledData.enrolledLiveSessions.map(session => session._id);
+              const enrolledSessionIds = enrolledData.enrolledLiveSessions.map((session: any) => session._id);
               
               // Mark enrolled sessions
               const transformedClasses = data.map((session: any) => ({

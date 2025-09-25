@@ -7,8 +7,16 @@ import {
   FaEnvelope,
   FaClock,
 } from "react-icons/fa";
+import { IconType } from "react-icons";
 
-const iconMap = {
+interface ContactBox {
+  title: string;
+  content: string;
+  icon: string;
+  bg: string;
+}
+
+const iconMap: { [key: string]: IconType } = {
   FaMapMarkerAlt: FaMapMarkerAlt,
   FaPhoneAlt: FaPhoneAlt,
   FaEnvelope: FaEnvelope,
@@ -16,7 +24,7 @@ const iconMap = {
 };
 
 export default function ContactBoxes() {
-  const [contactInfo, setContactInfo] = useState([]);
+  const [contactInfo, setContactInfo] = useState<ContactBox[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

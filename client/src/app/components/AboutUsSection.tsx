@@ -93,7 +93,7 @@ export default function AboutUsSection() {
                 poster={aboutData.video?.poster || "/images/video-poster.jpg"}
                 onError={(e) => {
                   console.error("Video error:", e);
-                  console.error("Video src:", e.target.src);
+                  console.error("Video src:", (e.target as HTMLVideoElement).src);
                 }}
                 onLoadStart={() => console.log("Video loading started")}
                 onCanPlay={() => console.log("Video can play")}

@@ -3,8 +3,21 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
+interface HeroData {
+  title: string;
+  subtitle: string;
+  button1: { text: string; link: string };
+  button2: { text: string; link: string };
+  backgroundGradient: { from: string; via: string; to: string };
+  textColor: string;
+}
+
+interface DemoData {
+  hero: HeroData;
+}
+
 const DemoDigitalHubHero = () => {
-  const [data, setData] = useState(null);
+  const [data, setData] = useState<DemoData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
