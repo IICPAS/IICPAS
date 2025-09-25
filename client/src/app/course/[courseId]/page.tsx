@@ -893,7 +893,7 @@ export default function CourseDetailPage({
                   <div className="text-center text-sm text-gray-600 mb-6">
                     <p>Get access to this course in DIGITAL HUB.</p>
                     <button className="text-blue-600 hover:text-blue-800 font-semibold mt-2 text-sm">
-                      Compare
+                      Select Plan
                     </button>
                   </div>
 

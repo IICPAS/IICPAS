@@ -10,8 +10,14 @@ import {
   MessageCircle,
   List as ListIcon,
   PlusCircle,
+  Download,
+  Edit,
+  Trash2,
+  UserX,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import * as XLSX from 'xlsx';
+import { toast } from 'react-hot-toast';
 
 // BASIC COMPONENTS
 const Button = ({ className = "", children, ...props }) => (
@@ -198,13 +204,116 @@ function AddStudentForm({ onSuccess }) {
   );
 }
 
-function StudentsTable({ students }) {
+function StudentsTable({ students, onStudentUpdated }) {
   if (!students?.length)
     return (
       <div className="text-gray-500 text-center py-12">
         No students registered yet.
       </div>
     );
+
+  // Handle edit student
+  const handleEditStudent = (student) => {
+    // For now, show a toast - you can implement edit modal/form later
+    toast.success(`Edit functionality for ${student.name} - Coming soon!`);
+  };
+
+  // Handle delete student
+  const handleDeleteStudent = async (student) => {
+    if (window.confirm(`Are you sure you want to delete ${student.name}? This action cannot be undone.`)) {
+      try {
+        await axios.delete(`${process.env.NEXT_PUBLIC_API_BASE}/v1/students/${student._id}`);
+        toast.success(`${student.name} has been deleted successfully!`);
+        if (onStudentUpdated) onStudentUpdated();
+      } catch (error) {
+        console.error("Error deleting student:", error);
+        toast.error("Failed to delete student");
+      }
+    }
+  };
+
+  // Handle suspend student
+  const handleSuspendStudent = async (student) => {
+    const action = student.status === 'suspended' ? 'unsuspend' : 'suspend';
+    const actionText = student.status === 'suspended' ? 'Unsuspend' : 'Suspend';
+    
+    if (window.confirm(`Are you sure you want to ${action} ${student.name}?`)) {
+      try {
+        await axios.put(`${process.env.NEXT_PUBLIC_API_BASE}/v1/students/${student._id}/status`, {
+          status: student.status === 'suspended' ? 'active' : 'suspended'
+        });
+        toast.success(`${student.name} has been ${action}ed successfully!`);
+        if (onStudentUpdated) onStudentUpdated();
+      } catch (error) {
+        console.error(`Error ${action}ing student:`, error);
+        toast.error(`Failed to ${action} student`);
+      }
+    }
+  };
+
+  // Export students to Excel
+  const exportToExcel = () => {
+    if (students.length === 0) {
+      toast.error("No students to export");
+      return;
+    }
+
+    try {
+      // Prepare data for Excel export
+      const excelData = students.map((student, index) => ({
+        'S.No': index + 1,
+        'Name': student.name || '',
+        'Email': student.email || '',
+        'Phone': student.phone || '',
+        'Location': student.location || '',
+        'Center': student.center || '',
+        'Status': student.mode || 'Not specified',
+        'Courses': student.course && student.course.length > 0 
+          ? student.course.map(course => course.title || course).join(', ') 
+          : 'No courses',
+        'Live Sessions': student.enrolledLiveSessions && student.enrolledLiveSessions.length > 0 
+          ? `${student.enrolledLiveSessions.length} session(s)` 
+          : 'No sessions',
+        'Registered Date': student.createdAt ? new Date(student.createdAt).toLocaleDateString() : '',
+        'Registered Time': student.createdAt ? new Date(student.createdAt).toLocaleTimeString() : '',
+      }));
+
+      // Create workbook and worksheet
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(excelData);
+
+      // Set column widths
+      const colWidths = [
+        { wch: 8 },   // S.No
+        { wch: 20 },  // Name
+        { wch: 30 },  // Email
+        { wch: 15 },  // Phone
+        { wch: 20 },  // Location
+        { wch: 20 },  // Center
+        { wch: 12 },  // Status
+        { wch: 40 },  // Courses
+        { wch: 20 },  // Live Sessions
+        { wch: 15 },  // Registered Date
+        { wch: 15 },  // Registered Time
+      ];
+      ws['!cols'] = colWidths;
+
+      // Add worksheet to workbook
+      XLSX.utils.book_append_sheet(wb, ws, 'Students');
+
+      // Generate filename with current date
+      const currentDate = new Date().toISOString().split('T')[0];
+      const filename = `students_export_${currentDate}.xlsx`;
+
+      // Save file
+      XLSX.writeFile(wb, filename);
+
+      toast.success(`${students.length} students exported to Excel successfully!`);
+    } catch (error) {
+      console.error("Error exporting to Excel:", error);
+      toast.error("Failed to export students to Excel");
+    }
+  };
 
   return (
     <motion.div
@@ -224,11 +333,14 @@ function StudentsTable({ students }) {
               Total: {students.length} students enrolled
             </p>
           </div>
-          <div className="text-right">
-            <div className="text-sm text-gray-500">Last updated</div>
-            <div className="text-sm font-medium text-gray-700">
-              {new Date().toLocaleDateString()}
-            </div>
+          <div className="flex items-center">
+            <Button
+              onClick={exportToExcel}
+              className="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
+            >
+              <Download size={16} />
+              Export Excel
+            </Button>
           </div>
         </div>
         
@@ -323,15 +435,16 @@ function StudentsTable({ students }) {
                     {new Date(student.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex space-x-2">
+                    <div className="flex flex-wrap gap-1">
+                      {/* Contact Actions */}
                       <a
                         href={`mailto:${student.email}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         title="Send Email"
-                        className="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded text-xs transition-colors flex items-center space-x-1"
+                        className="bg-indigo-500 hover:bg-indigo-600 text-white px-2 py-1 rounded text-xs transition-colors flex items-center space-x-1"
                       >
-                        <Mail size={12} />
+                        <Mail size={10} />
                         <span>Email</span>
                       </a>
                       <a
@@ -339,19 +452,49 @@ function StudentsTable({ students }) {
                         target="_blank"
                         rel="noopener noreferrer"
                         title="WhatsApp"
-                        className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs transition-colors flex items-center space-x-1"
+                        className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs transition-colors flex items-center space-x-1"
                       >
-                        <MessageCircle size={12} />
+                        <MessageCircle size={10} />
                         <span>WhatsApp</span>
                       </a>
                       <a
                         href={`tel:${student.phone}`}
                         title="Call"
-                        className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs transition-colors flex items-center space-x-1"
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs transition-colors flex items-center space-x-1"
                       >
-                        <Smartphone size={12} />
+                        <Smartphone size={10} />
                         <span>Call</span>
                       </a>
+                      
+                      {/* Management Actions */}
+                      <button
+                        onClick={() => handleEditStudent(student)}
+                        title="Edit Student"
+                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded text-xs transition-colors flex items-center space-x-1"
+                      >
+                        <Edit size={10} />
+                        <span>Edit</span>
+                      </button>
+                      <button
+                        onClick={() => handleSuspendStudent(student)}
+                        title={student.status === 'suspended' ? 'Unsuspend Student' : 'Suspend Student'}
+                        className={`px-2 py-1 rounded text-xs transition-colors flex items-center space-x-1 ${
+                          student.status === 'suspended' 
+                            ? 'bg-orange-500 hover:bg-orange-600 text-white' 
+                            : 'bg-red-500 hover:bg-red-600 text-white'
+                        }`}
+                      >
+                        <UserX size={10} />
+                        <span>{student.status === 'suspended' ? 'Unsuspend' : 'Suspend'}</span>
+                      </button>
+                      <button
+                        onClick={() => handleDeleteStudent(student)}
+                        title="Delete Student"
+                        className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs transition-colors flex items-center space-x-1"
+                      >
+                        <Trash2 size={10} />
+                        <span>Delete</span>
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -448,7 +591,7 @@ export default function StudentsTab() {
                 <Loader2 className="animate-spin text-indigo-500" size={36} />
               </motion.div>
             ) : (
-              <StudentsTable key="studentstable" students={students} />
+              <StudentsTable key="studentstable" students={students} onStudentUpdated={handleStudentAdded} />
             ))}
         </AnimatePresence>
       </div>
