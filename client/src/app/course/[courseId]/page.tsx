@@ -554,12 +554,12 @@ export default function CourseDetailPage({
                 className="bg-white rounded-lg shadow-lg p-6 mb-6"
               >
                 {/* Course Type Badge */}
-                <div className="inline-block bg-[#3cd664] text-white text-sm font-bold px-4 py-2 rounded-full mb-4">
+                <div className="inline-block bg-[#3cd664] text-white text-xs font-bold px-3 py-1 rounded-full mb-4">
                   {course.level || "Individual Course"}
                 </div>
 
                 {/* Course Title */}
-                <h1 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-500 to-emerald-500 bg-clip-text text-transparent mb-4 leading-tight">
+                <h1 className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-blue-500 to-emerald-500 bg-clip-text text-transparent mb-4 leading-tight">
                   {course.title}
                 </h1>
 
@@ -571,7 +571,7 @@ export default function CourseDetailPage({
                       {[...Array(5)].map((_, i) => (
                         <Star
                           key={i}
-                          className={`w-8 h-8 ${
+                          className={`w-5 h-5 ${
                             i < Math.floor(courseRatings?.averageRating || 0)
                               ? "text-yellow-400 fill-current"
                               : "text-gray-300"
@@ -579,10 +579,10 @@ export default function CourseDetailPage({
                         />
                       ))}
                     </div>
-                    <span className="text-lg font-bold text-gray-900">
+                    <span className="text-sm font-bold text-gray-900">
                       {courseRatings?.averageRating || 0}
                     </span>
-                    <span className="text-base text-gray-600">
+                    <span className="text-xs text-gray-600">
                       [{courseRatings?.totalRatings || 0}]
                     </span>
                     {ratingsLoading && (
@@ -595,7 +595,7 @@ export default function CourseDetailPage({
 
                 {/* Description */}
                 <div
-                  className="text-xl text-gray-700 leading-relaxed mb-8"
+                  className="text-sm text-gray-700 leading-relaxed mb-8"
                   dangerouslySetInnerHTML={{
                     __html: course.description || "No description available.",
                   }}
@@ -608,7 +608,7 @@ export default function CourseDetailPage({
                       <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`py-3 px-2 border-b-4 font-semibold text-base whitespace-nowrap ${
+                        className={`py-2 px-2 border-b-4 font-semibold text-sm whitespace-nowrap ${
                           activeTab === tab.id
                             ? "border-[#3cd664] text-[#3cd664]"
                             : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
@@ -624,10 +624,10 @@ export default function CourseDetailPage({
                 {activeTab === "syllabus" && (
                   <div>
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-500 to-emerald-500 bg-clip-text text-transparent">
+                      <h3 className="text-lg font-bold bg-gradient-to-r from-blue-500 to-emerald-500 bg-clip-text text-transparent">
                         Course Syllabus
                       </h3>
-                      <button className="text-[#3cd664] hover:text-[#33bb58] font-semibold text-base">
+                      <button className="text-[#3cd664] hover:text-[#33bb58] font-semibold text-sm">
                         View Full Syllabus
                       </button>
                     </div>
@@ -678,13 +678,13 @@ export default function CourseDetailPage({
                                 onClick={() => toggleSection(Number(index))}
                                 className="w-full px-6 py-5 text-left flex items-center justify-between hover:bg-gray-50 rounded-xl"
                               >
-                                <span className="font-bold text-xl text-gray-900">
+                                <span className="font-bold text-base text-gray-900">
                                   {chapter.title}
                                 </span>
                                 {expandedSections.includes(Number(index)) ? (
-                                  <ChevronUp className="w-8 h-8 text-gray-500" />
+                                  <ChevronUp className="w-5 h-5 text-gray-500" />
                                 ) : (
-                                  <ChevronDown className="w-8 h-8 text-gray-500" />
+                                  <ChevronDown className="w-5 h-5 text-gray-500" />
                                 )}
                               </button>
 
@@ -707,9 +707,9 @@ export default function CourseDetailPage({
                                         ) => (
                                           <li
                                             key={topicIndex}
-                                            className="flex items-center text-base text-gray-600"
+                                            className="flex items-center text-sm text-gray-600"
                                           >
-                                            <CheckCircle className="w-6 h-6 text-[#3cd664] mr-3 flex-shrink-0" />
+                                            <CheckCircle className="w-4 h-4 text-[#3cd664] mr-2 flex-shrink-0" />
                                             {topic.title || topic}
                                           </li>
                                         )
@@ -724,14 +724,14 @@ export default function CourseDetailPage({
                     ) : (
                       <div className="text-center py-12">
                         <div className="bg-gray-100 rounded-lg p-8">
-                          <h3 className="text-xl font-semibold text-gray-700 mb-4">
+                          <h3 className="text-base font-semibold text-gray-700 mb-4">
                             Syllabus Coming Soon
                           </h3>
-                          <p className="text-gray-600 mb-4">
+                          <p className="text-sm text-gray-600 mb-4">
                             The detailed syllabus for this course is being
                             prepared and will be available soon.
                           </p>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-xs text-gray-500">
                             Please check back later or contact us for more
                             information about the course content.
                           </p>
@@ -743,11 +743,11 @@ export default function CourseDetailPage({
 
                 {activeTab === "case-studies" && (
                   <div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">
                       Assignment
                     </h3>
                     <div
-                      className="text-base text-gray-600"
+                      className="text-sm text-gray-600"
                       dangerouslySetInnerHTML={{
                         __html:
                           course.assignment ||
@@ -759,11 +759,11 @@ export default function CourseDetailPage({
 
                 {activeTab === "exam" && (
                   <div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">
                       Assessment & Certificates
                     </h3>
                     <div
-                      className="text-base text-gray-600"
+                      className="text-sm text-gray-600"
                       dangerouslySetInnerHTML={{
                         __html:
                           course.examCert ||
@@ -791,7 +791,7 @@ export default function CourseDetailPage({
                       student={student}
                     />
 
-                    <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">
                       Simulation & Ex.
                     </h3>
                     {course.simulations && course.simulations.length > 0 ? (
@@ -822,10 +822,10 @@ export default function CourseDetailPage({
                                 </div>
                               )}
                               <div className="p-4">
-                                <h4 className="text-lg font-semibold text-gray-900 mb-2">
+                                <h4 className="text-sm font-semibold text-gray-900 mb-2">
                                   {simulation.title}
                                 </h4>
-                                <p className="text-sm text-gray-600">
+                                <p className="text-xs text-gray-600">
                                   {simulation.description}
                                 </p>
                               </div>
@@ -833,7 +833,7 @@ export default function CourseDetailPage({
                           ))}
                       </div>
                     ) : (
-                      <p className="text-base text-gray-600">
+                      <p className="text-sm text-gray-600">
                         Interactive simulations and experiments will be
                         available here.
                       </p>
@@ -881,8 +881,8 @@ export default function CourseDetailPage({
 
                     {/* Play Button Overlay */}
                     <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center">
-                      <div className="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center hover:bg-opacity-30 transition-all cursor-pointer">
-                        <Play className="w-10 h-10 text-white ml-1" />
+                      <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center hover:bg-opacity-30 transition-all cursor-pointer">
+                        <Play className="w-6 h-6 text-white ml-1" />
                       </div>
                     </div>
                   </div>
@@ -890,9 +890,9 @@ export default function CourseDetailPage({
 
                 {/* Pricing & Enrollment */}
                 <div className="p-6 border-b-2">
-                  <div className="text-center text-lg text-gray-600 mb-6">
+                  <div className="text-center text-sm text-gray-600 mb-6">
                     <p>Get access to this course in DIGITAL HUB.</p>
-                    <button className="text-blue-600 hover:text-blue-800 font-semibold mt-2">
+                    <button className="text-blue-600 hover:text-blue-800 font-semibold mt-2 text-sm">
                       Compare
                     </button>
                   </div>
@@ -901,26 +901,26 @@ export default function CourseDetailPage({
                   <div className="border-2 border-[#3cd664] rounded-xl p-3 mb-3">
                     <div className="mb-3">
                       <div className="text-center mb-2">
-                        <span className="text-sm font-bold text-[#3cd664] block">
+                        <span className="text-xs font-bold text-[#3cd664] block">
                           {course?.pricing?.recordedSession?.title?.split(
                             "+"
                           )[0] || "DIGITAL HUB+"}
                         </span>
-                        <span className="text-sm font-bold text-[#3cd664] block">
+                        <span className="text-xs font-bold text-[#3cd664] block">
                           {course?.pricing?.recordedSession?.title?.split(
                             "+"
                           )[1] || "RECORDED SESSION"}
                         </span>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-[#3cd664]">
+                        <div className="text-lg font-bold text-[#3cd664]">
                           ₹
                           {course.price
                             ? course.price.toLocaleString()
                             : "10,800"}
                         </div>
                         {course.discount > 0 && (
-                          <div className="text-lg text-gray-500 line-through">
+                          <div className="text-sm text-gray-500 line-through">
                             ₹
                             {course.originalPrice
                               ? course.originalPrice.toLocaleString()
@@ -933,7 +933,7 @@ export default function CourseDetailPage({
                     <button
                       onClick={handleDigitalHubRecordedEnrollment}
                       disabled={isEnrollingRecorded}
-                      className="w-full bg-[#3cd664] hover:bg-[#33bb58] text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full bg-[#3cd664] hover:bg-[#33bb58] text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isEnrollingRecorded
                         ? "Enrolling..."
@@ -946,17 +946,17 @@ export default function CourseDetailPage({
                   <div className="border-2 border-blue-500 rounded-xl p-3">
                     <div className="mb-3">
                       <div className="text-center mb-2">
-                        <span className="text-sm font-bold text-blue-500 block">
+                        <span className="text-xs font-bold text-blue-500 block">
                           {course?.pricing?.liveSession?.title?.split("+")[0] ||
                             "DIGITAL HUB+"}
                         </span>
-                        <span className="text-sm font-bold text-blue-500 block">
+                        <span className="text-xs font-bold text-blue-500 block">
                           {course?.pricing?.liveSession?.title?.split("+")[1] ||
                             "LIVE SESSION"}
                         </span>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-blue-500">
+                        <div className="text-lg font-bold text-blue-500">
                           ₹
                           {course.price
                             ? (
@@ -972,7 +972,7 @@ export default function CourseDetailPage({
                     <button
                       onClick={handleDigitalHubPlusEnrollment}
                       disabled={isEnrolling}
-                      className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-2 px-3 rounded-lg transition-all duration-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isEnrolling
                         ? "Enrolling..."
@@ -984,14 +984,14 @@ export default function CourseDetailPage({
 
                 {/* Course Features */}
                 <div className="p-6 border-b-2">
-                  <p className="text-xl text-gray-600 mb-6 font-semibold">
+                  <p className="text-sm text-gray-600 mb-6 font-semibold">
                     This course includes:
                   </p>
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-blue-600 text-white px-4 py-3 rounded-lg text-lg font-bold">
+                    <div className="bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-bold">
                       {course.chapters ? course.chapters.length : 0} Lesson
                     </div>
-                    <div className="bg-[#3cd664] text-white px-4 py-3 rounded-lg text-lg font-bold">
+                    <div className="bg-[#3cd664] text-white px-3 py-2 rounded-lg text-sm font-bold">
                       {course.chapters
                         ? course.chapters.reduce(
                             (total: any, chapter: { topics: string | any[] }) =>
@@ -1002,22 +1002,22 @@ export default function CourseDetailPage({
                         : 0}{" "}
                       Topics
                     </div>
-                    <div className="bg-blue-600 text-white px-4 py-3 rounded-lg text-lg font-bold">
+                    <div className="bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-bold">
                       Simulator
                     </div>
-                    <div className="bg-[#3cd664] text-white px-4 py-3 rounded-lg text-lg font-bold">
+                    <div className="bg-[#3cd664] text-white px-3 py-2 rounded-lg text-sm font-bold">
                       {course.examCert ? "Yes" : "No."} Assignment
                     </div>
-                    <div className="bg-blue-600 text-white px-4 py-3 rounded-lg text-lg font-bold">
+                    <div className="bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-bold">
                       {course.video ? "Yes" : "No"} Live Sessions
                     </div>
-                    <div className="bg-[#3cd664] text-white px-4 py-3 rounded-lg text-lg font-bold">
+                    <div className="bg-[#3cd664] text-white px-3 py-2 rounded-lg text-sm font-bold">
                       {course.level || "Levels"}
                     </div>
-                    <div className="bg-blue-600 text-white px-4 py-3 rounded-lg text-lg font-bold">
+                    <div className="bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-bold">
                       {course.category || "General"} Category
                     </div>
-                    <div className="bg-[#3cd664] text-white px-4 py-3 rounded-lg text-lg font-bold">
+                    <div className="bg-[#3cd664] text-white px-3 py-2 rounded-lg text-sm font-bold">
                       {course.discount > 0
                         ? `${course.discount}% OFF`
                         : "No Discount"}
@@ -1030,23 +1030,23 @@ export default function CourseDetailPage({
                   <div className="grid grid-cols-2 gap-6 text-center">
                     <div>
                       <div className="flex items-center justify-center mb-2">
-                        <Clock className="w-6 h-6 text-gray-500 mr-2" />
-                        <span className="text-xl font-bold text-gray-900">
+                        <Clock className="w-4 h-4 text-gray-500 mr-2" />
+                        <span className="text-sm font-bold text-gray-900">
                           {course.level || "Levels"}
                         </span>
                       </div>
-                      <p className="text-lg text-gray-600 font-semibold">
+                      <p className="text-sm text-gray-600 font-semibold">
                         Level
                       </p>
                     </div>
                     <div>
                       <div className="flex items-center justify-center mb-2">
-                        <Users className="w-6 h-6 text-gray-500 mr-2" />
-                        <span className="text-xl font-bold text-gray-900">
+                        <Users className="w-4 h-4 text-gray-500 mr-2" />
+                        <span className="text-sm font-bold text-gray-900">
                           {course.category || "General"}
                         </span>
                       </div>
-                      <p className="text-lg text-gray-600 font-semibold">
+                      <p className="text-sm text-gray-600 font-semibold">
                         Category
                       </p>
                     </div>

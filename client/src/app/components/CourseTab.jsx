@@ -757,18 +757,18 @@ export default function CourseTab() {
               // State 1: Modern Course Overview Card
               <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden transform transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl">
                 {/* Course Header with Gradient */}
-                <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 p-3 text-white relative overflow-hidden">
+                <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 p-2 text-white relative overflow-hidden">
                   <div className="absolute inset-0 bg-black opacity-10"></div>
                   <div className="relative z-10">
-                    <h2 className="text-2xl font-bold mb-2">{course.title}</h2>
+                    <h2 className="text-lg font-bold mb-2">{course.title}</h2>
                   </div>
                   {/* Decorative elements */}
                   <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full -translate-y-16 translate-x-16"></div>
                   <div className="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-5 rounded-full translate-y-12 -translate-x-12"></div>
                 </div>
 
-                <div className="p-6">
-                  <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                <div className="p-3">
+                  <div className="grid grid-cols-1 lg:grid-cols-5 gap-3">
                     {/* Left Side - Course Image with Modern Styling */}
                     <div className="lg:col-span-1">
                       <div className="relative group">
@@ -780,7 +780,7 @@ export default function CourseTab() {
                                 : "/images/a1.jpeg"
                             }
                             alt={course.title}
-                             className="w-full h-48 object-cover transform transition-transform duration-500 group-hover:scale-110"
+                             className="w-full h-32 object-cover transform transition-transform duration-500 group-hover:scale-110"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
                         </div>
@@ -789,18 +789,18 @@ export default function CourseTab() {
 
                     {/* Right Side - Course Stats with Modern Cards */}
                     <div className="lg:col-span-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
                         {/* Status Card */}
-                        <div className="bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200 rounded-xl p-2">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
-                              <FaCheckCircle className="text-emerald-600 text-lg" />
+                        <div className="bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200 rounded-xl p-1">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
+                              <FaCheckCircle className="text-emerald-600 text-sm" />
                             </div>
                             <div>
-                              <p className="text-sm text-gray-600 font-medium">
+                              <p className="text-xs text-gray-600 font-medium">
                                 Status
                               </p>
-                              <p className="text-lg font-bold text-emerald-700">
+                              <p className="text-sm font-bold text-emerald-700">
                                 {course.status}
                               </p>
                             </div>
@@ -808,16 +808,16 @@ export default function CourseTab() {
                         </div>
 
                         {/* Level Card */}
-                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-2">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                              <FaGraduationCap className="text-blue-600 text-lg" />
+                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-1">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                              <FaGraduationCap className="text-blue-600 text-sm" />
                             </div>
                             <div>
-                              <p className="text-sm text-gray-600 font-medium">
+                              <p className="text-xs text-gray-600 font-medium">
                                 Level
                               </p>
-                              <p className="text-lg font-bold text-blue-700">
+                              <p className="text-sm font-bold text-blue-700">
                                 {course.level}
                               </p>
                             </div>
@@ -825,16 +825,16 @@ export default function CourseTab() {
                         </div>
 
                         {/* Price Card */}
-                        <div className="bg-gradient-to-br from-purple-50 to-violet-50 border border-purple-200 rounded-xl p-2">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                              <FaStar className="text-purple-600 text-lg" />
+                        <div className="bg-gradient-to-br from-purple-50 to-violet-50 border border-purple-200 rounded-xl p-1">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                              <FaStar className="text-purple-600 text-sm" />
                             </div>
                             <div>
-                              <p className="text-sm text-gray-600 font-medium">
+                              <p className="text-xs text-gray-600 font-medium">
                                 Price
                               </p>
-                              <p className="text-lg font-bold text-purple-700">
+                              <p className="text-sm font-bold text-purple-700">
                                 ₹{course.price}
                               </p>
                             </div>
@@ -842,16 +842,16 @@ export default function CourseTab() {
                         </div>
 
                         {/* Duration Card */}
-                        <div className="bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-200 rounded-xl p-2">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
-                              <FaClock className="text-orange-600 text-lg" />
+                        <div className="bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-200 rounded-xl p-1">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                              <FaClock className="text-orange-600 text-sm" />
                             </div>
                             <div>
-                              <p className="text-sm text-gray-600 font-medium">
+                              <p className="text-xs text-gray-600 font-medium">
                                 Duration
                               </p>
-                              <p className="text-lg font-bold text-orange-700">
+                              <p className="text-sm font-bold text-orange-700">
                                 8 Weeks
                               </p>
                             </div>
@@ -863,7 +863,7 @@ export default function CourseTab() {
                       <div className="flex gap-3">
                         <button
                           onClick={() => handleDetailedToggle(course._id)}
-                          className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-xl font-semibold text-base shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-105 hover:from-blue-700 hover:to-purple-700"
+                          className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 px-4 rounded-xl font-semibold text-sm shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-105 hover:from-blue-700 hover:to-purple-700"
                         >
                           <span className="flex items-center justify-center gap-2">
                             <Book className="text-xl" />
