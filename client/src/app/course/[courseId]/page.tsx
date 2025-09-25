@@ -15,6 +15,7 @@ import {
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import LiveSchedule from "../../components/LiveSchedule";
+import SimulatorDemo from "../../components/SimulatorDemo";
 import axios from "axios";
 
 // Dummy course data - in real app this would come from API
@@ -779,13 +780,10 @@ export default function CourseDetailPage({
 
                 {activeTab === "simulation" && (
                   <div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                      Simulation & Ex.
-                    </h3>
-                    <p className="text-base text-gray-600">
-                      Interactive simulations and experiments will be available
-                      here.
-                    </p>
+                    <SimulatorDemo 
+                      courseId={resolvedParams.courseId} 
+                      student={student}
+                    />
                   </div>
                 )}
               </motion.div>
