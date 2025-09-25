@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useLocationData } from "@/utils/useLocationData";
+import { useState, useEffect, useCallback } from "react";
 import { 
   FaSave, 
   FaEye, 
@@ -51,25 +50,24 @@ export default function LocationTab() {
   const { user } = useAuth();
   const [locationEntries, setLocationEntries] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isFetching, setIsFetching] = useState(false);
   
-  // Use the custom hook for real-time location data
-  const { refreshLocationData } = useLocationData(10000); // Poll every 10 seconds in admin
   
-  // Custom toast function that dismisses previous toasts
-  const showToast = (message, type = 'success') => {
-    // Dismiss all existing toasts
-    toast.dismiss();
-    // Show new toast
-    if (type === 'success') {
-      toast.success(message);
-    } else if (type === 'error') {
-      toast.error(message);
-    } else if (type === 'loading') {
-      return toast.loading(message);
-    } else {
-      toast(message);
-    }
-  };
+   // Custom toast function that dismisses previous toasts
+   const showToast = (message, type = 'success') => {
+     // Dismiss all existing toasts
+     toast.dismiss();
+     
+     if (type === 'success') {
+       toast.success(message, { duration: 3000 });
+     } else if (type === 'error') {
+       toast.error(message, { duration: 4000 });
+     } else if (type === 'loading') {
+       return toast.loading(message);
+     } else {
+       toast(message, { duration: 3000 });
+     }
+   };
   const [mounted, setMounted] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [showForm, setShowForm] = useState(false);
@@ -163,21 +161,30 @@ export default function LocationTab() {
 
   const [previewMode, setPreviewMode] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-    fetchLocationEntries();
-  }, []);
-
-  const fetchLocationEntries = async () => {
+  const fetchLocationEntries = useCallback(async () => {
+    // Prevent multiple simultaneous calls
+    if (isFetching) {
+      console.log("⏳ Already fetching location entries, skipping...");
+      return;
+    }
+    
+    setIsFetching(true);
     try {
       const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
       
       // First try to fetch all locations (admin endpoint)
-      let response = await fetch(`${API_BASE}/location/all`, {
-        credentials: 'include',
-        headers: {
+       const token = localStorage.getItem("adminToken");
+       const headers = {
           'Content-Type': 'application/json',
+       };
+       
+       if (token) {
+         headers['Authorization'] = `Bearer ${token}`;
         }
+       
+       let response = await fetch(`${API_BASE}/location/all`, {
+         credentials: 'include',
+         headers
       });
       
       if (response.ok) {
@@ -186,11 +193,11 @@ export default function LocationTab() {
         const normalizedData = data.map(normalizeLocationData);
         console.log("📋 Normalized location data:", normalizedData);
         console.log("🔍 Checking IDs in normalized data:", normalizedData.map(loc => ({ title: loc.title, _id: loc._id, hasId: !!loc._id })));
-        setLocationEntries(normalizedData);
-        showToast(`Loaded ${data.length} location(s)`, 'success');
-        
-        // Trigger refresh of public location data to sync frontend
-        refreshLocationData();
+         setLocationEntries(normalizedData);
+         // Only show toast on initial load or when count changes
+         if (locationEntries.length !== data.length) {
+           showToast(`Loaded ${data.length} location(s)`, 'success');
+         }
       } else if (response.status === 401) {
         console.log("⚠️ Authentication required, trying public endpoint...");
         showToast("Admin authentication required. Some features may be limited.", 'error');
@@ -221,8 +228,14 @@ export default function LocationTab() {
       showToast("Error fetching location entries. Please check your connection.", 'error');
     } finally {
       setLoading(false);
+      setIsFetching(false);
     }
-  };
+  }, [isFetching]);
+
+  useEffect(() => {
+    setMounted(true);
+    fetchLocationEntries();
+  }, [fetchLocationEntries]);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -269,7 +282,8 @@ export default function LocationTab() {
       console.log("Processing share link via backend:", shareLink);
 
       // Call your backend API to resolve the share link
-      const response = await fetch('/api/location/resolve-share-link', {
+      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const response = await fetch(`${API_BASE}/location/resolve-share-link`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -281,10 +295,17 @@ export default function LocationTab() {
 
       if (result.success && result.coordinates) {
         console.log("Extracted coordinates from share link:", result.coordinates);
-        return result.coordinates;
+        console.log("Extracted address data:", result.address);
+        return {
+          coordinates: result.coordinates,
+          address: result.address
+        };
       } else {
         console.warn("Could not extract coordinates:", result.message || result.error);
-        return null;
+        if (result.suggestion) {
+          console.info("Suggestion:", result.suggestion);
+        }
+      return null;
       }
     } catch (error) {
       console.error("Error extracting coordinates from share link:", error);
@@ -438,38 +459,92 @@ export default function LocationTab() {
       if (inputMethod === "share_link" && formData.googleMaps.share_link) {
         showToast("Extracting coordinates from share link...", 'loading');
         
-        const coords = await extractCoordinatesFromShareLink(formData.googleMaps.share_link);
+        const result = await extractCoordinatesFromShareLink(formData.googleMaps.share_link);
         
-        if (coords) {
+        if (result && result.coordinates) {
+          const updateData = {
+            coordinates: result.coordinates
+          };
+          
+          // Autofill address fields if available
+          if (result.address) {
+            updateData.address = {
+              ...formData.address,
+              city: result.address.city || formData.address.city,
+              state: result.address.state || formData.address.state,
+              country: result.address.country || formData.address.country,
+              pincode: result.address.pincode || formData.address.pincode,
+              formatted_address: result.address.formatted_address || formData.address.formatted_address
+            };
+          }
+          
           setFormData(prev => ({
             ...prev,
-            coordinates: coords
+            ...updateData
           }));
-          showToast(`Coordinates extracted: ${coords.latitude}, ${coords.longitude}`, 'success');
+          
+          const addressInfo = result.address ? 
+            ` and address: ${result.address.city}, ${result.address.state}` : '';
+          showToast(`Coordinates extracted: ${result.coordinates.latitude}, ${result.coordinates.longitude}${addressInfo}`, 'success');
         } else {
-          showToast("Could not extract coordinates from share link. Please check the link format or enter coordinates manually.", 'error');
+          showToast("Could not extract coordinates from share link. Try using 'Embed HTML' method instead, or enter coordinates manually.", 'error');
         }
       } else if (inputMethod === "embed_html" && formData.googleMaps.embed_html) {
         showToast("Extracting coordinates and address from embed HTML...", 'loading');
         
         const coords = extractCoordinatesFromEmbedHtml(formData.googleMaps.embed_html);
-        const address = extractAddressFromEmbedHtml(formData.googleMaps.embed_html);
         
         if (coords) {
+           // Try to get address details using reverse geocoding
+           try {
+             const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+             const token = localStorage.getItem("adminToken");
+             const headers = {
+               'Content-Type': 'application/json',
+             };
+             
+             if (token) {
+               headers['Authorization'] = `Bearer ${token}`;
+             }
+             
+             const geocodeResponse = await fetch(`${API_BASE}/location/reverse-geocode?lat=${coords.latitude}&lng=${coords.longitude}`, {
+               credentials: 'include',
+               headers
+             });
+             const geocodeData = await geocodeResponse.json();
+            
+            const updateData = {
+              coordinates: coords
+            };
+            
+            // Autofill address fields if available
+            if (geocodeData.success && geocodeData.address) {
+              updateData.address = {
+                ...formData.address,
+                city: geocodeData.address.city || formData.address.city,
+                state: geocodeData.address.state || formData.address.state,
+                country: geocodeData.address.country || formData.address.country,
+                pincode: geocodeData.address.pincode || formData.address.pincode,
+                formatted_address: geocodeData.address.formatted_address || formData.address.formatted_address
+              };
+            }
+            
           setFormData(prev => ({
             ...prev,
-            coordinates: coords,
-            address: {
-              ...prev.address,
-              formatted_address: address || prev.address.formatted_address
-            }
-          }));
-          
-          let message = `Coordinates extracted: ${coords.latitude}, ${coords.longitude}`;
-          if (address) {
-            message += `\nAddress: ${address}`;
+              ...updateData
+            }));
+            
+            const addressInfo = geocodeData.success && geocodeData.address ? 
+              ` and address: ${geocodeData.address.city}, ${geocodeData.address.state}` : '';
+            showToast(`Coordinates extracted: ${coords.latitude}, ${coords.longitude}${addressInfo}`, 'success');
+          } catch (geocodeError) {
+            console.warn("Reverse geocoding failed:", geocodeError);
+            setFormData(prev => ({
+              ...prev,
+              coordinates: coords
+            }));
+            showToast(`Coordinates extracted: ${coords.latitude}, ${coords.longitude}`, 'success');
           }
-          showToast(message, 'success');
         } else {
           showToast("Could not extract coordinates from embed HTML. Please check the format. Make sure you copied the complete iframe code from Google Maps.", 'error');
         }
@@ -487,23 +562,28 @@ export default function LocationTab() {
     
     try {
       const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+       const token = localStorage.getItem("adminToken");
+       const headers = {
+         'Content-Type': 'application/json',
+       };
+       
+       if (token) {
+         headers['Authorization'] = `Bearer ${token}`;
+       }
+
       let response;
 
       if (editingId) {
         response = await fetch(`${API_BASE}/location/${editingId}`, {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+           headers,
           credentials: 'include',
           body: JSON.stringify(formData)
         });
       } else {
         response = await fetch(`${API_BASE}/location`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+           headers,
           credentials: 'include',
           body: JSON.stringify(formData)
         });
@@ -511,15 +591,25 @@ export default function LocationTab() {
 
       if (response.ok) {
         const data = await response.json();
-        showToast(editingId ? "Location updated successfully!" : "Location created successfully!", 'success');
-        fetchLocationEntries();
-        resetForm();
-        
-        // Trigger refresh of public location data
-        refreshLocationData();
+         showToast(editingId ? "Location updated successfully!" : "Location created successfully!", 'success');
+         fetchLocationEntries();
+         resetForm();
+         
+         // Trigger custom event for real-time map updates
+         window.dispatchEvent(new CustomEvent('locationUpdated', {
+           detail: { 
+             action: editingId ? 'updated' : 'created', 
+             location: data,
+             locationId: data._id
+           }
+         }));
       } else {
         const errorData = await response.json();
-        showToast(errorData.error || "Failed to save location", 'error');
+        if (response.status === 401) {
+          showToast("Authentication required. Please log in again.", 'error');
+        } else {
+          showToast(errorData.error || errorData.message || "Failed to save location", 'error');
+        }
       }
     } catch (error) {
       console.error("Error saving location:", error);
@@ -597,14 +687,21 @@ export default function LocationTab() {
     try {
       const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
       
-      console.log(`🗑️ Attempting to delete location: ${locationToDelete.title} (ID: ${locationToDelete._id})`);
-      
-      const response = await fetch(`${API_BASE}/location/${locationToDelete._id}`, {
+       console.log(`🗑️ Attempting to delete location: ${locationToDelete.title} (ID: ${locationToDelete._id})`);
+       
+       const token = localStorage.getItem("adminToken");
+       const headers = {
+         'Content-Type': 'application/json',
+       };
+       
+       if (token) {
+         headers['Authorization'] = `Bearer ${token}`;
+       }
+       
+       const response = await fetch(`${API_BASE}/location/${locationToDelete._id}`, {
         method: 'DELETE',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        }
+         credentials: 'include',
+         headers
       });
 
       console.log(`🗑️ Delete API response status: ${response.status}`);
@@ -612,12 +709,18 @@ export default function LocationTab() {
       console.log(`🗑️ Delete API response data:`, responseData);
 
       if (response.ok) {
-        showToast(`Location "${locationToDelete.title}" deleted successfully!`, 'success');
-        console.log(`✅ Successfully deleted location:`, responseData.deletedLocation);
-        fetchLocationEntries();
-        
-        // Trigger refresh of public location data
-        refreshLocationData();
+         showToast(`Location "${locationToDelete.title}" deleted successfully!`, 'success');
+         console.log(`✅ Successfully deleted location:`, responseData.deletedLocation);
+         fetchLocationEntries();
+         
+         // Trigger custom event for real-time map updates
+         window.dispatchEvent(new CustomEvent('locationUpdated', {
+           detail: { 
+             action: 'deleted', 
+             locationId: locationToDelete._id,
+             location: locationToDelete
+           }
+         }));
       } else {
         console.error(`❌ Failed to delete location:`, responseData);
         showToast(responseData.error || "Failed to delete location", 'error');
@@ -653,31 +756,45 @@ export default function LocationTab() {
     if (!location._id || location._id === 'default') {
       console.log(`⚠️ Location has missing/default ID, attempting to save as new location`);
       
-      try {
-        const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+    try {
+      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
         const loadingToast = showToast(`Saving ${location.title} as new location...`, 'loading');
         
-        // Create new location entry (remove _id from the data)
-        const { _id, ...locationData } = location;
-        const response = await fetch(`${API_BASE}/location`, {
-          method: 'POST',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(locationData)
-        });
+         // Create new location entry (remove _id from the data)
+         const { _id, ...locationData } = location;
+         
+         const token = localStorage.getItem("adminToken");
+         const headers = {
+           'Content-Type': 'application/json',
+         };
+         
+         if (token) {
+           headers['Authorization'] = `Bearer ${token}`;
+         }
+         
+         const response = await fetch(`${API_BASE}/location`, {
+           method: 'POST',
+           credentials: 'include',
+           headers,
+           body: JSON.stringify(locationData)
+         });
 
         const responseData = await response.json();
         toast.dismiss(loadingToast);
 
         if (response.ok) {
-          showToast(`Location "${location.title}" saved successfully!`, 'success');
-          console.log(`✅ Created new location:`, responseData);
-          fetchLocationEntries(); // Refresh the list
-          
-          // Trigger refresh of public location data
-          refreshLocationData();
+           showToast(`Location "${location.title}" saved successfully!`, 'success');
+           console.log(`✅ Created new location:`, responseData);
+           fetchLocationEntries(); // Refresh the list
+           
+           // Trigger custom event for real-time map updates
+           window.dispatchEvent(new CustomEvent('locationUpdated', {
+             detail: { 
+               action: 'created', 
+               location: responseData,
+               locationId: responseData._id
+             }
+           }));
           return;
         } else {
           console.error(`❌ Failed to save location:`, responseData);
@@ -696,16 +813,23 @@ export default function LocationTab() {
       
       console.log(`🔄 Toggling location status: ${location.title} (ID: ${location._id}) from ${location.isActive ? 'Active' : 'Inactive'} to ${!location.isActive ? 'Active' : 'Inactive'}`);
       
-      // Show loading toast
-      const loadingToast = showToast(`Updating ${location.title} status...`, 'loading');
-      
-      const response = await fetch(`${API_BASE}/location/${location._id}/toggle`, {
+       // Show loading toast
+       const loadingToast = showToast(`Updating ${location.title} status...`, 'loading');
+       
+       const token = localStorage.getItem("adminToken");
+       const headers = {
+         'Content-Type': 'application/json',
+       };
+       
+       if (token) {
+         headers['Authorization'] = `Bearer ${token}`;
+       }
+       
+       const response = await fetch(`${API_BASE}/location/${location._id}/toggle`, {
         method: 'PATCH',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
+         credentials: 'include',
+         headers
+       });
 
       console.log(`🔄 API Response status: ${response.status}`);
 
@@ -717,11 +841,18 @@ export default function LocationTab() {
 
       if (response.ok) {
         const newStatus = responseData.newStatus;
-        showToast(`Location "${location.title}" is now ${newStatus ? 'Active' : 'Inactive'}!`, 'success');
-        console.log(`✅ Successfully toggled location status:`, responseData);
-        
-        // Trigger refresh of public location data
-        refreshLocationData();
+         showToast(`Location "${location.title}" is now ${newStatus ? 'Active' : 'Inactive'}!`, 'success');
+         console.log(`✅ Successfully toggled location status:`, responseData);
+         
+         // Trigger custom event for real-time map updates
+         window.dispatchEvent(new CustomEvent('locationUpdated', {
+           detail: { 
+             action: 'statusChanged', 
+             locationId: location._id, 
+             newStatus, 
+             location: { ...location, isActive: newStatus }
+           }
+         }));
         
         // Immediately update the local state for better UX
         setLocationEntries(prevEntries => {
@@ -744,7 +875,7 @@ export default function LocationTab() {
         // Then fetch fresh data to ensure consistency
         setTimeout(() => {
           console.log(`🔄 Fetching fresh data after status update`);
-          fetchLocationEntries();
+        fetchLocationEntries();
         }, 500);
       } else {
         console.error(`❌ Failed to toggle location status:`, responseData);
@@ -1451,28 +1582,28 @@ export default function LocationTab() {
        <div className="bg-white rounded-lg shadow-md overflow-hidden">
          <div className="px-6 py-4 border-b border-gray-200">
            <div className="flex justify-between items-center mb-4">
-             <h3 className="text-lg font-semibold">Location Entries</h3>
-             {locationEntries.length > 0 && (
-               <button
-                 onClick={() => {
-                   // Create a new location based on the first existing location
-                   const defaultLocation = locationEntries[0];
-                   setFormData({
-                     ...defaultLocation,
-                     title: `${defaultLocation.title} (Copy)`,
-                     branch_name: `${defaultLocation.branch_name || "Main Branch"} - Copy`,
-                     isActive: false, // Don't make copies active by default
-                     _id: undefined // Remove ID to create new entry
-                   });
-                   setEditingId(null);
-                   setShowForm(true);
-                 }}
-                 className="flex items-center gap-2 px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
-               >
-                 <FaPlus className="w-3 h-3" />
-                 Create from Existing
-               </button>
-             )}
+           <h3 className="text-lg font-semibold">Location Entries</h3>
+           {locationEntries.length > 0 && (
+             <button
+               onClick={() => {
+                 // Create a new location based on the first existing location
+                 const defaultLocation = locationEntries[0];
+                 setFormData({
+                   ...defaultLocation,
+                   title: `${defaultLocation.title} (Copy)`,
+                   branch_name: `${defaultLocation.branch_name || "Main Branch"} - Copy`,
+                   isActive: false, // Don't make copies active by default
+                   _id: undefined // Remove ID to create new entry
+                 });
+                 setEditingId(null);
+                 setShowForm(true);
+               }}
+               className="flex items-center gap-2 px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+             >
+               <FaPlus className="w-3 h-3" />
+               Create from Existing
+             </button>
+           )}
            </div>
            
          </div>

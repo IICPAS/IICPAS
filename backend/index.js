@@ -256,14 +256,24 @@ app.use("/api/course-levels", courseLevelsRoutes);
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
-    methods: ["GET", "POST"]
-  }
+    origin: [process.env.CLIENT_URL || "http://localhost:3000", "http://127.0.0.1:3000"],
+    methods: ["GET", "POST"],
+    credentials: true
+  },
+  allowEIO3: true
 });
 
 // Socket.io connection handling
 io.on('connection', (socket) => {
-  console.log('User connected:', socket.id);
+  console.log('✅ User connected:', socket.id);
+  console.log('✅ Socket transport:', socket.conn.transport.name);
+  console.log('✅ Socket ready state:', socket.conn.readyState);
+
+  // Test event handler
+  socket.on('test-event', (data) => {
+    console.log('🧪 Test event received from client:', data);
+    socket.emit('test-response', { message: 'Test response from server', timestamp: new Date().toISOString() });
+  });
 
   // Join live session room
   socket.on('join-session', (sessionId) => {
@@ -277,13 +287,16 @@ io.on('connection', (socket) => {
     console.log(`User ${socket.id} left session ${sessionId}`);
   });
 
-  socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
+  socket.on('disconnect', (reason) => {
+    console.log('🔌 User disconnected:', socket.id, 'Reason:', reason);
   });
 });
 
 // Make io available globally for use in controllers
 global.io = io;
+
+// Make io available through app for use in routes
+app.set('io', io);
 //Contact Info Routes
 // app.use("/api/contact-info", contactInfoRoutes);
 

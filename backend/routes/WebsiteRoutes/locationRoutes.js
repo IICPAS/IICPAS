@@ -7,6 +7,30 @@ import { isAdmin } from "../../middleware/isAdmin.js";
 
 const router = express.Router();
 
+// Helper function to emit location updates via Socket.io
+const emitLocationUpdate = (io, action, location, locationId = null) => {
+  if (io) {
+    const eventData = {
+      action,
+      location,
+      locationId: locationId || location?._id,
+      timestamp: new Date().toISOString()
+    };
+    
+    console.log(`📡 Emitting location update: ${action}`, eventData);
+    
+    // Emit to all connected clients
+    io.emit('location-update', eventData);
+    
+    // Also emit specific events for different actions
+    if (action === 'statusChanged') {
+      io.emit('location-status-changed', eventData);
+    } else if (action === 'created' || action === 'updated' || action === 'deleted') {
+      io.emit('location-data-changed', eventData);
+    }
+  }
+};
+
 // Get current Location content (public endpoint)
 router.get("/", async (req, res) => {
   try {
@@ -88,6 +112,11 @@ router.post("/", cookieAuth, isAdmin, async (req, res) => {
 
     const location = new Location(req.body);
     await location.save();
+    
+    // Emit Socket.io event for real-time updates
+    const io = req.app.get('io');
+    emitLocationUpdate(io, 'created', location);
+    
     res.status(201).json(location);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -112,6 +141,10 @@ router.put("/:id", cookieAuth, isAdmin, async (req, res) => {
       return res.status(404).json({ error: "Location not found" });
     }
 
+    // Emit Socket.io event for real-time updates
+    const io = req.app.get('io');
+    emitLocationUpdate(io, 'updated', location);
+
     res.json(location);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -121,96 +154,47 @@ router.put("/:id", cookieAuth, isAdmin, async (req, res) => {
 // Delete Location entry (admin only)
 router.delete("/:id", cookieAuth, isAdmin, async (req, res) => {
   try {
-    // Validate MongoDB ObjectId format
-    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
-      return res.status(400).json({ 
-        error: "Invalid location ID format. Please provide a valid MongoDB ObjectId." 
-      });
-    }
-
-    const location = await Location.findById(req.params.id);
+    const location = await Location.findByIdAndDelete(req.params.id);
     if (!location) {
       return res.status(404).json({ error: "Location not found" });
     }
 
-    // Check if location is active - prevent deletion of active locations
-    if (location.isActive) {
-      return res.status(400).json({ 
-        error: "Cannot delete active locations. Please deactivate the location first.",
-        locationTitle: location.title,
-        locationId: location._id
-      });
-    }
+    // Emit Socket.io event for real-time updates
+    const io = req.app.get('io');
+    emitLocationUpdate(io, 'deleted', location, req.params.id);
 
-    // Proceed with deletion
-    await Location.findByIdAndDelete(req.params.id);
-    
-    console.log(`✅ Location deleted: ${location.title} (ID: ${location._id})`);
-    
-    res.json({ 
-      message: "Location deleted successfully",
-      deletedLocation: {
-        id: location._id,
-        title: location.title,
-        branch_name: location.branch_name,
-        address: location.address.formatted_address
-      }
-    });
+    res.json({ message: "Location deleted successfully", deletedLocation: location });
   } catch (err) {
-    console.error("❌ Error deleting location:", err);
-    res.status(500).json({ 
-      error: "Internal server error while deleting location",
-      details: err.message 
-    });
+    res.status(500).json({ error: err.message });
   }
 });
 
 // Toggle active status (admin only)
 router.patch("/:id/toggle", cookieAuth, isAdmin, async (req, res) => {
   try {
-    // Validate MongoDB ObjectId format
-    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
-      return res.status(400).json({ 
-        error: "Invalid location ID format. Please provide a valid MongoDB ObjectId." 
-      });
-    }
-
     const location = await Location.findById(req.params.id);
     if (!location) {
       return res.status(404).json({ error: "Location not found" });
     }
 
-    const previousStatus = location.isActive;
-    const newStatus = !location.isActive;
-
-    console.log(`🔄 Toggling location status: ${location.title} from ${previousStatus ? 'Active' : 'Inactive'} to ${newStatus ? 'Active' : 'Inactive'}`);
-
     // If activating this location, deactivate all others
-    if (newStatus) {
-      const deactivatedCount = await Location.updateMany(
-        { _id: { $ne: req.params.id } }, 
-        { isActive: false }
-      );
-      console.log(`✅ Deactivated ${deactivatedCount.modifiedCount} other locations to make room for active location`);
+    if (!location.isActive) {
+      await Location.updateMany({ _id: { $ne: req.params.id } }, { isActive: false });
     }
 
-    location.isActive = newStatus;
+    location.isActive = !location.isActive;
     await location.save();
 
-    console.log(`✅ Successfully toggled location status: ${location.title} (ID: ${location._id})`);
+    // Emit Socket.io event for real-time updates
+    const io = req.app.get('io');
+    emitLocationUpdate(io, 'statusChanged', location);
 
-    res.json({
-      ...location.toObject(),
-      message: `Location "${location.title}" status updated to ${newStatus ? 'Active' : 'Inactive'}`,
-      previousStatus,
-      newStatus
+    res.json({ 
+      ...location.toObject(), 
+      newStatus: location.isActive 
     });
   } catch (err) {
-    console.error("❌ Error toggling location status:", err);
-    res.status(500).json({ 
-      error: "Internal server error while toggling location status",
-      details: err.message 
-    });
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -233,6 +217,54 @@ router.post("/generate-map-url", cookieAuth, isAdmin, async (req, res) => {
 });
 
 // Resolve Google Maps share link and extract coordinates
+// Reverse geocoding endpoint
+router.get("/reverse-geocode", cookieAuth, isAdmin, async (req, res) => {
+  try {
+    const { lat, lng } = req.query;
+    
+    if (!lat || !lng) {
+      return res.status(400).json({ 
+        success: false,
+        error: "Latitude and longitude are required" 
+      });
+    }
+
+    const latitude = parseFloat(lat);
+    const longitude = parseFloat(lng);
+    
+    if (isNaN(latitude) || isNaN(longitude)) {
+      return res.status(400).json({ 
+        success: false,
+        error: "Invalid latitude or longitude values" 
+      });
+    }
+
+    // Use reverse geocoding API
+    const geocodeResponse = await axios.get(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
+    const addressData = geocodeResponse.data;
+    
+    return res.json({
+      success: true,
+      address: {
+        city: addressData.city || addressData.locality || '',
+        state: addressData.principalSubdivision || addressData.administrativeArea || '',
+        country: addressData.countryName || '',
+        pincode: addressData.postcode || '',
+        formatted_address: addressData.localityInfo?.administrative?.[0]?.name ? 
+          `${addressData.localityInfo.administrative[0].name}, ${addressData.principalSubdivision}, ${addressData.countryName}` :
+          `${addressData.city || addressData.locality}, ${addressData.principalSubdivision}, ${addressData.countryName}`
+      }
+    });
+  } catch (error) {
+    console.error("Error in reverse geocoding:", error);
+    return res.status(500).json({
+      success: false,
+      error: "Failed to get address from coordinates",
+      details: error.message
+    });
+  }
+});
+
 router.post("/resolve-share-link", async (req, res) => {
   try {
     const { shareLink } = req.body;
@@ -258,17 +290,19 @@ router.post("/resolve-share-link", async (req, res) => {
 
     // Extract coordinates from the resolved URL
     const coordinatePatterns = [
-      // Pattern 1: @lat,lng,zoom (for maps.google.com URLs)
+      // Pattern 1: /search/lat,lng format (for maps.google.com/search URLs)
+      /\/search\/([+-]?\d+\.?\d*),([+-]?\d+\.?\d*)/,
+      // Pattern 2: @lat,lng,zoom (for maps.google.com URLs)
       /@(-?\d+\.?\d*),(-?\d+\.?\d*)/,
-      // Pattern 2: !3d and !2d format (for maps.app.goo.gl URLs)
+      // Pattern 3: !3d and !2d format (for maps.app.goo.gl URLs)
       /!3d(-?\d+\.?\d*)!2d(-?\d+\.?\d*)/,
-      // Pattern 3: ll parameter
+      // Pattern 4: ll parameter
       /[?&]ll=(-?\d+\.?\d*),(-?\d+\.?\d*)/,
-      // Pattern 4: center parameter
+      // Pattern 5: center parameter
       /[?&]center=(-?\d+\.?\d*),(-?\d+\.?\d*)/,
-      // Pattern 5: q parameter with coordinates
+      // Pattern 6: q parameter with coordinates
       /[?&]q=(-?\d+\.?\d*),(-?\d+\.?\d*)/,
-      // Pattern 6: pb format with coordinates (for embed-style URLs)
+      // Pattern 7: pb format with coordinates (for embed-style URLs)
       /pb=!1m\d+!1m\d+!1m\d+!1d(-?\d+\.?\d*)!2d(-?\d+\.?\d*)/
     ];
 
@@ -280,11 +314,35 @@ router.post("/resolve-share-link", async (req, res) => {
         
         // Validate coordinates
         if (latitude >= -90 && latitude <= 90 && longitude >= -180 && longitude <= 180) {
-          return res.json({
-            success: true,
-            coordinates: { latitude, longitude },
-            resolvedUrl: finalUrl
-          });
+          console.log("Successfully extracted coordinates:", { latitude, longitude });
+          
+          // Try to get address details using reverse geocoding
+          try {
+            const geocodeResponse = await axios.get(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
+            const addressData = geocodeResponse.data;
+            
+            return res.json({
+              success: true,
+              coordinates: { latitude, longitude },
+              resolvedUrl: finalUrl,
+              address: {
+                city: addressData.city || addressData.locality || '',
+                state: addressData.principalSubdivision || addressData.administrativeArea || '',
+                country: addressData.countryName || '',
+                pincode: addressData.postcode || '',
+                formatted_address: addressData.localityInfo?.administrative?.[0]?.name ? 
+                  `${addressData.localityInfo.administrative[0].name}, ${addressData.principalSubdivision}, ${addressData.countryName}` :
+                  `${addressData.city || addressData.locality}, ${addressData.principalSubdivision}, ${addressData.countryName}`
+              }
+            });
+          } catch (geocodeError) {
+            console.warn("Reverse geocoding failed:", geocodeError.message);
+            return res.json({
+              success: true,
+              coordinates: { latitude, longitude },
+              resolvedUrl: finalUrl
+            });
+          }
         }
       }
     }
@@ -302,8 +360,9 @@ router.post("/resolve-share-link", async (req, res) => {
 
     return res.json({
       success: false,
-      message: "Could not extract coordinates from the resolved URL",
-      resolvedUrl: finalUrl
+      message: "Could not extract coordinates from the resolved URL. This share link may contain encoded location data that requires manual coordinate entry or a different input method.",
+      resolvedUrl: finalUrl,
+      suggestion: "Try using the 'Embed HTML' method instead, or manually enter the coordinates."
     });
 
   } catch (error) {

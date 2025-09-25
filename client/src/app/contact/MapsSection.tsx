@@ -1,9 +1,89 @@
 "use client";
 import { motion } from "framer-motion";
-import { useLocationData } from "@/utils/useLocationData";
+import { useState, useEffect, useCallback } from "react";
 
 const MapsSection = () => {
-  const { locationData, loading, error, lastUpdateTime } = useLocationData(5000);
+  const [locationData, setLocationData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [lastUpdateTime, setLastUpdateTime] = useState<number>(0);
+
+  const fetchLocationData = useCallback(async () => {
+    try {
+      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const response = await fetch(`${API_BASE}/location`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        setLocationData(data);
+      } else {
+        console.error("Failed to fetch location data:", response.status);
+        setError("Failed to load location information");
+      }
+    } catch (error) {
+      console.error("Error fetching location data:", error);
+      setError("Error loading location information");
+    } finally {
+      setLoading(false);
+      setIsUpdating(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchLocationData();
+    
+    // Set up polling to check for location updates every 3 seconds
+    const pollInterval = setInterval(async () => {
+      try {
+        const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+        const response = await fetch(`${API_BASE}/location`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          const currentUpdateTime = new Date(data.updatedAt).getTime();
+          
+          // If the location was updated after our last check, refresh the map
+          if (currentUpdateTime > lastUpdateTime && lastUpdateTime > 0) {
+            console.log('📍 Location updated detected, refreshing map...');
+            setIsUpdating(true);
+            setLastUpdateTime(currentUpdateTime);
+            fetchLocationData();
+          } else if (lastUpdateTime === 0) {
+            // First time, just set the timestamp
+            setLastUpdateTime(currentUpdateTime);
+          }
+        }
+      } catch (error) {
+        console.error('Error polling for location updates:', error);
+      }
+    }, 3000); // Poll every 3 seconds
+
+    // Listen for custom events from admin dashboard
+    const handleLocationUpdate = (event: CustomEvent) => {
+      console.log('🔄 Location update event received:', event.detail);
+      setIsUpdating(true);
+      fetchLocationData();
+    };
+
+    // Listen for manual refresh events
+    const handleManualRefresh = () => {
+      console.log('🔄 Manual refresh triggered');
+      setIsUpdating(true);
+      fetchLocationData();
+    };
+
+    // Add event listeners
+    window.addEventListener('locationUpdated', handleLocationUpdate as EventListener);
+    window.addEventListener('manualMapRefresh', handleManualRefresh);
+    
+    // Cleanup
+    return () => {
+      clearInterval(pollInterval);
+      window.removeEventListener('locationUpdated', handleLocationUpdate as EventListener);
+      window.removeEventListener('manualMapRefresh', handleManualRefresh);
+    };
+  }, [fetchLocationData, lastUpdateTime]);
 
   // Generate dynamic Google Maps URL based on coordinates
   const generateMapUrl = (locationData: any, zoom = 15) => {
@@ -90,10 +170,26 @@ const MapsSection = () => {
           </p>
         </motion.div>
 
+
+        {/* Real-time Update Indicator */}
+        {isUpdating && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="bg-blue-100 border border-blue-200 rounded-lg p-3 max-w-md mx-auto mb-4"
+          >
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+              <span className="text-blue-700 text-sm font-medium">Updating location in real-time...</span>
+            </div>
+          </motion.div>
+        )}
+
         {/* Google Map Embed */}
         {currentLocation.displaySettings?.showMap && (
           <motion.div 
-            className="rounded-xl overflow-hidden shadow-2xl max-w-full w-full mx-auto mb-8"
+            className="rounded-xl overflow-hidden shadow-2xl max-w-full w-full mx-auto mb-8 relative"
             style={{ height: `${currentLocation.displaySettings.mapHeight || 500}px` }}
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
@@ -186,16 +282,6 @@ const MapsSection = () => {
               <p className="text-gray-600 mt-4 text-sm">
                 Easily accessible by metro and road transport
               </p>
-              
-              {/* Real-time Update Indicator */}
-              {lastUpdateTime > 0 && (
-                <div className="mt-3 pt-3 border-t border-gray-100">
-                  <div className="flex items-center justify-center text-xs text-gray-500">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
-                    <span>Live updates enabled</span>
-                  </div>
-                </div>
-              )}
             </div>
           </motion.div>
         )}
