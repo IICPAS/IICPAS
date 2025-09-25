@@ -74,7 +74,7 @@ import employeeRoutes from "./routes/employeeRoutes.js";
 // import contactInfoRoutes from "./routes/contactInfoRoutes.js";
 
 //Contact Form Routes
-import contactFormRoutes from "./routes/contactFormRoutes.js";
+// import contactFormRoutes from "./routes/contactFormRoutes.js";
 
 //App Configuration
 dotenv.config();
@@ -288,7 +288,7 @@ global.io = io;
 // app.use("/api/contact-info", contactInfoRoutes);
 
 //Contact Form Routes
-app.use("/api/contact-form", contactFormRoutes);
+// app.use("/api/contact-form", contactFormRoutes);
 
 // Server
 const PORT = process.env.PORT || 8080;
