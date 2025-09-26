@@ -897,7 +897,7 @@ export default function CourseDetailPage({
                               ? course.price.toLocaleString()
                               : "10,800"}
                           </div>
-                          {(course.discount > 0 || course?.pricing?.recordedSession?.discount > 0) && (
+                          {course.discount > 0 && (
                             <div className="text-xs text-gray-500 line-through">
                               ₹
                               {course.originalPrice
@@ -944,7 +944,7 @@ export default function CourseDetailPage({
                                 ).toLocaleString()
                               : "18,000"}
                           </div>
-                          {(course.discount > 0 || course?.pricing?.liveSession?.discount > 0) && (
+                          {course.discount > 0 && (
                             <div className="text-xs text-gray-500 line-through">
                               ₹
                               {course.originalPrice
