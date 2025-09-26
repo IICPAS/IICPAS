@@ -6,7 +6,7 @@ import { Upload, User, Save, Edit3, X } from "lucide-react";
 import { toast } from "react-hot-toast";
 
 export default function AdminProfileTab() {
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -100,6 +100,8 @@ export default function AdminProfileTab() {
         setImagePreview(null);
         setProfileImage(null);
         toast.success("Profile image uploaded successfully!");
+        // Refresh user context to update profile picture in sidebar
+        await refreshUser();
       } else {
         toast.error("Failed to upload image");
       }
@@ -137,8 +139,8 @@ export default function AdminProfileTab() {
         toast.success("Profile updated successfully!");
         setOriginalData({ ...formData });
         setEditing(false);
-        // Update the user context if needed
-        window.location.reload(); // Simple refresh to update user context
+        // Refresh user context to update profile picture
+        await refreshUser();
       } else {
         toast.error("Failed to update profile");
       }

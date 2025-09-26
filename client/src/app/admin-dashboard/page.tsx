@@ -155,7 +155,6 @@ const WEBSITE_SETTINGS_MODULES = [
   { id: "faq", label: "FAQ", icon: <FaUserTie /> },
   { id: "bulk-email", label: "Bulk Email", icon: <FaEnvelope /> },
   { id: "contact-info", label: "Contact Information", icon: <FaEnvelope /> },
-  { id: "profile", label: "Profile", icon: <FaUserTie /> },
 ];
 
 function AdminDashboardContent() {

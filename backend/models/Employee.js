@@ -24,6 +24,10 @@ const employeeSchema = new mongoose.Schema(
       required: true,
       enum: ["Admin", "Manager", "Coordinator", "Content Writer", "Viewer"],
     },
+    image: {
+      type: String,
+      default: "",
+    },
     status: {
       type: String,
       enum: ["Active", "Inactive"],
