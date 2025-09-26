@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function HeroSection() {
+  const router = useRouter();
+  
   const [heroData, setHeroData] = useState({
     smallText: "# Best Online Platform",
     mainHeading: {
@@ -162,13 +164,12 @@ export default function HeroSection() {
           </p>
 
           {/* CTA Button */}
-          <Link href="/about">
-            <button
-              className={`${heroData.colors.button} text-white px-8 py-4 rounded-full text-lg font-semibold shadow-lg transition-all duration-300 transform hover:scale-105 animate-fade-in-up animation-delay-700 hover:shadow-xl`}
-            >
-              {heroData.buttonText}
-            </button>
-          </Link>
+          <button
+            onClick={() => router.push('/about')}
+            className={`${heroData.colors.button} text-white px-8 py-4 rounded-full text-lg font-semibold shadow-lg transition-all duration-300 transform hover:scale-105 animate-fade-in-up animation-delay-700 hover:shadow-xl`}
+          >
+            {heroData.buttonText}
+          </button>
         </div>
       </div>
 
