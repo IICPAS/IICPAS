@@ -37,8 +37,8 @@ const dummyCourses = {
     type: "Individual Course",
     description:
       "Tally Foundation Course covers in-depth knowledge to meet all the accounting requirements of the industry with learning exposure on Voucher Entries, Grouping, BRS, etc. We not only teach the concepts but also help you learn how you can practically implement those concepts in your day to day Accounting Process with practical examples and entries in Tally.",
-    image: "/images/accounting.webp",
-    videoThumbnail: "/images/accounting.webp",
+    image: "/images/a1.jpeg",
+    videoThumbnail: "/images/a1.jpeg",
     syllabus: [
       {
         title: "Basic Accounting",
@@ -963,7 +963,7 @@ export default function CourseDetailPage({
                             : course.image.startsWith("/")
                             ? course.image
                             : `${API_BASE}${course.image}`
-                          : course.videoThumbnail || "/images/accounting.webp"
+                          : course.videoThumbnail || "/images/a1.jpeg"
                       }
                       alt={`${course.title} - Course Preview`}
                       className="w-full h-full object-cover"
@@ -973,7 +973,7 @@ export default function CourseDetailPage({
                         console.log("Course image field:", course.image);
                         console.log("API_BASE:", API_BASE);
                         // Try fallback image
-                        const fallbackSrc = "/images/accounting.webp";
+                        const fallbackSrc = "/images/a1.jpeg";
                         console.log("Trying fallback image:", fallbackSrc);
                         e.currentTarget.src = fallbackSrc;
                       }}
@@ -984,9 +984,9 @@ export default function CourseDetailPage({
                     />
 
                     {/* Play Button Overlay */}
-                    <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center">
-                      <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center hover:bg-opacity-30 transition-all cursor-pointer">
-                        <Play className="w-6 h-6 text-white ml-1" />
+                    <div className="absolute inset-0 bg-black bg-opacity-10 flex items-center justify-center">
+                      <div className="w-12 h-12 bg-white bg-opacity-90 rounded-full flex items-center justify-center hover:bg-opacity-100 transition-all cursor-pointer shadow-lg">
+                        <Play className="w-6 h-6 text-gray-800 ml-1" />
                       </div>
                     </div>
                   </div>

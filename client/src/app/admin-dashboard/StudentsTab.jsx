@@ -13,6 +13,8 @@ import {
   Edit,
   Trash2,
   UserX,
+  Save,
+  X,
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
@@ -74,6 +76,204 @@ const initialState = {
   course: "",
   teacher: "",
 };
+
+// Edit Student Modal Component
+function EditStudentModal({ student, isOpen, onClose, onSuccess }) {
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    mode: "",
+    location: "",
+    center: "",
+    password: "",
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  // Initialize form when student changes
+  useEffect(() => {
+    if (student) {
+      setForm({
+        name: student.name || "",
+        email: student.email || "",
+        phone: student.phone || "",
+        mode: student.mode || "",
+        location: student.location || "",
+        center: student.center || "",
+        password: "", // Don't pre-fill password
+      });
+    }
+  }, [student]);
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+    setError("");
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      const token = localStorage.getItem("adminToken");
+      if (!token) {
+        throw new Error("No admin token found");
+      }
+
+      // Prepare update data (exclude empty password)
+      const updateData = { ...form };
+      if (!updateData.password) {
+        delete updateData.password;
+      }
+
+      const response = await axios.put(
+        `${process.env.NEXT_PUBLIC_API_BASE}/v1/students/admin/update-profile/${student._id}`,
+        updateData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+        }
+      );
+
+      toast.success("Student profile updated successfully!");
+      onSuccess();
+      onClose();
+    } catch (err) {
+      console.error("Error updating student:", err);
+      setError(
+        err.response?.data?.message || err.message || "Something went wrong"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+      >
+        <div className="p-6">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-3">
+              <Edit className="text-indigo-500" size={24} />
+              <h2 className="text-2xl font-bold text-gray-800">
+                Edit Student Profile
+              </h2>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                {error}
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {[
+                { label: "Full Name", name: "name", type: "text", required: true },
+                { label: "Email Address", name: "email", type: "email", required: true },
+                { label: "Phone Number", name: "phone", type: "tel", required: true },
+                { label: "Mode", name: "mode", type: "select", options: ["online", "offline"] },
+                { label: "Location", name: "location", type: "text" },
+                { label: "Center", name: "center", type: "text" },
+                { label: "New Password (optional)", name: "password", type: "password" },
+              ].map((field) => (
+                <div key={field.name} className="relative">
+                  {field.type === "select" ? (
+                    <select
+                      name={field.name}
+                      value={form[field.name]}
+                      onChange={handleChange}
+                      required={field.required}
+                      className="peer block w-full p-4 pt-6 rounded-xl border border-indigo-200 bg-white focus:ring-2 focus:ring-indigo-500 transition-all"
+                    >
+                      <option value="">Select {field.label}</option>
+                      {field.options?.map((option) => (
+                        <option key={option} value={option}>
+                          {option.charAt(0).toUpperCase() + option.slice(1)}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <Input
+                      name={field.name}
+                      type={field.type}
+                      placeholder=" "
+                      required={field.required}
+                      value={form[field.name]}
+                      onChange={handleChange}
+                      disabled={loading}
+                      className="w-full"
+                    />
+                  )}
+                  <Label
+                    htmlFor={field.name}
+                    floating
+                    active={!!form[field.name]}
+                    className="text-gray-500"
+                  >
+                    {field.label}
+                  </Label>
+                </div>
+              ))}
+            </div>
+
+            {/* Note about profile image */}
+            <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-lg">
+              <p className="text-sm">
+                <strong>Note:</strong> Profile image cannot be changed through this interface. 
+                Students can update their profile image from their dashboard.
+              </p>
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex justify-end space-x-4 pt-4">
+              <Button
+                type="button"
+                onClick={onClose}
+                className="bg-gray-500 hover:bg-gray-600 text-white"
+                disabled={loading}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="bg-indigo-500 hover:bg-indigo-600 text-white flex items-center gap-2"
+                disabled={loading}
+              >
+                {loading ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <Save size={16} />
+                )}
+                {loading ? "Updating..." : "Update Profile"}
+              </Button>
+            </div>
+          </form>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
 
 function AddStudentForm({ onSuccess }) {
   const [form, setForm] = useState(initialState);
@@ -205,6 +405,9 @@ function AddStudentForm({ onSuccess }) {
 }
 
 function StudentsTable({ students, onStudentUpdated }) {
+  const [editingStudent, setEditingStudent] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
   if (!students?.length)
     return (
       <div className="text-gray-500 text-center py-12">
@@ -214,8 +417,17 @@ function StudentsTable({ students, onStudentUpdated }) {
 
   // Handle edit student
   const handleEditStudent = (student) => {
-    // For now, show a toast - you can implement edit modal/form later
-    toast.success(`Edit functionality for ${student.name} - Coming soon!`);
+    setEditingStudent(student);
+    setIsEditModalOpen(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
+    setEditingStudent(null);
+  };
+
+  const handleEditSuccess = () => {
+    onStudentUpdated();
   };
 
   // Handle delete student
@@ -515,6 +727,14 @@ function StudentsTable({ students, onStudentUpdated }) {
           </table>
         </div>
       </div>
+
+      {/* Edit Student Modal */}
+      <EditStudentModal
+        student={editingStudent}
+        isOpen={isEditModalOpen}
+        onClose={handleCloseEditModal}
+        onSuccess={handleEditSuccess}
+      />
     </motion.div>
   );
 }
