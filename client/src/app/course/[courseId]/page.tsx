@@ -35,7 +35,7 @@ const dummyCourses = {
     type: "Individual Course",
     description:
       "Tally Foundation Course covers in-depth knowledge to meet all the accounting requirements of the industry with learning exposure on Voucher Entries, Grouping, BRS, etc. We not only teach the concepts but also help you learn how you can practically implement those concepts in your day to day Accounting Process with practical examples and entries in Tally.",
-    image: "/images/course-1.jpg",
+    image: "/images/accounting.webp",
     videoThumbnail: "/images/accounting.webp",
     syllabus: [
       {
@@ -266,6 +266,10 @@ export default function CourseDetailPage({
     "Course Page NEXT_PUBLIC_API_URL:",
     process.env.NEXT_PUBLIC_API_URL
   );
+  console.log(
+    "Course Page NEXT_PUBLIC_API_BASE:",
+    process.env.NEXT_PUBLIC_API_BASE
+  );
 
   // Unwrap the params Promise using React.use()
   const resolvedParams = use(params);
@@ -276,7 +280,7 @@ export default function CourseDetailPage({
       try {
         setLoading(true);
         const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_BASE}/courses/${resolvedParams.courseId}`
+          `${API_BASE}/api/courses/${resolvedParams.courseId}`
         );
         setCourse(response.data);
       } catch (err) {
@@ -622,13 +626,10 @@ export default function CourseDetailPage({
                 {/* Tab Content */}
                 {activeTab === "syllabus" && (
                   <div>
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="mb-4">
                       <h3 className="text-lg font-bold bg-gradient-to-r from-blue-500 to-emerald-500 bg-clip-text text-transparent">
                         Course Syllabus
                       </h3>
-                      <button className="text-[#3cd664] hover:text-[#33bb58] font-semibold text-sm">
-                        View Full Syllabus
-                      </button>
                     </div>
 
                     {/* Dynamic syllabus from chapters */}
@@ -830,10 +831,10 @@ export default function CourseDetailPage({
                           ? course.image.startsWith("http")
                             ? course.image
                             : course.image.startsWith("/uploads/")
-                            ? `http://localhost:8080${course.image}`
+                            ? `${API_BASE}${course.image}`
                             : course.image.startsWith("/")
                             ? course.image
-                            : `http://localhost:8080${course.image}`
+                            : `${API_BASE}${course.image}`
                           : course.videoThumbnail || "/images/accounting.webp"
                       }
                       alt={`${course.title} - Course Preview`}
@@ -841,10 +842,16 @@ export default function CourseDetailPage({
                       onError={(e) => {
                         console.log("Image failed to load:", e);
                         console.log("Image src was:", e.currentTarget.src);
-                        e.currentTarget.src = course.videoThumbnail || "/images/accounting.webp";
+                        console.log("Course image field:", course.image);
+                        console.log("API_BASE:", API_BASE);
+                        // Try fallback image
+                        const fallbackSrc = "/images/accounting.webp";
+                        console.log("Trying fallback image:", fallbackSrc);
+                        e.currentTarget.src = fallbackSrc;
                       }}
                       onLoad={() => {
                         console.log("Course thumbnail loaded successfully!");
+                        console.log("Loaded image src:", course.image);
                       }}
                     />
 
@@ -890,7 +897,7 @@ export default function CourseDetailPage({
                               ? course.price.toLocaleString()
                               : "10,800"}
                           </div>
-                          {course.discount > 0 && (
+                          {(course.discount > 0 || course?.pricing?.recordedSession?.discount > 0) && (
                             <div className="text-xs text-gray-500 line-through">
                               ₹
                               {course.originalPrice
@@ -937,6 +944,18 @@ export default function CourseDetailPage({
                                 ).toLocaleString()
                               : "18,000"}
                           </div>
+                          {(course.discount > 0 || course?.pricing?.liveSession?.discount > 0) && (
+                            <div className="text-xs text-gray-500 line-through">
+                              ₹
+                              {course.originalPrice
+                                ? (
+                                    course.originalPrice *
+                                    (course?.pricing?.liveSession
+                                      ?.priceMultiplier || 1.5)
+                                  ).toLocaleString()
+                                : "24,000"}
+                            </div>
+                          )}
                         </div>
                       </div>
 

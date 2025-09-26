@@ -6,6 +6,7 @@ const CourseSchema = new Schema({
   title: { type: String, required: true },
   slug: { type: String },
   price: { type: Number, required: true },
+  originalPrice: { type: Number }, // Original price before discount
   image: { type: String }, // Image URL or path
   level: { 
     type: String, 
@@ -42,12 +43,14 @@ const CourseSchema = new Schema({
   pricing: {
     recordedSession: {
       title: { type: String, default: "DIGITAL HUB+RECORDED SESSION" },
-      buttonText: { type: String, default: "Add Digital Hub" }
+      buttonText: { type: String, default: "Add Digital Hub" },
+      discount: { type: Number, default: 0 }
     },
     liveSession: {
       title: { type: String, default: "DIGITAL HUB+LIVE SESSION" },
       buttonText: { type: String, default: "Add Digital Hub+" },
-      priceMultiplier: { type: Number, default: 1.5 }
+      priceMultiplier: { type: Number, default: 1.5 },
+      discount: { type: Number, default: 0 }
     }
   },
   

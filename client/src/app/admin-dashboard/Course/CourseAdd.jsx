@@ -14,8 +14,8 @@ const initialForm = {
   title: "",
   slug: "",
   price: "",
+  originalPrice: "",
   level: null,
-  discount: "",
   status: "Active",
   video: "",
   description: "",
@@ -31,12 +31,14 @@ const initialForm = {
   pricing: {
     recordedSession: {
       title: "DIGITAL HUB+RECORDED SESSION",
-      buttonText: "Add Digital Hub"
+      buttonText: "Add Digital Hub",
+      discount: 0
     },
     liveSession: {
       title: "DIGITAL HUB+LIVE SESSION",
       buttonText: "Add Digital Hub+",
-      priceMultiplier: 1.5
+      priceMultiplier: 1.5,
+      discount: 0
     }
   },
   tabs: {
@@ -116,10 +118,7 @@ export default function CourseAddTab({ onBack }) {
 
   const getFinalPrice = () => {
     const price = parseFloat(form.price) || 0;
-    const discount = parseFloat(form.discount) || 0;
-    return price && discount
-      ? Math.max(0, price - (price * discount) / 100)
-      : price || "";
+    return price || "";
   };
 
   const handleSubmit = async (e) => {
@@ -230,18 +229,6 @@ export default function CourseAddTab({ onBack }) {
               )}
             </div>
             <div>
-              <label className="block mb-1 font-semibold">Discount (%)</label>
-              <input
-                name="discount"
-                type="number"
-                className="w-full border p-2 rounded"
-                value={form.discount}
-                onChange={handleInputChange}
-                min="0"
-                max="100"
-              />
-            </div>
-            <div>
               <label className="block mb-1 font-semibold">
                 Course Video Link
               </label>
@@ -280,10 +267,22 @@ export default function CourseAddTab({ onBack }) {
               />
             </div>
             <div>
-              <label className="block mb-1 font-semibold">Actual Price</label>
+              <label className="block mb-1 font-semibold">Original Price (₹)</label>
+              <input
+                name="originalPrice"
+                placeholder="Enter original price"
+                type="number"
+                className="w-full border p-2 rounded"
+                value={form.originalPrice}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div>
+              <label className="block mb-1 font-semibold">Current Price (₹)</label>
               <input
                 name="price"
-                placeholder="Enter actual price"
+                placeholder="Enter current price"
                 type="number"
                 className="w-full border p-2 rounded"
                 value={form.price}
@@ -408,6 +407,27 @@ export default function CourseAddTab({ onBack }) {
                       placeholder="Add Digital Hub"
                     />
                   </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Discount (%)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      className="w-full border p-2 rounded"
+                      value={form.pricing.recordedSession.discount}
+                      onChange={(e) => setForm(f => ({
+                        ...f,
+                        pricing: {
+                          ...f.pricing,
+                          recordedSession: {
+                            ...f.pricing.recordedSession,
+                            discount: parseFloat(e.target.value) || 0
+                          }
+                        }
+                      }))}
+                      placeholder="0"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -471,6 +491,27 @@ export default function CourseAddTab({ onBack }) {
                         }
                       }))}
                       placeholder="1.5"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Discount (%)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      className="w-full border p-2 rounded"
+                      value={form.pricing.liveSession.discount}
+                      onChange={(e) => setForm(f => ({
+                        ...f,
+                        pricing: {
+                          ...f.pricing,
+                          liveSession: {
+                            ...f.pricing.liveSession,
+                            discount: parseFloat(e.target.value) || 0
+                          }
+                        }
+                      }))}
+                      placeholder="0"
                     />
                   </div>
                 </div>

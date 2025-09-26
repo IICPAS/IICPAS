@@ -68,6 +68,7 @@ export default function EditCourse({ courseId, onBack }) {
           title: c.title || "",
           slug: c.slug || "",
           price: c.price || "",
+          originalPrice: c.originalPrice || "",
           level: levels.find((opt) => opt.value === c.level) || null,
           discount: c.discount || "",
           status: c.status || "Active",
@@ -313,7 +314,16 @@ export default function EditCourse({ courseId, onBack }) {
               value={form.level}
               onChange={handleLevelChange}
             />
-            <label>Price</label>
+            <label>Original Price (₹)</label>
+            <input
+              name="originalPrice"
+              type="number"
+              value={form.originalPrice}
+              onChange={handleInputChange}
+              className="w-full border p-2 rounded"
+              required
+            />
+            <label>Current Price (₹)</label>
             <input
               name="price"
               type="number"
@@ -329,6 +339,8 @@ export default function EditCourse({ courseId, onBack }) {
               value={form.discount}
               onChange={handleInputChange}
               className="w-full border p-2 rounded"
+              min="0"
+              max="100"
             />
             <label>Final Price</label>
             <input
