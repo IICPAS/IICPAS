@@ -18,7 +18,6 @@ import Footer from "../../components/Footer";
 import LiveSchedule from "../../components/LiveSchedule";
 import SimulatorDemo from "../../components/SimulatorDemo";
 
-import LiveSessionDisplay from "../../components/LiveSessionDisplay";
 
 import axios from "axios";
 
@@ -779,65 +778,35 @@ export default function CourseDetailPage({
                       courseCategory={course.category || "CA Foundation"}
                       student={student}
                     />
-
-                    <LiveSessionDisplay />
                   </div>
                 )}
 
                 {activeTab === "simulation" && (
                   <div>
-                    <SimulatorDemo
-                      courseId={resolvedParams.courseId}
-                      student={student}
-                    />
-
-                    <h3 className="text-lg font-bold text-gray-900 mb-4">
-                      Simulation & Ex.
-                    </h3>
-                    {course.simulations && course.simulations.length > 0 ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {course.simulations
-                          .sort(
-                            (a: any, b: any) => (a.order || 0) - (b.order || 0)
-                          )
-                          .map((simulation: any, index: number) => (
-                            <div
-                              key={index}
-                              className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden"
-                            >
-                              {simulation.imageUrl && (
-                                <div className="aspect-video bg-gray-100">
-                                  <img
-                                    src={
-                                      simulation.imageUrl.startsWith("http")
-                                        ? simulation.imageUrl
-                                        : `${
-                                            process.env.NEXT_PUBLIC_API_URL ||
-                                            "https://api.iicpa.in"
-                                          }${simulation.imageUrl}`
-                                    }
-                                    alt={simulation.title}
-                                    className="w-full h-full object-cover"
-                                  />
-                                </div>
-                              )}
-                              <div className="p-4">
-                                <h4 className="text-sm font-semibold text-gray-900 mb-2">
-                                  {simulation.title}
-                                </h4>
-                                <p className="text-xs text-gray-600">
-                                  {simulation.description}
-                                </p>
-                              </div>
-                            </div>
-                          ))}
+                    <div className="text-center py-12">
+                      <div className="bg-white rounded-lg shadow-lg p-8 max-w-md mx-auto">
+                        <div className="mb-6">
+                          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </div>
+                          <h3 className="text-xl font-bold text-gray-900 mb-2">
+                            Access Simulator
+                          </h3>
+                          <p className="text-gray-600 mb-6">
+                            Experience our interactive simulator through the Demo Digital Hub
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => window.location.href = '/demo-digital-hub'}
+                          className="w-full bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 transition-colors font-medium"
+                        >
+                          Go to Demo Digital Hub
+                        </button>
                       </div>
-                    ) : (
-                      <p className="text-sm text-gray-600">
-                        Interactive simulations and experiments will be
-                        available here.
-                      </p>
-                    )}
+                    </div>
+
                   </div>
                 )}
               </motion.div>
