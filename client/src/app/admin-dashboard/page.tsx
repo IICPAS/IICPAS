@@ -24,7 +24,6 @@ import NewsletterSubscriptionsTab from "./NewsletterSubscriptionsTab";
 import HeroTab from "./HeroTab";
 import WhyIICPATab from "./WhyIICPATab";
 import StudentsTab from "./StudentsTab";
-import StudentProfileManagementTab from "./StudentProfileManagementTab";
 import PaymentsTab from "./PaymentsTab";
 import { useRouter } from "next/navigation";
 import "react-modern-drawer/dist/index.css";
@@ -103,7 +102,6 @@ const ALL_MODULES = [
   { id: "jobs", label: "Jobs", icon: <FaBriefcase /> },
   { id: "news", label: "News", icon: <FaNewspaper /> },
   { id: "students", label: "Students", icon: <FaUserGraduate /> },
-  { id: "student-profiles", label: "Student Profile Management", icon: <FaUser /> },
   { id: "payments", label: "Payments", icon: <FaCreditCard /> },
   { id: "staff", label: "Staff Management", icon: <FaUsers /> },
   { id: "companies", label: "Companies", icon: <FaStarOfDavid /> },
@@ -480,8 +478,6 @@ function AdminDashboardContent() {
           <CourseCategory />
         ) : activeTab === "students" ? (
           <StudentsTab />
-        ) : activeTab === "student-profiles" ? (
-          <StudentProfileManagementTab />
         ) : activeTab === "payments" ? (
           <PaymentsTab />
         ) : activeTab === "jobs" ? (
