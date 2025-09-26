@@ -1741,7 +1741,7 @@ function DigitalHubContent() {
                             }}
                             className="px-8 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-300 shadow-md hover:shadow-lg text-lg"
                           >
-                            💳 Purchase Full Course Access
+                            💳 Subscribe Full Course
                           </button>
                         </div>
                       </div>
