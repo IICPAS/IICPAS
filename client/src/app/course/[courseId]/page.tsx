@@ -893,16 +893,16 @@ export default function CourseDetailPage({
                         <div className="text-center">
                           <div className="text-sm font-bold text-[#3cd664]">
                             ₹
-                            {course.price
+                            {course?.pricing?.recordedSession?.actualPrice
+                              ? course.pricing.recordedSession.actualPrice.toLocaleString()
+                              : course.price
                               ? course.price.toLocaleString()
-                              : "10,800"}
+                              : "5,000"}
                           </div>
-                          {course.discount > 0 && (
+                          {course?.pricing?.recordedSession?.discountPrice && (
                             <div className="text-xs text-gray-500 line-through">
                               ₹
-                              {course.originalPrice
-                                ? course.originalPrice.toLocaleString()
-                                : "12,000"}
+                              {course.pricing.recordedSession.discountPrice.toLocaleString()}
                             </div>
                           )}
                         </div>
@@ -936,24 +936,20 @@ export default function CourseDetailPage({
                         <div className="text-center">
                           <div className="text-sm font-bold text-blue-500">
                             ₹
-                            {course.price
+                            {course?.pricing?.liveSession?.actualPrice
+                              ? course.pricing.liveSession.actualPrice.toLocaleString()
+                              : course.price
                               ? (
                                   course.price *
                                   (course?.pricing?.liveSession
                                     ?.priceMultiplier || 1.5)
                                 ).toLocaleString()
-                              : "18,000"}
+                              : "7,500"}
                           </div>
-                          {course.discount > 0 && (
+                          {course?.pricing?.liveSession?.discountPrice && (
                             <div className="text-xs text-gray-500 line-through">
                               ₹
-                              {course.originalPrice
-                                ? (
-                                    course.originalPrice *
-                                    (course?.pricing?.liveSession
-                                      ?.priceMultiplier || 1.5)
-                                  ).toLocaleString()
-                                : "24,000"}
+                              {course.pricing.liveSession.discountPrice.toLocaleString()}
                             </div>
                           )}
                         </div>
