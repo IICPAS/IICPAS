@@ -29,7 +29,7 @@ router.get("/", async (req, res) => {
             { name: "Privacy Policy", href: "/privacy" },
             { name: "Refund Policy", href: "/refund" },
             { name: "Terms & Conditions", href: "/terms" },
-            { name: "Return Policy", href: "/return" },
+            { name: "Cookie Policy", href: "/cookies" },
           ],
           generalLinks: [
             { name: "About Us", href: "/about" },
