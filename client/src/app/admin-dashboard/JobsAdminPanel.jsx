@@ -20,6 +20,9 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   Visibility as VisibilityIcon,
+  Download as DownloadIcon,
+  Check as CheckIcon,
+  Close as CloseIcon,
 } from "@mui/icons-material";
 import axios from "axios";
 import Swal from "sweetalert2";
@@ -67,6 +70,24 @@ export default function JobsAdminPanel() {
   const resetForm = () => {
     setForm({ title: "", type: "", location: "", description: "" });
     setEditId(null);
+  };
+
+  const handleDelete = async (jobId) => {
+    const confirm = await Swal.fire({
+      title: "Delete job?",
+      text: "This action cannot be undone!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, delete it!",
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+    });
+
+    if (confirm.isConfirmed) {
+      await axios.delete(`${API_BASE}/jobs-internal/${jobId}`);
+      fetchJobs();
+      Swal.fire("Deleted!", "The job has been removed.", "success");
+    }
   };
 
   const handleDeleteApplication = async (applicant) => {

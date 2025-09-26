@@ -155,7 +155,7 @@ app.use("/metatags", metaTagRoutes);
 app.use("/api/tickets", ticketRoutes);
 
 // Internal Jobs
-app.use("/jobs-internal", jobRoutes);
+app.use("/api/jobs-internal", jobRoutes);
 
 //About Routes
 app.use("/api/about", aboutRoutes);
