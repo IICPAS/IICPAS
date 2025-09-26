@@ -500,3 +500,71 @@ body::-webkit-scrollbar-thumb:hover {
 .thin-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #2563eb; /* Darker blue on hover */
 }
+
+/* Mobile Navigation Drawer Scroll Styles */
+.mobile-drawer-scroll {
+  scrollbar-width: thin; /* Firefox - thin scrollbar */
+  scrollbar-color: #10b981 #f3f4f6; /* Firefox - green thumb and light gray track */
+  -webkit-overflow-scrolling: touch; /* iOS smooth scrolling */
+}
+
+.mobile-drawer-scroll::-webkit-scrollbar {
+  width: 4px; /* Very thin scrollbar width */
+}
+
+.mobile-drawer-scroll::-webkit-scrollbar-track {
+  background: #f3f4f6; /* Light gray track */
+  border-radius: 2px;
+}
+
+.mobile-drawer-scroll::-webkit-scrollbar-thumb {
+  background: #10b981; /* Green thumb matching brand */
+  border-radius: 2px;
+  transition: all 0.2s ease;
+}
+
+.mobile-drawer-scroll::-webkit-scrollbar-thumb:hover {
+  background: #059669; /* Darker green on hover */
+}
+
+/* Prevent body scroll when drawer is open */
+.drawer-open {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+}
+
+/* Smooth transitions for mobile navigation */
+.mobile-nav-transition {
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
+/* Touch-friendly mobile navigation */
+@media (max-width: 1024px) {
+  .mobile-nav-item {
+    min-height: 44px; /* iOS recommended touch target size */
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .mobile-nav-item:active {
+    background-color: #f0fdf4; /* Light green background on tap */
+    transform: scale(0.98);
+    transition: all 0.1s ease;
+  }
+}
+
+/* Ensure proper z-index for mobile drawer */
+.mobile-drawer-overlay {
+  z-index: 9999;
+}
+
+/* Fix for iOS Safari viewport issues */
+@supports (-webkit-touch-callout: none) {
+  .mobile-drawer-scroll {
+    -webkit-overflow-scrolling: touch;
+    transform: translateZ(0); /* Force hardware acceleration */
+  }
+}
