@@ -34,8 +34,8 @@ export default function Footer() {
       companyPolicies: [
         { name: "Privacy Policy", href: "/privacy" },
         { name: "Refund Policy", href: "/refund" },
-        { name: "Terms & Conditions", href: "/terms" },
-        { name: "Return Policy", href: "/return" },
+        { name: "Terms & Conditions", href: "/terms-conditions" },
+        { name: "Cookie Policy", href: "/cookies" },
       ],
       generalLinks: [
         { name: "About Us", href: "/about" },
@@ -304,10 +304,12 @@ export default function Footer() {
                     href={social.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-10 h-10 bg-gray-700 hover:bg-[#3cd664] rounded-full flex items-center justify-center transition-all duration-300 group"
+                    className="w-10 h-10 bg-gray-700 hover:bg-[#3cd664] rounded-full flex items-center justify-center transition-all duration-300 group cursor-pointer relative z-20"
                     whileHover={{ scale: 1.1, rotate: 5 }}
                     whileTap={{ scale: 0.95 }}
                     aria-label={social.platform}
+                    style={{ pointerEvents: "auto" }}
+                    onClick={() => console.log("Social media link clicked:", social.href)}
                   >
                     <IconComponent className="w-4 h-4 text-gray-300 group-hover:text-white" />
                   </motion.a>
