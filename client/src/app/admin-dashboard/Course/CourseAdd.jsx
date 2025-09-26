@@ -31,12 +31,16 @@ const initialForm = {
   pricing: {
     recordedSession: {
       title: "DIGITAL HUB+RECORDED SESSION",
-      buttonText: "Add Digital Hub"
+      buttonText: "Add Digital Hub",
+      actualPrice: "",
+      discountPrice: ""
     },
     liveSession: {
       title: "DIGITAL HUB+LIVE SESSION",
       buttonText: "Add Digital Hub+",
-      priceMultiplier: 1.5
+      priceMultiplier: 1.5,
+      actualPrice: "",
+      discountPrice: ""
     }
   },
   tabs: {
@@ -408,6 +412,44 @@ export default function CourseAddTab({ onBack }) {
                       placeholder="Add Digital Hub"
                     />
                   </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Actual Price (₹)</label>
+                    <input
+                      type="number"
+                      className="w-full border p-2 rounded"
+                      value={form.pricing.recordedSession.actualPrice}
+                      onChange={(e) => setForm(f => ({
+                        ...f,
+                        pricing: {
+                          ...f.pricing,
+                          recordedSession: {
+                            ...f.pricing.recordedSession,
+                            actualPrice: e.target.value
+                          }
+                        }
+                      }))}
+                      placeholder="e.g., 5000"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Discount Price (₹)</label>
+                    <input
+                      type="number"
+                      className="w-full border p-2 rounded"
+                      value={form.pricing.recordedSession.discountPrice}
+                      onChange={(e) => setForm(f => ({
+                        ...f,
+                        pricing: {
+                          ...f.pricing,
+                          recordedSession: {
+                            ...f.pricing.recordedSession,
+                            discountPrice: e.target.value
+                          }
+                        }
+                      }))}
+                      placeholder="e.g., 12000"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -471,6 +513,44 @@ export default function CourseAddTab({ onBack }) {
                         }
                       }))}
                       placeholder="1.5"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Actual Price (₹)</label>
+                    <input
+                      type="number"
+                      className="w-full border p-2 rounded"
+                      value={form.pricing.liveSession.actualPrice}
+                      onChange={(e) => setForm(f => ({
+                        ...f,
+                        pricing: {
+                          ...f.pricing,
+                          liveSession: {
+                            ...f.pricing.liveSession,
+                            actualPrice: e.target.value
+                          }
+                        }
+                      }))}
+                      placeholder="e.g., 7500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Discount Price (₹)</label>
+                    <input
+                      type="number"
+                      className="w-full border p-2 rounded"
+                      value={form.pricing.liveSession.discountPrice}
+                      onChange={(e) => setForm(f => ({
+                        ...f,
+                        pricing: {
+                          ...f.pricing,
+                          liveSession: {
+                            ...f.pricing.liveSession,
+                            discountPrice: e.target.value
+                          }
+                        }
+                      }))}
+                      placeholder="e.g., 24000"
                     />
                   </div>
                 </div>

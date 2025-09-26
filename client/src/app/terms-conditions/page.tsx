@@ -1,281 +1,228 @@
-"use client";
-
-import Link from "next/link";
+import React from "react";
 import Header from "../components/Header";
+import Footer from "../components/Footer";
 
-export default function TermsConditions() {
+const TermsAndConditionsPage = () => {
   return (
-    <>
+    <div>
       <Header />
-      <div className="mt-20 bg-gray-50 py-12">
-        <div className="max-w-4xl mx-auto px-6">
-          <div className="bg-white rounded-lg shadow-lg p-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-6">
+      <div className="min-h-screen bg-gray-50 py-16">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">
               Terms & Conditions
             </h1>
-            <p className="text-gray-600 mb-6">
-              Last updated: {new Date().toLocaleDateString()}
+            <p className="text-xl text-gray-600">
+              Last updated: January 2025
             </p>
+          </div>
 
-            <div className="space-y-6 text-gray-700">
-              <section>
-                <h2 className="text-xl font-semibold text-gray-900 mb-3">
-                  1. Acceptance of Terms
-                </h2>
-                <p>
-                  By accessing and using the IICPA Institute website and
-                  services, you accept and agree to be bound by the terms and
-                  provision of this agreement. If you do not agree to abide by
-                  the above, please do not use this service.
-                </p>
-              </section>
+          <div className="bg-white rounded-lg shadow-md p-8 space-y-8">
+            <section>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Acceptance of Terms</h2>
+              <p className="text-gray-600 leading-relaxed">
+                By accessing and using IICPA Institute's website, services, and educational programs, you acknowledge that you have read, understood, and agree to be bound by these Terms and Conditions. If you do not agree to these terms, please do not use our services.
+              </p>
+            </section>
 
-              <section>
-                <h2 className="text-xl font-semibold text-gray-900 mb-3">
-                  2. Use License
-                </h2>
-                <div className="space-y-3">
-                  <p>
-                    Permission is granted to temporarily access the materials on
-                    IICPA Institute&#39;s website for personal, non-commercial
-                    transitory viewing only. This is the grant of a license, not
-                    a transfer of title, and under this license you may not:
+            <section>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Description of Service</h2>
+              <p className="text-gray-600 leading-relaxed mb-4">
+                IICPA Institute provides educational services including but not limited to:
+              </p>
+              <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
+                <li>Online and offline courses in accounting, finance, and related fields</li>
+                <li>Certification programs and professional development courses</li>
+                <li>Study materials, resources, and learning tools</li>
+                <li>Assessment and examination services</li>
+                <li>Career guidance and placement assistance</li>
+                <li>Webinars, workshops, and training sessions</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">User Registration and Accounts</h2>
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Account Creation</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    To access certain features of our services, you must create an account. You agree to provide accurate, current, and complete information during the registration process and to update such information to keep it accurate, current, and complete.
                   </p>
-                  <ul className="list-disc pl-6 space-y-2">
-                    <li>Modify or copy the materials</li>
-                    <li>
-                      Use the materials for any commercial purpose or for any
-                      public display
-                    </li>
-                    <li>
-                      Attempt to reverse engineer any software contained on the
-                      website
-                    </li>
-                    <li>
-                      Remove any copyright or other proprietary notations from
-                      the materials
-                    </li>
-                    <li>
-                      Transfer the materials to another person or
-                      &ldquo;mirror&ldquo; the materials on any other server
-                    </li>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Account Security</h3>
+                  <p className="text-gray-600 leading-relaxed mb-2">
+                    You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. You agree to:
+                  </p>
+                  <ul className="list-disc list-inside text-gray-600 space-y-1 ml-4">
+                    <li>Use a strong and unique password</li>
+                    <li>Notify us immediately of any unauthorized use of your account</li>
+                    <li>Log out from your account at the end of each session</li>
+                    <li>Not share your account credentials with others</li>
                   </ul>
                 </div>
-              </section>
+              </div>
+            </section>
 
-              <section>
-                <h2 className="text-xl font-semibold text-gray-900 mb-3">
-                  3. Course Enrollment and Payment
-                </h2>
-                <div className="space-y-3">
-                  <ul className="list-disc pl-6 space-y-2">
-                    <li>
-                      Course fees must be paid in full before access is granted
-                    </li>
-                    <li>
-                      All prices are subject to change without prior notice
-                    </li>
-                    <li>
-                      Payment methods accepted include credit cards, debit
-                      cards, and bank transfers
-                    </li>
-                    <li>
-                      Course access is granted for the duration specified in the
-                      course description
-                    </li>
-                    <li>
-                      Sharing of course access credentials is strictly
-                      prohibited
-                    </li>
+            <section>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Course Enrollment and Payment</h2>
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Enrollment Process</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    Course enrollment is subject to availability and completion of the enrollment process, including payment of applicable fees. We reserve the right to refuse enrollment to any individual at our discretion.
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Payment Terms</h3>
+                  <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
+                    <li>All fees must be paid in full before course access is granted</li>
+                    <li>Payment methods include credit cards, debit cards, bank transfers, and digital wallets</li>
+                    <li>Prices are subject to change without prior notice</li>
+                    <li>Late payment fees may apply for overdue amounts</li>
+                    <li>All payments are non-refundable except as specified in our Refund Policy</li>
                   </ul>
                 </div>
-              </section>
 
-              <section>
-                <h2 className="text-xl font-semibold text-gray-900 mb-3">
-                  4. Student Conduct
-                </h2>
-                <div className="space-y-3">
-                  <p>Students are expected to:</p>
-                  <ul className="list-disc pl-6 space-y-2">
-                    <li>Maintain respectful behavior in all interactions</li>
-                    <li>
-                      Not engage in any form of harassment or discrimination
-                    </li>
-                    <li>
-                      Not share course materials with unauthorized individuals
-                    </li>
-                    <li>Complete assignments and assessments honestly</li>
-                    <li>
-                      Follow all technical requirements for online courses
-                    </li>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Course Access</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    Course access is granted for the duration specified in the course description. Access may be extended at our discretion or for an additional fee. Sharing course access with others is strictly prohibited.
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Intellectual Property Rights</h2>
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Our Content</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    All content, materials, and resources provided through our services, including but not limited to text, graphics, logos, images, audio, video, and software, are the property of IICPA Institute or its licensors and are protected by copyright and other intellectual property laws.
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Permitted Use</h3>
+                  <p className="text-gray-600 leading-relaxed mb-2">
+                    You may use our content solely for personal, non-commercial educational purposes. You may not:
+                  </p>
+                  <ul className="list-disc list-inside text-gray-600 space-y-1 ml-4">
+                    <li>Copy, distribute, or reproduce any content without permission</li>
+                    <li>Modify, adapt, or create derivative works</li>
+                    <li>Use content for commercial purposes</li>
+                    <li>Remove copyright or proprietary notices</li>
+                    <li>Share login credentials or course access</li>
                   </ul>
-                  <p>
-                    Violation of these conduct standards may result in immediate
-                    termination of access without refund.
+                </div>
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">User Conduct and Prohibited Activities</h2>
+              <p className="text-gray-600 leading-relaxed mb-4">
+                You agree not to engage in any of the following prohibited activities:
+              </p>
+              <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
+                <li>Violating any applicable laws or regulations</li>
+                <li>Infringing on intellectual property rights</li>
+                <li>Transmitting harmful or malicious code</li>
+                <li>Attempting to gain unauthorized access to our systems</li>
+                <li>Interfering with the proper functioning of our services</li>
+                <li>Harassing, abusing, or threatening other users or staff</li>
+                <li>Posting false, misleading, or inappropriate content</li>
+                <li>Using our services for any unlawful or prohibited purpose</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Certification and Assessment</h2>
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Certification Requirements</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    Certification is awarded upon successful completion of course requirements, including passing assessments and examinations. We reserve the right to modify certification requirements and assessment criteria.
                   </p>
                 </div>
-              </section>
 
-              <section>
-                <h2 className="text-xl font-semibold text-gray-900 mb-3">
-                  5. Intellectual Property Rights
-                </h2>
-                <div className="space-y-3">
-                  <p>
-                    All content on this website, including but not limited to:
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Academic Integrity</h3>
+                  <p className="text-gray-600 leading-relaxed mb-2">
+                    All students must maintain the highest standards of academic integrity. Violations include but are not limited to:
                   </p>
-                  <ul className="list-disc pl-6 space-y-2">
-                    <li>Course materials, videos, and presentations</li>
-                    <li>Text, graphics, and images</li>
-                    <li>Software and applications</li>
-                    <li>Logos and trademarks</li>
+                  <ul className="list-disc list-inside text-gray-600 space-y-1 ml-4">
+                    <li>Cheating on examinations or assessments</li>
+                    <li>Plagiarism or unauthorized collaboration</li>
+                    <li>Falsifying academic records</li>
+                    <li>Using unauthorized materials during assessments</li>
                   </ul>
-                  <p>
-                    Are the property of IICPA Institute and are protected by
-                    copyright and other intellectual property laws.
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Consequences of Violations</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    Violations of academic integrity may result in immediate termination of enrollment, revocation of certificates, and permanent ban from our services.
                   </p>
                 </div>
-              </section>
+              </div>
+            </section>
 
-              <section>
-                <h2 className="text-xl font-semibold text-gray-900 mb-3">
-                  6. Privacy and Data Protection
-                </h2>
-                <p>
-                  Your privacy is important to us. Please review our Privacy
-                  Policy, which also governs your use of the website, to
-                  understand our practices regarding the collection and use of
-                  your personal information.
-                </p>
-              </section>
+            <section>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Privacy and Data Protection</h2>
+              <p className="text-gray-600 leading-relaxed">
+                Your privacy is important to us. Our collection, use, and protection of your personal information is governed by our Privacy Policy, which is incorporated into these Terms and Conditions by reference.
+              </p>
+            </section>
 
-              <section>
-                <h2 className="text-xl font-semibold text-gray-900 mb-3">
-                  7. Disclaimers
-                </h2>
-                <div className="space-y-3">
-                  <p>
-                    The materials on IICPA Institute&lsquo;s website are
-                    provided on an &lsquo;as is&lsquo; basis. IICPA Institute
-                    makes no warranties, expressed or implied, and hereby
-                    disclaims and negates all other warranties including without
-                    limitation, implied warranties or conditions of
-                    merchantability, fitness for a particular purpose, or
-                    non-infringement of intellectual property or other violation
-                    of rights.
-                  </p>
+            <section>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Limitation of Liability</h2>
+              <p className="text-gray-600 leading-relaxed">
+                To the maximum extent permitted by law, IICPA Institute shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to loss of profits, data, or use, arising out of or relating to your use of our services.
+              </p>
+            </section>
 
-                  <p>
-                    Further, IICPA Institute does not warrant or make any
-                    representations concerning the accuracy, likely results, or
-                    reliability of the use of the materials on its website or
-                    otherwise relating to such materials or on any sites linked
-                    to this site.
-                  </p>
-                </div>
-              </section>
+            <section>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Termination</h2>
+              <p className="text-gray-600 leading-relaxed">
+                We may terminate or suspend your account and access to our services immediately, without prior notice, for any reason, including but not limited to breach of these Terms and Conditions. Upon termination, your right to use our services will cease immediately.
+              </p>
+            </section>
 
-              <section>
-                <h2 className="text-xl font-semibold text-gray-900 mb-3">
-                  8. Limitations
-                </h2>
-                <p>
-                  In no event shall IICPA Institute or its suppliers be liable
-                  for any damages (including, without limitation, damages for
-                  loss of data or profit, or due to business interruption)
-                  arising out of the use or inability to use the materials on
-                  IICPA Institute&lsquo;s website, even if IICPA Institute or an
-                  authorized representative has been notified orally or in
-                  writing of the possibility of such damage.
-                </p>
-              </section>
+            <section>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Governing Law and Dispute Resolution</h2>
+              <p className="text-gray-600 leading-relaxed">
+                These Terms and Conditions shall be governed by and construed in accordance with the laws of India. Any disputes arising out of or relating to these terms shall be subject to the exclusive jurisdiction of the courts in [City], India.
+              </p>
+            </section>
 
-              <section>
-                <h2 className="text-xl font-semibold text-gray-900 mb-3">
-                  9. Accuracy of Materials
-                </h2>
-                <p>
-                  The materials appearing on IICPA Institute&lsquo;s website
-                  could include technical, typographical, or photographic
-                  errors. IICPA Institute does not warrant that any of the
-                  materials on its website are accurate, complete, or current.
-                  IICPA Institute may make changes to the materials contained on
-                  its website at any time without notice.
-                </p>
-              </section>
+            <section>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Modifications to Terms</h2>
+              <p className="text-gray-600 leading-relaxed">
+                We reserve the right to modify these Terms and Conditions at any time. We will notify users of any material changes by posting the updated terms on our website. Your continued use of our services after such modifications constitutes acceptance of the updated terms.
+              </p>
+            </section>
 
-              <section>
-                <h2 className="text-xl font-semibold text-gray-900 mb-3">
-                  10. Links
-                </h2>
-                <p>
-                  IICPA Institute has not reviewed all of the sites linked to
-                  its website and is not responsible for the contents of any
-                  such linked site. The inclusion of any link does not imply
-                  endorsement by IICPA Institute of the site. Use of any such
-                  linked website is at the user&#39;s own risk.
-                </p>
-              </section>
-
-              <section>
-                <h2 className="text-xl font-semibold text-gray-900 mb-3">
-                  11. Modifications
-                </h2>
-                <p>
-                  IICPA Institute may revise these terms of service for its
-                  website at any time without notice. By using this website, you
-                  are agreeing to be bound by the then current version of these
-                  Terms and Conditions of Use.
-                </p>
-              </section>
-
-              <section>
-                <h2 className="text-xl font-semibold text-gray-900 mb-3">
-                  12. Governing Law
-                </h2>
-                <p>
-                  These terms and conditions are governed by and construed in
-                  accordance with the laws of India and you irrevocably submit
-                  to the exclusive jurisdiction of the courts in that state or
-                  location.
-                </p>
-              </section>
-
-              <section>
-                <h2 className="text-xl font-semibold text-gray-900 mb-3">
-                  13. Contact Information
-                </h2>
-                <p>
-                  If you have any questions about these Terms and Conditions,
-                  please contact us at:
-                </p>
-                <div className="mt-3 p-4 bg-gray-50 rounded-lg">
-                  <p>
-                    <strong>Email:</strong> legal@iicpa.in
-                  </p>
-                  <p>
-                    <strong>Phone:</strong> +91 98765 43210
-                  </p>
-                  <p>
-                    <strong>Address:</strong> IICPA Institute, Professional
-                    Development Center, New Delhi, India
-                  </p>
-                </div>
-              </section>
-            </div>
-
-            <div className="mt-8 pt-6 border-t border-gray-200">
-              <Link
-                href="/"
-                className="text-blue-600 hover:text-blue-800 font-medium"
-              >
-                ← Back to Home
-              </Link>
-            </div>
+            <section>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Contact Information</h2>
+              <p className="text-gray-600 leading-relaxed">
+                If you have any questions about these Terms and Conditions, please contact us at:
+                <br />
+                Email: legal@iicpa.com
+                <br />
+                Phone: +91 98765 43210
+                <br />
+                Address: 123 Education Street, Learning City, LC 12345
+              </p>
+            </section>
           </div>
         </div>
       </div>
-    </>
+      <Footer />
+    </div>
   );
-}
+};
+
+export default TermsAndConditionsPage;

@@ -113,7 +113,7 @@ export const createCourse = async (req, res) => {
       examCert,
       caseStudy,
       assignment,
-      simulations,
+      simulations: simulationsRaw,
       video,
       seoTitle,
       seoKeywords,
@@ -125,6 +125,19 @@ export const createCourse = async (req, res) => {
       pricing, // dynamic pricing configuration
       tabs, // dynamic tab configuration
     } = req.body;
+
+    // Parse simulations data if it's a JSON string
+    let simulations = [];
+    if (simulationsRaw) {
+      try {
+        simulations = typeof simulationsRaw === 'string' 
+          ? JSON.parse(simulationsRaw) 
+          : simulationsRaw;
+      } catch (error) {
+        console.error('Error parsing simulations data:', error);
+        simulations = [];
+      }
+    }
 
     // Handle uploaded image (if present)
     let imageUrl = "";
@@ -182,7 +195,14 @@ export const updateCourse = async (req, res) => {
     }
 
     if (req.body.simulations) {
-      updateData.simulations = req.body.simulations;
+      try {
+        // Parse simulations JSON string to object
+        updateData.simulations = JSON.parse(req.body.simulations);
+      } catch (error) {
+        console.error('Error parsing simulations data:', error);
+        // If parsing fails, keep as string or set to empty array
+        updateData.simulations = [];
+      }
     }
 
     const course = await Course.findByIdAndUpdate(req.params.id, updateData, {

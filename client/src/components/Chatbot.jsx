@@ -13,7 +13,7 @@ import {
 
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [showSurvey, setShowSurvey] = useState(true);
+  const [showSurvey, setShowSurvey] = useState(false);
   const [surveyData, setSurveyData] = useState({
     name: "",
     email: "",
@@ -21,15 +21,70 @@ const Chatbot = () => {
   });
   const [surveyErrors, setSurveyErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [userDetailsProvided, setUserDetailsProvided] = useState(false);
   const [messages, setMessages] = useState([
     {
       id: 1,
-      text: "Hi! I'm your course assistant. How can I help you today?",
+      text: "Hi! I'm your course assistant. To provide you with personalized assistance, please share your details:\n\n• Full Name\n• Email Address\n• Phone Number\n\nYou can provide all details in one message or separately. How can I help you today?",
       isBot: true,
       timestamp: new Date(),
     },
   ]);
   const [inputMessage, setInputMessage] = useState("");
+
+  // Extract user details from chat message
+  const extractUserDetails = (message) => {
+    const details = { name: "", email: "", phone: "" };
+    
+    // Email pattern
+    const emailMatch = message.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
+    if (emailMatch) {
+      details.email = emailMatch[1];
+    }
+    
+    // Phone pattern (10 digits)
+    const phoneMatch = message.match(/(\d{10})/);
+    if (phoneMatch) {
+      details.phone = phoneMatch[1];
+    }
+    
+    // Name pattern (look for words that don't match email/phone patterns)
+    const words = message.split(/\s+/).filter(word => {
+      return !word.includes('@') && !/^\d{10}$/.test(word) && word.length > 1;
+    });
+    
+    // Take the first 2-3 words as potential name
+    if (words.length >= 2) {
+      details.name = words.slice(0, 2).join(' ');
+    } else if (words.length === 1) {
+      details.name = words[0];
+    }
+    
+    return details;
+  };
+
+  // Validate extracted details
+  const validateExtractedDetails = (details) => {
+    const errors = {};
+    
+    if (!details.name.trim()) {
+      errors.name = "Name not found";
+    }
+    
+    if (!details.email.trim()) {
+      errors.email = "Email not found";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(details.email)) {
+      errors.email = "Invalid email format";
+    }
+    
+    if (!details.phone.trim()) {
+      errors.phone = "Phone number not found";
+    } else if (!/^[0-9]{10}$/.test(details.phone.replace(/\D/g, ""))) {
+      errors.phone = "Invalid phone number format";
+    }
+    
+    return errors;
+  };
 
   // Validation function
   const validateForm = () => {
@@ -54,78 +109,6 @@ const Chatbot = () => {
     return errors;
   };
 
-  // Handle survey submission
-  const handleSurveySubmit = async (e) => {
-    e.preventDefault();
-
-    const errors = validateForm();
-    if (Object.keys(errors).length > 0) {
-      setSurveyErrors(errors);
-      return;
-    }
-
-    setIsSubmitting(true);
-    setSurveyErrors({});
-
-    try {
-      const response = await fetch(
-        `${
-          process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api"
-        }/leads`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: surveyData.name,
-            email: surveyData.email,
-            phone: surveyData.phone,
-            message: "User submitted basic information through chatbot survey",
-            type: "chatbot_survey",
-          }),
-        }
-      );
-
-      if (response.ok) {
-        setShowSurvey(false);
-        // Add a success message to chat
-        const successMessage = {
-          id: messages.length + 1,
-          text: "Thank you for providing your information! Now I can help you better. How can I assist you today?",
-          isBot: true,
-          timestamp: new Date(),
-        };
-        setMessages((prev) => [...prev, successMessage]);
-      } else {
-        throw new Error("Failed to submit information");
-      }
-    } catch (error) {
-      console.error("Error submitting survey:", error);
-      setSurveyErrors({
-        submit: "Failed to submit information. Please try again.",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Handle survey input changes
-  const handleSurveyChange = (e) => {
-    const { name, value } = e.target;
-    setSurveyData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-
-    // Clear error when user starts typing
-    if (surveyErrors[name]) {
-      setSurveyErrors((prev) => ({
-        ...prev,
-        [name]: "",
-      }));
-    }
-  };
 
   const responses = {
     "what courses do you offer?":
@@ -144,7 +127,7 @@ const Chatbot = () => {
       "I'm here to help with course-related questions! You can ask about our courses, pricing, enrollment process, certificates, or any other queries. Feel free to browse the courses on this page or ask me anything!",
   };
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
 
     const userMessage = {
@@ -156,17 +139,88 @@ const Chatbot = () => {
 
     setMessages((prev) => [...prev, userMessage]);
 
-    // Generate bot response
-    const botResponse = {
-      id: messages.length + 2,
-      text: responses[inputMessage.toLowerCase()] || responses.default,
-      isBot: true,
-      timestamp: new Date(),
-    };
+    // Check if user details are provided in the message
+    if (!userDetailsProvided) {
+      const extractedDetails = extractUserDetails(inputMessage);
+      const validationErrors = validateExtractedDetails(extractedDetails);
+      
+      if (Object.keys(validationErrors).length === 0) {
+        // All details found, store them
+        setUserDetailsProvided(true);
+        setSurveyData(extractedDetails);
+        
+        // Store in backend
+        try {
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080"}/api/contact`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                name: extractedDetails.name,
+                email: extractedDetails.email,
+                phone: extractedDetails.phone,
+                message: "User details provided through chatbot",
+              }),
+            }
+          );
 
-    setTimeout(() => {
-      setMessages((prev) => [...prev, botResponse]);
-    }, 1000);
+          if (response.ok) {
+            const botResponse = {
+              id: messages.length + 2,
+              text: `Thank you ${extractedDetails.name}! I've received your details. Now, how can I help you with our courses?`,
+              isBot: true,
+              timestamp: new Date(),
+            };
+            
+            setTimeout(() => {
+              setMessages((prev) => [...prev, botResponse]);
+            }, 1000);
+          } else {
+            throw new Error("Failed to store details");
+          }
+        } catch (error) {
+          console.error("Error storing user details:", error);
+          const botResponse = {
+            id: messages.length + 2,
+            text: "Thank you for your details! Now, how can I help you with our courses?",
+            isBot: true,
+            timestamp: new Date(),
+          };
+          
+          setTimeout(() => {
+            setMessages((prev) => [...prev, botResponse]);
+          }, 1000);
+        }
+      } else {
+        // Missing details, ask for them
+        const missingFields = Object.keys(validationErrors);
+        const botResponse = {
+          id: messages.length + 2,
+          text: `I need a bit more information. Please provide:\n\n${missingFields.map(field => `• ${field.charAt(0).toUpperCase() + field.slice(1)}`).join('\n')}\n\nYou can share all details in one message.`,
+          isBot: true,
+          timestamp: new Date(),
+        };
+        
+        setTimeout(() => {
+          setMessages((prev) => [...prev, botResponse]);
+        }, 1000);
+      }
+    } else {
+      // User details already provided, handle normal chat
+      const botResponse = {
+        id: messages.length + 2,
+        text: responses[inputMessage.toLowerCase()] || responses.default,
+        isBot: true,
+        timestamp: new Date(),
+      };
+
+      setTimeout(() => {
+        setMessages((prev) => [...prev, botResponse]);
+      }, 1000);
+    }
 
     setInputMessage("");
   };
@@ -191,9 +245,20 @@ const Chatbot = () => {
             {/* Header */}
             <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <FaRobot className="text-xl" />
+                <div className="w-8 h-8 rounded-full overflow-hidden bg-white bg-opacity-20 flex items-center justify-center">
+                  <img 
+                    src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop&crop=face" 
+                    alt="Assistant" 
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextElementSibling.style.display = 'flex';
+                    }}
+                  />
+                  <FaUser className="text-sm hidden" />
+                </div>
                 <div>
-                  <h3 className="font-semibold">Course Assistant</h3>
+                  <h3 className="font-semibold">Neha Singh</h3>
                   <p className="text-xs opacity-90">Online</p>
                 </div>
               </div>
@@ -205,186 +270,57 @@ const Chatbot = () => {
               </button>
             </div>
 
-            {/* Survey Form */}
-            {showSurvey && (
-              <div className="flex-1 overflow-y-auto p-6 min-h-0">
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200"
-                >
-                  <div className="text-center mb-6">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                      Quick Information
-                    </h3>
-                    <p className="text-sm text-gray-600">
-                      Please provide your basic details to get personalized
-                      assistance
-                    </p>
-                  </div>
-
-                  <form onSubmit={handleSurveySubmit} className="space-y-4">
-                    {/* Name Field */}
-                    <div>
-                      <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
-                        <FaUser className="mr-2 text-blue-500" />
-                        Full Name
-                      </label>
-                      <input
-                        type="text"
-                        name="name"
-                        value={surveyData.name}
-                        onChange={handleSurveyChange}
-                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                          surveyErrors.name
-                            ? "border-red-500"
-                            : "border-gray-300"
-                        }`}
-                        placeholder="Enter your full name"
-                      />
-                      {surveyErrors.name && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {surveyErrors.name}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Email Field */}
-                    <div>
-                      <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
-                        <FaEnvelope className="mr-2 text-blue-500" />
-                        Email Address
-                      </label>
-                      <input
-                        type="email"
-                        name="email"
-                        value={surveyData.email}
-                        onChange={handleSurveyChange}
-                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                          surveyErrors.email
-                            ? "border-red-500"
-                            : "border-gray-300"
-                        }`}
-                        placeholder="Enter your email address"
-                      />
-                      {surveyErrors.email && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {surveyErrors.email}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Phone Field */}
-                    <div>
-                      <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
-                        <FaPhone className="mr-2 text-blue-500" />
-                        Phone Number
-                      </label>
-                      <input
-                        type="tel"
-                        name="phone"
-                        value={surveyData.phone}
-                        onChange={handleSurveyChange}
-                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                          surveyErrors.phone
-                            ? "border-red-500"
-                            : "border-gray-300"
-                        }`}
-                        placeholder="Enter your phone number"
-                      />
-                      {surveyErrors.phone && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {surveyErrors.phone}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Submit Error */}
-                    {surveyErrors.submit && (
-                      <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                        <p className="text-red-600 text-sm">
-                          {surveyErrors.submit}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Submit Button */}
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:from-blue-600 hover:to-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isSubmitting ? "Submitting..." : "Continue to Chat"}
-                    </button>
-
-                    {/* Skip Button */}
-                    <button
-                      type="button"
-                      onClick={() => setShowSurvey(false)}
-                      className="w-full text-gray-500 py-2 px-4 rounded-lg font-medium hover:text-gray-700 transition-colors duration-200"
-                    >
-                      Skip for now
-                    </button>
-                  </form>
-                </motion.div>
-              </div>
-            )}
-
             {/* Messages */}
-            {!showSurvey && (
-              <div className="flex-1 overflow-y-auto p-6 space-y-4 min-h-0">
-                {messages.map((message) => (
-                  <motion.div
-                    key={message.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={`flex ${
-                      message.isBot ? "justify-start" : "justify-end"
+            <div className="flex-1 overflow-y-auto p-6 space-y-4 min-h-0">
+              {messages.map((message) => (
+                <motion.div
+                  key={message.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`flex ${
+                    message.isBot ? "justify-start" : "justify-end"
+                  }`}
+                >
+                  <div
+                    className={`max-w-[85%] p-4 rounded-2xl ${
+                      message.isBot
+                        ? "bg-gray-100 text-gray-800"
+                        : "bg-green-500 text-white"
                     }`}
                   >
-                    <div
-                      className={`max-w-[85%] p-4 rounded-2xl ${
-                        message.isBot
-                          ? "bg-gray-100 text-gray-800"
-                          : "bg-green-500 text-white"
-                      }`}
-                    >
-                      <p className="text-base leading-relaxed">
-                        {message.text}
-                      </p>
-                      <p className="text-xs opacity-70 mt-2">
-                        {message.timestamp.toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </p>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            )}
+                    <p className="text-base leading-relaxed whitespace-pre-line">
+                      {message.text}
+                    </p>
+                    <p className="text-xs opacity-70 mt-2">
+                      {message.timestamp.toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
 
             {/* Input */}
-            {!showSurvey && (
-              <div className="p-4 border-t border-gray-200">
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="text"
-                    value={inputMessage}
-                    onChange={(e) => setInputMessage(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder="Ask me anything..."
-                    className="flex-1 border border-gray-300 rounded-full px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  />
-                  <button
-                    onClick={handleSendMessage}
-                    className="bg-green-500 hover:bg-green-600 text-white p-2 rounded-full transition-colors"
-                  >
-                    <FaPaperPlane className="text-xs" />
-                  </button>
-                </div>
+            <div className="p-4 border-t border-gray-200">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="text"
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Ask me anything..."
+                  className="flex-1 border border-gray-300 rounded-full px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+                <button
+                  onClick={handleSendMessage}
+                  className="bg-green-500 hover:bg-green-600 text-white p-2 rounded-full transition-colors"
+                >
+                  <FaPaperPlane className="text-xs" />
+                </button>
               </div>
-            )}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -403,9 +339,20 @@ const Chatbot = () => {
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           onClick={() => setIsOpen(!isOpen)}
-          className="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+          className="bg-gradient-to-r from-green-500 to-green-600 text-white p-1 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden"
         >
-          <FaRobot className="text-2xl" />
+          <div className="w-12 h-12 rounded-full overflow-hidden bg-white bg-opacity-20 flex items-center justify-center">
+            <img 
+              src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop&crop=face" 
+              alt="Assistant" 
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextElementSibling.style.display = 'flex';
+              }}
+            />
+            <FaUser className="text-xl hidden" />
+          </div>
         </motion.button>
       </div>
     </>

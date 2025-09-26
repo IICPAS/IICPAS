@@ -18,7 +18,6 @@ import Footer from "../../components/Footer";
 import LiveSchedule from "../../components/LiveSchedule";
 import SimulatorDemo from "../../components/SimulatorDemo";
 
-import LiveSessionDisplay from "../../components/LiveSessionDisplay";
 
 import axios from "axios";
 
@@ -36,7 +35,7 @@ const dummyCourses = {
     type: "Individual Course",
     description:
       "Tally Foundation Course covers in-depth knowledge to meet all the accounting requirements of the industry with learning exposure on Voucher Entries, Grouping, BRS, etc. We not only teach the concepts but also help you learn how you can practically implement those concepts in your day to day Accounting Process with practical examples and entries in Tally.",
-    image: "/images/course-1.jpg",
+    image: "/images/accounting.webp",
     videoThumbnail: "/images/accounting.webp",
     syllabus: [
       {
@@ -267,6 +266,10 @@ export default function CourseDetailPage({
     "Course Page NEXT_PUBLIC_API_URL:",
     process.env.NEXT_PUBLIC_API_URL
   );
+  console.log(
+    "Course Page NEXT_PUBLIC_API_BASE:",
+    process.env.NEXT_PUBLIC_API_BASE
+  );
 
   // Unwrap the params Promise using React.use()
   const resolvedParams = use(params);
@@ -277,7 +280,7 @@ export default function CourseDetailPage({
       try {
         setLoading(true);
         const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_BASE}/courses/${resolvedParams.courseId}`
+          `${API_BASE}/api/courses/${resolvedParams.courseId}`
         );
         setCourse(response.data);
       } catch (err) {
@@ -623,13 +626,10 @@ export default function CourseDetailPage({
                 {/* Tab Content */}
                 {activeTab === "syllabus" && (
                   <div>
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="mb-4">
                       <h3 className="text-lg font-bold bg-gradient-to-r from-blue-500 to-emerald-500 bg-clip-text text-transparent">
                         Course Syllabus
                       </h3>
-                      <button className="text-[#3cd664] hover:text-[#33bb58] font-semibold text-sm">
-                        View Full Syllabus
-                      </button>
                     </div>
 
                     {/* Dynamic syllabus from chapters */}
@@ -672,19 +672,19 @@ export default function CourseDetailPage({
                           ) => (
                             <div
                               key={index}
-                              className="border-2 border-gray-200 rounded-xl"
+                              className="border border-gray-100 rounded-lg shadow-md hover:scale-[1.02] transition-all duration-200"
                             >
                               <button
                                 onClick={() => toggleSection(Number(index))}
-                                className="w-full px-6 py-5 text-left flex items-center justify-between hover:bg-gray-50 rounded-xl"
+                                className="w-full px-2 py-1 text-left flex items-center justify-between hover:bg-gray-50 rounded-lg"
                               >
-                                <span className="font-bold text-base text-gray-900">
+                                <span className="font-semibold text-sm text-gray-900">
                                   {chapter.title}
                                 </span>
                                 {expandedSections.includes(Number(index)) ? (
-                                  <ChevronUp className="w-5 h-5 text-gray-500" />
+                                  <ChevronUp className="w-4 h-4 text-gray-500" />
                                 ) : (
-                                  <ChevronDown className="w-5 h-5 text-gray-500" />
+                                  <ChevronDown className="w-4 h-4 text-gray-500" />
                                 )}
                               </button>
 
@@ -693,9 +693,9 @@ export default function CourseDetailPage({
                                   initial={{ opacity: 0, height: 0 }}
                                   animate={{ opacity: 1, height: "auto" }}
                                   exit={{ opacity: 0, height: 0 }}
-                                  className="px-6 pb-5"
+                                  className="px-2 pb-1"
                                 >
-                                  <ul className="space-y-3">
+                                  <ul className="space-y-1">
                                     {chapter.topics &&
                                       chapter.topics.map(
                                         (
@@ -707,9 +707,9 @@ export default function CourseDetailPage({
                                         ) => (
                                           <li
                                             key={topicIndex}
-                                            className="flex items-center text-sm text-gray-600"
+                                            className="flex items-center text-xs text-gray-600"
                                           >
-                                            <CheckCircle className="w-4 h-4 text-[#3cd664] mr-2 flex-shrink-0" />
+                                            <CheckCircle className="w-3 h-3 text-[#3cd664] mr-1 flex-shrink-0" />
                                             {topic.title || topic}
                                           </li>
                                         )
@@ -779,65 +779,35 @@ export default function CourseDetailPage({
                       courseCategory={course.category || "CA Foundation"}
                       student={student}
                     />
-
-                    <LiveSessionDisplay />
                   </div>
                 )}
 
                 {activeTab === "simulation" && (
                   <div>
-                    <SimulatorDemo
-                      courseId={resolvedParams.courseId}
-                      student={student}
-                    />
-
-                    <h3 className="text-lg font-bold text-gray-900 mb-4">
-                      Simulation & Ex.
-                    </h3>
-                    {course.simulations && course.simulations.length > 0 ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {course.simulations
-                          .sort(
-                            (a: any, b: any) => (a.order || 0) - (b.order || 0)
-                          )
-                          .map((simulation: any, index: number) => (
-                            <div
-                              key={index}
-                              className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden"
-                            >
-                              {simulation.imageUrl && (
-                                <div className="aspect-video bg-gray-100">
-                                  <img
-                                    src={
-                                      simulation.imageUrl.startsWith("http")
-                                        ? simulation.imageUrl
-                                        : `${
-                                            process.env.NEXT_PUBLIC_API_URL ||
-                                            "https://api.iicpa.in"
-                                          }${simulation.imageUrl}`
-                                    }
-                                    alt={simulation.title}
-                                    className="w-full h-full object-cover"
-                                  />
-                                </div>
-                              )}
-                              <div className="p-4">
-                                <h4 className="text-sm font-semibold text-gray-900 mb-2">
-                                  {simulation.title}
-                                </h4>
-                                <p className="text-xs text-gray-600">
-                                  {simulation.description}
-                                </p>
-                              </div>
-                            </div>
-                          ))}
+                    <div className="text-center py-12">
+                      <div className="bg-white rounded-lg shadow-lg p-8 max-w-md mx-auto">
+                        <div className="mb-6">
+                          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </div>
+                          <h3 className="text-xl font-bold text-gray-900 mb-2">
+                            Access Simulator
+                          </h3>
+                          <p className="text-gray-600 mb-6">
+                            Experience our interactive simulator through the Demo Digital Hub
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => window.location.href = '/demo-digital-hub'}
+                          className="w-full bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 transition-colors font-medium"
+                        >
+                          Go to Demo Digital Hub
+                        </button>
                       </div>
-                    ) : (
-                      <p className="text-sm text-gray-600">
-                        Interactive simulations and experiments will be
-                        available here.
-                      </p>
-                    )}
+                    </div>
+
                   </div>
                 )}
               </motion.div>
@@ -861,21 +831,27 @@ export default function CourseDetailPage({
                           ? course.image.startsWith("http")
                             ? course.image
                             : course.image.startsWith("/uploads/")
-                            ? `http://localhost:8080${course.image}`
+                            ? `${API_BASE}${course.image}`
                             : course.image.startsWith("/")
                             ? course.image
-                            : `http://localhost:8080${course.image}`
-                          : "/images/accounting.webp"
+                            : `${API_BASE}${course.image}`
+                          : course.videoThumbnail || "/images/accounting.webp"
                       }
                       alt={`${course.title} - Course Preview`}
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         console.log("Image failed to load:", e);
                         console.log("Image src was:", e.currentTarget.src);
-                        e.currentTarget.src = "/images/accounting.webp";
+                        console.log("Course image field:", course.image);
+                        console.log("API_BASE:", API_BASE);
+                        // Try fallback image
+                        const fallbackSrc = "/images/accounting.webp";
+                        console.log("Trying fallback image:", fallbackSrc);
+                        e.currentTarget.src = fallbackSrc;
                       }}
                       onLoad={() => {
                         console.log("Course thumbnail loaded successfully!");
+                        console.log("Loaded image src:", course.image);
                       }}
                     />
 
@@ -893,7 +869,7 @@ export default function CourseDetailPage({
                   <div className="text-center text-sm text-gray-600 mb-6">
                     <p>Get access to this course in DIGITAL HUB.</p>
                     <button className="text-blue-600 hover:text-blue-800 font-semibold mt-2 text-sm">
-                      Compare
+                      Select Plan
                     </button>
                   </div>
 
@@ -917,16 +893,16 @@ export default function CourseDetailPage({
                         <div className="text-center">
                           <div className="text-sm font-bold text-[#3cd664]">
                             ₹
-                            {course.price
+                            {course?.pricing?.recordedSession?.actualPrice
+                              ? course.pricing.recordedSession.actualPrice.toLocaleString()
+                              : course.price
                               ? course.price.toLocaleString()
-                              : "10,800"}
+                              : "5,000"}
                           </div>
-                          {course.discount > 0 && (
+                          {course?.pricing?.recordedSession?.discountPrice && (
                             <div className="text-xs text-gray-500 line-through">
                               ₹
-                              {course.originalPrice
-                                ? course.originalPrice.toLocaleString()
-                                : "12,000"}
+                              {course.pricing.recordedSession.discountPrice.toLocaleString()}
                             </div>
                           )}
                         </div>
@@ -960,14 +936,22 @@ export default function CourseDetailPage({
                         <div className="text-center">
                           <div className="text-sm font-bold text-blue-500">
                             ₹
-                            {course.price
+                            {course?.pricing?.liveSession?.actualPrice
+                              ? course.pricing.liveSession.actualPrice.toLocaleString()
+                              : course.price
                               ? (
                                   course.price *
                                   (course?.pricing?.liveSession
                                     ?.priceMultiplier || 1.5)
                                 ).toLocaleString()
-                              : "18,000"}
+                              : "7,500"}
                           </div>
+                          {course?.pricing?.liveSession?.discountPrice && (
+                            <div className="text-xs text-gray-500 line-through">
+                              ₹
+                              {course.pricing.liveSession.discountPrice.toLocaleString()}
+                            </div>
+                          )}
                         </div>
                       </div>
 

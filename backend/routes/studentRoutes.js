@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import uploadStudentImage from "../middleware/studentImageUpload.js";
 import isStudent from "../middleware/isStudent.js";
+import { deleteStudent, updateStudentStatus } from "../controllers/studentController.js";
 
 //FOR PDF Import
 import PDFDocument from "pdfkit";
@@ -1026,5 +1027,11 @@ router.get("/enrolled-recorded-sessions/:id", async (req, res) => {
     });
   }
 });
+
+// DELETE /api/v1/students/:id - Delete a student
+router.delete("/:id", deleteStudent);
+
+// PUT /api/v1/students/:id/status - Update student status
+router.put("/:id/status", updateStudentStatus);
 
 export default router;

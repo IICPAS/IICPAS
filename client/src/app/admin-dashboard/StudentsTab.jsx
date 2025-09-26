@@ -7,11 +7,17 @@ import {
   UserPlus,
   Mail,
   Smartphone,
-  MessageCircle,
   List as ListIcon,
   PlusCircle,
+  Download,
+  Edit,
+  Trash2,
+  UserX,
 } from "lucide-react";
+import { FaWhatsapp } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
+import * as XLSX from 'xlsx';
+import { toast } from 'react-hot-toast';
 
 // BASIC COMPONENTS
 const Button = ({ className = "", children, ...props }) => (
@@ -198,13 +204,134 @@ function AddStudentForm({ onSuccess }) {
   );
 }
 
-function StudentsTable({ students }) {
+function StudentsTable({ students, onStudentUpdated }) {
   if (!students?.length)
     return (
       <div className="text-gray-500 text-center py-12">
         No students registered yet.
       </div>
     );
+
+  // Handle edit student
+  const handleEditStudent = (student) => {
+    // For now, show a toast - you can implement edit modal/form later
+    toast.success(`Edit functionality for ${student.name} - Coming soon!`);
+  };
+
+  // Handle delete student
+  const handleDeleteStudent = async (student) => {
+    if (window.confirm(`Are you sure you want to delete ${student.name}? This action cannot be undone.`)) {
+      try {
+        console.log("Deleting student with ID:", student._id);
+        console.log("API Base:", process.env.NEXT_PUBLIC_API_BASE);
+        console.log("Full URL:", `${process.env.NEXT_PUBLIC_API_BASE}/v1/students/${student._id}`);
+        
+        const response = await axios.delete(`${process.env.NEXT_PUBLIC_API_BASE}/v1/students/${student._id}`);
+        console.log("Delete response:", response.data);
+        
+        toast.success(`${student.name} has been deleted successfully!`);
+        if (onStudentUpdated) onStudentUpdated();
+      } catch (error) {
+        console.error("Error deleting student:", error);
+        console.error("Error details:", {
+          message: error.message,
+          status: error.response?.status,
+          data: error.response?.data,
+          studentId: student._id
+        });
+        toast.error(`Failed to delete student: ${error.response?.data?.message || error.message}`);
+      }
+    }
+  };
+
+  // Handle suspend student
+  const handleSuspendStudent = async (student) => {
+    const action = student.status === 'suspended' ? 'unsuspend' : 'suspend';
+    const actionText = student.status === 'suspended' ? 'Unsuspend' : 'Suspend';
+    
+    if (window.confirm(`Are you sure you want to ${action} ${student.name}?`)) {
+      try {
+        await axios.put(`${process.env.NEXT_PUBLIC_API_BASE}/v1/students/${student._id}/status`, {
+          status: student.status === 'suspended' ? 'active' : 'suspended'
+        });
+        toast.success(`${student.name} has been ${action}ed successfully!`);
+        if (onStudentUpdated) onStudentUpdated();
+      } catch (error) {
+        console.error(`Error ${action}ing student:`, error);
+        console.error("Error details:", {
+          message: error.message,
+          status: error.response?.status,
+          data: error.response?.data,
+          studentId: student._id
+        });
+        toast.error(`Failed to ${action} student: ${error.response?.data?.message || error.message}`);
+      }
+    }
+  };
+
+  // Export students to Excel
+  const exportToExcel = () => {
+    if (students.length === 0) {
+      toast.error("No students to export");
+      return;
+    }
+
+    try {
+      // Prepare data for Excel export
+      const excelData = students.map((student, index) => ({
+        'S.No': index + 1,
+        'Name': student.name || '',
+        'Email': student.email || '',
+        'Phone': student.phone || '',
+        'Location': student.location || '',
+        'Center': student.center || '',
+        'Status': student.mode || 'Not specified',
+        'Courses': student.course && student.course.length > 0 
+          ? student.course.map(course => course.title || course).join(', ') 
+          : 'No courses',
+        'Live Sessions': student.enrolledLiveSessions && student.enrolledLiveSessions.length > 0 
+          ? `${student.enrolledLiveSessions.length} session(s)` 
+          : 'No sessions',
+        'Registered Date': student.createdAt ? new Date(student.createdAt).toLocaleDateString() : '',
+        'Registered Time': student.createdAt ? new Date(student.createdAt).toLocaleTimeString() : '',
+      }));
+
+      // Create workbook and worksheet
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(excelData);
+
+      // Set column widths
+      const colWidths = [
+        { wch: 8 },   // S.No
+        { wch: 20 },  // Name
+        { wch: 30 },  // Email
+        { wch: 15 },  // Phone
+        { wch: 20 },  // Location
+        { wch: 20 },  // Center
+        { wch: 12 },  // Status
+        { wch: 40 },  // Courses
+        { wch: 20 },  // Live Sessions
+        { wch: 15 },  // Registered Date
+        { wch: 15 },  // Registered Time
+      ];
+      ws['!cols'] = colWidths;
+
+      // Add worksheet to workbook
+      XLSX.utils.book_append_sheet(wb, ws, 'Students');
+
+      // Generate filename with current date
+      const currentDate = new Date().toISOString().split('T')[0];
+      const filename = `students_export_${currentDate}.xlsx`;
+
+      // Save file
+      XLSX.writeFile(wb, filename);
+
+      toast.success(`${students.length} students exported to Excel successfully!`);
+    } catch (error) {
+      console.error("Error exporting to Excel:", error);
+      toast.error("Failed to export students to Excel");
+    }
+  };
 
   return (
     <motion.div
@@ -224,136 +351,168 @@ function StudentsTable({ students }) {
               Total: {students.length} students enrolled
             </p>
           </div>
-          <div className="text-right">
-            <div className="text-sm text-gray-500">Last updated</div>
-            <div className="text-sm font-medium text-gray-700">
-              {new Date().toLocaleDateString()}
-            </div>
+          <div className="flex items-center">
+            <Button
+              onClick={exportToExcel}
+              className="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
+            >
+              <Download size={16} />
+              Export Excel
+            </Button>
           </div>
         </div>
         
-        {/* Students Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
-          {students.map((student) => (
-            <div
-              key={student._id}
-              className="bg-gradient-to-br from-white to-indigo-50 border border-indigo-200 rounded-xl p-6 shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-            >
-              {/* Student Header */}
-              <div className="mb-4">
-                <div className="flex items-center space-x-3 mb-3">
-                  <div className="w-12 h-12 bg-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md flex-shrink-0">
-                    {student.name?.charAt(0)?.toUpperCase() || 'S'}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h4 className="font-semibold text-gray-800 text-lg truncate">
-                      {student.name}
-                    </h4>
-                    <p className="text-sm text-gray-600 truncate">{student.email}</p>
-                  </div>
-                </div>
-                <div className="flex justify-end">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    student.mode === 'online' 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-blue-100 text-blue-800'
-                  }`}>
-                    {student.mode || 'Not specified'}
-                  </span>
-                </div>
-              </div>
-
-              {/* Student Details */}
-              <div className="space-y-3 mb-4">
-                <div className="flex items-center space-x-2">
-                  <Smartphone size={16} className="text-gray-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700">{student.phone}</span>
-                </div>
-                
-                {student.location && (
-                  <div className="flex items-center space-x-2">
-                    <div className="w-4 h-4 text-gray-500 flex-shrink-0">📍</div>
-                    <span className="text-sm text-gray-700">{student.location}</span>
-                  </div>
-                )}
-                
-                {student.center && (
-                  <div className="flex items-center space-x-2">
-                    <div className="w-4 h-4 text-gray-500 flex-shrink-0">🏢</div>
-                    <span className="text-sm text-gray-700">{student.center}</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Enrolled Courses */}
-              <div className="mb-4">
-                <h5 className="text-sm font-medium text-gray-700 mb-2">Enrolled Courses:</h5>
-                {student.course && student.course.length > 0 ? (
-                  <div className="space-y-1">
-                    {student.course.slice(0, 3).map((course, index) => (
-                      <div key={index} className="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded">
-                        {course.title || course}
+        {/* Students Table */}
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Name
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Email
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Phone
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Location
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Courses
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Registered
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {students.map((student) => (
+                <tr key={student._id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div className="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md flex-shrink-0 mr-3">
+                        {student.name?.charAt(0)?.toUpperCase() || 'S'}
                       </div>
-                    ))}
-                    {student.course.length > 3 && (
-                      <div className="text-xs text-gray-500">
-                        +{student.course.length - 3} more courses
+                      <div className="text-sm font-medium text-gray-900">
+                        {student.name}
                       </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-xs text-gray-500">No courses enrolled</div>
-                )}
-              </div>
-
-              {/* Live Sessions */}
-              {student.enrolledLiveSessions && student.enrolledLiveSessions.length > 0 && (
-                <div className="mb-4">
-                  <h5 className="text-sm font-medium text-gray-700 mb-2">Live Sessions:</h5>
-                  <div className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
-                    {student.enrolledLiveSessions.length} session(s) enrolled
-                  </div>
-                </div>
-              )}
-
-              {/* Contact Actions */}
-              <div className="flex space-x-2 pt-3 border-t border-gray-200">
-                <a
-                  href={`mailto:${student.email}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title="Send Email"
-                  className="flex-1 bg-indigo-500 hover:bg-indigo-600 text-white text-xs py-2 px-3 rounded-lg transition-colors flex items-center justify-center space-x-1"
-                >
-                  <Mail size={14} />
-                  <span>Email</span>
-                </a>
-                <a
-                  href={getWhatsAppLink(student.phone)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title="WhatsApp"
-                  className="flex-1 bg-green-500 hover:bg-green-600 text-white text-xs py-2 px-3 rounded-lg transition-colors flex items-center justify-center space-x-1"
-                >
-                  <MessageCircle size={14} />
-                  <span>WhatsApp</span>
-                </a>
-                <a
-                  href={`tel:${student.phone}`}
-                  title="Call"
-                  className="flex-1 bg-blue-500 hover:bg-blue-600 text-white text-xs py-2 px-3 rounded-lg transition-colors flex items-center justify-center space-x-1"
-                >
-                  <Smartphone size={14} />
-                  <span>Call</span>
-                </a>
-              </div>
-
-              {/* Registration Date */}
-              <div className="text-xs text-gray-500 mt-3 pt-2 border-t border-gray-100">
-                Registered: {new Date(student.createdAt).toLocaleDateString()}
-              </div>
-            </div>
-          ))}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">{student.email}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">{student.phone}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">
+                      {student.location}
+                      {student.center && (
+                        <div className="text-xs text-gray-500">{student.center}</div>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                      student.mode === 'online' 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-blue-100 text-blue-800'
+                    }`}>
+                      {student.mode || 'Not specified'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">
+                      {student.course && student.course.length > 0 ? (
+                        <div className="space-y-1">
+                          {student.course.slice(0, 2).map((course, index) => (
+                            <div key={index} className="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded">
+                              {course.title || course}
+                            </div>
+                          ))}
+                          {student.course.length > 2 && (
+                            <div className="text-xs text-gray-500">
+                              +{student.course.length - 2} more
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-gray-500">No courses</span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {new Date(student.createdAt).toLocaleDateString()}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex flex-wrap gap-1">
+                      {/* Contact Actions */}
+                      <a
+                        href={`mailto:${student.email}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Send Email"
+                        className="bg-indigo-500 hover:bg-indigo-600 text-white p-2 rounded transition-colors flex items-center justify-center"
+                      >
+                        <Mail size={14} />
+                      </a>
+                      <a
+                        href={getWhatsAppLink(student.phone)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="WhatsApp"
+                        className="bg-green-500 hover:bg-green-600 text-white p-2 rounded transition-colors flex items-center justify-center"
+                      >
+                        <FaWhatsapp size={14} />
+                      </a>
+                      <a
+                        href={`tel:${student.phone}`}
+                        title="Call"
+                        className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded transition-colors flex items-center justify-center"
+                      >
+                        <Smartphone size={14} />
+                      </a>
+                      
+                      {/* Management Actions */}
+                      <button
+                        onClick={() => handleEditStudent(student)}
+                        title="Edit Student"
+                        className="bg-yellow-500 hover:bg-yellow-600 text-white p-2 rounded transition-colors flex items-center justify-center"
+                      >
+                        <Edit size={14} />
+                      </button>
+                      <button
+                        onClick={() => handleSuspendStudent(student)}
+                        title={student.status === 'suspended' ? 'Unsuspend Student' : 'Suspend Student'}
+                        className={`p-2 rounded transition-colors flex items-center justify-center ${
+                          student.status === 'suspended' 
+                            ? 'bg-orange-500 hover:bg-orange-600 text-white' 
+                            : 'bg-red-500 hover:bg-red-600 text-white'
+                        }`}
+                      >
+                        <UserX size={14} />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteStudent(student)}
+                        title="Delete Student"
+                        className="bg-red-600 hover:bg-red-700 text-white p-2 rounded transition-colors flex items-center justify-center"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </motion.div>
@@ -444,7 +603,7 @@ export default function StudentsTab() {
                 <Loader2 className="animate-spin text-indigo-500" size={36} />
               </motion.div>
             ) : (
-              <StudentsTable key="studentstable" students={students} />
+              <StudentsTable key="studentstable" students={students} onStudentUpdated={handleStudentAdded} />
             ))}
         </AnimatePresence>
       </div>

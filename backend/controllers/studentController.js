@@ -88,3 +88,67 @@ export const logoutStudent = (req, res) => {
     })
     .json({ message: "Logout successful" });
 };
+
+export const deleteStudent = async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log("Delete student request received for ID:", id);
+    
+    // Validate ObjectId format
+    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+      console.log("Invalid ObjectId format:", id);
+      return res.status(400).json({ message: "Invalid student ID format" });
+    }
+    
+    const student = await Student.findByIdAndDelete(id);
+    
+    if (!student) {
+      console.log("Student not found with ID:", id);
+      return res.status(404).json({ message: "Student not found" });
+    }
+    
+    console.log("Student deleted successfully:", student.name);
+    res.status(200).json({ message: "Student deleted successfully", deletedStudent: { id: student._id, name: student.name } });
+  } catch (error) {
+    console.error("Error deleting student:", error);
+    res.status(500).json({ message: "Failed to delete student", error: error.message });
+  }
+};
+
+export const updateStudentStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    console.log("Update student status request received for ID:", id, "Status:", status);
+    
+    // Validate ObjectId format
+    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+      console.log("Invalid ObjectId format:", id);
+      return res.status(400).json({ message: "Invalid student ID format" });
+    }
+    
+    const student = await Student.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true }
+    );
+    
+    if (!student) {
+      console.log("Student not found with ID:", id);
+      return res.status(404).json({ message: "Student not found" });
+    }
+    
+    console.log("Student status updated successfully:", student.name, "New status:", status);
+    res.status(200).json({ 
+      message: "Student status updated successfully",
+      student: {
+        id: student._id,
+        name: student.name,
+        status: student.status
+      }
+    });
+  } catch (error) {
+    console.error("Error updating student status:", error);
+    res.status(500).json({ message: "Failed to update student status", error: error.message });
+  }
+};
