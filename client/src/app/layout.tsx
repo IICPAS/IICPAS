@@ -5,6 +5,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { Toaster } from "react-hot-toast";
 import Chatbot from "@/components/Chatbot";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import CookiePolicyPopup from "@/components/CookiePolicyPopup";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -48,6 +49,7 @@ export default function RootLayout({
         />
         <Chatbot />
         <WhatsAppButton />
+        <CookiePolicyPopup />
       </body>
     </html>
   );
