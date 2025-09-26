@@ -85,6 +85,7 @@ import MessagesTab from "./MessagesTab";
 import BulkEmailTab from "./BulkEmailTab";
 import ContactInfoTab from "./ContactInfoTab";
 import AdminProfileTab from "./AdminProfileTab";
+import ChatConversationsTab from "./ChatConversationsTab";
 
 // All available modules with their permissions
 const ALL_MODULES = [
@@ -99,6 +100,7 @@ const ALL_MODULES = [
   },
   { id: "enquiries", label: "Enquiries", icon: <FaEnvelope /> },
   { id: "messages", label: "Messages", icon: <FaComments /> },
+  { id: "chat-conversations", label: "Chatbot Conversations", icon: <FaComments /> },
   { id: "jobs", label: "Jobs", icon: <FaBriefcase /> },
   { id: "news", label: "News", icon: <FaNewspaper /> },
   { id: "students", label: "Students", icon: <FaUserGraduate /> },
@@ -153,7 +155,6 @@ const WEBSITE_SETTINGS_MODULES = [
   { id: "faq", label: "FAQ", icon: <FaUserTie /> },
   { id: "bulk-email", label: "Bulk Email", icon: <FaEnvelope /> },
   { id: "contact-info", label: "Contact Information", icon: <FaEnvelope /> },
-  { id: "profile", label: "Profile", icon: <FaUserTie /> },
 ];
 
 function AdminDashboardContent() {
@@ -516,6 +517,8 @@ function AdminDashboardContent() {
           <CenterLocationTab />
         ) : activeTab === "messages" ? (
           <MessagesTab />
+        ) : activeTab === "chat-conversations" ? (
+          <ChatConversationsTab />
         ) : activeTab === "bulk-email" ? (
           <BulkEmailTab />
         ) : activeTab === "contact-info" ? (

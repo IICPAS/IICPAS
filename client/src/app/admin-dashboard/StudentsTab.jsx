@@ -13,6 +13,16 @@ import {
   Edit,
   Trash2,
   UserX,
+  Save,
+  X,
+  User,
+  Phone,
+  MapPin,
+  Building,
+  Monitor,
+  UserCheck,
+  AlertCircle,
+  Search,
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
@@ -74,6 +84,204 @@ const initialState = {
   course: "",
   teacher: "",
 };
+
+// Edit Student Modal Component
+function EditStudentModal({ student, isOpen, onClose, onSuccess }) {
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    mode: "",
+    location: "",
+    center: "",
+    password: "",
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  // Initialize form when student changes
+  useEffect(() => {
+    if (student) {
+      setForm({
+        name: student.name || "",
+        email: student.email || "",
+        phone: student.phone || "",
+        mode: student.mode || "",
+        location: student.location || "",
+        center: student.center || "",
+        password: "", // Don't pre-fill password
+      });
+    }
+  }, [student]);
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+    setError("");
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      const token = localStorage.getItem("adminToken");
+      if (!token) {
+        throw new Error("No admin token found");
+      }
+
+      // Prepare update data (exclude empty password)
+      const updateData = { ...form };
+      if (!updateData.password) {
+        delete updateData.password;
+      }
+
+      const response = await axios.put(
+        `${process.env.NEXT_PUBLIC_API_BASE}/v1/students/admin/update-profile/${student._id}`,
+        updateData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+        }
+      );
+
+      toast.success("Student profile updated successfully!");
+      onSuccess();
+      onClose();
+    } catch (err) {
+      console.error("Error updating student:", err);
+      setError(
+        err.response?.data?.message || err.message || "Something went wrong"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+      >
+        <div className="p-6">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-3">
+              <Edit className="text-indigo-500" size={24} />
+              <h2 className="text-2xl font-bold text-gray-800">
+                Edit Student Profile
+              </h2>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                {error}
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {[
+                { label: "Full Name", name: "name", type: "text", required: true },
+                { label: "Email Address", name: "email", type: "email", required: true },
+                { label: "Phone Number", name: "phone", type: "tel", required: true },
+                { label: "Mode", name: "mode", type: "select", options: ["online", "offline"] },
+                { label: "Location", name: "location", type: "text" },
+                { label: "Center", name: "center", type: "text" },
+                { label: "New Password (optional)", name: "password", type: "password" },
+              ].map((field) => (
+                <div key={field.name} className="relative">
+                  {field.type === "select" ? (
+                    <select
+                      name={field.name}
+                      value={form[field.name]}
+                      onChange={handleChange}
+                      required={field.required}
+                      className="peer block w-full p-4 pt-6 rounded-xl border border-indigo-200 bg-white focus:ring-2 focus:ring-indigo-500 transition-all"
+                    >
+                      <option value="">Select {field.label}</option>
+                      {field.options?.map((option) => (
+                        <option key={option} value={option}>
+                          {option.charAt(0).toUpperCase() + option.slice(1)}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <Input
+                      name={field.name}
+                      type={field.type}
+                      placeholder=" "
+                      required={field.required}
+                      value={form[field.name]}
+                      onChange={handleChange}
+                      disabled={loading}
+                      className="w-full"
+                    />
+                  )}
+                  <Label
+                    htmlFor={field.name}
+                    floating
+                    active={!!form[field.name]}
+                    className="text-gray-500"
+                  >
+                    {field.label}
+                  </Label>
+                </div>
+              ))}
+            </div>
+
+            {/* Note about profile image */}
+            <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-lg">
+              <p className="text-sm">
+                <strong>Note:</strong> Profile image cannot be changed through this interface. 
+                Students can update their profile image from their dashboard.
+              </p>
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex justify-end space-x-4 pt-4">
+              <Button
+                type="button"
+                onClick={onClose}
+                className="bg-gray-500 hover:bg-gray-600 text-white"
+                disabled={loading}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="bg-indigo-500 hover:bg-indigo-600 text-white flex items-center gap-2"
+                disabled={loading}
+              >
+                {loading ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <Save size={16} />
+                )}
+                {loading ? "Updating..." : "Update Profile"}
+              </Button>
+            </div>
+          </form>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
 
 function AddStudentForm({ onSuccess }) {
   const [form, setForm] = useState(initialState);
@@ -205,6 +413,9 @@ function AddStudentForm({ onSuccess }) {
 }
 
 function StudentsTable({ students, onStudentUpdated }) {
+  const [editingStudent, setEditingStudent] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
   if (!students?.length)
     return (
       <div className="text-gray-500 text-center py-12">
@@ -214,8 +425,17 @@ function StudentsTable({ students, onStudentUpdated }) {
 
   // Handle edit student
   const handleEditStudent = (student) => {
-    // For now, show a toast - you can implement edit modal/form later
-    toast.success(`Edit functionality for ${student.name} - Coming soon!`);
+    setEditingStudent(student);
+    setIsEditModalOpen(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
+    setEditingStudent(null);
+  };
+
+  const handleEditSuccess = () => {
+    onStudentUpdated();
   };
 
   // Handle delete student
@@ -515,6 +735,627 @@ function StudentsTable({ students, onStudentUpdated }) {
           </table>
         </div>
       </div>
+
+      {/* Edit Student Modal */}
+      <EditStudentModal
+        student={editingStudent}
+        isOpen={isEditModalOpen}
+        onClose={handleCloseEditModal}
+        onSuccess={handleEditSuccess}
+      />
+    </motion.div>
+  );
+}
+
+// Student Profile Card Component
+function StudentProfileCard({ student, onEdit }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-shadow"
+    >
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex items-center space-x-4">
+          <div className="w-16 h-16 bg-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-md">
+            {student.name?.charAt(0)?.toUpperCase() || 'S'}
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-gray-800">{student.name}</h3>
+            <p className="text-gray-600">{student.email}</p>
+          </div>
+        </div>
+        <button
+          onClick={() => onEdit(student)}
+          className="bg-indigo-500 hover:bg-indigo-600 text-white p-2 rounded-lg transition-colors flex items-center gap-2"
+          title="Edit Profile"
+        >
+          <Edit size={16} />
+          Edit
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="flex items-center gap-3 text-gray-600">
+          <Phone size={16} className="text-indigo-500" />
+          <span>{student.phone || 'Not provided'}</span>
+        </div>
+        <div className="flex items-center gap-3 text-gray-600">
+          <Monitor size={16} className="text-indigo-500" />
+          <span className="capitalize">{student.mode || 'Not specified'}</span>
+        </div>
+        <div className="flex items-center gap-3 text-gray-600">
+          <MapPin size={16} className="text-indigo-500" />
+          <span>{student.location || 'Not provided'}</span>
+        </div>
+        <div className="flex items-center gap-3 text-gray-600">
+          <Building size={16} className="text-indigo-500" />
+          <span>{student.center || 'Not provided'}</span>
+        </div>
+      </div>
+
+      <div className="mt-4 pt-4 border-t border-gray-200">
+        <div className="flex items-center justify-between text-sm text-gray-500">
+          <span>Student ID: {student._id?.slice(-8) || 'N/A'}</span>
+          <span>Joined: {new Date(student.createdAt).toLocaleDateString()}</span>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+// Student Profile Management Component
+function StudentProfileManagement() {
+  const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [editingStudent, setEditingStudent] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingStudentId, setEditingStudentId] = useState(null);
+  const [editForm, setEditForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    mode: "",
+    location: "",
+    center: "",
+    password: "",
+  });
+  const [editLoading, setEditLoading] = useState(false);
+  const [editError, setEditError] = useState("");
+
+  useEffect(() => {
+    fetchStudents();
+  }, []);
+
+  const fetchStudents = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_BASE}/v1/students`
+      );
+      setStudents(response.data.students || []);
+    } catch (error) {
+      console.error("Error fetching students:", error);
+      toast.error("Failed to fetch students");
+      setStudents([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditStudent = (student) => {
+    setEditingStudentId(student._id);
+    setEditForm({
+      name: student.name || "",
+      email: student.email || "",
+      phone: student.phone || "",
+      mode: student.mode || "",
+      location: student.location || "",
+      center: student.center || "",
+      password: "", // Don't pre-fill password
+    });
+    setEditError("");
+  };
+
+  const handleCancelEdit = () => {
+    setEditingStudentId(null);
+    setEditForm({
+      name: "",
+      email: "",
+      phone: "",
+      mode: "",
+      location: "",
+      center: "",
+      password: "",
+    });
+    setEditError("");
+  };
+
+  const handleEditFormChange = (e) => {
+    setEditForm({ ...editForm, [e.target.name]: e.target.value });
+    setEditError("");
+  };
+
+  const handleSaveEdit = async (studentId) => {
+    setEditLoading(true);
+    setEditError("");
+
+    try {
+      const token = localStorage.getItem("adminToken");
+      if (!token) {
+        throw new Error("No admin token found");
+      }
+
+      // Prepare update data (exclude empty password)
+      const updateData = { ...editForm };
+      if (!updateData.password) {
+        delete updateData.password;
+      }
+
+      const response = await axios.put(
+        `${process.env.NEXT_PUBLIC_API_BASE}/v1/students/admin/update-profile/${studentId}`,
+        updateData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+        }
+      );
+
+      toast.success("Student profile updated successfully!");
+      setEditingStudentId(null);
+      fetchStudents(); // Refresh the list
+    } catch (err) {
+      console.error("Error updating student:", err);
+      setEditError(
+        err.response?.data?.message || err.message || "Something went wrong"
+      );
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  // Filter students based on search term
+  const filteredStudents = students.filter((student) =>
+    student.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    student.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    student.phone?.includes(searchTerm) ||
+    student.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    student.center?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Export to Excel function
+  const exportToExcel = () => {
+    if (filteredStudents.length === 0) {
+      toast.error("No students to export");
+      return;
+    }
+
+    try {
+      // Prepare data for Excel export
+      const excelData = filteredStudents.map((student, index) => ({
+        'S.No': index + 1,
+        'Name': student.name || '',
+        'Email': student.email || '',
+        'Phone': student.phone || '',
+        'Status': student.mode || 'Not specified',
+        'Location': student.location || '',
+        'Center': student.center || '',
+        'Student ID': student._id?.slice(-8) || 'N/A',
+        'Joined Date': student.createdAt ? new Date(student.createdAt).toLocaleDateString() : '',
+        'Courses': student.course && student.course.length > 0 
+          ? student.course.map(course => course.title || course).join(', ') 
+          : 'No courses',
+      }));
+
+      // Create workbook and worksheet
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(excelData);
+
+      // Set column widths
+      const colWidths = [
+        { wch: 8 },   // S.No
+        { wch: 20 },  // Name
+        { wch: 30 },  // Email
+        { wch: 15 },  // Phone
+        { wch: 12 },  // Status
+        { wch: 20 },  // Location
+        { wch: 20 },  // Center
+        { wch: 12 },  // Student ID
+        { wch: 15 },  // Joined Date
+        { wch: 40 },  // Courses
+      ];
+      ws['!cols'] = colWidths;
+
+      // Add worksheet to workbook
+      XLSX.utils.book_append_sheet(wb, ws, 'Student Profiles');
+
+      // Generate filename with current date
+      const currentDate = new Date().toISOString().split('T')[0];
+      const filename = `student_profiles_${currentDate}.xlsx`;
+
+      // Save file
+      XLSX.writeFile(wb, filename);
+
+      toast.success(`${filteredStudents.length} student profiles exported to Excel successfully!`);
+    } catch (error) {
+      console.error("Error exporting to Excel:", error);
+      toast.error("Failed to export student profiles to Excel");
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <Loader2 size={48} className="animate-spin text-indigo-500 mx-auto mb-4" />
+          <p className="text-gray-600">Loading student profiles...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <motion.div
+      key="profile"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 20 }}
+      className="w-full"
+    >
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Student Profile Management</h2>
+          <p className="text-gray-600">Manage and update student profile information</p>
+        </div>
+
+        {/* Search and Export Section */}
+        <div className="mb-8 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+          <div className="relative max-w-md w-full">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <input
+              type="text"
+              placeholder="Search students by name, email, phone, location, or center..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+            />
+          </div>
+          <Button
+            onClick={exportToExcel}
+            className="flex items-center gap-2 px-4 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
+          >
+            <Download size={16} />
+            Export Excel
+          </Button>
+        </div>
+
+        {/* Stats Section */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-600 text-sm">Total Students</p>
+                <p className="text-2xl font-bold text-gray-800">{students.length}</p>
+              </div>
+              <User className="text-indigo-500" size={32} />
+            </div>
+          </div>
+          <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-600 text-sm">Online Students</p>
+                <p className="text-2xl font-bold text-green-600">
+                  {students.filter(s => s.mode === 'online').length}
+                </p>
+              </div>
+              <Monitor className="text-green-500" size={32} />
+            </div>
+          </div>
+          <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-600 text-sm">Offline Students</p>
+                <p className="text-2xl font-bold text-blue-600">
+                  {students.filter(s => s.mode === 'offline').length}
+                </p>
+              </div>
+              <Building className="text-blue-500" size={32} />
+            </div>
+          </div>
+        </div>
+
+        {/* Excel-style Table */}
+        {filteredStudents.length === 0 ? (
+          <div className="text-center py-12">
+            <User className="text-gray-400 mx-auto mb-4" size={64} />
+            <h3 className="text-xl font-semibold text-gray-600 mb-2">
+              {searchTerm ? 'No students found' : 'No students registered'}
+            </h3>
+            <p className="text-gray-500">
+              {searchTerm 
+                ? 'Try adjusting your search terms' 
+                : 'Students will appear here once they register'
+              }
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 bg-white border border-gray-300">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                    S.No
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                    Name
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                    Email
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                    Phone
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                    Location
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                    Center
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                    Student ID
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                    Joined Date
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                    Courses
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredStudents.map((student, index) => (
+                  <React.Fragment key={student._id}>
+                    {/* Regular row */}
+                    <tr className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-300">
+                        {index + 1}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap border-r border-gray-300">
+                        <div className="flex items-center">
+                          <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md flex-shrink-0 mr-3">
+                            {student.name?.charAt(0)?.toUpperCase() || 'S'}
+                          </div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {student.name}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-300">
+                        {student.email}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-300">
+                        {student.phone}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap border-r border-gray-300">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          student.mode === 'online' 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-blue-100 text-blue-800'
+                        }`}>
+                          {student.mode || 'Not specified'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-300">
+                        {student.location || 'Not provided'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-300">
+                        {student.center || 'Not provided'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-300">
+                        {student._id?.slice(-8) || 'N/A'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border-r border-gray-300">
+                        {new Date(student.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-300">
+                        {student.course && student.course.length > 0 ? (
+                          <div className="space-y-1">
+                            {student.course.slice(0, 2).map((course, courseIndex) => (
+                              <div key={courseIndex} className="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded">
+                                {course.title || course}
+                              </div>
+                            ))}
+                            {student.course.length > 2 && (
+                              <div className="text-xs text-gray-500">
+                                +{student.course.length - 2} more
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-gray-500">No courses</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button
+                          onClick={() => handleEditStudent(student)}
+                          className="bg-indigo-500 hover:bg-indigo-600 text-white p-2 rounded transition-colors flex items-center gap-1"
+                          title="Edit Profile"
+                          disabled={editingStudentId === student._id}
+                        >
+                          <Edit size={14} />
+                          {editingStudentId === student._id ? 'Editing...' : 'Edit'}
+                        </button>
+                      </td>
+                    </tr>
+                    
+                    {/* Edit form row */}
+                    {editingStudentId === student._id && (
+                      <tr className="bg-blue-50 border-t-2 border-blue-200">
+                        <td colSpan="11" className="px-6 py-6">
+                          <div className="bg-white rounded-lg border border-blue-200 p-6">
+                            <div className="flex items-center justify-between mb-4">
+                              <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                                <Edit size={20} className="text-indigo-500" />
+                                Edit Student Profile
+                              </h3>
+                              <button
+                                onClick={handleCancelEdit}
+                                className="text-gray-500 hover:text-gray-700 transition-colors"
+                                disabled={editLoading}
+                              >
+                                <X size={20} />
+                              </button>
+                            </div>
+                            
+                            {editError && (
+                              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 flex items-center gap-2">
+                                <AlertCircle size={16} />
+                                {editError}
+                              </div>
+                            )}
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                              <div className="space-y-4">
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                                  <input
+                                    type="text"
+                                    name="name"
+                                    value={editForm.name}
+                                    onChange={handleEditFormChange}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    disabled={editLoading}
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                                  <input
+                                    type="tel"
+                                    name="phone"
+                                    value={editForm.phone}
+                                    onChange={handleEditFormChange}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    disabled={editLoading}
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                                  <input
+                                    type="text"
+                                    name="location"
+                                    value={editForm.location}
+                                    onChange={handleEditFormChange}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    disabled={editLoading}
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-700 mb-1">New Password (optional)</label>
+                                  <input
+                                    type="password"
+                                    name="password"
+                                    value={editForm.password}
+                                    onChange={handleEditFormChange}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    disabled={editLoading}
+                                    placeholder="Leave empty to keep current password"
+                                  />
+                                </div>
+                              </div>
+                              <div className="space-y-4">
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                                  <input
+                                    type="email"
+                                    name="email"
+                                    value={editForm.email}
+                                    onChange={handleEditFormChange}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    disabled={editLoading}
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-700 mb-1">Mode</label>
+                                  <select
+                                    name="mode"
+                                    value={editForm.mode}
+                                    onChange={handleEditFormChange}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    disabled={editLoading}
+                                  >
+                                    <option value="">Select Mode</option>
+                                    <option value="online">Online</option>
+                                    <option value="offline">Offline</option>
+                                  </select>
+                                </div>
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-700 mb-1">Center</label>
+                                  <input
+                                    type="text"
+                                    name="center"
+                                    value={editForm.center}
+                                    onChange={handleEditFormChange}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    disabled={editLoading}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-lg mb-4">
+                              <p className="text-sm">
+                                <strong>Note:</strong> Profile image cannot be changed through this interface. 
+                                Students can update their profile image from their dashboard.
+                              </p>
+                            </div>
+
+                            <div className="flex justify-end space-x-3">
+                              <button
+                                onClick={handleCancelEdit}
+                                className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors"
+                                disabled={editLoading}
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={() => handleSaveEdit(student._id)}
+                                className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-colors flex items-center gap-2"
+                                disabled={editLoading}
+                              >
+                                {editLoading ? (
+                                  <>
+                                    <Loader2 size={16} className="animate-spin" />
+                                    Updating...
+                                  </>
+                                ) : (
+                                  <>
+                                    <Save size={16} />
+                                    Update Profile
+                                  </>
+                                )}
+                              </button>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+      </div>
     </motion.div>
   );
 }
@@ -522,7 +1363,7 @@ function StudentsTable({ students, onStudentUpdated }) {
 export default function StudentsTab() {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("add"); // "add" or "list"
+  const [activeTab, setActiveTab] = useState("add"); // "add", "list", or "profile"
 
   useEffect(() => {
     if (activeTab === "list") {
@@ -583,6 +1424,17 @@ export default function StudentsTab() {
           <ListIcon size={18} />
           View Students
         </Button>
+        <Button
+          onClick={() => setActiveTab("profile")}
+          className={`flex items-center gap-2 px-6 py-3 ${
+            activeTab === "profile"
+              ? "bg-indigo-500 text-white shadow-lg"
+              : "bg-white text-indigo-700 border border-indigo-200 hover:bg-indigo-50"
+          }`}
+        >
+          <User size={18} />
+          Profile Management
+        </Button>
       </div>
 
       {/* Tab panels */}
@@ -605,6 +1457,9 @@ export default function StudentsTab() {
             ) : (
               <StudentsTable key="studentstable" students={students} onStudentUpdated={handleStudentAdded} />
             ))}
+          {activeTab === "profile" && (
+            <StudentProfileManagement key="profilemanagement" />
+          )}
         </AnimatePresence>
       </div>
     </div>

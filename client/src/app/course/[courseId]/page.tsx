@@ -11,9 +11,11 @@ import {
   Clock,
   Users,
   CheckCircle,
+  Download,
 } from "lucide-react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
+import jsPDF from "jspdf";
 
 import LiveSchedule from "../../components/LiveSchedule";
 import SimulatorDemo from "../../components/SimulatorDemo";
@@ -35,8 +37,8 @@ const dummyCourses = {
     type: "Individual Course",
     description:
       "Tally Foundation Course covers in-depth knowledge to meet all the accounting requirements of the industry with learning exposure on Voucher Entries, Grouping, BRS, etc. We not only teach the concepts but also help you learn how you can practically implement those concepts in your day to day Accounting Process with practical examples and entries in Tally.",
-    image: "/images/accounting.webp",
-    videoThumbnail: "/images/accounting.webp",
+    image: "/images/a1.jpeg",
+    videoThumbnail: "/images/a1.jpeg",
     syllabus: [
       {
         title: "Basic Accounting",
@@ -522,6 +524,125 @@ export default function CourseDetailPage({
     );
   };
 
+  const generateSyllabusPDF = () => {
+    const doc = new jsPDF();
+    let yPosition = 20;
+
+    // Add title
+    doc.setFontSize(20);
+    doc.setFont("helvetica", "bold");
+    doc.text("Course Syllabus", 20, yPosition);
+    yPosition += 15;
+
+    // Add course title
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text(course.title || "Course Details", 20, yPosition);
+    yPosition += 20;
+
+    // Add course description
+    if (course.description) {
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "normal");
+      const descriptionLines = doc.splitTextToSize(course.description, 170);
+      doc.text(descriptionLines, 20, yPosition);
+      yPosition += descriptionLines.length * 6 + 10;
+    }
+
+    // Add course details
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("Course Information:", 20, yPosition);
+    yPosition += 10;
+
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Duration: ${course.duration || "N/A"}`, 20, yPosition);
+    yPosition += 6;
+    doc.text(`Level: ${course.level || "N/A"}`, 20, yPosition);
+    yPosition += 6;
+    doc.text(`Price: ₹${course.price || "N/A"}`, 20, yPosition);
+    yPosition += 6;
+    doc.text(`Rating: ${course.rating || "N/A"}/5`, 20, yPosition);
+    yPosition += 15;
+
+    // Add syllabus content
+    if (course.chapters && course.chapters.length > 0) {
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("Detailed Syllabus:", 20, yPosition);
+      yPosition += 10;
+
+      course.chapters.forEach((chapter: any, index: number) => {
+        // Check if we need a new page
+        if (yPosition > 250) {
+          doc.addPage();
+          yPosition = 20;
+        }
+
+        // Chapter title
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text(`${index + 1}. ${chapter.title}`, 20, yPosition);
+        yPosition += 8;
+
+        // Chapter topics
+        if (chapter.topics && chapter.topics.length > 0) {
+          doc.setFontSize(10);
+          doc.setFont("helvetica", "normal");
+          chapter.topics.forEach((topic: any) => {
+            if (yPosition > 270) {
+              doc.addPage();
+              yPosition = 20;
+            }
+            doc.text(`• ${topic.title || topic}`, 30, yPosition);
+            yPosition += 5;
+          });
+        }
+        yPosition += 5;
+      });
+    } else if (course.syllabus && course.syllabus.length > 0) {
+      // Fallback to dummy syllabus data
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("Detailed Syllabus:", 20, yPosition);
+      yPosition += 10;
+
+      course.syllabus.forEach((chapter: any, index: number) => {
+        // Check if we need a new page
+        if (yPosition > 250) {
+          doc.addPage();
+          yPosition = 20;
+        }
+
+        // Chapter title
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text(`${index + 1}. ${chapter.title}`, 20, yPosition);
+        yPosition += 8;
+
+        // Chapter topics
+        if (chapter.topics && chapter.topics.length > 0) {
+          doc.setFontSize(10);
+          doc.setFont("helvetica", "normal");
+          chapter.topics.forEach((topic: string) => {
+            if (yPosition > 270) {
+              doc.addPage();
+              yPosition = 20;
+            }
+            doc.text(`• ${topic}`, 30, yPosition);
+            yPosition += 5;
+          });
+        }
+        yPosition += 5;
+      });
+    }
+
+    // Save the PDF
+    const fileName = `${course.title || "Course"}_Syllabus.pdf`;
+    doc.save(fileName);
+  };
+
   // Dynamic tabs based on course data
   const tabs = [
     { id: "syllabus", label: course?.tabs?.syllabus?.label || "Syllabus" },
@@ -626,10 +747,17 @@ export default function CourseDetailPage({
                 {/* Tab Content */}
                 {activeTab === "syllabus" && (
                   <div>
-                    <div className="mb-4">
+                    <div className="mb-4 flex justify-between items-center">
                       <h3 className="text-lg font-bold bg-gradient-to-r from-blue-500 to-emerald-500 bg-clip-text text-transparent">
                         Course Syllabus
                       </h3>
+                      <button
+                        onClick={generateSyllabusPDF}
+                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 text-sm font-medium"
+                      >
+                        <Download className="w-4 h-4" />
+                        View full Syllabus
+                      </button>
                     </div>
 
                     {/* Dynamic syllabus from chapters */}
@@ -835,7 +963,7 @@ export default function CourseDetailPage({
                             : course.image.startsWith("/")
                             ? course.image
                             : `${API_BASE}${course.image}`
-                          : course.videoThumbnail || "/images/accounting.webp"
+                          : course.videoThumbnail || "/images/a1.jpeg"
                       }
                       alt={`${course.title} - Course Preview`}
                       className="w-full h-full object-cover"
@@ -845,7 +973,7 @@ export default function CourseDetailPage({
                         console.log("Course image field:", course.image);
                         console.log("API_BASE:", API_BASE);
                         // Try fallback image
-                        const fallbackSrc = "/images/accounting.webp";
+                        const fallbackSrc = "/images/a1.jpeg";
                         console.log("Trying fallback image:", fallbackSrc);
                         e.currentTarget.src = fallbackSrc;
                       }}
@@ -856,9 +984,9 @@ export default function CourseDetailPage({
                     />
 
                     {/* Play Button Overlay */}
-                    <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center">
-                      <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center hover:bg-opacity-30 transition-all cursor-pointer">
-                        <Play className="w-6 h-6 text-white ml-1" />
+                    <div className="absolute inset-0 bg-black bg-opacity-10 flex items-center justify-center">
+                      <div className="w-12 h-12 bg-white bg-opacity-90 rounded-full flex items-center justify-center hover:bg-opacity-100 transition-all cursor-pointer shadow-lg">
+                        <Play className="w-6 h-6 text-gray-800 ml-1" />
                       </div>
                     </div>
                   </div>
