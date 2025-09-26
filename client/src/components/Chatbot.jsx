@@ -40,18 +40,35 @@ const Chatbot = () => {
   ]);
   const [inputMessage, setInputMessage] = useState("");
 
-  // Initialize session ID
+  // Initialize session ID and save initial message
   useEffect(() => {
     if (!sessionId) {
-      setSessionId(uuidv4());
+      const newSessionId = uuidv4();
+      setSessionId(newSessionId);
+    }
+  }, []);
+
+  // Save initial bot message when sessionId is ready
+  useEffect(() => {
+    if (sessionId && messages.length === 1) {
+      // Save the initial bot message
+      saveChatMessage(messages[0], {});
     }
   }, [sessionId]);
 
   // Function to save chat message to backend
   const saveChatMessage = async (message, userDetails = null) => {
+    // Don't save if sessionId is not ready
+    if (!sessionId) {
+      console.warn("SessionId not ready, skipping message save");
+      return;
+    }
+
     try {
+      console.log("Saving chat message:", { sessionId, message, userDetails });
+      
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080"}/api/chat/save-message`,
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/api/chat/save-message`,
         {
           method: "POST",
           headers: {
@@ -68,10 +85,14 @@ const Chatbot = () => {
       );
 
       if (!response.ok) {
-        console.error("Failed to save chat message");
+        console.error("Failed to save chat message. Status:", response.status);
+        const responseText = await response.text();
+        console.error("Response:", responseText);
+      } else {
+        console.log("✅ Chat message saved successfully");
       }
     } catch (error) {
-      console.error("Error saving chat message:", error);
+      console.error("❌ Error saving chat message:", error);
     }
   };
 
@@ -225,7 +246,7 @@ const Chatbot = () => {
           // Store in backend
           try {
             const response = await fetch(
-              `${process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080"}/api/contact`,
+              `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/api/contact`,
               {
                 method: "POST",
                 headers: {

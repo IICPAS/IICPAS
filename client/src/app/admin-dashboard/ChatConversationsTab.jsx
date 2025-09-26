@@ -14,7 +14,9 @@ import {
   FaTimes, 
   FaSearch,
   FaFilter,
-  FaSyncAlt
+  FaSyncAlt,
+  FaFileExcel,
+  FaRobot
 } from "react-icons/fa";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL;
@@ -24,6 +26,7 @@ export default function ChatConversationsTab() {
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedConversation, setSelectedConversation] = useState(null);
+  const [expandedConversation, setExpandedConversation] = useState(null);
   const [filter, setFilter] = useState("all"); // all, active, completed, abandoned
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -113,9 +116,21 @@ export default function ChatConversationsTab() {
         }
       );
       setSelectedConversation(response.data.conversation);
+      setExpandedConversation(sessionId);
     } catch (error) {
       console.error("Error fetching conversation details:", error);
       toast.error("Failed to fetch conversation details");
+    }
+  };
+
+  const toggleConversationExpansion = async (sessionId) => {
+    if (expandedConversation === sessionId) {
+      // Collapse
+      setExpandedConversation(null);
+      setSelectedConversation(null);
+    } else {
+      // Expand
+      await fetchConversationDetails(sessionId);
     }
   };
 
@@ -176,6 +191,81 @@ export default function ChatConversationsTab() {
     });
   };
 
+  const exportToExcel = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      
+      // Fetch all conversations without pagination
+      const response = await axios.get(
+        `${API_BASE || 'http://localhost:8080'}/api/chat/conversations`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          params: {
+            page: 1,
+            limit: 1000, // Get all conversations
+            status: filter !== 'all' ? filter : undefined,
+            search: search || undefined
+          }
+        }
+      );
+
+      const allConversations = response.data.conversations;
+      
+      // Prepare data for Excel
+      const excelData = allConversations.map((conversation, index) => ({
+        'S.No': index + 1,
+        'Session ID': conversation.sessionId,
+        'Name': conversation.userDetails.name || 'Anonymous',
+        'Email': conversation.userDetails.email || 'Not provided',
+        'Phone': conversation.userDetails.phone || 'Not provided',
+        'Status': conversation.status,
+        'Started At': formatDate(conversation.startedAt),
+        'Last Message At': formatDate(conversation.lastMessageAt),
+        'Completed At': conversation.completedAt ? formatDate(conversation.completedAt) : 'Not completed',
+        'User Agent': conversation.userAgent || 'Not available',
+        'IP Address': conversation.ipAddress || 'Not available'
+      }));
+
+      // Create CSV content
+      const headers = Object.keys(excelData[0]);
+      const csvContent = [
+        headers.join(','),
+        ...excelData.map(row => 
+          headers.map(header => {
+            const value = row[header];
+            // Escape commas and quotes in CSV
+            if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
+              return `"${value.replace(/"/g, '""')}"`;
+            }
+            return value;
+          }).join(',')
+        )
+      ].join('\n');
+
+      // Create and download file
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      
+      // Generate filename with current date
+      const currentDate = new Date().toISOString().split('T')[0];
+      link.setAttribute('download', `chatbot-conversations-${currentDate}.csv`);
+      
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast.success(`Exported ${allConversations.length} conversations to Excel`);
+    } catch (error) {
+      console.error("Error exporting to Excel:", error);
+      toast.error("Failed to export conversations");
+    }
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'active': return 'bg-green-100 text-green-800';
@@ -233,16 +323,25 @@ export default function ChatConversationsTab() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-gray-900">Chatbot Conversations</h2>
-        <button
-          onClick={() => {
-            fetchConversations();
-            fetchStatistics();
-          }}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
-        >
-          <FaSyncAlt />
-          Refresh
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={exportToExcel}
+            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2"
+          >
+            <FaFileExcel />
+            Export Excel
+          </button>
+          <button
+            onClick={() => {
+              fetchConversations();
+              fetchStatistics();
+            }}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
+          >
+            <FaSyncAlt />
+            Refresh
+          </button>
+        </div>
       </div>
 
       {/* Statistics Cards */}
@@ -363,81 +462,163 @@ export default function ChatConversationsTab() {
         ) : (
           <div className="divide-y divide-gray-200">
             {conversations.map((conversation) => (
-              <div key={conversation.sessionId} className="p-6 hover:bg-gray-50">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-4 mb-3">
-                      <div className="flex items-center gap-2">
-                        <FaUser className="h-4 w-4 text-gray-400" />
-                        <span className="text-sm font-medium text-gray-900">
-                          {conversation.userDetails.name || 'Anonymous'}
-                        </span>
-                      </div>
-                      {conversation.userDetails.email && (
+              <div key={conversation.sessionId}>
+                {/* Main Conversation Row */}
+                <div className="p-6 hover:bg-gray-50 cursor-pointer" onClick={() => toggleConversationExpansion(conversation.sessionId)}>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-4 mb-3">
                         <div className="flex items-center gap-2">
-                          <FaEnvelope className="h-4 w-4 text-gray-400" />
+                          <FaUser className="h-4 w-4 text-gray-400" />
+                          <span className="text-sm font-medium text-gray-900">
+                            {conversation.userDetails.name || 'Anonymous'}
+                          </span>
+                          {expandedConversation === conversation.sessionId && (
+                            <span className="text-blue-600 text-xs">▼ Expanded</span>
+                          )}
+                        </div>
+                        {conversation.userDetails.email && (
+                          <div className="flex items-center gap-2">
+                            <FaEnvelope className="h-4 w-4 text-gray-400" />
+                            <span className="text-sm text-gray-600">
+                              {conversation.userDetails.email}
+                            </span>
+                          </div>
+                        )}
+                        {conversation.userDetails.phone && (
+                          <div className="flex items-center gap-2">
+                            <FaPhone className="h-4 w-4 text-gray-400" />
+                            <span className="text-sm text-gray-600">
+                              {conversation.userDetails.phone}
+                            </span>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-2">
+                          <FaClock className="h-4 w-4 text-gray-400" />
                           <span className="text-sm text-gray-600">
-                            {conversation.userDetails.email}
+                            {formatDate(conversation.lastMessageAt)}
                           </span>
                         </div>
-                      )}
-                      {conversation.userDetails.phone && (
-                        <div className="flex items-center gap-2">
-                          <FaPhone className="h-4 w-4 text-gray-400" />
-                          <span className="text-sm text-gray-600">
-                            {conversation.userDetails.phone}
-                          </span>
-                        </div>
-                      )}
-                      <div className="flex items-center gap-2">
-                        <FaClock className="h-4 w-4 text-gray-400" />
-                        <span className="text-sm text-gray-600">
-                          {formatDate(conversation.lastMessageAt)}
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(conversation.status)}`}>
+                          {conversation.status}
                         </span>
                       </div>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(conversation.status)}`}>
-                        {conversation.status}
-                      </span>
+
+                      <div className="mb-4">
+                        <p className="text-sm text-gray-600">
+                          Session ID: {conversation.sessionId}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          Started: {formatDate(conversation.startedAt)}
+                        </p>
+                      </div>
                     </div>
 
-                    <div className="mb-4">
-                      <p className="text-sm text-gray-600">
-                        Session ID: {conversation.sessionId}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        Started: {formatDate(conversation.startedAt)}
-                      </p>
+                    <div className="flex items-center gap-2 ml-4">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleConversationExpansion(conversation.sessionId);
+                        }}
+                        className="text-blue-600 hover:text-blue-800 p-2 hover:bg-blue-50 rounded"
+                        title={expandedConversation === conversation.sessionId ? "Collapse" : "Expand Conversation"}
+                      >
+                        {expandedConversation === conversation.sessionId ? (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                          </svg>
+                        ) : (
+                          <FaEye />
+                        )}
+                      </button>
+                      
+                      <select
+                        value={conversation.status}
+                        onChange={(e) => updateConversationStatus(conversation.sessionId, e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      >
+                        <option value="active">Active</option>
+                        <option value="completed">Completed</option>
+                        <option value="abandoned">Abandoned</option>
+                      </select>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteConversation(conversation.sessionId);
+                        }}
+                        className="text-red-600 hover:text-red-800 p-2 hover:bg-red-50 rounded"
+                        title="Delete Conversation"
+                      >
+                        <FaTrash />
+                      </button>
                     </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 ml-4">
-                    <button
-                      onClick={() => fetchConversationDetails(conversation.sessionId)}
-                      className="text-blue-600 hover:text-blue-800 p-2 hover:bg-blue-50 rounded"
-                      title="View Conversation"
-                    >
-                      <FaEye />
-                    </button>
-                    
-                    <select
-                      value={conversation.status}
-                      onChange={(e) => updateConversationStatus(conversation.sessionId, e.target.value)}
-                      className="text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    >
-                      <option value="active">Active</option>
-                      <option value="completed">Completed</option>
-                      <option value="abandoned">Abandoned</option>
-                    </select>
-
-                    <button
-                      onClick={() => deleteConversation(conversation.sessionId)}
-                      className="text-red-600 hover:text-red-800 p-2 hover:bg-red-50 rounded"
-                      title="Delete Conversation"
-                    >
-                      <FaTrash />
-                    </button>
                   </div>
                 </div>
+
+                {/* Expanded Conversation Details */}
+                {expandedConversation === conversation.sessionId && selectedConversation && (
+                  <div className="bg-gray-50 border-t border-gray-200 p-6">
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+                      <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                        <h4 className="font-semibold text-gray-900 flex items-center gap-2">
+                          <FaComments className="text-green-600" />
+                          Chat Messages ({selectedConversation.messages.length})
+                        </h4>
+                        <button
+                          onClick={() => {
+                            setExpandedConversation(null);
+                            setSelectedConversation(null);
+                          }}
+                          className="text-gray-400 hover:text-gray-600 text-xl"
+                          title="Collapse"
+                        >
+                          ×
+                        </button>
+                      </div>
+                      
+                      <div className="p-4 max-h-96 overflow-y-auto">
+                        {selectedConversation.messages.map((message, index) => (
+                          <div
+                            key={index}
+                            className={`flex ${message.isBot ? "justify-start" : "justify-end"} mb-4`}
+                          >
+                            <div
+                              className={`max-w-[80%] p-3 rounded-2xl shadow-sm ${
+                                message.isBot
+                                  ? "bg-gray-100 text-gray-800 border border-gray-200"
+                                  : "bg-blue-500 text-white"
+                              }`}
+                            >
+                              <div className="flex items-start gap-2">
+                                {message.isBot ? (
+                                  <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                                    <FaRobot className="text-green-600 text-xs" />
+                                  </div>
+                                ) : (
+                                  <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                                    <FaUser className="text-white text-xs" />
+                                  </div>
+                                )}
+                                <div className="flex-1">
+                                  <p className="text-sm leading-relaxed whitespace-pre-line">
+                                    {message.text}
+                                  </p>
+                                  <p className={`text-xs mt-1 ${
+                                    message.isBot ? "text-gray-500" : "text-blue-100"
+                                  }`}>
+                                    {formatDate(message.timestamp)}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -471,75 +652,6 @@ export default function ChatConversationsTab() {
         )}
       </div>
 
-      {/* Conversation Details Modal */}
-      {selectedConversation && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
-            <div className="flex items-center justify-between p-6 border-b">
-              <h3 className="text-xl font-bold text-gray-900">Conversation Details</h3>
-              <button
-                onClick={() => setSelectedConversation(null)}
-                className="text-gray-400 hover:text-gray-600 text-2xl"
-              >
-                ×
-              </button>
-            </div>
-            
-            <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
-              <div className="space-y-4 mb-6">
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h4 className="font-semibold text-gray-900 mb-2">User Details</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <span className="text-sm font-medium text-gray-600">Name:</span>
-                      <p className="text-gray-900">{selectedConversation.userDetails.name || 'Not provided'}</p>
-                    </div>
-                    <div>
-                      <span className="text-sm font-medium text-gray-600">Email:</span>
-                      <p className="text-gray-900">{selectedConversation.userDetails.email || 'Not provided'}</p>
-                    </div>
-                    <div>
-                      <span className="text-sm font-medium text-gray-600">Phone:</span>
-                      <p className="text-gray-900">{selectedConversation.userDetails.phone || 'Not provided'}</p>
-                    </div>
-                  </div>
-                  <div className="mt-4">
-                    <span className="text-sm font-medium text-gray-600">Session ID:</span>
-                    <p className="text-gray-900 font-mono text-sm">{selectedConversation.sessionId}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <h4 className="font-semibold text-gray-900">Messages</h4>
-                {selectedConversation.messages.map((message, index) => (
-                  <div
-                    key={index}
-                    className={`flex ${message.isBot ? "justify-start" : "justify-end"}`}
-                  >
-                    <div
-                      className={`max-w-[80%] p-4 rounded-2xl ${
-                        message.isBot
-                          ? "bg-gray-100 text-gray-800"
-                          : "bg-blue-500 text-white"
-                      }`}
-                    >
-                      <p className="text-sm leading-relaxed whitespace-pre-line">
-                        {message.text}
-                      </p>
-                      <p className={`text-xs mt-2 ${
-                        message.isBot ? "text-gray-500" : "text-blue-100"
-                      }`}>
-                        {formatDate(message.timestamp)}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
