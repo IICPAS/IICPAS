@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FaRobot,
@@ -10,6 +10,7 @@ import {
   FaEnvelope,
   FaPhone,
 } from "react-icons/fa";
+import { v4 as uuidv4 } from 'uuid';
 
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -28,6 +29,7 @@ const Chatbot = () => {
     email: "",
     phone: "",
   });
+  const [sessionId, setSessionId] = useState(null);
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -37,6 +39,41 @@ const Chatbot = () => {
     },
   ]);
   const [inputMessage, setInputMessage] = useState("");
+
+  // Initialize session ID
+  useEffect(() => {
+    if (!sessionId) {
+      setSessionId(uuidv4());
+    }
+  }, [sessionId]);
+
+  // Function to save chat message to backend
+  const saveChatMessage = async (message, userDetails = null) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080"}/api/chat/save-message`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            sessionId,
+            message,
+            userDetails,
+            userAgent: navigator.userAgent,
+            ipAddress: null // Will be handled by backend
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        console.error("Failed to save chat message");
+      }
+    } catch (error) {
+      console.error("Error saving chat message:", error);
+    }
+  };
 
   // Extract single detail based on current step
   const extractSingleDetail = (message, step) => {
@@ -145,6 +182,9 @@ const Chatbot = () => {
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    
+    // Save user message to backend
+    saveChatMessage(userMessage, collectedDetails);
 
     // Check if user details are still being collected
     if (!userDetailsProvided) {
@@ -174,6 +214,8 @@ const Chatbot = () => {
           
           setTimeout(() => {
             setMessages((prev) => [...prev, botResponse]);
+            // Save bot response to backend
+            saveChatMessage(botResponse, collectedDetails);
           }, 1000);
         } else {
           // All details collected, store them
@@ -208,6 +250,8 @@ const Chatbot = () => {
               
               setTimeout(() => {
                 setMessages((prev) => [...prev, botResponse]);
+                // Save bot response to backend
+                saveChatMessage(botResponse, updatedDetails);
               }, 1000);
             } else {
               throw new Error("Failed to store details");
@@ -223,6 +267,8 @@ const Chatbot = () => {
             
             setTimeout(() => {
               setMessages((prev) => [...prev, botResponse]);
+              // Save bot response to backend
+              saveChatMessage(botResponse, updatedDetails);
             }, 1000);
           }
         }
@@ -248,6 +294,8 @@ const Chatbot = () => {
         
         setTimeout(() => {
           setMessages((prev) => [...prev, botResponse]);
+          // Save bot response to backend
+          saveChatMessage(botResponse, collectedDetails);
         }, 1000);
       }
     } else {
@@ -261,6 +309,8 @@ const Chatbot = () => {
 
       setTimeout(() => {
         setMessages((prev) => [...prev, botResponse]);
+        // Save bot response to backend
+        saveChatMessage(botResponse, collectedDetails);
       }, 1000);
     }
 
