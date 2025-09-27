@@ -294,6 +294,10 @@ app.use("/api/chat", chatRoutes);
 import chatbotSettingsRoutes from "./routes/chatbotSettingsRoutes.js";
 app.use("/api/chatbot", chatbotSettingsRoutes);
 
+//Privacy Policy Routes
+import privacyPolicyRoutes from "./routes/privacyPolicy.js";
+app.use("/api/privacy-policy", privacyPolicyRoutes);
+
 // Server
 const PORT = process.env.PORT || 8080;
 server.listen(PORT, () =>

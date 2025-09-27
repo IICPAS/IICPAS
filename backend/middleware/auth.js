@@ -1,8 +1,8 @@
-// middleware/adminAuth.js
+// middleware/auth.js
 import jwt from "jsonwebtoken";
 import Admin from "../models/Admin.js";
 
-const adminAuth = async (req, res, next) => {
+const auth = async (req, res, next) => {
   let token;
 
   if (
@@ -27,7 +27,7 @@ const adminAuth = async (req, res, next) => {
 
       next();
     } catch (error) {
-      console.error("Admin auth middleware error:", error);
+      console.error("Auth middleware error:", error);
       return res.status(401).json({ message: "Not authorized, token failed" });
     }
   } else {
@@ -35,5 +35,4 @@ const adminAuth = async (req, res, next) => {
   }
 };
 
-export default adminAuth;
-
+export default auth;
