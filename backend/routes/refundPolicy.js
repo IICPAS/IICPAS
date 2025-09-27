@@ -7,7 +7,7 @@ import {
   activateRefundPolicy, 
   deleteRefundPolicy 
 } from '../controllers/refundPolicyController.js';
-import requireAuth from '../middleware/auth.js';
+import { requireAuth } from '../middleware/requireAuth.js';
 
 const router = express.Router();
 

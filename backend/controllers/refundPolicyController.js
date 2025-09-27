@@ -28,6 +28,14 @@ export const getActiveRefundPolicy = async (req, res) => {
 // Get all refund policies (admin only)
 export const getAllRefundPolicies = async (req, res) => {
   try {
+    // Check if user is admin
+    if (req.user.role !== 'Admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Admin privileges required.'
+      });
+    }
+
     const refundPolicies = await RefundPolicy.find().sort({ createdAt: -1 });
     
     res.json({
@@ -46,6 +54,14 @@ export const getAllRefundPolicies = async (req, res) => {
 // Create new refund policy (admin only)
 export const createRefundPolicy = async (req, res) => {
   try {
+    // Check if user is admin
+    if (req.user.role !== 'Admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Admin privileges required.'
+      });
+    }
+
     const { title, lastUpdated, sections, contactInfo } = req.body;
 
     // Validate required fields
@@ -87,6 +103,14 @@ export const createRefundPolicy = async (req, res) => {
 // Update refund policy (admin only)
 export const updateRefundPolicy = async (req, res) => {
   try {
+    // Check if user is admin
+    if (req.user.role !== 'Admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Admin privileges required.'
+      });
+    }
+
     const { id } = req.params;
     const { title, lastUpdated, sections, contactInfo } = req.body;
 
@@ -124,6 +148,14 @@ export const updateRefundPolicy = async (req, res) => {
 // Activate refund policy (admin only)
 export const activateRefundPolicy = async (req, res) => {
   try {
+    // Check if user is admin
+    if (req.user.role !== 'Admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Admin privileges required.'
+      });
+    }
+
     const { id } = req.params;
 
     // Deactivate all policies first
@@ -160,6 +192,14 @@ export const activateRefundPolicy = async (req, res) => {
 // Delete refund policy (admin only)
 export const deleteRefundPolicy = async (req, res) => {
   try {
+    // Check if user is admin
+    if (req.user.role !== 'Admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Admin privileges required.'
+      });
+    }
+
     const { id } = req.params;
 
     const refundPolicy = await RefundPolicy.findById(id);

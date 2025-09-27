@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { FaEdit, FaSave, FaPlus, FaTrash, FaEye, FaCheck, FaTimes, FaFileExcel } from "react-icons/fa";
+import { FaEdit, FaSave, FaPlus, FaTrash, FaEye, FaTimes, FaFileExcel } from "react-icons/fa";
 import toast from "react-hot-toast";
 import * as XLSX from 'xlsx';
 
@@ -43,6 +43,7 @@ const RefundPolicyTab = () => {
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [showEditPage, setShowEditPage] = useState(false);
 
   useEffect(() => {
     fetchRefundPolicies();
@@ -111,6 +112,7 @@ const RefundPolicyTab = () => {
       if (data.success) {
         toast.success("Refund policy saved successfully");
         setEditing(false);
+        setShowEditPage(false);
         fetchRefundPolicies();
       } else {
         toast.error(data.message || "Failed to save refund policy");
@@ -306,76 +308,9 @@ const RefundPolicyTab = () => {
     if (!currentPolicy) return;
     
     const updatedSections = [...currentPolicy.sections];
-    updatedSections[sectionIndex].subsections = updatedSections[sectionIndex].subsections?.filter((_, i) => i !== subsectionIndex);
-    
-    setCurrentPolicy({
-      ...currentPolicy,
-      sections: updatedSections
-    });
-  };
-
-  const addListItem = (sectionIndex: number, subsectionIndex?: number) => {
-    if (!currentPolicy) return;
-    
-    const updatedSections = [...currentPolicy.sections];
-    
-    if (subsectionIndex !== undefined) {
-      // Add to subsection
       const subsections = [...(updatedSections[sectionIndex].subsections || [])];
-      subsections[subsectionIndex].listItems = [
-        ...(subsections[subsectionIndex].listItems || []),
-        "New list item"
-      ];
+    subsections.splice(subsectionIndex, 1);
       updatedSections[sectionIndex].subsections = subsections;
-    } else {
-      // Add to section
-      updatedSections[sectionIndex].listItems = [
-        ...(updatedSections[sectionIndex].listItems || []),
-        "New list item"
-      ];
-    }
-    
-    setCurrentPolicy({
-      ...currentPolicy,
-      sections: updatedSections
-    });
-  };
-
-  const updateListItem = (sectionIndex: number, itemIndex: number, value: string, subsectionIndex?: number) => {
-    if (!currentPolicy) return;
-    
-    const updatedSections = [...currentPolicy.sections];
-    
-    if (subsectionIndex !== undefined) {
-      const subsections = [...(updatedSections[sectionIndex].subsections || [])];
-      subsections[subsectionIndex].listItems = subsections[subsectionIndex].listItems?.map((item, i) => 
-        i === itemIndex ? value : item
-      );
-      updatedSections[sectionIndex].subsections = subsections;
-    } else {
-      updatedSections[sectionIndex].listItems = updatedSections[sectionIndex].listItems?.map((item, i) => 
-        i === itemIndex ? value : item
-      );
-    }
-    
-    setCurrentPolicy({
-      ...currentPolicy,
-      sections: updatedSections
-    });
-  };
-
-  const deleteListItem = (sectionIndex: number, itemIndex: number, subsectionIndex?: number) => {
-    if (!currentPolicy) return;
-    
-    const updatedSections = [...currentPolicy.sections];
-    
-    if (subsectionIndex !== undefined) {
-      const subsections = [...(updatedSections[sectionIndex].subsections || [])];
-      subsections[subsectionIndex].listItems = subsections[subsectionIndex].listItems?.filter((_, i) => i !== itemIndex);
-      updatedSections[sectionIndex].subsections = subsections;
-    } else {
-      updatedSections[sectionIndex].listItems = updatedSections[sectionIndex].listItems?.filter((_, i) => i !== itemIndex);
-    }
     
     setCurrentPolicy({
       ...currentPolicy,
@@ -389,6 +324,216 @@ const RefundPolicyTab = () => {
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading refund policies...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Edit Page View
+  if (showEditPage && currentPolicy) {
+    return (
+      <div className="p-6">
+        <div className="max-w-7xl mx-auto">
+          {/* Edit Page Header */}
+          <div className="mb-8">
+            <div className="flex justify-between items-center">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Edit Refund Policy</h1>
+                <p className="text-gray-600 mt-2">Modify refund policy content and settings</p>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowEditPage(false);
+                    setEditing(false);
+                  }}
+                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 flex items-center space-x-2"
+                >
+                  <FaTimes />
+                  <span>Cancel</span>
+                </button>
+                <button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center space-x-2 disabled:opacity-50"
+                >
+                  <FaSave />
+                  <span>{saving ? "Saving..." : "Save Changes"}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Edit Form */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">Policy Editor</h2>
+            
+            {/* Basic Info */}
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+                <input
+                  type="text"
+                  value={currentPolicy.title}
+                  onChange={(e) => setCurrentPolicy({ ...currentPolicy, title: e.target.value })}
+                  placeholder="Enter policy title"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Last Updated</label>
+                <input
+                  type="text"
+                  value={currentPolicy.lastUpdated}
+                  onChange={(e) => setCurrentPolicy({ ...currentPolicy, lastUpdated: e.target.value })}
+                  placeholder="Enter last updated date"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            </div>
+
+            {/* Contact Info */}
+            <div className="space-y-4 mb-6">
+              <h3 className="text-lg font-medium text-gray-900">Contact Information</h3>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                <input
+                  type="email"
+                  value={currentPolicy.contactInfo.email}
+                  onChange={(e) => setCurrentPolicy({
+                    ...currentPolicy,
+                    contactInfo: { ...currentPolicy.contactInfo, email: e.target.value }
+                  })}
+                  placeholder="Enter email address"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                <input
+                  type="text"
+                  value={currentPolicy.contactInfo.phone}
+                  onChange={(e) => setCurrentPolicy({
+                    ...currentPolicy,
+                    contactInfo: { ...currentPolicy.contactInfo, phone: e.target.value }
+                  })}
+                  placeholder="Enter phone number"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                <textarea
+                  value={currentPolicy.contactInfo.address}
+                  onChange={(e) => setCurrentPolicy({
+                    ...currentPolicy,
+                    contactInfo: { ...currentPolicy.contactInfo, address: e.target.value }
+                  })}
+                  rows={3}
+                  placeholder="Enter address"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Business Hours</label>
+                <input
+                  type="text"
+                  value={currentPolicy.contactInfo.businessHours}
+                  onChange={(e) => setCurrentPolicy({
+                    ...currentPolicy,
+                    contactInfo: { ...currentPolicy.contactInfo, businessHours: e.target.value }
+                  })}
+                  placeholder="Enter business hours"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            </div>
+
+            {/* Sections */}
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-medium text-gray-900">Sections</h3>
+                <button
+                  onClick={addNewSection}
+                  className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center space-x-2"
+                >
+                  <FaPlus />
+                  <span>Add Section</span>
+                </button>
+              </div>
+
+              {currentPolicy.sections.map((section, sectionIndex) => (
+                <div key={sectionIndex} className="border border-gray-200 rounded-lg p-4">
+                  <div className="flex justify-between items-center mb-4">
+                    <input
+                      type="text"
+                      value={section.title}
+                      onChange={(e) => updateSection(sectionIndex, 'title', e.target.value)}
+                      placeholder="Section title"
+                      className="text-lg font-medium text-gray-900 bg-transparent border-b border-gray-300 focus:border-blue-500 focus:outline-none"
+                    />
+                    <button
+                      onClick={() => deleteSection(sectionIndex)}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-full"
+                      title="Delete section"
+                    >
+                      <FaTrash />
+                    </button>
+                  </div>
+                  
+                  <textarea
+                    value={section.content}
+                    onChange={(e) => updateSection(sectionIndex, 'content', e.target.value)}
+                    placeholder="Section content..."
+                    rows={4}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-4"
+                  />
+
+                  {/* Subsections */}
+                  {section.subsections && section.subsections.length > 0 && (
+                    <div className="ml-4 space-y-3">
+                      <h4 className="font-medium text-gray-800">Subsections</h4>
+                      {section.subsections.map((subsection, subsectionIndex) => (
+                        <div key={subsectionIndex} className="border border-gray-200 rounded-lg p-3">
+                          <div className="flex justify-between items-center mb-2">
+                            <input
+                              type="text"
+                              value={subsection.title || ''}
+                              onChange={(e) => updateSubsection(sectionIndex, subsectionIndex, 'title', e.target.value)}
+                              placeholder="Subsection title"
+                              className="font-medium text-gray-800 bg-transparent border-b border-gray-300 focus:border-blue-500 focus:outline-none"
+                            />
+                            <button
+                              onClick={() => deleteSubsection(sectionIndex, subsectionIndex)}
+                              className="p-1 text-red-600 hover:bg-red-50 rounded-full"
+                              title="Delete subsection"
+                            >
+                              <FaTrash />
+                            </button>
+                          </div>
+                          <textarea
+                            value={subsection.content || ''}
+                            onChange={(e) => updateSubsection(sectionIndex, subsectionIndex, 'content', e.target.value)}
+                            placeholder="Subsection content..."
+                            rows={2}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <button
+                    onClick={() => addSubsection(sectionIndex)}
+                    className="mt-2 px-3 py-1 bg-blue-100 text-blue-800 rounded-lg hover:bg-blue-200 flex items-center space-x-2"
+                  >
+                    <FaPlus />
+                    <span>Add Subsection</span>
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -420,22 +565,15 @@ const RefundPolicyTab = () => {
                 <span>Export Excel</span>
               </button>
               <button
-                onClick={() => setEditing(!editing)}
+                onClick={() => {
+                  setEditing(true);
+                  setShowEditPage(true);
+                }}
                 className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center space-x-2"
               >
                 <FaEdit />
-                <span>{editing ? "Cancel Edit" : "Edit Policy"}</span>
+                <span>Edit Policy</span>
               </button>
-              {editing && (
-                <button
-                  onClick={handleSave}
-                  disabled={saving}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center space-x-2 disabled:opacity-50"
-                >
-                  <FaSave />
-                  <span>{saving ? "Saving..." : "Save Changes"}</span>
-                </button>
-              )}
             </div>
           </div>
         </div>
@@ -486,312 +624,61 @@ const RefundPolicyTab = () => {
           </div>
         </div>
 
-        {/* Main Content */}
+        {/* Main Content - Read Only View */}
         {currentPolicy && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Editor */}
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Policy Editor</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">Current Refund Policy</h2>
               
               {/* Basic Info */}
               <div className="space-y-4 mb-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
-                  <input
-                    type="text"
-                    value={currentPolicy.title}
-                    onChange={(e) => setCurrentPolicy({ ...currentPolicy, title: e.target.value })}
-                    disabled={!editing}
-                    placeholder="Enter policy title"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
-                  />
+                <p className="text-lg font-medium text-gray-900">{currentPolicy.title}</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Last Updated</label>
-                  <input
-                    type="text"
-                    value={currentPolicy.lastUpdated}
-                    onChange={(e) => setCurrentPolicy({ ...currentPolicy, lastUpdated: e.target.value })}
-                    disabled={!editing}
-                    placeholder="Enter last updated date"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
-                  />
-                </div>
+                <p className="text-gray-900">{currentPolicy.lastUpdated}</p>
+              </div>
               </div>
 
               {/* Contact Info */}
               <div className="space-y-4 mb-6">
                 <h3 className="text-lg font-medium text-gray-900">Contact Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                  <input
-                    type="email"
-                    value={currentPolicy.contactInfo.email}
-                    onChange={(e) => setCurrentPolicy({
-                      ...currentPolicy,
-                      contactInfo: { ...currentPolicy.contactInfo, email: e.target.value }
-                    })}
-                    disabled={!editing}
-                    placeholder="Enter email address"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
-                  />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <p className="text-gray-900">{currentPolicy.contactInfo.email}</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
-                  <input
-                    type="text"
-                    value={currentPolicy.contactInfo.phone}
-                    onChange={(e) => setCurrentPolicy({
-                      ...currentPolicy,
-                      contactInfo: { ...currentPolicy.contactInfo, phone: e.target.value }
-                    })}
-                    disabled={!editing}
-                    placeholder="Enter phone number"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
-                  />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                  <p className="text-gray-900">{currentPolicy.contactInfo.phone}</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
-                  <textarea
-                    value={currentPolicy.contactInfo.address}
-                    onChange={(e) => setCurrentPolicy({
-                      ...currentPolicy,
-                      contactInfo: { ...currentPolicy.contactInfo, address: e.target.value }
-                    })}
-                    disabled={!editing}
-                    rows={3}
-                    placeholder="Enter address"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
-                  />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                  <p className="text-gray-900">{currentPolicy.contactInfo.address}</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Business Hours</label>
-                  <input
-                    type="text"
-                    value={currentPolicy.contactInfo.businessHours}
-                    onChange={(e) => setCurrentPolicy({
-                      ...currentPolicy,
-                      contactInfo: { ...currentPolicy.contactInfo, businessHours: e.target.value }
-                    })}
-                    disabled={!editing}
-                    placeholder="Enter business hours"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
-                  />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Business Hours</label>
+                  <p className="text-gray-900">{currentPolicy.contactInfo.businessHours}</p>
+                </div>
                 </div>
               </div>
 
               {/* Sections */}
               <div className="space-y-6">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-medium text-gray-900">Sections</h3>
-                  {editing && (
-                    <button
-                      onClick={addNewSection}
-                      className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center space-x-2"
-                    >
-                      <FaPlus />
-                      <span>Add Section</span>
-                    </button>
-                  )}
-                </div>
-
+              <h3 className="text-lg font-medium text-gray-900">Policy Sections</h3>
                 {currentPolicy.sections.map((section, sectionIndex) => (
                   <div key={sectionIndex} className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex justify-between items-start mb-4">
-                      <div className="flex-1">
-                        <input
-                          type="text"
-                          value={section.title}
-                          onChange={(e) => updateSection(sectionIndex, 'title', e.target.value)}
-                          disabled={!editing}
-                          placeholder="Enter section title"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 font-medium"
-                        />
-                      </div>
-                      {editing && (
-                        <button
-                          onClick={() => deleteSection(sectionIndex)}
-                          className="ml-2 p-2 text-red-600 hover:bg-red-50 rounded-full"
-                          title="Delete section"
-                          aria-label="Delete section"
-                        >
-                          <FaTrash />
-                        </button>
-                      )}
-                    </div>
-
-                    <div className="mb-4">
-                      <textarea
-                        value={section.content}
-                        onChange={(e) => updateSection(sectionIndex, 'content', e.target.value)}
-                        disabled={!editing}
-                        rows={4}
-                        placeholder="Enter section content"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
-                      />
-                    </div>
+                  <h4 className="text-lg font-medium text-gray-900 mb-3">{section.title}</h4>
+                  <p className="text-gray-600 leading-relaxed mb-4">{section.content}</p>
 
                     {/* Subsections */}
                     {section.subsections && section.subsections.length > 0 && (
-                      <div className="ml-4 space-y-4">
-                        <div className="flex justify-between items-center">
-                          <h4 className="text-md font-medium text-gray-800">Subsections</h4>
-                          {editing && (
-                            <button
-                              onClick={() => addSubsection(sectionIndex)}
-                              className="px-2 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center space-x-1"
-                            >
-                              <FaPlus />
-                              <span>Add</span>
-                            </button>
-                          )}
-                        </div>
-
+                    <div className="ml-4 space-y-3">
                         {section.subsections.map((subsection, subsectionIndex) => (
-                          <div key={subsectionIndex} className="border border-gray-200 rounded-lg p-3">
-                            <div className="flex justify-between items-start mb-2">
-                              <div className="flex-1">
-                                <input
-                                  type="text"
-                                  value={subsection.title || ""}
-                                  onChange={(e) => updateSubsection(sectionIndex, subsectionIndex, 'title', e.target.value)}
-                                  disabled={!editing}
-                                  placeholder="Enter subsection title"
-                                  className="w-full px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 text-sm font-medium"
-                                />
-                              </div>
-                              {editing && (
-                                <button
-                                  onClick={() => deleteSubsection(sectionIndex, subsectionIndex)}
-                                  className="ml-2 p-1 text-red-600 hover:bg-red-50 rounded-full"
-                                  title="Delete subsection"
-                                  aria-label="Delete subsection"
-                                >
-                                  <FaTimes />
-                                </button>
-                              )}
-                            </div>
-
-                            <div className="mb-2">
-                              <textarea
-                                value={subsection.content || ""}
-                                onChange={(e) => updateSubsection(sectionIndex, subsectionIndex, 'content', e.target.value)}
-                                disabled={!editing}
-                                rows={3}
-                                placeholder="Enter subsection content"
-                                className="w-full px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 text-sm"
-                              />
-                            </div>
-
-                            {/* Subsection List Items */}
-                            {subsection.listItems && subsection.listItems.length > 0 && (
-                              <div className="ml-4">
-                                <div className="flex justify-between items-center mb-2">
-                                  <h5 className="text-sm font-medium text-gray-700">List Items</h5>
-                                  {editing && (
-                                    <button
-                                      onClick={() => addListItem(sectionIndex, subsectionIndex)}
-                                      className="px-2 py-1 bg-gray-600 text-white rounded-lg hover:bg-gray-700 flex items-center space-x-1"
-                                    >
-                                      <FaPlus />
-                                      <span>Add</span>
-                                    </button>
-                                  )}
-                                </div>
-                                <ul className="space-y-1">
-                                  {subsection.listItems.map((item, itemIndex) => (
-                                    <li key={itemIndex} className="flex items-center space-x-2">
-                                      <input
-                                        type="text"
-                                        value={item}
-                                        onChange={(e) => updateListItem(sectionIndex, itemIndex, e.target.value, subsectionIndex)}
-                                        disabled={!editing}
-                                        placeholder="Enter list item"
-                                        className="flex-1 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 text-sm"
-                                      />
-                                      {editing && (
-                                        <button
-                                          onClick={() => deleteListItem(sectionIndex, itemIndex, subsectionIndex)}
-                                          className="p-1 text-red-600 hover:bg-red-50 rounded-full"
-                                          title="Delete list item"
-                                          aria-label="Delete list item"
-                                        >
-                                          <FaTimes />
-                                        </button>
-                                      )}
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Section List Items */}
-                    {section.listItems && section.listItems.length > 0 && (
-                      <div className="ml-4">
-                        <div className="flex justify-between items-center mb-2">
-                          <h4 className="text-sm font-medium text-gray-700">List Items</h4>
-                          {editing && (
-                            <button
-                              onClick={() => addListItem(sectionIndex)}
-                              className="px-2 py-1 bg-gray-600 text-white rounded-lg hover:bg-gray-700 flex items-center space-x-1"
-                            >
-                              <FaPlus />
-                              <span>Add</span>
-                            </button>
-                          )}
-                        </div>
-                        <ul className="space-y-1">
-                          {section.listItems.map((item, itemIndex) => (
-                            <li key={itemIndex} className="flex items-center space-x-2">
-                              <input
-                                type="text"
-                                value={item}
-                                onChange={(e) => updateListItem(sectionIndex, itemIndex, e.target.value)}
-                                disabled={!editing}
-                                placeholder="Enter list item"
-                                className="flex-1 px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 text-sm"
-                              />
-                              {editing && (
-                                <button
-                                  onClick={() => deleteListItem(sectionIndex, itemIndex)}
-                                  className="p-1 text-red-600 hover:bg-red-50 rounded-full"
-                                  title="Delete list item"
-                                  aria-label="Delete list item"
-                                >
-                                  <FaTimes />
-                                </button>
-                              )}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Preview */}
-            {showPreview && (
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Preview</h2>
-                <div className="prose max-w-none">
-                  <h1 className="text-3xl font-bold text-gray-900 mb-4">{currentPolicy.title}</h1>
-                  <p className="text-gray-600 mb-8">Last updated: {currentPolicy.lastUpdated}</p>
-
-                  {currentPolicy.sections.map((section, sectionIndex) => (
-                    <div key={sectionIndex} className="mb-8">
-                      <h2 className="text-2xl font-semibold text-gray-900 mb-4">{section.title}</h2>
-                      <p className="text-gray-600 leading-relaxed mb-4">{section.content}</p>
-
-                      {section.subsections && section.subsections.map((subsection, subsectionIndex) => (
-                        <div key={subsectionIndex} className="ml-4 mb-4">
+                        <div key={subsectionIndex} className="border-l-2 border-gray-300 pl-4">
                           {subsection.title && (
-                            <h3 className="text-lg font-semibold text-gray-900 mb-2">{subsection.title}</h3>
+                            <h5 className="font-medium text-gray-800 mb-2">{subsection.title}</h5>
                           )}
                           {subsection.content && (
                             <p className="text-gray-600 leading-relaxed mb-2">{subsection.content}</p>
@@ -805,6 +692,8 @@ const RefundPolicyTab = () => {
                           )}
                         </div>
                       ))}
+                    </div>
+                  )}
 
                       {section.listItems && section.listItems.length > 0 && (
                         <ul className="list-disc list-inside text-gray-600 space-y-1 ml-4">
@@ -815,19 +704,91 @@ const RefundPolicyTab = () => {
                       )}
                     </div>
                   ))}
+            </div>
+          </div>
+        )}
 
-                  <div className="mt-8 p-4 bg-gray-50 rounded-lg">
-                    <h2 className="text-xl font-semibold text-gray-900 mb-4">Contact Information</h2>
-                    <p className="text-gray-600">
-                      Email: {currentPolicy.contactInfo.email}<br />
-                      Phone: {currentPolicy.contactInfo.phone}<br />
-                      Address: {currentPolicy.contactInfo.address}<br />
-                      Business Hours: {currentPolicy.contactInfo.businessHours}
-                    </p>
+        {/* Preview Section */}
+        {currentPolicy && showPreview && (
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">Policy Preview</h2>
+            <div className="prose max-w-none">
+              {/* Policy Header */}
+              <div className="text-center mb-8 pb-6 border-b border-gray-200">
+                <h1 className="text-3xl font-bold text-gray-900 mb-4">{currentPolicy.title}</h1>
+                <p className="text-gray-600 text-lg">Last updated: {currentPolicy.lastUpdated}</p>
+              </div>
+              
+              {/* Policy Sections */}
+              {currentPolicy.sections.map((section, sectionIndex) => (
+                <div key={sectionIndex} className="mb-8">
+                  <h2 className="text-2xl font-semibold text-gray-900 mb-4">{section.title}</h2>
+                  <p className="text-gray-600 leading-relaxed mb-6 text-lg">{section.content}</p>
+                  
+                  {/* Subsections */}
+                  {section.subsections && section.subsections.length > 0 && (
+                    <div className="ml-4 space-y-4">
+                      {section.subsections.map((subsection, subsectionIndex) => (
+                        <div key={subsectionIndex} className="border-l-4 border-blue-200 pl-6">
+                          {subsection.title && (
+                            <h3 className="text-xl font-semibold text-gray-800 mb-3">{subsection.title}</h3>
+                          )}
+                          {subsection.content && (
+                            <p className="text-gray-600 leading-relaxed mb-4 text-lg">{subsection.content}</p>
+                          )}
+                          {subsection.listItems && subsection.listItems.length > 0 && (
+                            <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4 text-lg">
+                              {subsection.listItems.map((item, itemIndex) => (
+                                <li key={itemIndex} className="leading-relaxed">{item}</li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Section List Items */}
+                  {section.listItems && section.listItems.length > 0 && (
+                    <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4 text-lg">
+                      {section.listItems.map((item, itemIndex) => (
+                        <li key={itemIndex} className="leading-relaxed">{item}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))}
+
+              {/* Contact Information */}
+              <div className="mt-12 p-6 bg-gray-50 rounded-lg border border-gray-200">
+                <h2 className="text-2xl font-semibold text-gray-900 mb-6 text-center">Contact Information</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h3 className="font-semibold text-gray-800 mb-2">Email</h3>
+                    <p className="text-gray-600 text-lg">{currentPolicy.contactInfo.email}</p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-800 mb-2">Phone</h3>
+                    <p className="text-gray-600 text-lg">{currentPolicy.contactInfo.phone}</p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-800 mb-2">Address</h3>
+                    <p className="text-gray-600 text-lg">{currentPolicy.contactInfo.address}</p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-800 mb-2">Business Hours</h3>
+                    <p className="text-gray-600 text-lg">{currentPolicy.contactInfo.businessHours}</p>
                   </div>
                 </div>
               </div>
-            )}
+
+              {/* Footer */}
+              <div className="mt-8 pt-6 border-t border-gray-200 text-center">
+                <p className="text-gray-500 text-sm">
+                  This policy is effective as of {currentPolicy.lastUpdated} and applies to all refund requests.
+                </p>
+              </div>
+            </div>
           </div>
         )}
       </div>

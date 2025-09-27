@@ -22,6 +22,7 @@ interface ContactInfo {
   email: string;
   phone: string;
   address: string;
+  businessHours?: string;
 }
 
 interface PrivacyPolicyData {
@@ -463,6 +464,91 @@ const PrivacyPolicyTab = () => {
           ))}
         </div>
       </div>
+
+      {/* Main Content - Read Only View */}
+      {currentPolicy && (
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-6">Current Privacy Policy</h2>
+            
+            {/* Basic Info */}
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+                <p className="text-lg font-medium text-gray-900">{currentPolicy.title}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Last Updated</label>
+                <p className="text-gray-900">{currentPolicy.lastUpdated}</p>
+              </div>
+            </div>
+
+            {/* Contact Info */}
+            <div className="space-y-4 mb-6">
+              <h3 className="text-lg font-medium text-gray-900">Contact Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <p className="text-gray-900">{currentPolicy.contactInfo.email}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                  <p className="text-gray-900">{currentPolicy.contactInfo.phone}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                  <p className="text-gray-900">{currentPolicy.contactInfo.address}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Business Hours</label>
+                  <p className="text-gray-900">{currentPolicy.contactInfo.businessHours || 'Not specified'}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Sections */}
+            <div className="space-y-6">
+              <h3 className="text-lg font-medium text-gray-900">Policy Sections</h3>
+              {currentPolicy.sections.map((section, sectionIndex) => (
+                <div key={sectionIndex} className="border border-gray-200 rounded-lg p-4">
+                  <h4 className="text-lg font-medium text-gray-900 mb-3">{section.title}</h4>
+                  <p className="text-gray-600 leading-relaxed mb-4">{section.content}</p>
+
+                  {/* Subsections */}
+                  {section.subsections && section.subsections.length > 0 && (
+                    <div className="ml-4 space-y-3">
+                      {section.subsections.map((subsection, subsectionIndex) => (
+                        <div key={subsectionIndex} className="border-l-2 border-gray-300 pl-4">
+                          {subsection.title && (
+                            <h5 className="font-medium text-gray-800 mb-2">{subsection.title}</h5>
+                          )}
+                          {subsection.content && (
+                            <p className="text-gray-600 leading-relaxed mb-2">{subsection.content}</p>
+                          )}
+                          {subsection.listItems && subsection.listItems.length > 0 && (
+                            <ul className="list-disc list-inside text-gray-600 space-y-1 ml-4">
+                              {subsection.listItems.map((item, itemIndex) => (
+                                <li key={itemIndex}>{item}</li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Section List Items */}
+                  {section.listItems && section.listItems.length > 0 && (
+                    <ul className="list-disc list-inside text-gray-600 space-y-1 ml-4">
+                      {section.listItems.map((item, itemIndex) => (
+                        <li key={itemIndex}>{item}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
       {/* Edit Form */}
       {currentPolicy && editing && (
