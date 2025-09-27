@@ -57,18 +57,24 @@ const EditRefundPolicyTab = ({ onBack, policyId }: EditRefundPolicyTabProps) => 
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (policyId) {
-      fetchRefundPolicy();
-    } else {
-      setLoading(false);
-    }
+    fetchRefundPolicy();
   }, [policyId]);
 
   const fetchRefundPolicy = async () => {
     try {
       const token = localStorage.getItem("adminToken");
       const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
-      const response = await fetch(`${API_BASE}/refund-policy/admin/${policyId}`, {
+      
+      let url;
+      if (policyId) {
+        // Fetch specific policy by ID
+        url = `${API_BASE}/refund-policy/admin/${policyId}`;
+      } else {
+        // Fetch active policy or first available policy
+        url = `${API_BASE}/refund-policy/admin/all`;
+      }
+      
+      const response = await fetch(url, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -76,7 +82,30 @@ const EditRefundPolicyTab = ({ onBack, policyId }: EditRefundPolicyTabProps) => 
       const data = await response.json();
       
       if (data.success) {
-        setRefundPolicy(data.data);
+        if (policyId) {
+          // Single policy response
+          setRefundPolicy(data.data);
+        } else {
+          // Array of policies response - use the first one or active one
+          if (data.data && data.data.length > 0) {
+            const activePolicy = data.data.find(policy => policy.isActive) || data.data[0];
+            setRefundPolicy(activePolicy);
+          } else {
+            // No policies exist, set default values
+            setRefundPolicy({
+              title: "Refund Policy",
+              lastUpdated: "January 2025",
+              sections: [],
+              contactInfo: {
+                email: "refunds@iicpa.com",
+                phone: "+91 98765 43210",
+                address: "",
+                businessHours: "Monday - Friday, 9:00 AM - 6:00 PM (IST)"
+              },
+              isActive: true
+            });
+          }
+        }
       } else {
         toast.error("Failed to fetch refund policy");
       }
@@ -94,11 +123,19 @@ const EditRefundPolicyTab = ({ onBack, policyId }: EditRefundPolicyTabProps) => 
       const token = localStorage.getItem("adminToken");
       const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
       
-      const url = policyId 
-        ? `${API_BASE}/refund-policy/admin/update/${policyId}`
-        : `${API_BASE}/refund-policy/admin/create`;
+      let url;
+      let method;
       
-      const method = policyId ? "PUT" : "POST";
+      if (policyId || refundPolicy._id) {
+        // Update existing policy
+        const id = policyId || refundPolicy._id;
+        url = `${API_BASE}/refund-policy/admin/update/${id}`;
+        method = "PUT";
+      } else {
+        // Create new policy
+        url = `${API_BASE}/refund-policy/admin/create`;
+        method = "POST";
+      }
       
       const response = await fetch(url, {
         method,
@@ -112,7 +149,7 @@ const EditRefundPolicyTab = ({ onBack, policyId }: EditRefundPolicyTabProps) => 
       const data = await response.json();
       
       if (data.success) {
-        toast.success(policyId ? "Refund policy updated successfully!" : "Refund policy created successfully!");
+        toast.success(policyId || refundPolicy._id ? "Refund policy updated successfully!" : "Refund policy created successfully!");
         onBack();
       } else {
         toast.error(data.message || "Failed to save refund policy");
