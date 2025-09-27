@@ -229,7 +229,7 @@ const EditCookiePolicyTab = ({ onBack, policyId }: EditCookiePolicyTabProps) => 
         <div className="flex items-center gap-4">
           <button
             onClick={onBack}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+            className="flex items-center gap-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
           >
             <FaArrowLeft className="w-4 h-4" />
             Back
@@ -244,7 +244,7 @@ const EditCookiePolicyTab = ({ onBack, policyId }: EditCookiePolicyTabProps) => 
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
+          className="flex items-center gap-2 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 transition-colors"
         >
           <FaSave className="w-4 h-4" />
           {saving ? "Saving..." : "Save Policy"}

@@ -192,22 +192,24 @@ const EditTermsAndConditionsTab = ({ onBack, policyId }: EditTermsAndConditionsT
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Edit Terms & Conditions</h2>
-          <p className="text-gray-600">Edit and manage your terms and conditions content</p>
-        </div>
-        <div className="flex space-x-2">
+        <div className="flex items-center space-x-4">
           <button
             onClick={onBack}
-            className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+            className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors flex items-center"
           >
             <FaArrowLeft className="w-4 h-4 mr-2" />
             Back
           </button>
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">Edit Terms & Conditions</h2>
+            <p className="text-gray-600">Edit and manage your terms and conditions content</p>
+          </div>
+        </div>
+        <div className="flex space-x-2">
           <button
             onClick={handleSave}
             disabled={saving}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+            className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 transition-colors flex items-center"
           >
             <FaSave className="w-4 h-4 mr-2" />
             {saving ? "Saving..." : "Save Changes"}

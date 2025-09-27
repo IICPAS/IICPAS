@@ -298,20 +298,23 @@ const EditRefundPolicyTab = ({ onBack, policyId }: EditRefundPolicyTabProps) => 
         <div className="flex items-center space-x-4">
           <button
             onClick={onBack}
-            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 flex items-center space-x-2"
+            className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 flex items-center space-x-2 transition-colors"
           >
             <FaArrowLeft />
             <span>Back</span>
           </button>
-          <h2 className="text-2xl font-bold text-gray-900">
-            {policyId ? "Edit Refund Policy" : "Create Refund Policy"}
-          </h2>
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">
+              {policyId ? "Edit Refund Policy" : "Create Refund Policy"}
+            </h2>
+            <p className="text-gray-600">Configure your refund policy content</p>
+          </div>
         </div>
         <div className="flex space-x-2">
           <button
             onClick={handleSave}
             disabled={saving}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center space-x-2 disabled:opacity-50"
+            className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center space-x-2 disabled:opacity-50 transition-colors"
           >
             <FaSave />
             <span>{saving ? "Saving..." : "Save Policy"}</span>
