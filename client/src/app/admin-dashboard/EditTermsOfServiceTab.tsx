@@ -51,6 +51,18 @@ const EditTermsOfServiceTab = ({ onBack, policyId }: EditTermsOfServiceTabProps)
     if (policyId && policyId !== "new") {
       fetchTermsOfService();
     } else {
+      // Initialize with default values for new policy
+      setTermsOfService({
+        title: "Terms of Service",
+        lastUpdated: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long' }),
+        sections: [],
+        contactInfo: {
+          email: "support@iicpa.com",
+          phone: "+91 98765 43210",
+          address: "123 Education Street, Learning City, LC 12345"
+        },
+        isActive: true
+      });
       setLoading(false);
     }
   }, [policyId]);
@@ -86,8 +98,16 @@ const EditTermsOfServiceTab = ({ onBack, policyId }: EditTermsOfServiceTabProps)
     try {
       const token = localStorage.getItem("adminToken");
       const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
-      const response = await fetch(`${API_BASE}/terms-of-service/admin/${termsOfService._id}`, {
-        method: "PUT",
+      
+      const isNewPolicy = !policyId || policyId === "new";
+      const url = isNewPolicy 
+        ? `${API_BASE}/terms-of-service/admin/create`
+        : `${API_BASE}/terms-of-service/admin/${termsOfService._id}`;
+      
+      const method = isNewPolicy ? "POST" : "PUT";
+      
+      const response = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -97,10 +117,10 @@ const EditTermsOfServiceTab = ({ onBack, policyId }: EditTermsOfServiceTabProps)
 
       const data = await response.json();
       if (data.success) {
-        toast.success("Terms of service updated successfully");
+        toast.success(isNewPolicy ? "Terms of service created successfully" : "Terms of service updated successfully");
         onBack();
       } else {
-        toast.error(data.message || "Failed to update terms of service");
+        toast.error(data.message || "Failed to save terms of service");
       }
     } catch (error) {
       console.error("Error updating terms of service:", error);

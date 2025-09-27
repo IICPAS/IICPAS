@@ -97,11 +97,12 @@ const EditPrivacyPolicyTab = ({ onBack, policyId }: EditPrivacyPolicyTabProps) =
       const token = localStorage.getItem("adminToken");
       const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
       
-      const url = policyId 
-        ? `${API_BASE}/privacy-policy/admin/update/${policyId}`
-        : `${API_BASE}/privacy-policy/admin/create`;
+      const isNewPolicy = !policyId || policyId === "new";
+      const url = isNewPolicy 
+        ? `${API_BASE}/privacy-policy/admin/create`
+        : `${API_BASE}/privacy-policy/admin/update/${policyId}`;
       
-      const method = policyId ? "PUT" : "POST";
+      const method = isNewPolicy ? "POST" : "PUT";
       
       const response = await fetch(url, {
         method,
@@ -115,7 +116,7 @@ const EditPrivacyPolicyTab = ({ onBack, policyId }: EditPrivacyPolicyTabProps) =
       const data = await response.json();
       
       if (data.success) {
-        toast.success(policyId ? "Privacy policy updated successfully!" : "Privacy policy created successfully!");
+        toast.success(isNewPolicy ? "Privacy policy created successfully!" : "Privacy policy updated successfully!");
         onBack();
       } else {
         toast.error(data.message || "Failed to save privacy policy");

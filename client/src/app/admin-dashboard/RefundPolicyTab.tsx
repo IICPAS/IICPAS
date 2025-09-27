@@ -423,18 +423,11 @@ const RefundPolicyTab = ({ onEditPolicy }: RefundPolicyTabProps) => {
               <span>Export Excel</span>
             </button>
             <button
-              onClick={() => {
-                if (currentPolicy && onEditPolicy) {
-                  onEditPolicy(currentPolicy._id || 'new');
-                } else {
-                  setEditing(true);
-                  setShowEditPage(true);
-                }
-              }}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center space-x-2"
+              onClick={() => onEditPolicy && onEditPolicy("new")}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center space-x-2"
             >
-              <FaEdit />
-              <span>Edit Policy</span>
+              <FaPlus />
+              <span>Add New Policy</span>
             </button>
           </div>
         </div>
@@ -461,6 +454,16 @@ const RefundPolicyTab = ({ onEditPolicy }: RefundPolicyTabProps) => {
                   </p>
                 </div>
                 <div className="flex space-x-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEditPolicy && onEditPolicy(policy._id!);
+                    }}
+                    className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full hover:bg-green-200"
+                    title="Edit refund policy"
+                  >
+                    Edit
+                  </button>
                   {policy.isActive && (
                     <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
                       Active

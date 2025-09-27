@@ -130,15 +130,17 @@ const EditRefundPolicyTab = ({ onBack, policyId }: EditRefundPolicyTabProps) => 
       let url;
       let method;
       
-      if (policyId || refundPolicy._id) {
+      const isNewPolicy = !policyId || policyId === "new";
+      
+      if (isNewPolicy) {
+        // Create new policy
+        url = `${API_BASE}/refund-policy/admin/create`;
+        method = "POST";
+      } else {
         // Update existing policy
         const id = policyId || refundPolicy._id;
         url = `${API_BASE}/refund-policy/admin/update/${id}`;
         method = "PUT";
-      } else {
-        // Create new policy
-        url = `${API_BASE}/refund-policy/admin/create`;
-        method = "POST";
       }
       
       const response = await fetch(url, {
@@ -153,7 +155,7 @@ const EditRefundPolicyTab = ({ onBack, policyId }: EditRefundPolicyTabProps) => 
       const data = await response.json();
       
       if (data.success) {
-        toast.success(policyId || refundPolicy._id ? "Refund policy updated successfully!" : "Refund policy created successfully!");
+        toast.success(isNewPolicy ? "Refund policy created successfully!" : "Refund policy updated successfully!");
         onBack();
       } else {
         toast.error(data.message || "Failed to save refund policy");

@@ -51,6 +51,18 @@ const EditTermsAndConditionsTab = ({ onBack, policyId }: EditTermsAndConditionsT
     if (policyId && policyId !== "new") {
       fetchTermsAndConditions();
     } else {
+      // Initialize with default values for new policy
+      setTermsAndConditions({
+        title: "Terms & Conditions",
+        lastUpdated: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long' }),
+        sections: [],
+        contactInfo: {
+          email: "support@iicpa.com",
+          phone: "+91 98765 43210",
+          address: "123 Education Street, Learning City, LC 12345"
+        },
+        isActive: true
+      });
       setLoading(false);
     }
   }, [policyId]);
@@ -86,8 +98,16 @@ const EditTermsAndConditionsTab = ({ onBack, policyId }: EditTermsAndConditionsT
     try {
       const token = localStorage.getItem("adminToken");
       const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
-      const response = await fetch(`${API_BASE}/terms-and-conditions/admin/update/${termsAndConditions._id}`, {
-        method: "PUT",
+      
+      const isNewPolicy = !policyId || policyId === "new";
+      const url = isNewPolicy 
+        ? `${API_BASE}/terms-and-conditions/admin/create`
+        : `${API_BASE}/terms-and-conditions/admin/update/${termsAndConditions._id}`;
+      
+      const method = isNewPolicy ? "POST" : "PUT";
+      
+      const response = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -97,10 +117,10 @@ const EditTermsAndConditionsTab = ({ onBack, policyId }: EditTermsAndConditionsT
 
       const data = await response.json();
       if (data.success) {
-        toast.success("Terms and conditions updated successfully");
+        toast.success(isNewPolicy ? "Terms and conditions created successfully" : "Terms and conditions updated successfully");
         onBack();
       } else {
-        toast.error(data.message || "Failed to update terms and conditions");
+        toast.error(data.message || "Failed to save terms and conditions");
       }
     } catch (error) {
       console.error("Error updating terms and conditions:", error);
