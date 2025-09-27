@@ -92,6 +92,8 @@ import PrivacyPolicyTab from "./PrivacyPolicyTab";
 import EditPrivacyPolicyTab from "./EditPrivacyPolicyTab";
 import RefundPolicyTab from "./RefundPolicyTab";
 import EditRefundPolicyTab from "./EditRefundPolicyTab";
+import TermsOfServiceTab from "./TermsOfServiceTab";
+import EditTermsOfServiceTab from "./EditTermsOfServiceTab";
 
 // All available modules with their permissions
 const ALL_MODULES = [
@@ -110,6 +112,7 @@ const ALL_MODULES = [
   { id: "chatbot-settings", label: "Chatbot Settings", icon: <FaRobot /> },
   { id: "privacy-policy", label: "Privacy Policy", icon: <FaShieldAlt /> },
   { id: "refund-policy", label: "Refund Policy", icon: <FaShieldAlt /> },
+  { id: "terms-of-service", label: "Terms of Service", icon: <FaShieldAlt /> },
   { id: "jobs", label: "Jobs", icon: <FaBriefcase /> },
   { id: "news", label: "News", icon: <FaNewspaper /> },
   { id: "students", label: "Students", icon: <FaUserGraduate /> },
@@ -541,8 +544,15 @@ function AdminDashboardContent() {
           <RefundPolicyTab onEditPolicy={(policyId) => setActiveTab(`edit-refund-policy-${policyId}`)} />
         ) : activeTab.startsWith("edit-refund-policy") ? (
           <EditRefundPolicyTab 
-            onBack={() => setActiveTab("refund-policy")} 
+            onBack={() => setActiveTab("refund-policy")}
             policyId={activeTab.replace("edit-refund-policy-", "")}
+          />
+        ) : activeTab === "terms-of-service" ? (
+          <TermsOfServiceTab onEditPolicy={(policyId) => setActiveTab(`edit-terms-of-service-${policyId}`)} />
+        ) : activeTab.startsWith("edit-terms-of-service") ? (
+          <EditTermsOfServiceTab 
+            onBack={() => setActiveTab("terms-of-service")}
+            policyId={activeTab.replace("edit-terms-of-service-", "")}
           />
         ) : activeTab === "bulk-email" ? (
           <BulkEmailTab />
