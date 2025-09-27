@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -19,7 +20,6 @@ import jsPDF from "jspdf";
 
 import LiveSchedule from "../../components/LiveSchedule";
 import SimulatorDemo from "../../components/SimulatorDemo";
-
 
 import axios from "axios";
 
@@ -272,27 +272,65 @@ export default function CourseDetailPage({
     "Course Page NEXT_PUBLIC_API_BASE:",
     process.env.NEXT_PUBLIC_API_BASE
   );
+  console.log("Course data:", course);
+  console.log("Course image:", course?.image);
 
   // Unwrap the params Promise using React.use()
   const resolvedParams = use(params);
 
+  console.log("Resolved params:", resolvedParams);
+  console.log("Course ID:", resolvedParams.courseId);
+
+  // Temporary hardcoded test data to check if image display works
+  const testCourse = {
+    title: "Basic Accounting & Tally Foundation",
+    image: "/uploads/1758703607767-656204190.webp",
+    pricing: {
+      recordedSession: { finalPrice: 4750, price: 5000, discount: 5 },
+      liveSession: { finalPrice: 6650, price: 7000, discount: 5 },
+    },
+  };
+
+  console.log("Test course:", testCourse);
+
+  // Force course data for testing - bypass loading state
+  const displayCourse = course || testCourse;
+  console.log("Display course:", displayCourse);
+
   // Fetch course data from API
   useEffect(() => {
+    console.log(
+      "useEffect triggered with courseId:",
+      resolvedParams.courseId,
+      "API_BASE:",
+      API_BASE
+    );
     const fetchCourse = async () => {
       try {
         setLoading(true);
+        console.log(
+          "Making API call to:",
+          `${API_BASE}/api/courses/${resolvedParams.courseId}`
+        );
         const response = await axios.get(
           `${API_BASE}/api/courses/${resolvedParams.courseId}`
         );
+        console.log("Course data received:", response.data);
+        console.log("Course image:", response.data.image);
         setCourse(response.data);
-      } catch (err) {
+      } catch (err: any) {
         console.error("Error fetching course:", err);
+        console.error("Error details:", err.response?.data);
+        console.error("Error status:", err.response?.status);
         setError("Course not found");
         // Fallback to dummy data if API fails
         const fallbackCourse =
           dummyCourses[resolvedParams.courseId as keyof typeof dummyCourses];
         if (fallbackCourse) {
+          console.log("Using fallback course:", fallbackCourse);
           setCourse(fallbackCourse);
+        } else {
+          console.log("No fallback course found for:", resolvedParams.courseId);
         }
       } finally {
         setLoading(false);
@@ -301,8 +339,42 @@ export default function CourseDetailPage({
 
     if (resolvedParams.courseId) {
       fetchCourse();
+    } else {
+      console.log("No courseId found, skipping API call");
     }
-  }, [resolvedParams.courseId]);
+
+    // Temporary: Set test course data to check image display
+    if (resolvedParams.courseId === "basic-accounting-tally-foundation") {
+      console.log("Setting test course data");
+      setCourse(testCourse);
+      setLoading(false);
+    }
+
+    // Alternative: Direct API call without useEffect dependency issues
+    const directFetch = async () => {
+      try {
+        console.log(
+          "Direct API call to:",
+          `${API_BASE}/api/courses/${resolvedParams.courseId}`
+        );
+        const response = await fetch(
+          `${API_BASE}/api/courses/${resolvedParams.courseId}`
+        );
+        const data = await response.json();
+        console.log("Direct fetch - Course data received:", data);
+        setCourse(data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Direct fetch error:", error);
+        setCourse(testCourse);
+        setLoading(false);
+      }
+    };
+
+    if (resolvedParams.courseId && !course) {
+      directFetch();
+    }
+  }, [resolvedParams.courseId, API_BASE]);
 
   // Check student authentication
   useEffect(() => {
@@ -429,8 +501,10 @@ export default function CourseDetailPage({
     const fetchCourseRatings = async () => {
       try {
         setRatingsLoading(true);
+        // Use the course ID from the fetched course data, not the slug
+        const courseId = course?._id || resolvedParams.courseId;
         const response = await axios.get(
-          `${API_BASE}/api/v1/course-ratings/course/${resolvedParams.courseId}`
+          `${API_BASE}/api/v1/course-ratings/course/${courseId}`
         );
         if (response.data.success) {
           setCourseRatings(response.data);
@@ -455,13 +529,14 @@ export default function CourseDetailPage({
       }
     };
 
-    if (resolvedParams.courseId) {
+    // Only fetch ratings after course data is loaded
+    if (course && course._id) {
       fetchCourseRatings();
     }
-  }, [resolvedParams.courseId, course, API_BASE]);
+  }, [course, API_BASE]);
 
   // Loading state
-  if (loading) {
+  if (loading && !displayCourse) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -916,26 +991,38 @@ export default function CourseDetailPage({
                       <div className="bg-white rounded-lg shadow-lg p-8 max-w-md mx-auto">
                         <div className="mb-6">
                           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            <svg
+                              className="w-8 h-8 text-green-600"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                              />
                             </svg>
                           </div>
                           <h3 className="text-xl font-bold text-gray-900 mb-2">
                             Access Simulator
                           </h3>
                           <p className="text-gray-600 mb-6">
-                            Experience our interactive simulator through the Demo Digital Hub
+                            Experience our interactive simulator through the
+                            Demo Digital Hub
                           </p>
                         </div>
                         <button
-                          onClick={() => window.location.href = '/demo-digital-hub'}
+                          onClick={() =>
+                            (window.location.href = "/demo-digital-hub")
+                          }
                           className="w-full bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 transition-colors font-medium"
                         >
                           Go to Demo Digital Hub
                         </button>
                       </div>
                     </div>
-
                   </div>
                 )}
               </motion.div>
@@ -952,43 +1039,24 @@ export default function CourseDetailPage({
                 {/* Video Section */}
                 <div className="relative">
                   <div className="aspect-video bg-gray-900 relative overflow-hidden">
-                    {/* Course Thumbnail */}
+                    {/* Course Thumbnail - Direct Image Test */}
                     <img
                       src={
-                        course.image
-                          ? course.image.startsWith("http")
-                            ? course.image
-                            : course.image.startsWith("/uploads/")
-                            ? `${API_BASE}${course.image}`
-                            : course.image.startsWith("/")
-                            ? course.image
-                            : `${API_BASE}${course.image}`
-                          : course.videoThumbnail || "/images/a1.jpeg"
+                        course?.image
+                          ? course.image.startsWith("/uploads")
+                            ? `${API_BASE}${course.image}` // uploaded images
+                            : course.image // already local/public images like /images/a1.jpeg
+                          : "/images/a1.jpeg" // fallback
                       }
-                      alt={`${course.title} - Course Preview`}
+                      alt={`${course?.title || "Course"} - Course Preview`}
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        console.log("Image failed to load:", e);
-                        console.log("Image src was:", e.currentTarget.src);
-                        console.log("Course image field:", course.image);
-                        console.log("API_BASE:", API_BASE);
-                        // Try fallback image
-                        const fallbackSrc = "/images/a1.jpeg";
-                        console.log("Trying fallback image:", fallbackSrc);
-                        e.currentTarget.src = fallbackSrc;
-                      }}
-                      onLoad={() => {
-                        console.log("Course thumbnail loaded successfully!");
-                        console.log("Loaded image src:", course.image);
+                        console.log("Image failed, using fallback");
+                        e.currentTarget.src = "/images/a1.jpeg";
                       }}
                     />
 
                     {/* Play Button Overlay */}
-                    <div className="absolute inset-0 bg-black bg-opacity-10 flex items-center justify-center">
-                      <div className="w-12 h-12 bg-white bg-opacity-90 rounded-full flex items-center justify-center hover:bg-opacity-100 transition-all cursor-pointer shadow-lg">
-                        <Play className="w-6 h-6 text-gray-800 ml-1" />
-                      </div>
-                    </div>
                   </div>
                 </div>
 
@@ -1021,18 +1089,21 @@ export default function CourseDetailPage({
                         <div className="text-center">
                           <div className="text-sm font-bold text-[#3cd664]">
                             ₹
-                            {course?.pricing?.recordedSession?.actualPrice
-                              ? course.pricing.recordedSession.actualPrice.toLocaleString()
+                            {course?.pricing?.recordedSession?.finalPrice
+                              ? course.pricing.recordedSession.finalPrice.toLocaleString()
+                              : course?.pricing?.recordedSession?.price
+                              ? course.pricing.recordedSession.price.toLocaleString()
                               : course.price
                               ? course.price.toLocaleString()
-                              : "5,000"}
+                              : "2,000"}
                           </div>
-                          {course?.pricing?.recordedSession?.discountPrice && (
-                            <div className="text-xs text-gray-500 line-through">
-                              ₹
-                              {course.pricing.recordedSession.discountPrice.toLocaleString()}
-                            </div>
-                          )}
+                          {course?.pricing?.recordedSession?.discount &&
+                            course.pricing.recordedSession.discount > 0 && (
+                              <div className="text-xs text-gray-500 line-through">
+                                ₹
+                                {course.pricing.recordedSession.price.toLocaleString()}
+                              </div>
+                            )}
                         </div>
                       </div>
 
@@ -1053,33 +1124,38 @@ export default function CourseDetailPage({
                       <div className="mb-2">
                         <div className="text-center mb-1">
                           <span className="text-xs font-bold text-blue-500 block">
-                            {course?.pricing?.liveSession?.title?.split("+")[0] ||
-                              "DIGITAL HUB+"}
+                            {course?.pricing?.liveSession?.title?.split(
+                              "+"
+                            )[0] || "DIGITAL HUB+"}
                           </span>
                           <span className="text-xs font-bold text-blue-500 block">
-                            {course?.pricing?.liveSession?.title?.split("+")[1] ||
-                              "LIVE SESSION"}
+                            {course?.pricing?.liveSession?.title?.split(
+                              "+"
+                            )[1] || "LIVE SESSION"}
                           </span>
                         </div>
                         <div className="text-center">
                           <div className="text-sm font-bold text-blue-500">
                             ₹
-                            {course?.pricing?.liveSession?.actualPrice
-                              ? course.pricing.liveSession.actualPrice.toLocaleString()
+                            {course?.pricing?.liveSession?.finalPrice
+                              ? course.pricing.liveSession.finalPrice.toLocaleString()
+                              : course?.pricing?.liveSession?.price
+                              ? course.pricing.liveSession.price.toLocaleString()
                               : course.price
                               ? (
                                   course.price *
                                   (course?.pricing?.liveSession
                                     ?.priceMultiplier || 1.5)
                                 ).toLocaleString()
-                              : "7,500"}
+                              : "3,000"}
                           </div>
-                          {course?.pricing?.liveSession?.discountPrice && (
-                            <div className="text-xs text-gray-500 line-through">
-                              ₹
-                              {course.pricing.liveSession.discountPrice.toLocaleString()}
-                            </div>
-                          )}
+                          {course?.pricing?.liveSession?.discount &&
+                            course.pricing.liveSession.discount > 0 && (
+                              <div className="text-xs text-gray-500 line-through">
+                                ₹
+                                {course.pricing.liveSession.price.toLocaleString()}
+                              </div>
+                            )}
                         </div>
                       </div>
 

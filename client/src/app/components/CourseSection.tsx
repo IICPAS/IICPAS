@@ -15,6 +15,43 @@ interface Course {
   status: string;
   description?: string;
   createdAt?: string;
+  pricing?: {
+    recordedSession?: {
+      price: number;
+      discount: number;
+      finalPrice: number;
+    };
+    liveSession?: {
+      price: number;
+      discount: number;
+      finalPrice: number;
+    };
+  };
+}
+
+interface ApiCourse {
+  _id: string;
+  title?: string;
+  image?: string;
+  price?: number;
+  slug?: string;
+  category?: string;
+  discount?: number;
+  status?: string;
+  description?: string;
+  createdAt?: string;
+  pricing?: {
+    recordedSession?: {
+      price: number;
+      discount: number;
+      finalPrice: number;
+    };
+    liveSession?: {
+      price: number;
+      discount: number;
+      finalPrice: number;
+    };
+  };
 }
 
 // Fallback data
@@ -65,7 +102,7 @@ export default function CourseSection() {
           const data = await response.json();
           if (Array.isArray(data) && data.length > 0) {
             const transformedCourses = data.map(
-              (course: any): Course => ({
+              (course: ApiCourse): Course => ({
                 _id: course._id,
                 title: course.title?.trim() || "Untitled Course",
                 image: course.image
@@ -88,6 +125,7 @@ export default function CourseSection() {
                 status: course.status || "Active",
                 description: course.description || "",
                 createdAt: course.createdAt || new Date().toISOString(),
+                pricing: course.pricing || undefined,
               })
             );
 
@@ -185,28 +223,47 @@ export default function CourseSection() {
                 </h3>
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex flex-col">
-                    {course.discount && course.discount > 0 ? (
-                      <>
-                        <span className="text-lg font-bold text-[#3cd664]">
-                          ₹
-                          {Math.round(
-                            course.price * (1 - course.discount / 100)
-                          )}
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-500 line-through">
-                            ₹{course.price}
+                    {(() => {
+                      // Use recorded session pricing if available, otherwise fall back to legacy pricing
+                      const recordedPrice =
+                        course.pricing?.recordedSession?.finalPrice ||
+                        course.pricing?.recordedSession?.price;
+                      const recordedDiscount =
+                        course.pricing?.recordedSession?.discount;
+                      const legacyPrice = course.price;
+                      const legacyDiscount = course.discount;
+
+                      // Determine which pricing to use
+                      const displayPrice = recordedPrice || legacyPrice;
+                      const displayDiscount =
+                        recordedDiscount || legacyDiscount;
+
+                      if (displayDiscount && displayDiscount > 0) {
+                        const originalPrice =
+                          course.pricing?.recordedSession?.price || legacyPrice;
+                        return (
+                          <>
+                            <span className="text-lg font-bold text-[#3cd664]">
+                              ₹{displayPrice.toLocaleString()}
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm text-gray-500 line-through">
+                                ₹{originalPrice.toLocaleString()}
+                              </span>
+                              <span className="bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-medium">
+                                {displayDiscount}% OFF
+                              </span>
+                            </div>
+                          </>
+                        );
+                      } else {
+                        return (
+                          <span className="text-2xl font-bold text-[#3cd664]">
+                            ₹{displayPrice.toLocaleString()}
                           </span>
-                          <span className="bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-medium">
-                            {course.discount}% OFF
-                          </span>
-                        </div>
-                      </>
-                    ) : (
-                      <span className="text-2xl font-bold text-[#3cd664]">
-                        ₹{course.price}
-                      </span>
-                    )}
+                        );
+                      }
+                    })()}
                   </div>
                 </div>
                 <button
