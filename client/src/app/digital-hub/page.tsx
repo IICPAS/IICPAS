@@ -220,6 +220,7 @@ function DigitalHubContent() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [showDemoLimit, setShowDemoLimit] = useState(false);
+  const [showPurchasePopup, setShowPurchasePopup] = useState(false);
 
   // New state for case studies and assignments
   const [caseStudies, setCaseStudies] = useState<CaseStudy[]>([]);
@@ -399,8 +400,8 @@ function DigitalHubContent() {
         const decodedContent = atob(topic.content);
         
         if (isDemo) {
-          // For demo mode, split content into pages and limit to 3 pages
-          const { pages, totalPages } = splitContentIntoPages(decodedContent, 3);
+          // For demo mode, split content into pages and limit to 1 page
+          const { pages, totalPages } = splitContentIntoPages(decodedContent, 1);
           setTotalPages(totalPages);
           setCurrentPage(1);
           setTopicContent(pages[0] || "Content not available");
@@ -1282,7 +1283,7 @@ function DigitalHubContent() {
               <div className="w-32 bg-gray-200 rounded-full h-2">
                 <div
                   className="bg-gradient-to-r from-green-500 to-green-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${progress}%` }}
+                  style={{ width: `${progress}%` } as React.CSSProperties}
                 ></div>
               </div>
               <span className="text-sm font-medium">{progress}%</span>
@@ -1394,6 +1395,7 @@ function DigitalHubContent() {
               className={`p-2 rounded-lg transition-colors ${
                 isDarkMode ? "hover:bg-gray-700" : "hover:bg-gray-200"
               }`}
+              aria-label="Toggle menu"
             >
               <Menu
                 className={`w-5 h-5 ${
@@ -1406,6 +1408,7 @@ function DigitalHubContent() {
               className={`p-2 rounded-lg transition-colors ${
                 isDarkMode ? "hover:bg-gray-700" : "hover:bg-gray-200"
               }`}
+              aria-label="Go to dashboard"
             >
               <ArrowLeft
                 className={`w-5 h-5 ${
@@ -1447,7 +1450,7 @@ function DigitalHubContent() {
                 }`}
               />
             </button>
-            <button className="p-2 rounded-lg hover:bg-gray-200 transition-colors">
+            <button className="p-2 rounded-lg hover:bg-gray-200 transition-colors" aria-label="Go back">
               <ArrowLeft
                 className={`w-5 h-5 ${
                   isDarkMode ? "text-white" : "text-black"
@@ -1477,6 +1480,7 @@ function DigitalHubContent() {
               <button
                 onClick={() => setHamburgerOpen(false)}
                 className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                aria-label="Close menu"
               >
                 <X
                   className={`w-5 h-5 ${
@@ -1677,7 +1681,7 @@ function DigitalHubContent() {
                             <button
                               onClick={() => {
                                 if (currentPage > 1) {
-                                  const { pages } = splitContentIntoPages(atob(selectedTopic?.content || ""), 3);
+                                  const { pages } = splitContentIntoPages(atob(selectedTopic?.content || ""), 1);
                                   setCurrentPage(currentPage - 1);
                                   setTopicContent(pages[currentPage - 2] || "");
                                 }
@@ -1697,7 +1701,7 @@ function DigitalHubContent() {
                                 <button
                                   key={i}
                                   onClick={() => {
-                                    const { pages } = splitContentIntoPages(atob(selectedTopic?.content || ""), 3);
+                                    const { pages } = splitContentIntoPages(atob(selectedTopic?.content || ""), 1);
                                     setCurrentPage(i + 1);
                                     setTopicContent(pages[i] || "");
                                   }}
@@ -1714,20 +1718,23 @@ function DigitalHubContent() {
                             
                             <button
                               onClick={() => {
-                                if (currentPage < totalPages) {
-                                  const { pages } = splitContentIntoPages(atob(selectedTopic?.content || ""), 3);
+                                if (isDemo) {
+                                  // In demo mode, show purchase popup instead of next page
+                                  setShowPurchasePopup(true);
+                                } else if (currentPage < totalPages) {
+                                  const { pages } = splitContentIntoPages(atob(selectedTopic?.content || ""), 1);
                                   setCurrentPage(currentPage + 1);
                                   setTopicContent(pages[currentPage] || "");
                                 }
                               }}
-                              disabled={currentPage === totalPages}
+                              disabled={!isDemo && currentPage === totalPages}
                               className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
-                                currentPage === totalPages
+                                !isDemo && currentPage === totalPages
                                   ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                                   : "bg-blue-500 text-white hover:bg-blue-600 shadow-md hover:shadow-lg"
                               }`}
                             >
-                              Next →
+                              {isDemo ? "Purchase Course →" : "Next →"}
                             </button>
                           </div>
                         )}
@@ -1741,7 +1748,7 @@ function DigitalHubContent() {
                             }}
                             className="px-8 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-300 shadow-md hover:shadow-lg text-lg"
                           >
-                            💳 Purchase Full Course Access
+                            💳 Subscribe Full Course
                           </button>
                         </div>
                       </div>
@@ -2501,6 +2508,7 @@ function DigitalHubContent() {
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                aria-label="Close modal"
               >
                 <X className="w-5 h-5 text-gray-500" />
               </button>
@@ -2593,6 +2601,89 @@ function DigitalHubContent() {
           <div className="bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-2">
             <CheckCircle className="w-5 h-5" />
             <span>{toastMessage}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Purchase Popup Modal */}
+      {showPurchasePopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300 scale-100">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-2xl font-bold text-gray-900">Unlock Full Course</h3>
+                <button
+                  onClick={() => setShowPurchasePopup(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  aria-label="Close popup"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              <div className="mb-6">
+                <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 mb-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Get Full Access</h4>
+                      <p className="text-sm text-gray-600">Access all chapters, assignments, and resources</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-3">
+                    <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-gray-700">Complete course content</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-gray-700">Interactive assignments</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-gray-700">Case studies & simulations</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-gray-700">Certificate of completion</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => setShowPurchasePopup(false)}
+                  className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                >
+                  Maybe Later
+                </button>
+                <button
+                  onClick={() => {
+                    setShowPurchasePopup(false);
+                    router.push('/student-login');
+                  }}
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-300 font-medium shadow-md hover:shadow-lg"
+                >
+                  Purchase Now
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

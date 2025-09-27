@@ -6,6 +6,8 @@ import mongoose from "mongoose";
 import uploadStudentImage from "../middleware/studentImageUpload.js";
 import isStudent from "../middleware/isStudent.js";
 import { deleteStudent, updateStudentStatus } from "../controllers/studentController.js";
+import { requireAuth } from "../middleware/requireAuth.js";
+import { isAdmin } from "../middleware/isAdmin.js";
 
 //FOR PDF Import
 import PDFDocument from "pdfkit";
@@ -554,6 +556,61 @@ router.put("/profile", uploadStudentImage.single("profileImage"), async (req, re
     });
   } catch (err) {
     console.error("Profile update error:", err);
+    res.status(500).json({ message: "Update failed", error: err.message });
+  }
+});
+
+// Superadmin route to update student profile details (excluding profile image)
+router.put("/admin/update-profile/:studentId", requireAuth, isAdmin, async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    const { name, email, phone, mode, location, center, password } = req.body;
+
+    // Find the student
+    const student = await Student.findById(studentId);
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    // Check if email is being changed and if it already exists
+    if (email && email !== student.email) {
+      const existingStudent = await Student.findOne({ email });
+      if (existingStudent) {
+        return res.status(400).json({ message: "Email already exists" });
+      }
+    }
+
+    // Update allowed fields (excluding profile image)
+    if (name) student.name = name;
+    if (email) student.email = email;
+    if (phone) student.phone = phone;
+    if (mode) student.mode = mode;
+    if (location) student.location = location;
+    if (center) student.center = center;
+
+    // Handle password update if provided
+    if (password) {
+      const hashed = await bcrypt.hash(password, 10);
+      student.password = hashed;
+    }
+
+    await student.save();
+
+    res.json({ 
+      message: "Student profile updated successfully", 
+      student: {
+        id: student._id,
+        name: student.name,
+        email: student.email,
+        phone: student.phone,
+        mode: student.mode,
+        location: student.location,
+        center: student.center,
+        image: student.image // Include image for reference but it wasn't updated
+      }
+    });
+  } catch (err) {
+    console.error("Superadmin profile update error:", err);
     res.status(500).json({ message: "Update failed", error: err.message });
   }
 });

@@ -125,12 +125,31 @@ export const AuthProvider = ({ children }) => {
     checkAuth();
   }, []);
 
+  // Function to refresh user data
+  const refreshUser = async () => {
+    const token = localStorage.getItem("adminToken");
+    if (token) {
+      try {
+        const response = await axios.get(`${API_BASE}/employees/profile`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const user = response.data;
+        setUser(user);
+        setPermissions(user.permissions);
+        localStorage.setItem("adminUser", JSON.stringify(user));
+      } catch (error) {
+        console.error("Refresh user error:", error);
+      }
+    }
+  };
+
   const value = {
     user,
     loading,
     permissions,
     login,
     logout,
+    refreshUser,
     hasPermission,
     canAccess,
     getAccessibleModules,

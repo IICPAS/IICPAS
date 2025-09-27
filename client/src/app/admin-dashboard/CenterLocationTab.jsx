@@ -10,6 +10,10 @@ import {
   FaBuilding,
   FaPhone,
   FaEnvelope,
+  FaEllipsisV,
+  FaCheck,
+  FaTimes,
+  FaFileExcel,
 } from "react-icons/fa";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
@@ -20,6 +24,7 @@ export default function CenterLocationTab() {
   const [saving, setSaving] = useState(false);
   const [editingCenter, setEditingCenter] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState(null);
   const [newCenter, setNewCenter] = useState({
     name: "",
     address: "",
@@ -42,6 +47,19 @@ export default function CenterLocationTab() {
   useEffect(() => {
     fetchCenters();
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (openDropdown && !event.target.closest('.dropdown-container')) {
+        setOpenDropdown(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [openDropdown]);
 
   const fetchCenters = async () => {
     try {
@@ -170,6 +188,79 @@ export default function CenterLocationTab() {
     }
   };
 
+  const handleStatusToggle = async (centerId, newStatus) => {
+    try {
+      await axios.put(
+        `${API_BASE}/api/v1/centers/${centerId}`,
+        { status: newStatus },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      toast.success(`Center status updated to ${newStatus}!`);
+      fetchCenters();
+    } catch (error) {
+      console.error("Error updating center status:", error);
+      toast.error("Failed to update center status");
+    }
+  };
+
+  const toggleDropdown = (centerId) => {
+    setOpenDropdown(openDropdown === centerId ? null : centerId);
+  };
+
+  const exportToExcel = () => {
+    try {
+      // Create Excel data structure
+      const excelData = centers.map((center) => ({
+        'Center Name': center.name,
+        'City': center.city,
+        'State': center.state,
+        'Pincode': center.pincode,
+        'Address': center.address,
+        'Phone': center.phone,
+        'Email': center.email,
+        'Manager Name': center.manager?.name || '',
+        'Manager Phone': center.manager?.phone || '',
+        'Manager Email': center.manager?.email || '',
+        'Capacity': center.capacity,
+        'Status': center.status,
+        'Description': center.description || '',
+      }));
+
+      // Convert to CSV format (simpler than Excel for now)
+      const headers = Object.keys(excelData[0] || {});
+      const csvContent = [
+        headers.join(','),
+        ...excelData.map(row => 
+          headers.map(header => {
+            const value = row[header] || '';
+            // Escape commas and quotes in CSV
+            return `"${String(value).replace(/"/g, '""')}"`;
+          }).join(',')
+        )
+      ].join('\n');
+
+      // Create and download file
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `centers_export_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast.success('Centers data exported successfully!');
+    } catch (error) {
+      console.error('Error exporting data:', error);
+      toast.error('Failed to export data');
+    }
+  };
+
   const handleInputChange = (field, value) => {
     if (field.startsWith("manager.")) {
       const managerField = field.split(".")[1];
@@ -220,13 +311,23 @@ export default function CenterLocationTab() {
         <h2 className="text-2xl font-bold text-gray-900">
           Center Location Management
         </h2>
-        <button
-          onClick={() => setShowAddForm(true)}
-          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2"
-        >
-          <FaPlus />
-          Add New Center
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={exportToExcel}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
+            disabled={centers.length === 0}
+          >
+            <FaFileExcel />
+            Export Excel
+          </button>
+          <button
+            onClick={() => setShowAddForm(true)}
+            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2"
+          >
+            <FaPlus />
+            Add New Center
+          </button>
+        </div>
       </div>
 
       {/* Add Center Form */}
@@ -513,21 +614,62 @@ export default function CenterLocationTab() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex items-center gap-2">
+                      <div className="relative dropdown-container">
                         <button
-                          onClick={() => setEditingCenter(center)}
-                          className="text-blue-600 hover:text-blue-800 p-2 hover:bg-blue-50 rounded"
-                          title="Edit Center"
+                          onClick={() => toggleDropdown(center._id)}
+                          className="text-gray-600 hover:text-gray-800 p-2 hover:bg-gray-50 rounded"
+                          title="More Actions"
                         >
-                          <FaEdit />
+                          <FaEllipsisV />
                         </button>
-                        <button
-                          onClick={() => handleDeleteCenter(center._id)}
-                          className="text-red-600 hover:text-red-800 p-2 hover:bg-red-50 rounded"
-                          title="Delete Center"
-                        >
-                          <FaTrash />
-                        </button>
+                        
+                        {openDropdown === center._id && (
+                          <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+                            <div className="py-1">
+                              <button
+                                onClick={() => {
+                                  setEditingCenter(center);
+                                  setOpenDropdown(null);
+                                }}
+                                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              >
+                                <FaEdit className="mr-3 text-blue-600" />
+                                Edit
+                              </button>
+                              
+                              <button
+                                onClick={() => {
+                                  handleStatusToggle(center._id, center.status === 'active' ? 'inactive' : 'active');
+                                  setOpenDropdown(null);
+                                }}
+                                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              >
+                                {center.status === 'active' ? (
+                                  <>
+                                    <FaTimes className="mr-3 text-red-600" />
+                                    Set Inactive
+                                  </>
+                                ) : (
+                                  <>
+                                    <FaCheck className="mr-3 text-green-600" />
+                                    Set Active
+                                  </>
+                                )}
+                              </button>
+                              
+                              <button
+                                onClick={() => {
+                                  handleDeleteCenter(center._id);
+                                  setOpenDropdown(null);
+                                }}
+                                className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                              >
+                                <FaTrash className="mr-3" />
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </td>
                   </tr>

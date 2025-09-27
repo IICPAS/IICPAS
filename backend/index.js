@@ -155,7 +155,7 @@ app.use("/metatags", metaTagRoutes);
 app.use("/api/tickets", ticketRoutes);
 
 // Internal Jobs
-app.use("/jobs-internal", jobRoutes);
+app.use("/api/jobs-internal", jobRoutes);
 
 //About Routes
 app.use("/api/about", aboutRoutes);
@@ -285,6 +285,10 @@ app.use("/api/contact-info", contactInfoRoutes);
 
 //Contact Form Routes
 app.use("/api/contact-form", contactFormRoutes);
+
+//Chat Routes
+import chatRoutes from "./routes/chatRoutes.js";
+app.use("/api/chat", chatRoutes);
 
 // Server
 const PORT = process.env.PORT || 8080;

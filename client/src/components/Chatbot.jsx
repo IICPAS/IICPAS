@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FaRobot,
@@ -10,6 +10,7 @@ import {
   FaEnvelope,
   FaPhone,
 } from "react-icons/fa";
+import { v4 as uuidv4 } from 'uuid';
 
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -22,68 +23,132 @@ const Chatbot = () => {
   const [surveyErrors, setSurveyErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userDetailsProvided, setUserDetailsProvided] = useState(false);
+  const [currentDetailStep, setCurrentDetailStep] = useState(0); // 0: name, 1: email, 2: phone
+  const [collectedDetails, setCollectedDetails] = useState({
+    name: "",
+    email: "",
+    phone: "",
+  });
+  const [sessionId, setSessionId] = useState(null);
   const [messages, setMessages] = useState([
     {
       id: 1,
-      text: "Hi! I'm your course assistant. To provide you with personalized assistance, please share your details:\n\n• Full Name\n• Email Address\n• Phone Number\n\nYou can provide all details in one message or separately. How can I help you today?",
+      text: "Hi! I'm your course assistant. To provide you with personalized assistance, I'll need a few details from you.\n\nLet's start with your **Full Name** please:",
       isBot: true,
       timestamp: new Date(),
     },
   ]);
   const [inputMessage, setInputMessage] = useState("");
 
-  // Extract user details from chat message
-  const extractUserDetails = (message) => {
-    const details = { name: "", email: "", phone: "" };
-    
-    // Email pattern
-    const emailMatch = message.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
-    if (emailMatch) {
-      details.email = emailMatch[1];
+  // Initialize session ID and save initial message
+  useEffect(() => {
+    if (!sessionId) {
+      const newSessionId = uuidv4();
+      setSessionId(newSessionId);
     }
-    
-    // Phone pattern (10 digits)
-    const phoneMatch = message.match(/(\d{10})/);
-    if (phoneMatch) {
-      details.phone = phoneMatch[1];
+  }, []);
+
+  // Save initial bot message when sessionId is ready
+  useEffect(() => {
+    if (sessionId && messages.length === 1) {
+      // Save the initial bot message
+      saveChatMessage(messages[0], {});
     }
-    
-    // Name pattern (look for words that don't match email/phone patterns)
-    const words = message.split(/\s+/).filter(word => {
-      return !word.includes('@') && !/^\d{10}$/.test(word) && word.length > 1;
-    });
-    
-    // Take the first 2-3 words as potential name
-    if (words.length >= 2) {
-      details.name = words.slice(0, 2).join(' ');
-    } else if (words.length === 1) {
-      details.name = words[0];
+  }, [sessionId]);
+
+  // Function to save chat message to backend
+  const saveChatMessage = async (message, userDetails = null) => {
+    // Don't save if sessionId is not ready
+    if (!sessionId) {
+      console.warn("SessionId not ready, skipping message save");
+      return;
     }
-    
-    return details;
+
+    try {
+      console.log("Saving chat message:", { sessionId, message, userDetails });
+      
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/api/chat/save-message`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            sessionId,
+            message,
+            userDetails,
+            userAgent: navigator.userAgent,
+            ipAddress: null // Will be handled by backend
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        console.error("Failed to save chat message. Status:", response.status);
+        const responseText = await response.text();
+        console.error("Response:", responseText);
+      } else {
+        console.log("✅ Chat message saved successfully");
+      }
+    } catch (error) {
+      console.error("❌ Error saving chat message:", error);
+    }
   };
 
-  // Validate extracted details
-  const validateExtractedDetails = (details) => {
-    const errors = {};
+  // Extract single detail based on current step
+  const extractSingleDetail = (message, step) => {
+    const trimmedMessage = message.trim();
     
-    if (!details.name.trim()) {
-      errors.name = "Name not found";
+    switch (step) {
+      case 0: // Name
+        // Remove common prefixes and extract name
+        const nameText = trimmedMessage
+          .replace(/^(my name is|i am|name is|i'm|im)\s*/i, '')
+          .replace(/^(hi|hello|hey)\s*/i, '')
+          .trim();
+        
+        // Take first 2-3 words as name
+        const nameWords = nameText.split(/\s+/).filter(word => 
+          word.length > 1 && !/^\d+$/.test(word) && !word.includes('@')
+        );
+        
+        if (nameWords.length >= 2) {
+          return nameWords.slice(0, 2).join(' ');
+        } else if (nameWords.length === 1) {
+          return nameWords[0];
+        }
+        return nameText;
+        
+      case 1: // Email
+        const emailMatch = trimmedMessage.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
+        return emailMatch ? emailMatch[1] : trimmedMessage;
+        
+      case 2: // Phone
+        const phoneMatch = trimmedMessage.match(/(\d{10})/);
+        return phoneMatch ? phoneMatch[1] : trimmedMessage.replace(/\D/g, '');
+        
+      default:
+        return trimmedMessage;
+    }
+  };
+
+  // Validate single detail
+  const validateSingleDetail = (value, step) => {
+    if (!value || !value.trim()) {
+      return false;
     }
     
-    if (!details.email.trim()) {
-      errors.email = "Email not found";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(details.email)) {
-      errors.email = "Invalid email format";
+    switch (step) {
+      case 0: // Name
+        return value.trim().length >= 2;
+      case 1: // Email
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+      case 2: // Phone
+        return /^[0-9]{10}$/.test(value.replace(/\D/g, ""));
+      default:
+        return false;
     }
-    
-    if (!details.phone.trim()) {
-      errors.phone = "Phone number not found";
-    } else if (!/^[0-9]{10}$/.test(details.phone.replace(/\D/g, ""))) {
-      errors.phone = "Invalid phone number format";
-    }
-    
-    return errors;
   };
 
   // Validation function
@@ -138,74 +203,120 @@ const Chatbot = () => {
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    
+    // Save user message to backend
+    saveChatMessage(userMessage, collectedDetails);
 
-    // Check if user details are provided in the message
+    // Check if user details are still being collected
     if (!userDetailsProvided) {
-      const extractedDetails = extractUserDetails(inputMessage);
-      const validationErrors = validateExtractedDetails(extractedDetails);
+      const extractedValue = extractSingleDetail(inputMessage, currentDetailStep);
+      const isValid = validateSingleDetail(extractedValue, currentDetailStep);
       
-      if (Object.keys(validationErrors).length === 0) {
-        // All details found, store them
-        setUserDetailsProvided(true);
-        setSurveyData(extractedDetails);
+      if (isValid) {
+        // Update collected details
+        const updatedDetails = { ...collectedDetails };
+        const fieldNames = ['name', 'email', 'phone'];
+        updatedDetails[fieldNames[currentDetailStep]] = extractedValue;
+        setCollectedDetails(updatedDetails);
         
-        // Store in backend
-        try {
-          const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080"}/api/contact`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                name: extractedDetails.name,
-                email: extractedDetails.email,
-                phone: extractedDetails.phone,
-                message: "User details provided through chatbot",
-              }),
-            }
-          );
-
-          if (response.ok) {
-            const botResponse = {
-              id: messages.length + 2,
-              text: `Thank you ${extractedDetails.name}! I've received your details. Now, how can I help you with our courses?`,
-              isBot: true,
-              timestamp: new Date(),
-            };
-            
-            setTimeout(() => {
-              setMessages((prev) => [...prev, botResponse]);
-            }, 1000);
-          } else {
-            throw new Error("Failed to store details");
-          }
-        } catch (error) {
-          console.error("Error storing user details:", error);
+        // Move to next step or complete
+        if (currentDetailStep < 2) {
+          // Ask for next detail
+          const nextStep = currentDetailStep + 1;
+          setCurrentDetailStep(nextStep);
+          
+          const nextFieldNames = ['Email Address', 'Phone Number'];
           const botResponse = {
             id: messages.length + 2,
-            text: "Thank you for your details! Now, how can I help you with our courses?",
+            text: `Great! Thank you for your name. Now, please provide your **${nextFieldNames[nextStep - 1]}**:`,
             isBot: true,
             timestamp: new Date(),
           };
           
           setTimeout(() => {
             setMessages((prev) => [...prev, botResponse]);
+            // Save bot response to backend
+            saveChatMessage(botResponse, collectedDetails);
           }, 1000);
+        } else {
+          // All details collected, store them
+          setUserDetailsProvided(true);
+          setSurveyData(updatedDetails);
+          
+          // Store in backend
+          try {
+            const response = await fetch(
+              `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/api/contact`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  name: updatedDetails.name,
+                  email: updatedDetails.email,
+                  phone: updatedDetails.phone,
+                  message: "User details provided through chatbot",
+                }),
+              }
+            );
+
+            if (response.ok) {
+              const botResponse = {
+                id: messages.length + 2,
+                text: `Perfect! Thank you ${updatedDetails.name}! I've received all your details. Now, how can I help you with our courses?`,
+                isBot: true,
+                timestamp: new Date(),
+              };
+              
+              setTimeout(() => {
+                setMessages((prev) => [...prev, botResponse]);
+                // Save bot response to backend
+                saveChatMessage(botResponse, updatedDetails);
+              }, 1000);
+            } else {
+              throw new Error("Failed to store details");
+            }
+          } catch (error) {
+            console.error("Error storing user details:", error);
+            const botResponse = {
+              id: messages.length + 2,
+              text: "Thank you for your details! Now, how can I help you with our courses?",
+              isBot: true,
+              timestamp: new Date(),
+            };
+            
+            setTimeout(() => {
+              setMessages((prev) => [...prev, botResponse]);
+              // Save bot response to backend
+              saveChatMessage(botResponse, updatedDetails);
+            }, 1000);
+          }
         }
       } else {
-        // Missing details, ask for them
-        const missingFields = Object.keys(validationErrors);
+        // Invalid input, ask again
+        const fieldNames = ['Full Name', 'Email Address', 'Phone Number'];
+        const currentFieldName = fieldNames[currentDetailStep];
+        
+        let errorMessage = `Please provide a valid **${currentFieldName}**:`;
+        
+        if (currentDetailStep === 1) {
+          errorMessage += "\n\nExample: john@example.com";
+        } else if (currentDetailStep === 2) {
+          errorMessage += "\n\nExample: 9876543210";
+        }
+        
         const botResponse = {
           id: messages.length + 2,
-          text: `I need a bit more information. Please provide:\n\n${missingFields.map(field => `• ${field.charAt(0).toUpperCase() + field.slice(1)}`).join('\n')}\n\nYou can share all details in one message.`,
+          text: errorMessage,
           isBot: true,
           timestamp: new Date(),
         };
         
         setTimeout(() => {
           setMessages((prev) => [...prev, botResponse]);
+          // Save bot response to backend
+          saveChatMessage(botResponse, collectedDetails);
         }, 1000);
       }
     } else {
@@ -219,6 +330,8 @@ const Chatbot = () => {
 
       setTimeout(() => {
         setMessages((prev) => [...prev, botResponse]);
+        // Save bot response to backend
+        saveChatMessage(botResponse, collectedDetails);
       }, 1000);
     }
 
