@@ -449,10 +449,10 @@ export default function CoursePage() {
                     }}
                   >
                     <button
-                      className={`w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 hover:scale-110 ${
+                      className={`w-10 h-10 flex items-center justify-center transition-all duration-300 hover:scale-110 ${
                         wishlistCourseIds.includes(course._id)
-                          ? "bg-yellow-400 text-white shadow-lg"
-                          : "bg-white/80 text-gray-600 hover:bg-yellow-400 hover:text-white"
+                          ? "text-yellow-400"
+                          : "text-gray-600 hover:text-yellow-400"
                       }`}
                       title={
                         wishlistCourseIds.includes(course._id)
