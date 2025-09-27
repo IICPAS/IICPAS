@@ -290,6 +290,10 @@ app.use("/api/contact-form", contactFormRoutes);
 import chatRoutes from "./routes/chatRoutes.js";
 app.use("/api/chat", chatRoutes);
 
+//Chatbot Settings Routes
+import chatbotSettingsRoutes from "./routes/chatbotSettingsRoutes.js";
+app.use("/api/chatbot", chatbotSettingsRoutes);
+
 // Server
 const PORT = process.env.PORT || 8080;
 server.listen(PORT, () =>
