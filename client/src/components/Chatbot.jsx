@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FaRobot,
@@ -38,6 +38,12 @@ const Chatbot = () => {
   });
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
+  const messagesEndRef = useRef(null);
+
+  // Auto-scroll function to scroll to bottom of messages
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   // Simple markdown renderer for basic formatting
   const renderMarkdown = (text) => {
@@ -107,6 +113,11 @@ const Chatbot = () => {
       saveChatMessage(messages[0], {});
     }
   }, [sessionId]);
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   // Function to save chat message to backend
   const saveChatMessage = async (message, userDetails = null) => {
@@ -466,6 +477,7 @@ const Chatbot = () => {
                   </div>
                 </motion.div>
               ))}
+              <div ref={messagesEndRef} />
             </div>
 
             {/* Input */}
