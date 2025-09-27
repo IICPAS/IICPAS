@@ -2,6 +2,7 @@ import express from 'express';
 import { 
   getActiveRefundPolicy, 
   getAllRefundPolicies, 
+  getRefundPolicyById,
   createRefundPolicy, 
   updateRefundPolicy, 
   activateRefundPolicy, 
@@ -16,6 +17,7 @@ router.get('/active', getActiveRefundPolicy);
 
 // Admin routes
 router.get('/admin/all', requireAuth, getAllRefundPolicies);
+router.get('/admin/:id', requireAuth, getRefundPolicyById);
 router.post('/admin/create', requireAuth, createRefundPolicy);
 router.put('/admin/update/:id', requireAuth, updateRefundPolicy);
 router.put('/admin/activate/:id', requireAuth, activateRefundPolicy);

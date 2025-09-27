@@ -55,6 +55,40 @@ router.get('/admin/all', requireAuth, async (req, res) => {
   }
 });
 
+// Get single privacy policy by ID (admin only)
+router.get('/admin/:id', requireAuth, async (req, res) => {
+  try {
+    // Check if user is admin
+    if (req.user.role !== 'Admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Admin privileges required.'
+      });
+    }
+
+    const { id } = req.params;
+    const privacyPolicy = await PrivacyPolicy.findById(id);
+    
+    if (!privacyPolicy) {
+      return res.status(404).json({
+        success: false,
+        message: 'Privacy policy not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: privacyPolicy
+    });
+  } catch (error) {
+    console.error('Error fetching privacy policy:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching privacy policy'
+    });
+  }
+});
+
 // Create new privacy policy (admin only)
 router.post('/admin/create', requireAuth, async (req, res) => {
   try {

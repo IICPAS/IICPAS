@@ -89,7 +89,9 @@ import AdminProfileTab from "./AdminProfileTab";
 import ChatConversationsTab from "./ChatConversationsTab";
 import ChatbotSettingsTab from "./ChatbotSettingsTab";
 import PrivacyPolicyTab from "./PrivacyPolicyTab";
+import EditPrivacyPolicyTab from "./EditPrivacyPolicyTab";
 import RefundPolicyTab from "./RefundPolicyTab";
+import EditRefundPolicyTab from "./EditRefundPolicyTab";
 
 // All available modules with their permissions
 const ALL_MODULES = [
@@ -529,9 +531,19 @@ function AdminDashboardContent() {
         ) : activeTab === "chatbot-settings" ? (
           <ChatbotSettingsTab />
         ) : activeTab === "privacy-policy" ? (
-          <PrivacyPolicyTab />
+          <PrivacyPolicyTab onEditPolicy={(policyId) => setActiveTab(`edit-privacy-policy-${policyId}`)} />
+        ) : activeTab.startsWith("edit-privacy-policy") ? (
+          <EditPrivacyPolicyTab 
+            onBack={() => setActiveTab("privacy-policy")} 
+            policyId={activeTab.replace("edit-privacy-policy-", "")}
+          />
         ) : activeTab === "refund-policy" ? (
-          <RefundPolicyTab />
+          <RefundPolicyTab onEditPolicy={(policyId) => setActiveTab(`edit-refund-policy-${policyId}`)} />
+        ) : activeTab.startsWith("edit-refund-policy") ? (
+          <EditRefundPolicyTab 
+            onBack={() => setActiveTab("refund-policy")} 
+            policyId={activeTab.replace("edit-refund-policy-", "")}
+          />
         ) : activeTab === "bulk-email" ? (
           <BulkEmailTab />
         ) : activeTab === "contact-info" ? (
