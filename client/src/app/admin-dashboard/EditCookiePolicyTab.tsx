@@ -95,11 +95,12 @@ const EditCookiePolicyTab = ({ onBack, policyId }: EditCookiePolicyTabProps) => 
       const token = localStorage.getItem("adminToken");
       const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
       
-      const url = policyId 
-        ? `${API_BASE}/cookie-policy/admin/update/${policyId}`
-        : `${API_BASE}/cookie-policy/admin/create`;
+      const isNewPolicy = !policyId || policyId === "new";
+      const url = isNewPolicy 
+        ? `${API_BASE}/cookie-policy/admin/create`
+        : `${API_BASE}/cookie-policy/admin/update/${policyId}`;
       
-      const method = policyId ? "PUT" : "POST";
+      const method = isNewPolicy ? "POST" : "PUT";
       
       const response = await fetch(url, {
         method,
@@ -113,7 +114,7 @@ const EditCookiePolicyTab = ({ onBack, policyId }: EditCookiePolicyTabProps) => 
       const data = await response.json();
       
       if (data.success) {
-        toast.success(policyId ? "Cookie policy updated successfully!" : "Cookie policy created successfully!");
+        toast.success(isNewPolicy ? "Cookie policy created successfully!" : "Cookie policy updated successfully!");
         onBack();
       } else {
         toast.error(data.message || "Failed to save cookie policy");

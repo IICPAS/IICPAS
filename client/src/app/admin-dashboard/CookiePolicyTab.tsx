@@ -213,11 +213,11 @@ const CookiePolicyTab = ({ onEditPolicy }: CookiePolicyTabProps) => {
             Export Excel
           </button>
           <button
-            onClick={() => onEditPolicy && onEditPolicy(currentPolicy?._id || "new")}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            onClick={() => onEditPolicy && onEditPolicy("new")}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
-            <FaEdit className="w-4 h-4" />
-            Edit Cookie Policy
+            <FaPlus className="w-4 h-4" />
+            Add New Policy
           </button>
         </div>
       </div>
@@ -243,6 +243,13 @@ const CookiePolicyTab = ({ onEditPolicy }: CookiePolicyTabProps) => {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => onEditPolicy && onEditPolicy(policy._id!)}
+                    className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full hover:bg-green-200"
+                    title="Edit cookie policy"
+                  >
+                    Edit
+                  </button>
                   {policy.isActive && (
                     <span className="flex items-center gap-1 text-green-600">
                       <FaCheck className="w-4 h-4" />
