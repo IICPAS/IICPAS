@@ -130,11 +130,12 @@ export const createCourse = async (req, res) => {
     let simulations = [];
     if (simulationsRaw) {
       try {
-        simulations = typeof simulationsRaw === 'string' 
-          ? JSON.parse(simulationsRaw) 
-          : simulationsRaw;
+        simulations =
+          typeof simulationsRaw === "string"
+            ? JSON.parse(simulationsRaw)
+            : simulationsRaw;
       } catch (error) {
-        console.error('Error parsing simulations data:', error);
+        console.error("Error parsing simulations data:", error);
         simulations = [];
       }
     }
@@ -199,9 +200,19 @@ export const updateCourse = async (req, res) => {
         // Parse simulations JSON string to object
         updateData.simulations = JSON.parse(req.body.simulations);
       } catch (error) {
-        console.error('Error parsing simulations data:', error);
+        console.error("Error parsing simulations data:", error);
         // If parsing fails, keep as string or set to empty array
         updateData.simulations = [];
+      }
+    }
+
+    // Handle pricing data
+    if (req.body.pricing) {
+      try {
+        updateData.pricing = JSON.parse(req.body.pricing);
+      } catch (error) {
+        console.error("Error parsing pricing data:", error);
+        // If parsing fails, keep existing pricing or set default
       }
     }
 
@@ -266,11 +277,11 @@ export const uploadSimulationImage = async (req, res) => {
     }
 
     const imageUrl = `/uploads/${req.file.filename}`;
-    
+
     res.json({
       success: true,
       imageUrl: imageUrl,
-      filename: req.file.filename
+      filename: req.file.filename,
     });
   } catch (error) {
     console.error("Error uploading simulation image:", error);

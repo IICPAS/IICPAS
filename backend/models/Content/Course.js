@@ -7,9 +7,9 @@ const CourseSchema = new Schema({
   slug: { type: String },
   price: { type: Number, required: true },
   image: { type: String }, // Image URL or path
-  level: { 
-    type: String, 
-    enum: ["Executive Level", "Professional Level"] 
+  level: {
+    type: String,
+    enum: ["Executive Level", "Professional Level"],
   },
   discount: { type: Number, default: 0 },
   status: { type: String, default: "Active", enum: ["Active", "Inactive"] },
@@ -20,12 +20,14 @@ const CourseSchema = new Schema({
   examCert: { type: String }, // HTML from ReactQuill
   caseStudy: { type: String }, // HTML from ReactQuill
   assignment: { type: String }, // HTML from Jodit Editor
-  simulations: [{ 
-    title: { type: String },
-    description: { type: String },
-    imageUrl: { type: String },
-    order: { type: Number, default: 0 }
-  }], // Array of simulation objects
+  simulations: [
+    {
+      title: { type: String },
+      description: { type: String },
+      imageUrl: { type: String },
+      order: { type: Number, default: 0 },
+    },
+  ], // Array of simulation objects
 
   seoTitle: { type: String },
   seoKeywords: { type: String }, // Store as comma-separated or array (if needed)
@@ -37,33 +39,40 @@ const CourseSchema = new Schema({
   metaDescription: { type: String },
 
   chapters: [{ type: Schema.Types.ObjectId, ref: "Chapter" }],
-  
+
   // Dynamic pricing and UI configuration
   pricing: {
     recordedSession: {
-      title: { type: String, default: "DIGITAL HUB+RECORDED SESSION" },
-      buttonText: { type: String, default: "Add Digital Hub" }
+      title: { type: String, default: "DIGITAL HUB RECORDED SESSION" },
+      buttonText: { type: String, default: "Add Digital Hub" },
+      price: { type: Number, required: true },
+      discount: { type: Number, default: 0 },
+      finalPrice: { type: Number, required: true },
     },
     liveSession: {
-      title: { type: String, default: "DIGITAL HUB+LIVE SESSION" },
+      title: { type: String, default: "DIGITAL HUB LIVE SESSION" },
       buttonText: { type: String, default: "Add Digital Hub+" },
-      priceMultiplier: { type: Number, default: 1.5 }
-    }
+      price: { type: Number, required: true },
+      discount: { type: Number, default: 0 },
+      finalPrice: { type: Number, required: true },
+    },
   },
-  
+
   // Dynamic tab configuration
   tabs: {
     syllabus: { label: { type: String, default: "Syllabus" } },
     assignment: { label: { type: String, default: "Assignment" } },
-    assessment: { label: { type: String, default: "Assessment & Certificates" } },
+    assessment: {
+      label: { type: String, default: "Assessment & Certificates" },
+    },
     schedule: { label: { type: String, default: "Live Schedule +" } },
-    simulator: { label: { type: String, default: "Simulator" } }
+    simulator: { label: { type: String, default: "Simulator" } },
   },
-  
+
   // Rating fields
   rating: { type: Number, default: 0 },
   reviewCount: { type: Number, default: 0 },
-  
+
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });

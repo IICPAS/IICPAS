@@ -54,11 +54,11 @@ export default function EditCourse({ courseId, onBack }) {
 
   useEffect(() => {
     setMounted(true);
-    
+
     // Load course levels first
     getCourseLevels().then((levels) => {
       setLevelOptions(levels);
-      
+
       // Then load course data
       axios.get(`${API_BASE}/courses/${courseId}`).then((res) => {
         const c = res.data;
@@ -84,8 +84,13 @@ export default function EditCourse({ courseId, onBack }) {
           metaDescription: c.metaDescription || "",
           image: null,
           imageUrl: c.image || "",
+          // Pricing fields for both live and recorded sessions
+          recordedSessionPrice: c.pricing?.recordedSession?.price || "",
+          recordedSessionDiscount: c.pricing?.recordedSession?.discount || "",
+          liveSessionPrice: c.pricing?.liveSession?.price || "",
+          liveSessionDiscount: c.pricing?.liveSession?.discount || "",
         });
-        
+
         // Load simulations
         setSimulations(c.simulations || []);
       });
@@ -124,11 +129,15 @@ export default function EditCourse({ courseId, onBack }) {
     try {
       const formData = new FormData();
       formData.append("image", file);
-      
-      const response = await axios.post(`${API_BASE}/courses/upload-simulation-image`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      
+
+      const response = await axios.post(
+        `${API_BASE}/courses/upload-simulation-image`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+
       return response.data.imageUrl;
     } catch (error) {
       console.error("Error uploading simulation image:", error);
@@ -143,24 +152,24 @@ export default function EditCourse({ courseId, onBack }) {
   const addSimulation = async () => {
     const title = prompt("Enter simulation title:");
     if (!title) return;
-    
+
     const description = prompt("Enter simulation description:");
     if (!description) return;
-    
+
     const fileInput = document.createElement("input");
     fileInput.type = "file";
     fileInput.accept = "image/*";
     fileInput.onchange = async (e) => {
       const file = e.target.files[0];
       if (!file) return;
-      
+
       const imageUrl = await handleSimulationImageUpload(file);
       if (imageUrl) {
         const newSimulation = {
           title,
           description,
           imageUrl,
-          order: simulations.length
+          order: simulations.length,
         };
         setSimulations([...simulations, newSimulation]);
       }
@@ -188,6 +197,22 @@ export default function EditCourse({ courseId, onBack }) {
       : price || "";
   };
 
+  const getRecordedSessionFinalPrice = () => {
+    const price = parseFloat(form.recordedSessionPrice) || 0;
+    const discount = parseFloat(form.recordedSessionDiscount) || 0;
+    return price && discount
+      ? Math.max(0, price - (price * discount) / 100)
+      : price || "";
+  };
+
+  const getLiveSessionFinalPrice = () => {
+    const price = parseFloat(form.liveSessionPrice) || 0;
+    const discount = parseFloat(form.liveSessionDiscount) || 0;
+    return price && discount
+      ? Math.max(0, price - (price * discount) / 100)
+      : price || "";
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -195,11 +220,42 @@ export default function EditCourse({ courseId, onBack }) {
       const fd = new FormData();
       fd.append("category", form.category?.value || "");
       fd.append("level", form.level?.value || "");
+
+      // Add pricing structure
+      const pricing = {
+        recordedSession: {
+          title: "DIGITAL HUB RECORDED SESSION",
+          buttonText: "Add Digital Hub",
+          price: parseFloat(form.recordedSessionPrice) || 0,
+          discount: parseFloat(form.recordedSessionDiscount) || 0,
+          finalPrice: getRecordedSessionFinalPrice(),
+        },
+        liveSession: {
+          title: "DIGITAL HUB LIVE SESSION",
+          buttonText: "Add Digital Hub+",
+          price: parseFloat(form.liveSessionPrice) || 0,
+          discount: parseFloat(form.liveSessionDiscount) || 0,
+          finalPrice: getLiveSessionFinalPrice(),
+        },
+      };
+      fd.append("pricing", JSON.stringify(pricing));
+
       Object.entries(form).forEach(([k, v]) => {
-        if (["category", "level", "imageUrl"].includes(k)) return;
+        if (
+          [
+            "category",
+            "level",
+            "imageUrl",
+            "recordedSessionPrice",
+            "recordedSessionDiscount",
+            "liveSessionPrice",
+            "liveSessionDiscount",
+          ].includes(k)
+        )
+          return;
         if (v !== null && v !== undefined) fd.append(k, v);
       });
-      
+
       // Add simulations data
       fd.append("simulations", JSON.stringify(simulations));
 
@@ -313,29 +369,120 @@ export default function EditCourse({ courseId, onBack }) {
               value={form.level}
               onChange={handleLevelChange}
             />
-            <label>Price</label>
-            <input
-              name="price"
-              type="number"
-              value={form.price}
-              onChange={handleInputChange}
-              className="w-full border p-2 rounded"
-              required
-            />
-            <label>Discount (%)</label>
-            <input
-              name="discount"
-              type="number"
-              value={form.discount}
-              onChange={handleInputChange}
-              className="w-full border p-2 rounded"
-            />
-            <label>Final Price</label>
-            <input
-              value={getFinalPrice()}
-              readOnly
-              className="w-full border p-2 rounded bg-gray-100"
-            />
+
+            {/* Recorded Session Pricing */}
+            <div className="border p-4 rounded-lg bg-green-50">
+              <h4 className="font-semibold text-green-800 mb-3">
+                Recorded Session Pricing
+              </h4>
+              <div className="space-y-3">
+                <div>
+                  <label>Recorded Session Price</label>
+                  <input
+                    name="recordedSessionPrice"
+                    type="number"
+                    value={form.recordedSessionPrice}
+                    onChange={handleInputChange}
+                    className="w-full border p-2 rounded"
+                    required
+                  />
+                </div>
+                <div>
+                  <label>Recorded Session Discount (%)</label>
+                  <input
+                    name="recordedSessionDiscount"
+                    type="number"
+                    value={form.recordedSessionDiscount}
+                    onChange={handleInputChange}
+                    className="w-full border p-2 rounded"
+                  />
+                </div>
+                <div>
+                  <label>Recorded Session Final Price</label>
+                  <input
+                    value={getRecordedSessionFinalPrice()}
+                    readOnly
+                    className="w-full border p-2 rounded bg-gray-100"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Live Session Pricing */}
+            <div className="border p-4 rounded-lg bg-blue-50">
+              <h4 className="font-semibold text-blue-800 mb-3">
+                Live Session Pricing
+              </h4>
+              <div className="space-y-3">
+                <div>
+                  <label>Live Session Price</label>
+                  <input
+                    name="liveSessionPrice"
+                    type="number"
+                    value={form.liveSessionPrice}
+                    onChange={handleInputChange}
+                    className="w-full border p-2 rounded"
+                    required
+                  />
+                </div>
+                <div>
+                  <label>Live Session Discount (%)</label>
+                  <input
+                    name="liveSessionDiscount"
+                    type="number"
+                    value={form.liveSessionDiscount}
+                    onChange={handleInputChange}
+                    className="w-full border p-2 rounded"
+                  />
+                </div>
+                <div>
+                  <label>Live Session Final Price</label>
+                  <input
+                    value={getLiveSessionFinalPrice()}
+                    readOnly
+                    className="w-full border p-2 rounded bg-gray-100"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Legacy Price Fields (for backward compatibility) */}
+            <div className="border p-4 rounded-lg bg-gray-50">
+              <h4 className="font-semibold text-gray-800 mb-3">
+                Legacy Price (Optional)
+              </h4>
+              <div className="space-y-3">
+                <div>
+                  <label>Price</label>
+                  <input
+                    name="price"
+                    type="number"
+                    value={form.price}
+                    onChange={handleInputChange}
+                    className="w-full border p-2 rounded"
+                  />
+                </div>
+                <div>
+                  <label>Discount (%)</label>
+                  <input
+                    name="discount"
+                    type="number"
+                    value={form.discount}
+                    onChange={handleInputChange}
+                    className="w-full border p-2 rounded"
+                  />
+                </div>
+                <div>
+                  <label>Final Price</label>
+                  <input
+                    value={getFinalPrice()}
+                    readOnly
+                    className="w-full border p-2 rounded bg-gray-100"
+                  />
+                </div>
+              </div>
+            </div>
+
             <label>Status</label>
             <select
               name="status"
@@ -379,7 +526,7 @@ export default function EditCourse({ courseId, onBack }) {
             onBlur={handleJoditChange("caseStudy")}
           />
         </div>
-        
+
         <div>
           <label className="block font-semibold mb-1">Assignment</label>
           <JoditEditor
@@ -403,7 +550,7 @@ export default function EditCourse({ courseId, onBack }) {
               {uploadingImage ? "Uploading..." : "+ Add Simulation"}
             </button>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {simulations.map((simulation, index) => (
               <div key={index} className="border rounded-lg p-4 bg-gray-50">
@@ -417,12 +564,18 @@ export default function EditCourse({ courseId, onBack }) {
                     ✕
                   </button>
                 </div>
-                <p className="text-xs text-gray-600 mb-2">{simulation.description}</p>
+                <p className="text-xs text-gray-600 mb-2">
+                  {simulation.description}
+                </p>
                 {simulation.imageUrl && (
                   <img
-                    src={simulation.imageUrl.startsWith("http") 
-                      ? simulation.imageUrl 
-                      : `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}${simulation.imageUrl}`
+                    src={
+                      simulation.imageUrl.startsWith("http")
+                        ? simulation.imageUrl
+                        : `${
+                            process.env.NEXT_PUBLIC_API_URL ||
+                            "http://localhost:8080"
+                          }${simulation.imageUrl}`
                     }
                     alt={simulation.title}
                     className="w-full h-32 object-cover rounded"
@@ -433,7 +586,9 @@ export default function EditCourse({ courseId, onBack }) {
                   <input
                     type="number"
                     value={simulation.order}
-                    onChange={(e) => updateSimulationOrder(index, parseInt(e.target.value))}
+                    onChange={(e) =>
+                      updateSimulationOrder(index, parseInt(e.target.value))
+                    }
                     className="w-full text-xs border rounded px-2 py-1"
                     min="0"
                   />
@@ -441,7 +596,7 @@ export default function EditCourse({ courseId, onBack }) {
               </div>
             ))}
           </div>
-          
+
           {simulations.length === 0 && (
             <p className="text-gray-500 text-center py-8">
               No simulations added yet. Click "Add Simulation" to get started.

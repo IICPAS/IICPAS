@@ -370,8 +370,22 @@ export default function CoursePage() {
             </div>
           )}
           {filteredCourses.map((course, index) => {
+            // Use recorded session pricing if available, otherwise fall back to legacy pricing
+            const recordedPrice =
+              course.pricing?.recordedSession?.finalPrice ||
+              course.pricing?.recordedSession?.price;
+            const recordedDiscount = course.pricing?.recordedSession?.discount;
+            const legacyPrice = course.price;
+            const legacyDiscount = course.discount;
+
+            // Determine which pricing to use
+            const displayPrice = recordedPrice || legacyPrice;
+            const displayDiscount = recordedDiscount || legacyDiscount;
+
             const discountedPrice =
-              course.price - (course.price * (course.discount || 0)) / 100;
+              displayDiscount && displayDiscount > 0
+                ? displayPrice
+                : displayPrice;
 
             return (
               <motion.div
@@ -496,9 +510,13 @@ export default function CoursePage() {
                       <p className="text-green-600 font-bold text-xl">
                         ₹{discountedPrice.toLocaleString()}
                       </p>
-                      {course.discount > 0 && (
+                      {displayDiscount > 0 && (
                         <p className="text-gray-400 text-sm line-through">
-                          ₹{course.price.toLocaleString()}
+                          ₹
+                          {(
+                            course.pricing?.recordedSession?.price ||
+                            course.price
+                          ).toLocaleString()}
                         </p>
                       )}
                     </div>
