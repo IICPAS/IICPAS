@@ -7,21 +7,21 @@ import mongoose from "mongoose";
 export const getPendingRatings = async (req, res) => {
   try {
     const pendingRatings = await CourseRating.find({ status: "pending" })
-      .populate('studentId', 'name email')
-      .populate('courseId', 'title category')
+      .populate("studentId", "name email")
+      .populate("courseId", "title category")
       .sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
       data: pendingRatings,
-      count: pendingRatings.length
+      count: pendingRatings.length,
     });
   } catch (error) {
     console.error("Error fetching pending ratings:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch pending ratings",
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -30,15 +30,15 @@ export const getPendingRatings = async (req, res) => {
 export const getAllRatings = async (req, res) => {
   try {
     const { status, courseId, page = 1, limit = 10 } = req.query;
-    
+
     let filter = {};
     if (status) filter.status = status;
     if (courseId) filter.courseId = courseId;
 
     const ratings = await CourseRating.find(filter)
-      .populate('studentId', 'name email')
-      .populate('courseId', 'title category')
-      .populate('approvedBy', 'name email')
+      .populate("studentId", "name email")
+      .populate("courseId", "title category")
+      .populate("approvedBy", "name email")
       .sort({ createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);
@@ -51,15 +51,15 @@ export const getAllRatings = async (req, res) => {
       pagination: {
         current: parseInt(page),
         pages: Math.ceil(total / limit),
-        total: total
-      }
+        total: total,
+      },
     });
   } catch (error) {
     console.error("Error fetching ratings:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch ratings",
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -74,14 +74,14 @@ export const approveRating = async (req, res) => {
     if (!rating) {
       return res.status(404).json({
         success: false,
-        message: "Rating not found"
+        message: "Rating not found",
       });
     }
 
     if (rating.status !== "pending") {
       return res.status(400).json({
         success: false,
-        message: "Rating is not pending for approval"
+        message: "Rating is not pending for approval",
       });
     }
 
@@ -97,14 +97,14 @@ export const approveRating = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Rating approved successfully",
-      data: rating
+      data: rating,
     });
   } catch (error) {
     console.error("Error approving rating:", error);
     res.status(500).json({
       success: false,
       message: "Failed to approve rating",
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -119,14 +119,14 @@ export const rejectRating = async (req, res) => {
     if (!rating) {
       return res.status(404).json({
         success: false,
-        message: "Rating not found"
+        message: "Rating not found",
       });
     }
 
     if (rating.status !== "pending") {
       return res.status(400).json({
         success: false,
-        message: "Rating is not pending for approval"
+        message: "Rating is not pending for approval",
       });
     }
 
@@ -140,14 +140,14 @@ export const rejectRating = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Rating rejected successfully",
-      data: rating
+      data: rating,
     });
   } catch (error) {
     console.error("Error rejecting rating:", error);
     res.status(500).json({
       success: false,
       message: "Failed to reject rating",
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -161,14 +161,14 @@ export const submitRating = async (req, res) => {
     if (!studentId || !courseId || !rating) {
       return res.status(400).json({
         success: false,
-        message: "Student ID, Course ID, and rating are required"
+        message: "Student ID, Course ID, and rating are required",
       });
     }
 
     if (rating < 1 || rating > 5) {
       return res.status(400).json({
         success: false,
-        message: "Rating must be between 1 and 5"
+        message: "Rating must be between 1 and 5",
       });
     }
 
@@ -177,27 +177,27 @@ export const submitRating = async (req, res) => {
     if (!student) {
       return res.status(404).json({
         success: false,
-        message: "Student not found"
+        message: "Student not found",
       });
     }
 
     if (!student.course.includes(courseId)) {
       return res.status(400).json({
         success: false,
-        message: "Student is not enrolled in this course"
+        message: "Student is not enrolled in this course",
       });
     }
 
     // Check if student has already rated this course
     const existingRating = await CourseRating.findOne({
       studentId: studentId,
-      courseId: courseId
+      courseId: courseId,
     });
 
     if (existingRating) {
       return res.status(400).json({
         success: false,
-        message: "You have already rated this course"
+        message: "You have already rated this course",
       });
     }
 
@@ -207,26 +207,26 @@ export const submitRating = async (req, res) => {
       courseId,
       rating,
       review: review || "",
-      status: "pending"
+      status: "pending",
     });
 
     await newRating.save();
 
     // Populate the response
-    await newRating.populate('studentId', 'name email');
-    await newRating.populate('courseId', 'title category');
+    await newRating.populate("studentId", "name email");
+    await newRating.populate("courseId", "title category");
 
     res.status(201).json({
       success: true,
       message: "Rating submitted successfully and is pending approval",
-      data: newRating
+      data: newRating,
     });
   } catch (error) {
     console.error("Error submitting rating:", error);
     res.status(500).json({
       success: false,
       message: "Failed to submit rating",
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -237,24 +237,46 @@ export const getCourseRatings = async (req, res) => {
     const { courseId } = req.params;
     const { page = 1, limit = 10 } = req.query;
 
+    let actualCourseId = courseId;
+
+    // Check if courseId is a valid ObjectId, if not, treat it as a slug and find the course
+    if (!mongoose.Types.ObjectId.isValid(courseId)) {
+      const Course = (await import("../models/Content/Course.js")).default;
+      const course = await Course.findOne({ slug: courseId });
+      if (!course) {
+        return res.status(404).json({
+          success: false,
+          message: "Course not found",
+        });
+      }
+      actualCourseId = course._id;
+    }
+
     const ratings = await CourseRating.find({
-      courseId: courseId,
-      status: "approved"
+      courseId: actualCourseId,
+      status: "approved",
     })
-      .populate('studentId', 'name')
+      .populate("studentId", "name")
       .sort({ approvedAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);
 
     const total = await CourseRating.countDocuments({
-      courseId: courseId,
-      status: "approved"
+      courseId: actualCourseId,
+      status: "approved",
     });
 
     // Calculate average rating
     const avgRating = await CourseRating.aggregate([
-      { $match: { courseId: new mongoose.Types.ObjectId(courseId), status: "approved" } },
-      { $group: { _id: null, average: { $avg: "$rating" }, count: { $sum: 1 } } }
+      {
+        $match: {
+          courseId: new mongoose.Types.ObjectId(actualCourseId),
+          status: "approved",
+        },
+      },
+      {
+        $group: { _id: null, average: { $avg: "$rating" }, count: { $sum: 1 } },
+      },
     ]);
 
     res.status(200).json({
@@ -265,15 +287,15 @@ export const getCourseRatings = async (req, res) => {
       pagination: {
         current: parseInt(page),
         pages: Math.ceil(total / limit),
-        total: total
-      }
+        total: total,
+      },
     });
   } catch (error) {
     console.error("Error fetching course ratings:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch course ratings",
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -282,20 +304,27 @@ export const getCourseRatings = async (req, res) => {
 const updateCourseRating = async (courseId) => {
   try {
     const avgRating = await CourseRating.aggregate([
-      { $match: { courseId: new mongoose.Types.ObjectId(courseId), status: "approved" } },
-      { $group: { _id: null, average: { $avg: "$rating" }, count: { $sum: 1 } } }
+      {
+        $match: {
+          courseId: new mongoose.Types.ObjectId(courseId),
+          status: "approved",
+        },
+      },
+      {
+        $group: { _id: null, average: { $avg: "$rating" }, count: { $sum: 1 } },
+      },
     ]);
 
     if (avgRating.length > 0) {
       await Course.findByIdAndUpdate(courseId, {
         rating: Math.round(avgRating[0].average * 10) / 10, // Round to 1 decimal
-        reviewCount: avgRating[0].count
+        reviewCount: avgRating[0].count,
       });
     } else {
       // If no approved ratings, reset course rating
       await Course.findByIdAndUpdate(courseId, {
         rating: 0,
-        reviewCount: 0
+        reviewCount: 0,
       });
     }
   } catch (error) {
@@ -310,19 +339,19 @@ export const getStudentRatings = async (req, res) => {
     const { studentId } = req.params;
 
     const ratings = await CourseRating.find({ studentId })
-      .populate('courseId', 'title category image')
+      .populate("courseId", "title category image")
       .sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
-      data: ratings
+      data: ratings,
     });
   } catch (error) {
     console.error("Error fetching student ratings:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch student ratings",
-      error: error.message
+      error: error.message,
     });
   }
 };
