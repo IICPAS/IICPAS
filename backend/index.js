@@ -306,6 +306,10 @@ app.use("/api/refund-policy", refundPolicyRoutes);
 import termsOfServiceRoutes from "./routes/termsOfService.js";
 app.use("/api/terms-of-service", termsOfServiceRoutes);
 
+//Terms and Conditions Routes
+import termsAndConditionsRoutes from "./routes/termsAndConditions.js";
+app.use("/api/terms-and-conditions", termsAndConditionsRoutes);
+
 // Server
 const PORT = process.env.PORT || 8080;
 server.listen(PORT, () =>
