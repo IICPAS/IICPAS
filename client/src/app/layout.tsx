@@ -6,6 +6,7 @@ import { Toaster } from "react-hot-toast";
 import Chatbot from "@/components/Chatbot";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import CookiePolicyPopup from "@/components/CookiePolicyPopup";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,6 +22,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <GoogleAnalytics />
       <body className={inter.className} suppressHydrationWarning={true}>
         <AuthProvider>{children}</AuthProvider>
         <Toaster
