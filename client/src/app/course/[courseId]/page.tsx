@@ -20,7 +20,6 @@ import jsPDF from "jspdf";
 import LiveSchedule from "../../components/LiveSchedule";
 import SimulatorDemo from "../../components/SimulatorDemo";
 
-
 import axios from "axios";
 
 // Dummy course data - in real app this would come from API
@@ -429,8 +428,10 @@ export default function CourseDetailPage({
     const fetchCourseRatings = async () => {
       try {
         setRatingsLoading(true);
+        // Use the course ID from the fetched course data, not the slug
+        const courseId = course?._id || resolvedParams.courseId;
         const response = await axios.get(
-          `${API_BASE}/api/v1/course-ratings/course/${resolvedParams.courseId}`
+          `${API_BASE}/api/v1/course-ratings/course/${courseId}`
         );
         if (response.data.success) {
           setCourseRatings(response.data);
@@ -455,10 +456,11 @@ export default function CourseDetailPage({
       }
     };
 
-    if (resolvedParams.courseId) {
+    // Only fetch ratings after course data is loaded
+    if (course && course._id) {
       fetchCourseRatings();
     }
-  }, [resolvedParams.courseId, course, API_BASE]);
+  }, [course, API_BASE]);
 
   // Loading state
   if (loading) {
@@ -916,26 +918,38 @@ export default function CourseDetailPage({
                       <div className="bg-white rounded-lg shadow-lg p-8 max-w-md mx-auto">
                         <div className="mb-6">
                           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            <svg
+                              className="w-8 h-8 text-green-600"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                              />
                             </svg>
                           </div>
                           <h3 className="text-xl font-bold text-gray-900 mb-2">
                             Access Simulator
                           </h3>
                           <p className="text-gray-600 mb-6">
-                            Experience our interactive simulator through the Demo Digital Hub
+                            Experience our interactive simulator through the
+                            Demo Digital Hub
                           </p>
                         </div>
                         <button
-                          onClick={() => window.location.href = '/demo-digital-hub'}
+                          onClick={() =>
+                            (window.location.href = "/demo-digital-hub")
+                          }
                           className="w-full bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 transition-colors font-medium"
                         >
                           Go to Demo Digital Hub
                         </button>
                       </div>
                     </div>
-
                   </div>
                 )}
               </motion.div>
@@ -1021,18 +1035,21 @@ export default function CourseDetailPage({
                         <div className="text-center">
                           <div className="text-sm font-bold text-[#3cd664]">
                             ₹
-                            {course?.pricing?.recordedSession?.actualPrice
-                              ? course.pricing.recordedSession.actualPrice.toLocaleString()
+                            {course?.pricing?.recordedSession?.finalPrice
+                              ? course.pricing.recordedSession.finalPrice.toLocaleString()
+                              : course?.pricing?.recordedSession?.price
+                              ? course.pricing.recordedSession.price.toLocaleString()
                               : course.price
                               ? course.price.toLocaleString()
-                              : "5,000"}
+                              : "2,000"}
                           </div>
-                          {course?.pricing?.recordedSession?.discountPrice && (
-                            <div className="text-xs text-gray-500 line-through">
-                              ₹
-                              {course.pricing.recordedSession.discountPrice.toLocaleString()}
-                            </div>
-                          )}
+                          {course?.pricing?.recordedSession?.discount &&
+                            course.pricing.recordedSession.discount > 0 && (
+                              <div className="text-xs text-gray-500 line-through">
+                                ₹
+                                {course.pricing.recordedSession.price.toLocaleString()}
+                              </div>
+                            )}
                         </div>
                       </div>
 
@@ -1053,33 +1070,38 @@ export default function CourseDetailPage({
                       <div className="mb-2">
                         <div className="text-center mb-1">
                           <span className="text-xs font-bold text-blue-500 block">
-                            {course?.pricing?.liveSession?.title?.split("+")[0] ||
-                              "DIGITAL HUB+"}
+                            {course?.pricing?.liveSession?.title?.split(
+                              "+"
+                            )[0] || "DIGITAL HUB+"}
                           </span>
                           <span className="text-xs font-bold text-blue-500 block">
-                            {course?.pricing?.liveSession?.title?.split("+")[1] ||
-                              "LIVE SESSION"}
+                            {course?.pricing?.liveSession?.title?.split(
+                              "+"
+                            )[1] || "LIVE SESSION"}
                           </span>
                         </div>
                         <div className="text-center">
                           <div className="text-sm font-bold text-blue-500">
                             ₹
-                            {course?.pricing?.liveSession?.actualPrice
-                              ? course.pricing.liveSession.actualPrice.toLocaleString()
+                            {course?.pricing?.liveSession?.finalPrice
+                              ? course.pricing.liveSession.finalPrice.toLocaleString()
+                              : course?.pricing?.liveSession?.price
+                              ? course.pricing.liveSession.price.toLocaleString()
                               : course.price
                               ? (
                                   course.price *
                                   (course?.pricing?.liveSession
                                     ?.priceMultiplier || 1.5)
                                 ).toLocaleString()
-                              : "7,500"}
+                              : "3,000"}
                           </div>
-                          {course?.pricing?.liveSession?.discountPrice && (
-                            <div className="text-xs text-gray-500 line-through">
-                              ₹
-                              {course.pricing.liveSession.discountPrice.toLocaleString()}
-                            </div>
-                          )}
+                          {course?.pricing?.liveSession?.discount &&
+                            course.pricing.liveSession.discount > 0 && (
+                              <div className="text-xs text-gray-500 line-through">
+                                ₹
+                                {course.pricing.liveSession.price.toLocaleString()}
+                              </div>
+                            )}
                         </div>
                       </div>
 

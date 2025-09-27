@@ -28,28 +28,34 @@ const initialForm = {
   metaKeywords: "",
   metaDescription: "",
   image: null,
+  // Pricing fields for both live and recorded sessions
+  recordedSessionPrice: "",
+  recordedSessionDiscount: "",
+  liveSessionPrice: "",
+  liveSessionDiscount: "",
   pricing: {
     recordedSession: {
-      title: "DIGITAL HUB+RECORDED SESSION",
+      title: "DIGITAL HUB RECORDED SESSION",
       buttonText: "Add Digital Hub",
-      actualPrice: "",
-      discountPrice: ""
+      price: 0,
+      discount: 0,
+      finalPrice: 0,
     },
     liveSession: {
-      title: "DIGITAL HUB+LIVE SESSION",
+      title: "DIGITAL HUB LIVE SESSION",
       buttonText: "Add Digital Hub+",
-      priceMultiplier: 1.5,
-      actualPrice: "",
-      discountPrice: ""
-    }
+      price: 0,
+      discount: 0,
+      finalPrice: 0,
+    },
   },
   tabs: {
     syllabus: { label: "Syllabus" },
     assignment: { label: "Assignment" },
     assessment: { label: "Assessment & Certificates" },
     schedule: { label: "Live Schedule +" },
-    simulator: { label: "Simulator" }
-  }
+    simulator: { label: "Simulator" },
+  },
 };
 
 export default function CourseAddTab({ onBack }) {
@@ -126,6 +132,22 @@ export default function CourseAddTab({ onBack }) {
       : price || "";
   };
 
+  const getRecordedSessionFinalPrice = () => {
+    const price = parseFloat(form.recordedSessionPrice) || 0;
+    const discount = parseFloat(form.recordedSessionDiscount) || 0;
+    return price && discount
+      ? Math.max(0, price - (price * discount) / 100)
+      : price || "";
+  };
+
+  const getLiveSessionFinalPrice = () => {
+    const price = parseFloat(form.liveSessionPrice) || 0;
+    const discount = parseFloat(form.liveSessionDiscount) || 0;
+    return price && discount
+      ? Math.max(0, price - (price * discount) / 100)
+      : price || "";
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -137,8 +159,38 @@ export default function CourseAddTab({ onBack }) {
       fd.append("category", form.category?.value || "");
       fd.append("level", form.level?.value || "");
 
+      // Add pricing structure
+      const pricing = {
+        recordedSession: {
+          title: "DIGITAL HUB RECORDED SESSION",
+          buttonText: "Add Digital Hub",
+          price: parseFloat(form.recordedSessionPrice) || 0,
+          discount: parseFloat(form.recordedSessionDiscount) || 0,
+          finalPrice: getRecordedSessionFinalPrice(),
+        },
+        liveSession: {
+          title: "DIGITAL HUB LIVE SESSION",
+          buttonText: "Add Digital Hub+",
+          price: parseFloat(form.liveSessionPrice) || 0,
+          discount: parseFloat(form.liveSessionDiscount) || 0,
+          finalPrice: getLiveSessionFinalPrice(),
+        },
+      };
+      fd.append("pricing", JSON.stringify(pricing));
+
       Object.entries(form).forEach(([k, v]) => {
-        if (["category", "level"].includes(k)) return;
+        if (
+          [
+            "category",
+            "level",
+            "recordedSessionPrice",
+            "recordedSessionDiscount",
+            "liveSessionPrice",
+            "liveSessionDiscount",
+            "pricing",
+          ].includes(k)
+        )
+          return;
         if (v === null || v === undefined) return;
 
         if (v instanceof File) {
@@ -308,6 +360,102 @@ export default function CourseAddTab({ onBack }) {
                 readOnly
               />
             </div>
+
+            {/* Recorded Session Pricing */}
+            <div className="border p-4 rounded-lg bg-green-50">
+              <h4 className="font-semibold text-green-800 mb-3">
+                Recorded Session Pricing
+              </h4>
+              <div className="space-y-3">
+                <div>
+                  <label className="block mb-1 font-semibold">
+                    Recorded Session Price
+                  </label>
+                  <input
+                    name="recordedSessionPrice"
+                    type="number"
+                    placeholder="Enter recorded session price"
+                    className="w-full border p-2 rounded"
+                    value={form.recordedSessionPrice}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1 font-semibold">
+                    Recorded Session Discount (%)
+                  </label>
+                  <input
+                    name="recordedSessionDiscount"
+                    type="number"
+                    placeholder="Enter discount percentage"
+                    className="w-full border p-2 rounded"
+                    value={form.recordedSessionDiscount}
+                    onChange={handleInputChange}
+                    min="0"
+                    max="100"
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1 font-semibold">
+                    Recorded Session Final Price
+                  </label>
+                  <input
+                    value={getRecordedSessionFinalPrice()}
+                    readOnly
+                    className="w-full border p-2 rounded bg-gray-100"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Live Session Pricing */}
+            <div className="border p-4 rounded-lg bg-blue-50">
+              <h4 className="font-semibold text-blue-800 mb-3">
+                Live Session Pricing
+              </h4>
+              <div className="space-y-3">
+                <div>
+                  <label className="block mb-1 font-semibold">
+                    Live Session Price
+                  </label>
+                  <input
+                    name="liveSessionPrice"
+                    type="number"
+                    placeholder="Enter live session price"
+                    className="w-full border p-2 rounded"
+                    value={form.liveSessionPrice}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1 font-semibold">
+                    Live Session Discount (%)
+                  </label>
+                  <input
+                    name="liveSessionDiscount"
+                    type="number"
+                    placeholder="Enter discount percentage"
+                    className="w-full border p-2 rounded"
+                    value={form.liveSessionDiscount}
+                    onChange={handleInputChange}
+                    min="0"
+                    max="100"
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1 font-semibold">
+                    Live Session Final Price
+                  </label>
+                  <input
+                    value={getLiveSessionFinalPrice()}
+                    readOnly
+                    className="w-full border p-2 rounded bg-gray-100"
+                  />
+                </div>
+              </div>
+            </div>
             <div>
               <label className="block mb-1 font-semibold">Status</label>
               <select
@@ -365,88 +513,108 @@ export default function CourseAddTab({ onBack }) {
         {/* Dynamic Configuration Section */}
         <div className="border-t pt-8 mt-8">
           <h2 className="text-xl font-semibold mb-3">Dynamic Configuration</h2>
-          
+
           {/* Pricing Configuration */}
           <div className="mb-6">
-            <h3 className="text-lg font-medium mb-4">Pricing Cards Configuration</h3>
+            <h3 className="text-lg font-medium mb-4">
+              Pricing Cards Configuration
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Recorded Session */}
               <div className="border p-4 rounded-lg">
-                <h4 className="font-semibold mb-3 text-green-600">Recorded Session</h4>
+                <h4 className="font-semibold mb-3 text-green-600">
+                  Recorded Session
+                </h4>
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-sm font-medium mb-1">Title</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Title
+                    </label>
                     <input
                       type="text"
                       className="w-full border p-2 rounded"
                       value={form.pricing.recordedSession.title}
-                      onChange={(e) => setForm(f => ({
-                        ...f,
-                        pricing: {
-                          ...f.pricing,
-                          recordedSession: {
-                            ...f.pricing.recordedSession,
-                            title: e.target.value
-                          }
-                        }
-                      }))}
+                      onChange={(e) =>
+                        setForm((f) => ({
+                          ...f,
+                          pricing: {
+                            ...f.pricing,
+                            recordedSession: {
+                              ...f.pricing.recordedSession,
+                              title: e.target.value,
+                            },
+                          },
+                        }))
+                      }
                       placeholder="DIGITAL HUB+RECORDED SESSION"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Button Text</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Button Text
+                    </label>
                     <input
                       type="text"
                       className="w-full border p-2 rounded"
                       value={form.pricing.recordedSession.buttonText}
-                      onChange={(e) => setForm(f => ({
-                        ...f,
-                        pricing: {
-                          ...f.pricing,
-                          recordedSession: {
-                            ...f.pricing.recordedSession,
-                            buttonText: e.target.value
-                          }
-                        }
-                      }))}
+                      onChange={(e) =>
+                        setForm((f) => ({
+                          ...f,
+                          pricing: {
+                            ...f.pricing,
+                            recordedSession: {
+                              ...f.pricing.recordedSession,
+                              buttonText: e.target.value,
+                            },
+                          },
+                        }))
+                      }
                       placeholder="Add Digital Hub"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Actual Price (₹)</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Actual Price (₹)
+                    </label>
                     <input
                       type="number"
                       className="w-full border p-2 rounded"
                       value={form.pricing.recordedSession.actualPrice}
-                      onChange={(e) => setForm(f => ({
-                        ...f,
-                        pricing: {
-                          ...f.pricing,
-                          recordedSession: {
-                            ...f.pricing.recordedSession,
-                            actualPrice: e.target.value
-                          }
-                        }
-                      }))}
+                      onChange={(e) =>
+                        setForm((f) => ({
+                          ...f,
+                          pricing: {
+                            ...f.pricing,
+                            recordedSession: {
+                              ...f.pricing.recordedSession,
+                              actualPrice: e.target.value,
+                            },
+                          },
+                        }))
+                      }
                       placeholder="e.g., 5000"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Discount Price (₹)</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Discount Price (₹)
+                    </label>
                     <input
                       type="number"
                       className="w-full border p-2 rounded"
                       value={form.pricing.recordedSession.discountPrice}
-                      onChange={(e) => setForm(f => ({
-                        ...f,
-                        pricing: {
-                          ...f.pricing,
-                          recordedSession: {
-                            ...f.pricing.recordedSession,
-                            discountPrice: e.target.value
-                          }
-                        }
-                      }))}
+                      onChange={(e) =>
+                        setForm((f) => ({
+                          ...f,
+                          pricing: {
+                            ...f.pricing,
+                            recordedSession: {
+                              ...f.pricing.recordedSession,
+                              discountPrice: e.target.value,
+                            },
+                          },
+                        }))
+                      }
                       placeholder="e.g., 12000"
                     />
                   </div>
@@ -455,101 +623,124 @@ export default function CourseAddTab({ onBack }) {
 
               {/* Live Session */}
               <div className="border p-4 rounded-lg">
-                <h4 className="font-semibold mb-3 text-blue-600">Live Session</h4>
+                <h4 className="font-semibold mb-3 text-blue-600">
+                  Live Session
+                </h4>
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-sm font-medium mb-1">Title</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Title
+                    </label>
                     <input
                       type="text"
                       className="w-full border p-2 rounded"
                       value={form.pricing.liveSession.title}
-                      onChange={(e) => setForm(f => ({
-                        ...f,
-                        pricing: {
-                          ...f.pricing,
-                          liveSession: {
-                            ...f.pricing.liveSession,
-                            title: e.target.value
-                          }
-                        }
-                      }))}
+                      onChange={(e) =>
+                        setForm((f) => ({
+                          ...f,
+                          pricing: {
+                            ...f.pricing,
+                            liveSession: {
+                              ...f.pricing.liveSession,
+                              title: e.target.value,
+                            },
+                          },
+                        }))
+                      }
                       placeholder="DIGITAL HUB+LIVE SESSION"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Button Text</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Button Text
+                    </label>
                     <input
                       type="text"
                       className="w-full border p-2 rounded"
                       value={form.pricing.liveSession.buttonText}
-                      onChange={(e) => setForm(f => ({
-                        ...f,
-                        pricing: {
-                          ...f.pricing,
-                          liveSession: {
-                            ...f.pricing.liveSession,
-                            buttonText: e.target.value
-                          }
-                        }
-                      }))}
+                      onChange={(e) =>
+                        setForm((f) => ({
+                          ...f,
+                          pricing: {
+                            ...f.pricing,
+                            liveSession: {
+                              ...f.pricing.liveSession,
+                              buttonText: e.target.value,
+                            },
+                          },
+                        }))
+                      }
                       placeholder="Add Digital Hub+"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Price Multiplier</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Price Multiplier
+                    </label>
                     <input
                       type="number"
                       step="0.1"
                       className="w-full border p-2 rounded"
                       value={form.pricing.liveSession.priceMultiplier}
-                      onChange={(e) => setForm(f => ({
-                        ...f,
-                        pricing: {
-                          ...f.pricing,
-                          liveSession: {
-                            ...f.pricing.liveSession,
-                            priceMultiplier: parseFloat(e.target.value) || 1.5
-                          }
-                        }
-                      }))}
+                      onChange={(e) =>
+                        setForm((f) => ({
+                          ...f,
+                          pricing: {
+                            ...f.pricing,
+                            liveSession: {
+                              ...f.pricing.liveSession,
+                              priceMultiplier:
+                                parseFloat(e.target.value) || 1.5,
+                            },
+                          },
+                        }))
+                      }
                       placeholder="1.5"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Actual Price (₹)</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Actual Price (₹)
+                    </label>
                     <input
                       type="number"
                       className="w-full border p-2 rounded"
                       value={form.pricing.liveSession.actualPrice}
-                      onChange={(e) => setForm(f => ({
-                        ...f,
-                        pricing: {
-                          ...f.pricing,
-                          liveSession: {
-                            ...f.pricing.liveSession,
-                            actualPrice: e.target.value
-                          }
-                        }
-                      }))}
+                      onChange={(e) =>
+                        setForm((f) => ({
+                          ...f,
+                          pricing: {
+                            ...f.pricing,
+                            liveSession: {
+                              ...f.pricing.liveSession,
+                              actualPrice: e.target.value,
+                            },
+                          },
+                        }))
+                      }
                       placeholder="e.g., 7500"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Discount Price (₹)</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Discount Price (₹)
+                    </label>
                     <input
                       type="number"
                       className="w-full border p-2 rounded"
                       value={form.pricing.liveSession.discountPrice}
-                      onChange={(e) => setForm(f => ({
-                        ...f,
-                        pricing: {
-                          ...f.pricing,
-                          liveSession: {
-                            ...f.pricing.liveSession,
-                            discountPrice: e.target.value
-                          }
-                        }
-                      }))}
+                      onChange={(e) =>
+                        setForm((f) => ({
+                          ...f,
+                          pricing: {
+                            ...f.pricing,
+                            liveSession: {
+                              ...f.pricing.liveSession,
+                              discountPrice: e.target.value,
+                            },
+                          },
+                        }))
+                      }
                       placeholder="e.g., 24000"
                     />
                   </div>
@@ -560,85 +751,107 @@ export default function CourseAddTab({ onBack }) {
 
           {/* Tab Configuration */}
           <div className="mb-6">
-            <h3 className="text-lg font-medium mb-4">Tab Labels Configuration</h3>
+            <h3 className="text-lg font-medium mb-4">
+              Tab Labels Configuration
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Syllabus Tab</label>
+                <label className="block text-sm font-medium mb-1">
+                  Syllabus Tab
+                </label>
                 <input
                   type="text"
                   className="w-full border p-2 rounded"
                   value={form.tabs.syllabus.label}
-                  onChange={(e) => setForm(f => ({
-                    ...f,
-                    tabs: {
-                      ...f.tabs,
-                      syllabus: { label: e.target.value }
-                    }
-                  }))}
+                  onChange={(e) =>
+                    setForm((f) => ({
+                      ...f,
+                      tabs: {
+                        ...f.tabs,
+                        syllabus: { label: e.target.value },
+                      },
+                    }))
+                  }
                   placeholder="Syllabus"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Assignment Tab</label>
+                <label className="block text-sm font-medium mb-1">
+                  Assignment Tab
+                </label>
                 <input
                   type="text"
                   className="w-full border p-2 rounded"
                   value={form.tabs.assignment.label}
-                  onChange={(e) => setForm(f => ({
-                    ...f,
-                    tabs: {
-                      ...f.tabs,
-                      assignment: { label: e.target.value }
-                    }
-                  }))}
+                  onChange={(e) =>
+                    setForm((f) => ({
+                      ...f,
+                      tabs: {
+                        ...f.tabs,
+                        assignment: { label: e.target.value },
+                      },
+                    }))
+                  }
                   placeholder="Assignment"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Assessment Tab</label>
+                <label className="block text-sm font-medium mb-1">
+                  Assessment Tab
+                </label>
                 <input
                   type="text"
                   className="w-full border p-2 rounded"
                   value={form.tabs.assessment.label}
-                  onChange={(e) => setForm(f => ({
-                    ...f,
-                    tabs: {
-                      ...f.tabs,
-                      assessment: { label: e.target.value }
-                    }
-                  }))}
+                  onChange={(e) =>
+                    setForm((f) => ({
+                      ...f,
+                      tabs: {
+                        ...f.tabs,
+                        assessment: { label: e.target.value },
+                      },
+                    }))
+                  }
                   placeholder="Assessment & Certificates"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Schedule Tab</label>
+                <label className="block text-sm font-medium mb-1">
+                  Schedule Tab
+                </label>
                 <input
                   type="text"
                   className="w-full border p-2 rounded"
                   value={form.tabs.schedule.label}
-                  onChange={(e) => setForm(f => ({
-                    ...f,
-                    tabs: {
-                      ...f.tabs,
-                      schedule: { label: e.target.value }
-                    }
-                  }))}
+                  onChange={(e) =>
+                    setForm((f) => ({
+                      ...f,
+                      tabs: {
+                        ...f.tabs,
+                        schedule: { label: e.target.value },
+                      },
+                    }))
+                  }
                   placeholder="Live Schedule +"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Simulator Tab</label>
+                <label className="block text-sm font-medium mb-1">
+                  Simulator Tab
+                </label>
                 <input
                   type="text"
                   className="w-full border p-2 rounded"
                   value={form.tabs.simulator.label}
-                  onChange={(e) => setForm(f => ({
-                    ...f,
-                    tabs: {
-                      ...f.tabs,
-                      simulator: { label: e.target.value }
-                    }
-                  }))}
+                  onChange={(e) =>
+                    setForm((f) => ({
+                      ...f,
+                      tabs: {
+                        ...f.tabs,
+                        simulator: { label: e.target.value },
+                      },
+                    }))
+                  }
                   placeholder="Simulator"
                 />
               </div>
@@ -697,7 +910,9 @@ export default function CourseAddTab({ onBack }) {
               />
             </div>
             <div>
-              <label className="block mb-1 font-semibold">Meta Description</label>
+              <label className="block mb-1 font-semibold">
+                Meta Description
+              </label>
               <JoditEditor
                 value={form.metaDescription}
                 config={{ ...joditConfig, height: 120 }}
