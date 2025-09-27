@@ -60,7 +60,7 @@ const EditPrivacyPolicyTab = ({ onBack, policyId }: EditPrivacyPolicyTabProps) =
   const [newSubsectionContent, setNewSubsectionContent] = useState("");
 
   useEffect(() => {
-    if (policyId) {
+    if (policyId && policyId !== "new") {
       fetchPrivacyPolicy();
     } else {
       setLoading(false);

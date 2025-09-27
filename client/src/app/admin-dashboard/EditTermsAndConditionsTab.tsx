@@ -48,8 +48,10 @@ const EditTermsAndConditionsTab = ({ onBack, policyId }: EditTermsAndConditionsT
   const [newSubsectionContent, setNewSubsectionContent] = useState("");
 
   useEffect(() => {
-    if (policyId) {
+    if (policyId && policyId !== "new") {
       fetchTermsAndConditions();
+    } else {
+      setLoading(false);
     }
   }, [policyId]);
 

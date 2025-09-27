@@ -96,6 +96,8 @@ import TermsOfServiceTab from "./TermsOfServiceTab";
 import EditTermsOfServiceTab from "./EditTermsOfServiceTab";
 import TermsAndConditionsTab from "./TermsAndConditionsTab";
 import EditTermsAndConditionsTab from "./EditTermsAndConditionsTab";
+import CookiePolicyTab from "./CookiePolicyTab";
+import EditCookiePolicyTab from "./EditCookiePolicyTab";
 
 // All available modules with their permissions
 const ALL_MODULES = [
@@ -116,6 +118,7 @@ const ALL_MODULES = [
   { id: "refund-policy", label: "Refund Policy", icon: <FaShieldAlt /> },
   { id: "terms-of-service", label: "Terms of Service", icon: <FaShieldAlt /> },
   { id: "terms-and-conditions", label: "Terms & Conditions", icon: <FaShieldAlt /> },
+  { id: "cookie-policy", label: "Cookie Policy", icon: <FaShieldAlt /> },
   { id: "jobs", label: "Jobs", icon: <FaBriefcase /> },
   { id: "news", label: "News", icon: <FaNewspaper /> },
   { id: "students", label: "Students", icon: <FaUserGraduate /> },
@@ -563,6 +566,13 @@ function AdminDashboardContent() {
           <EditTermsAndConditionsTab 
             onBack={() => setActiveTab("terms-and-conditions")}
             policyId={activeTab.replace("edit-terms-and-conditions-", "")}
+          />
+        ) : activeTab === "cookie-policy" ? (
+          <CookiePolicyTab onEditPolicy={(policyId) => setActiveTab(`edit-cookie-policy-${policyId}`)} />
+        ) : activeTab.startsWith("edit-cookie-policy") ? (
+          <EditCookiePolicyTab 
+            onBack={() => setActiveTab("cookie-policy")}
+            policyId={activeTab.replace("edit-cookie-policy-", "")}
           />
         ) : activeTab === "bulk-email" ? (
           <BulkEmailTab />

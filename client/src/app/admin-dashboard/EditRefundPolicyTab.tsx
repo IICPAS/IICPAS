@@ -57,7 +57,11 @@ const EditRefundPolicyTab = ({ onBack, policyId }: EditRefundPolicyTabProps) => 
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    fetchRefundPolicy();
+    if (policyId && policyId !== "new") {
+      fetchRefundPolicy();
+    } else {
+      setLoading(false);
+    }
   }, [policyId]);
 
   const fetchRefundPolicy = async () => {

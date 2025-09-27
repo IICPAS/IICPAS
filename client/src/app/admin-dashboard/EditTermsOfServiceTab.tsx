@@ -48,8 +48,10 @@ const EditTermsOfServiceTab = ({ onBack, policyId }: EditTermsOfServiceTabProps)
   const [newSubsectionContent, setNewSubsectionContent] = useState("");
 
   useEffect(() => {
-    if (policyId) {
+    if (policyId && policyId !== "new") {
       fetchTermsOfService();
+    } else {
+      setLoading(false);
     }
   }, [policyId]);
 

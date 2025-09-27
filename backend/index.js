@@ -310,6 +310,10 @@ app.use("/api/terms-of-service", termsOfServiceRoutes);
 import termsAndConditionsRoutes from "./routes/termsAndConditions.js";
 app.use("/api/terms-and-conditions", termsAndConditionsRoutes);
 
+//Cookie Policy Routes
+import cookiePolicyRoutes from "./routes/cookiePolicy.js";
+app.use("/api/cookie-policy", cookiePolicyRoutes);
+
 // Server
 const PORT = process.env.PORT || 8080;
 server.listen(PORT, () =>
