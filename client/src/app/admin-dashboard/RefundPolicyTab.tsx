@@ -399,44 +399,44 @@ const RefundPolicyTab = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Refund Policy Management</h1>
-          <p className="text-gray-600 mt-2">Manage refund policy content and settings</p>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <div className="flex flex-wrap gap-4">
-            <button
-              onClick={() => setShowPreview(!showPreview)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center space-x-2"
-            >
-              <FaEye />
-              <span>{showPreview ? "Hide Preview" : "Show Preview"}</span>
-            </button>
-            <button
-              onClick={exportToExcel}
-              className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center space-x-2"
-            >
-              <FaFileExcel />
-              <span>Export Excel</span>
-            </button>
-            <button
-              onClick={() => setEditing(!editing)}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center space-x-2"
-            >
-              <FaEdit />
-              <span>{editing ? "Cancel Edit" : "Edit Policy"}</span>
-            </button>
-            {editing && (
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Refund Policy Management</h1>
+              <p className="text-gray-600 mt-2">Manage refund policy content and settings</p>
+            </div>
+            <div className="flex gap-3">
               <button
-                onClick={handleSave}
-                disabled={saving}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center space-x-2 disabled:opacity-50"
+                onClick={() => setShowPreview(!showPreview)}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center space-x-2"
               >
-                <FaSave />
-                <span>{saving ? "Saving..." : "Save Changes"}</span>
+                <FaEye />
+                <span>{showPreview ? "Hide Preview" : "Show Preview"}</span>
               </button>
-            )}
+              <button
+                onClick={exportToExcel}
+                className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center space-x-2"
+              >
+                <FaFileExcel />
+                <span>Export Excel</span>
+              </button>
+              <button
+                onClick={() => setEditing(!editing)}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center space-x-2"
+              >
+                <FaEdit />
+                <span>{editing ? "Cancel Edit" : "Edit Policy"}</span>
+              </button>
+              {editing && (
+                <button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center space-x-2 disabled:opacity-50"
+                >
+                  <FaSave />
+                  <span>{saving ? "Saving..." : "Save Changes"}</span>
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
