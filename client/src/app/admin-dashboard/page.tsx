@@ -67,6 +67,7 @@ import {
   FaArrowLeft,
   FaComments,
   FaUser,
+  FaRobot,
 } from "react-icons/fa";
 import CompanyTab from "./CompanyTab";
 import CourseArea from "./CourseBuilder";
@@ -86,6 +87,17 @@ import BulkEmailTab from "./BulkEmailTab";
 import ContactInfoTab from "./ContactInfoTab";
 import AdminProfileTab from "./AdminProfileTab";
 import ChatConversationsTab from "./ChatConversationsTab";
+import ChatbotSettingsTab from "./ChatbotSettingsTab";
+import PrivacyPolicyTab from "./PrivacyPolicyTab";
+import EditPrivacyPolicyTab from "./EditPrivacyPolicyTab";
+import RefundPolicyTab from "./RefundPolicyTab";
+import EditRefundPolicyTab from "./EditRefundPolicyTab";
+import TermsOfServiceTab from "./TermsOfServiceTab";
+import EditTermsOfServiceTab from "./EditTermsOfServiceTab";
+import TermsAndConditionsTab from "./TermsAndConditionsTab";
+import EditTermsAndConditionsTab from "./EditTermsAndConditionsTab";
+import CookiePolicyTab from "./CookiePolicyTab";
+import EditCookiePolicyTab from "./EditCookiePolicyTab";
 
 // All available modules with their permissions
 const ALL_MODULES = [
@@ -101,6 +113,12 @@ const ALL_MODULES = [
   { id: "enquiries", label: "Enquiries", icon: <FaEnvelope /> },
   { id: "messages", label: "Messages", icon: <FaComments /> },
   { id: "chat-conversations", label: "Chatbot Conversations", icon: <FaComments /> },
+  { id: "chatbot-settings", label: "Chatbot Settings", icon: <FaRobot /> },
+  { id: "privacy-policy", label: "Privacy Policy", icon: <FaShieldAlt /> },
+  { id: "refund-policy", label: "Refund Policy", icon: <FaShieldAlt /> },
+  { id: "terms-of-service", label: "Terms of Service", icon: <FaShieldAlt /> },
+  { id: "terms-and-conditions", label: "Terms & Conditions", icon: <FaShieldAlt /> },
+  { id: "cookie-policy", label: "Cookie Policy", icon: <FaShieldAlt /> },
   { id: "jobs", label: "Jobs", icon: <FaBriefcase /> },
   { id: "news", label: "News", icon: <FaNewspaper /> },
   { id: "students", label: "Students", icon: <FaUserGraduate /> },
@@ -519,6 +537,43 @@ function AdminDashboardContent() {
           <MessagesTab />
         ) : activeTab === "chat-conversations" ? (
           <ChatConversationsTab />
+        ) : activeTab === "chatbot-settings" ? (
+          <ChatbotSettingsTab />
+        ) : activeTab === "privacy-policy" ? (
+          <PrivacyPolicyTab onEditPolicy={(policyId) => setActiveTab(`edit-privacy-policy-${policyId}`)} />
+        ) : activeTab.startsWith("edit-privacy-policy") ? (
+          <EditPrivacyPolicyTab 
+            onBack={() => setActiveTab("privacy-policy")} 
+            policyId={activeTab.replace("edit-privacy-policy-", "")}
+          />
+        ) : activeTab === "refund-policy" ? (
+          <RefundPolicyTab onEditPolicy={(policyId) => setActiveTab(`edit-refund-policy-${policyId}`)} />
+        ) : activeTab.startsWith("edit-refund-policy") ? (
+          <EditRefundPolicyTab 
+            onBack={() => setActiveTab("refund-policy")}
+            policyId={activeTab.replace("edit-refund-policy-", "")}
+          />
+        ) : activeTab === "terms-of-service" ? (
+          <TermsOfServiceTab onEditPolicy={(policyId) => setActiveTab(`edit-terms-of-service-${policyId}`)} />
+        ) : activeTab.startsWith("edit-terms-of-service") ? (
+          <EditTermsOfServiceTab 
+            onBack={() => setActiveTab("terms-of-service")}
+            policyId={activeTab.replace("edit-terms-of-service-", "")}
+          />
+        ) : activeTab === "terms-and-conditions" ? (
+          <TermsAndConditionsTab onEditPolicy={(policyId) => setActiveTab(`edit-terms-and-conditions-${policyId}`)} />
+        ) : activeTab.startsWith("edit-terms-and-conditions") ? (
+          <EditTermsAndConditionsTab 
+            onBack={() => setActiveTab("terms-and-conditions")}
+            policyId={activeTab.replace("edit-terms-and-conditions-", "")}
+          />
+        ) : activeTab === "cookie-policy" ? (
+          <CookiePolicyTab onEditPolicy={(policyId) => setActiveTab(`edit-cookie-policy-${policyId}`)} />
+        ) : activeTab.startsWith("edit-cookie-policy") ? (
+          <EditCookiePolicyTab 
+            onBack={() => setActiveTab("cookie-policy")}
+            policyId={activeTab.replace("edit-cookie-policy-", "")}
+          />
         ) : activeTab === "bulk-email" ? (
           <BulkEmailTab />
         ) : activeTab === "contact-info" ? (

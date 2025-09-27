@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FaRobot,
@@ -30,15 +30,36 @@ const Chatbot = () => {
     phone: "",
   });
   const [sessionId, setSessionId] = useState(null);
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      text: "Hi! I'm your course assistant. To provide you with personalized assistance, I'll need a few details from you.\n\nLet's start with your **Full Name** please:",
-      isBot: true,
-      timestamp: new Date(),
-    },
-  ]);
+  const [chatbotSettings, setChatbotSettings] = useState({
+    assistantName: "Neha Singh",
+    profilePicture: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop&crop=face",
+    welcomeMessage: "Hi! I'm your course assistant. To provide you with personalized assistance, I'll need a few details from you.\n\nLet's start with your **Full Name** please:",
+    status: "Online"
+  });
+  const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
+  const messagesEndRef = useRef(null);
+
+  // Auto-scroll function to scroll to bottom of messages
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // Simple markdown renderer for basic formatting
+  const renderMarkdown = (text) => {
+    if (!text) return '';
+    
+    // Convert **bold text** to <strong>bold text</strong>
+    const boldText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    
+    // Convert *italic text* to <em>italic text</em>
+    const italicText = boldText.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    
+    // Convert line breaks to <br> tags
+    const withLineBreaks = italicText.replace(/\n/g, '<br>');
+    
+    return withLineBreaks;
+  };
 
   // Initialize session ID and save initial message
   useEffect(() => {
@@ -48,6 +69,43 @@ const Chatbot = () => {
     }
   }, []);
 
+  // Fetch chatbot settings on component mount
+  useEffect(() => {
+    const fetchChatbotSettings = async () => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/api/chatbot/settings`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            setChatbotSettings(data.settings);
+            // Initialize messages with the welcome message from settings
+            setMessages([
+              {
+                id: 1,
+                text: data.settings.welcomeMessage,
+                isBot: true,
+                timestamp: new Date(),
+              },
+            ]);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching chatbot settings:", error);
+        // Use default settings if API fails
+        setMessages([
+          {
+            id: 1,
+            text: chatbotSettings.welcomeMessage,
+            isBot: true,
+            timestamp: new Date(),
+          },
+        ]);
+      }
+    };
+
+    fetchChatbotSettings();
+  }, []);
+
   // Save initial bot message when sessionId is ready
   useEffect(() => {
     if (sessionId && messages.length === 1) {
@@ -55,6 +113,11 @@ const Chatbot = () => {
       saveChatMessage(messages[0], {});
     }
   }, [sessionId]);
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   // Function to save chat message to backend
   const saveChatMessage = async (message, userDetails = null) => {
@@ -360,7 +423,7 @@ const Chatbot = () => {
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 rounded-full overflow-hidden bg-white bg-opacity-20 flex items-center justify-center">
                   <img 
-                    src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop&crop=face" 
+                    src={chatbotSettings.profilePicture} 
                     alt="Assistant" 
                     className="w-full h-full object-cover"
                     onError={(e) => {
@@ -371,8 +434,8 @@ const Chatbot = () => {
                   <FaUser className="text-sm hidden" />
                 </div>
                 <div>
-                  <h3 className="font-semibold">Neha Singh</h3>
-                  <p className="text-xs opacity-90">Online</p>
+                  <h3 className="font-semibold">{chatbotSettings.assistantName}</h3>
+                  <p className="text-xs opacity-90">{chatbotSettings.status}</p>
                 </div>
               </div>
               <button
@@ -401,9 +464,10 @@ const Chatbot = () => {
                         : "bg-green-500 text-white"
                     }`}
                   >
-                    <p className="text-base leading-relaxed whitespace-pre-line">
-                      {message.text}
-                    </p>
+                    <div 
+                      className="text-base leading-relaxed"
+                      dangerouslySetInnerHTML={{ __html: renderMarkdown(message.text) }}
+                    />
                     <p className="text-xs opacity-70 mt-2">
                       {message.timestamp.toLocaleTimeString([], {
                         hour: "2-digit",
@@ -413,6 +477,7 @@ const Chatbot = () => {
                   </div>
                 </motion.div>
               ))}
+              <div ref={messagesEndRef} />
             </div>
 
             {/* Input */}
@@ -456,7 +521,7 @@ const Chatbot = () => {
         >
           <div className="w-12 h-12 rounded-full overflow-hidden bg-white bg-opacity-20 flex items-center justify-center">
             <img 
-              src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop&crop=face" 
+              src={chatbotSettings.profilePicture} 
               alt="Assistant" 
               className="w-full h-full object-cover"
               onError={(e) => {

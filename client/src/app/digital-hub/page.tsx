@@ -1270,10 +1270,9 @@ function DigitalHubContent() {
       >
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           <div className="flex items-center space-x-4">
-            <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-green-500 rounded-lg shadow-md"></div>
-            <div className="flex items-center space-x-2">
-              <CheckCircle className="w-5 h-5 text-green-500" />
-              <h1 className="text-xl font-semibold">Digital Hub</h1>
+            <div className="flex items-center space-x-2 bg-green-500 px-3 py-2 rounded-lg">
+              <CheckCircle className="w-5 h-5 text-white" />
+              <h1 className="text-xl font-semibold text-white">Digital Hub</h1>
             </div>
           </div>
 

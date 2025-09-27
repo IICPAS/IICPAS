@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Upload, User, Save, Edit3, X } from "lucide-react";
+import { Upload, User, Save, Edit3, X, ChevronDown, ChevronRight, Eye, EyeOff, Globe, Linkedin, Twitter, Facebook, Instagram, MapPin, Calendar, Briefcase, GraduationCap, Phone, Mail, User as UserIcon } from "lucide-react";
 import { toast } from "react-hot-toast";
 
 export default function AdminProfileTab() {
@@ -14,12 +14,68 @@ export default function AdminProfileTab() {
   const [imagePreview, setImagePreview] = useState(null);
   const [imageLoading, setImageLoading] = useState(false);
   
+  // Collapsible sections state
+  const [expandedSections, setExpandedSections] = useState({
+    personal: true,
+    professional: true,
+    social: false,
+    preferences: false,
+    visibility: false
+  });
+  
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
     role: "",
     image: "",
+    bio: "",
+    address: {
+      street: "",
+      city: "",
+      state: "",
+      pincode: "",
+      country: "India"
+    },
+    dateOfBirth: "",
+    gender: "",
+    department: "",
+    designation: "",
+    employeeId: "",
+    joiningDate: "",
+    experience: "",
+    qualifications: "",
+    socialLinks: {
+      linkedin: "",
+      twitter: "",
+      facebook: "",
+      instagram: "",
+      website: ""
+    },
+    preferences: {
+      theme: "light",
+      language: "en",
+      timezone: "Asia/Kolkata",
+      notifications: {
+        email: true,
+        sms: true,
+        push: true
+      }
+    },
+    fieldVisibility: {
+      phone: true,
+      address: false,
+      dateOfBirth: false,
+      gender: false,
+      department: true,
+      designation: true,
+      employeeId: false,
+      joiningDate: false,
+      experience: true,
+      qualifications: true,
+      socialLinks: true,
+      bio: true
+    }
   });
 
   const [originalData, setOriginalData] = useState({});
@@ -27,28 +83,105 @@ export default function AdminProfileTab() {
   // Fetch admin data on mount
   useEffect(() => {
     if (user) {
-      setFormData({
+      const userData = {
         name: user.name || "",
         email: user.email || "",
         phone: user.phone || "",
         role: user.role || "",
         image: user.image || "",
-      });
-      setOriginalData({
-        name: user.name || "",
-        email: user.email || "",
-        phone: user.phone || "",
-        role: user.role || "",
-        image: user.image || "",
-      });
+        bio: user.bio || "",
+        address: user.address || {
+          street: "",
+          city: "",
+          state: "",
+          pincode: "",
+          country: "India"
+        },
+        dateOfBirth: user.dateOfBirth || "",
+        gender: user.gender || "",
+        department: user.department || "",
+        designation: user.designation || "",
+        employeeId: user.employeeId || "",
+        joiningDate: user.joiningDate || "",
+        experience: user.experience || "",
+        qualifications: user.qualifications || "",
+        socialLinks: user.socialLinks || {
+          linkedin: "",
+          twitter: "",
+          facebook: "",
+          instagram: "",
+          website: ""
+        },
+        preferences: user.preferences || {
+          theme: "light",
+          language: "en",
+          timezone: "Asia/Kolkata",
+          notifications: {
+            email: true,
+            sms: true,
+            push: true
+          }
+        },
+        fieldVisibility: user.fieldVisibility || {
+          phone: true,
+          address: false,
+          dateOfBirth: false,
+          gender: false,
+          department: true,
+          designation: true,
+          employeeId: false,
+          joiningDate: false,
+          experience: true,
+          qualifications: true,
+          socialLinks: true,
+          bio: true
+        }
+      };
+      
+      setFormData(userData);
+      setOriginalData(userData);
       setLoading(false);
     }
   }, [user]);
 
-  const handleInputChange = (field, value) => {
-    setFormData(prev => ({
+  const handleInputChange = useCallback((field, value) => {
+    setFormData(prev => {
+      if (field.includes('.')) {
+        const parts = field.split('.');
+        if (parts.length === 2) {
+          const [parent, child] = parts;
+          return {
+            ...prev,
+            [parent]: {
+              ...prev[parent],
+              [child]: value
+            }
+          };
+        } else if (parts.length === 3) {
+          const [parent, child, grandchild] = parts;
+          return {
+            ...prev,
+            [parent]: {
+              ...prev[parent],
+              [child]: {
+                ...prev[parent][child],
+                [grandchild]: value
+              }
+            }
+          };
+        }
+      }
+      return {
+        ...prev,
+        [field]: value
+      };
+    });
+  }, []);
+
+  const toggleSection = (section) => {
+    setExpandedSections(prev => ({
       ...prev,
-      [field]: value
+      [section]: !prev[section]
     }));
   };
 
@@ -100,7 +233,6 @@ export default function AdminProfileTab() {
         setImagePreview(null);
         setProfileImage(null);
         toast.success("Profile image uploaded successfully!");
-        // Refresh user context to update profile picture in sidebar
         await refreshUser();
       } else {
         toast.error("Failed to upload image");
@@ -139,7 +271,6 @@ export default function AdminProfileTab() {
         toast.success("Profile updated successfully!");
         setOriginalData({ ...formData });
         setEditing(false);
-        // Refresh user context to update profile picture
         await refreshUser();
       } else {
         toast.error("Failed to update profile");
@@ -168,6 +299,16 @@ export default function AdminProfileTab() {
     }
   };
 
+  const toggleFieldVisibility = (field) => {
+    setFormData(prev => ({
+      ...prev,
+      fieldVisibility: {
+        ...prev.fieldVisibility,
+        [field]: !prev.fieldVisibility[field]
+      }
+    }));
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -175,6 +316,47 @@ export default function AdminProfileTab() {
       </div>
     );
   }
+
+  const SectionHeader = ({ title, icon: Icon, isExpanded, onToggle, count }) => (
+    <button
+      onClick={onToggle}
+      className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
+    >
+      <div className="flex items-center gap-3">
+        <Icon size={20} className="text-blue-600" />
+        <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
+        {count > 0 && (
+          <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+            {count} fields
+          </span>
+        )}
+      </div>
+      {isExpanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+    </button>
+  );
+
+  const FormField = ({ label, children, icon: Icon, visibilityField, isVisible }) => (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <label className="flex items-center gap-2 text-sm font-semibold text-gray-600">
+          {Icon && <Icon size={16} />}
+          {label}
+        </label>
+        {visibilityField && (
+          <button
+            onClick={() => toggleFieldVisibility(visibilityField)}
+            className={`p-1 rounded ${
+              isVisible ? 'text-green-600 bg-green-100' : 'text-gray-400 bg-gray-100'
+            }`}
+            title={isVisible ? 'Visible to others' : 'Hidden from others'}
+          >
+            {isVisible ? <Eye size={14} /> : <EyeOff size={14} />}
+          </button>
+        )}
+      </div>
+      {children}
+    </div>
+  );
 
   return (
     <div className="flex flex-col min-h-screen lg:flex-row gap-6 px-6 pt-4 pb-10 font-sans">
@@ -234,6 +416,9 @@ export default function AdminProfileTab() {
             <p className="text-sm text-blue-600 font-medium capitalize">
               {formData.role}
             </p>
+            {formData.department && (
+              <p className="text-xs text-gray-600 mt-1">{formData.department}</p>
+            )}
           </div>
           
           <button
@@ -252,7 +437,7 @@ export default function AdminProfileTab() {
             <div>
               <h3 className="text-2xl font-semibold text-blue-800 mb-2">Profile Information</h3>
               <p className="text-sm text-blue-600">
-                Manage your admin profile information. You can update all your details.
+                Manage your admin profile information. You can update all your details and control what others can see.
               </p>
             </div>
             
@@ -287,81 +472,628 @@ export default function AdminProfileTab() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-semibold text-gray-600 mb-2">
-                Full Name
-              </label>
-              {editing ? (
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => handleInputChange("name", e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter your full name"
-                />
-              ) : (
-                <div className="w-full p-3 border rounded-lg bg-gray-50 text-gray-700">
-                  {formData.name}
+          <div className="space-y-6">
+            {/* Personal Information Section */}
+            <div className="border rounded-lg overflow-hidden">
+              <SectionHeader
+                title="Personal Information"
+                icon={UserIcon}
+                isExpanded={expandedSections.personal}
+                onToggle={() => toggleSection('personal')}
+                count={6}
+              />
+              {expandedSections.personal && (
+                <div className="p-6 space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField label="Full Name" icon={UserIcon}>
+                      {editing ? (
+                        <input
+                          key="name-input"
+                          type="text"
+                          value={formData.name}
+                          onChange={(e) => handleInputChange("name", e.target.value)}
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="Enter your full name"
+                        />
+                      ) : (
+                        <div className="w-full p-3 border rounded-lg bg-gray-50 text-gray-700">
+                          {formData.name}
+                        </div>
+                      )}
+                    </FormField>
+
+                    <FormField label="Email Address" icon={Mail}>
+                      {editing ? (
+                        <input
+                          key="email-input"
+                          type="email"
+                          value={formData.email}
+                          onChange={(e) => handleInputChange("email", e.target.value)}
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="Enter your email"
+                        />
+                      ) : (
+                        <div className="w-full p-3 border rounded-lg bg-gray-50 text-gray-700">
+                          {formData.email}
+                        </div>
+                      )}
+                    </FormField>
+
+                    <FormField 
+                      label="Phone Number" 
+                      icon={Phone}
+                      visibilityField="phone"
+                      isVisible={formData.fieldVisibility.phone}
+                    >
+                      {editing ? (
+                        <input
+                          key="phone-input"
+                          type="tel"
+                          value={formData.phone}
+                          onChange={(e) => handleInputChange("phone", e.target.value)}
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="Enter your phone number"
+                        />
+                      ) : (
+                        <div className="w-full p-3 border rounded-lg bg-gray-50 text-gray-700">
+                          {formData.phone || "Not provided"}
+                        </div>
+                      )}
+                    </FormField>
+
+                    <FormField label="Gender">
+                      {editing ? (
+                        <select
+                          key="gender-select"
+                          value={formData.gender}
+                          onChange={(e) => handleInputChange("gender", e.target.value)}
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="">Select Gender</option>
+                          <option value="male">Male</option>
+                          <option value="female">Female</option>
+                          <option value="other">Other</option>
+                        </select>
+                      ) : (
+                        <div className="w-full p-3 border rounded-lg bg-gray-50 text-gray-700 capitalize">
+                          {formData.gender || "Not specified"}
+                        </div>
+                      )}
+                    </FormField>
+
+                    <FormField label="Date of Birth" icon={Calendar}>
+                      {editing ? (
+                        <input
+                          key="dateOfBirth-input"
+                          type="date"
+                          value={formData.dateOfBirth}
+                          onChange={(e) => handleInputChange("dateOfBirth", e.target.value)}
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      ) : (
+                        <div className="w-full p-3 border rounded-lg bg-gray-50 text-gray-700">
+                          {formData.dateOfBirth || "Not provided"}
+                        </div>
+                      )}
+                    </FormField>
+
+                    <FormField label="Role">
+                      {editing ? (
+                        <select
+                          key="role-select"
+                          value={formData.role}
+                          onChange={(e) => handleInputChange("role", e.target.value)}
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="superadmin">Super Admin</option>
+                          <option value="hr">HR</option>
+                          <option value="sales">Sales</option>
+                        </select>
+                      ) : (
+                        <div className="w-full p-3 border rounded-lg bg-gray-50 text-gray-700 capitalize">
+                          {formData.role}
+                        </div>
+                      )}
+                    </FormField>
+                  </div>
+
+                  <FormField label="Bio" icon={UserIcon}>
+                    {editing ? (
+                      <textarea
+                        key="bio-textarea"
+                        value={formData.bio}
+                        onChange={(e) => handleInputChange("bio", e.target.value)}
+                        className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Tell us about yourself..."
+                        rows={3}
+                      />
+                    ) : (
+                      <div className="w-full p-3 border rounded-lg bg-gray-50 text-gray-700">
+                        {formData.bio || "No bio provided"}
+                      </div>
+                    )}
+                  </FormField>
+
+                  {/* Address Fields */}
+                  <div className="space-y-4">
+                    <h4 className="text-md font-semibold text-gray-700 flex items-center gap-2">
+                      <MapPin size={18} />
+                      Address Information
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField label="Street Address">
+                        {editing ? (
+                          <input
+                            key="address-street-input"
+                            type="text"
+                            value={formData.address.street}
+                            onChange={(e) => handleInputChange("address.street", e.target.value)}
+                            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Enter street address"
+                          />
+                        ) : (
+                          <div className="w-full p-3 border rounded-lg bg-gray-50 text-gray-700">
+                            {formData.address.street || "Not provided"}
+                          </div>
+                        )}
+                      </FormField>
+
+                      <FormField label="City">
+                        {editing ? (
+                          <input
+                            key="address-city-input"
+                            type="text"
+                            value={formData.address.city}
+                            onChange={(e) => handleInputChange("address.city", e.target.value)}
+                            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Enter city"
+                          />
+                        ) : (
+                          <div className="w-full p-3 border rounded-lg bg-gray-50 text-gray-700">
+                            {formData.address.city || "Not provided"}
+                          </div>
+                        )}
+                      </FormField>
+
+                      <FormField label="State">
+                        {editing ? (
+                          <input
+                            key="address-state-input"
+                            type="text"
+                            value={formData.address.state}
+                            onChange={(e) => handleInputChange("address.state", e.target.value)}
+                            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Enter state"
+                          />
+                        ) : (
+                          <div className="w-full p-3 border rounded-lg bg-gray-50 text-gray-700">
+                            {formData.address.state || "Not provided"}
+                          </div>
+                        )}
+                      </FormField>
+
+                      <FormField label="Pincode">
+                        {editing ? (
+                          <input
+                            key="address-pincode-input"
+                            type="text"
+                            value={formData.address.pincode}
+                            onChange={(e) => handleInputChange("address.pincode", e.target.value)}
+                            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Enter pincode"
+                          />
+                        ) : (
+                          <div className="w-full p-3 border rounded-lg bg-gray-50 text-gray-700">
+                            {formData.address.pincode || "Not provided"}
+                          </div>
+                        )}
+                      </FormField>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-600 mb-2">
-                Email Address
-              </label>
-              {editing ? (
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => handleInputChange("email", e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter your email"
-                />
-              ) : (
-                <div className="w-full p-3 border rounded-lg bg-gray-50 text-gray-700">
-                  {formData.email}
+            {/* Professional Information Section */}
+            <div className="border rounded-lg overflow-hidden">
+              <SectionHeader
+                title="Professional Information"
+                icon={Briefcase}
+                isExpanded={expandedSections.professional}
+                onToggle={() => toggleSection('professional')}
+                count={6}
+              />
+              {expandedSections.professional && (
+                <div className="p-6 space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField 
+                      label="Department" 
+                      icon={Briefcase}
+                      visibilityField="department"
+                      isVisible={formData.fieldVisibility.department}
+                    >
+                      {editing ? (
+                        <input
+                          key="department-input"
+                          type="text"
+                          value={formData.department}
+                          onChange={(e) => handleInputChange("department", e.target.value)}
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="Enter department"
+                        />
+                      ) : (
+                        <div className="w-full p-3 border rounded-lg bg-gray-50 text-gray-700">
+                          {formData.department || "Not specified"}
+                        </div>
+                      )}
+                    </FormField>
+
+                    <FormField 
+                      label="Designation" 
+                      icon={Briefcase}
+                      visibilityField="designation"
+                      isVisible={formData.fieldVisibility.designation}
+                    >
+                      {editing ? (
+                        <input
+                          key="designation-input"
+                          type="text"
+                          value={formData.designation}
+                          onChange={(e) => handleInputChange("designation", e.target.value)}
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="Enter designation"
+                        />
+                      ) : (
+                        <div className="w-full p-3 border rounded-lg bg-gray-50 text-gray-700">
+                          {formData.designation || "Not specified"}
+                        </div>
+                      )}
+                    </FormField>
+
+                    <FormField 
+                      label="Employee ID" 
+                      icon={UserIcon}
+                      visibilityField="employeeId"
+                      isVisible={formData.fieldVisibility.employeeId}
+                    >
+                      {editing ? (
+                        <input
+                          type="text"
+                          value={formData.employeeId}
+                          onChange={(e) => handleInputChange("employeeId", e.target.value)}
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="Enter employee ID"
+                        />
+                      ) : (
+                        <div className="w-full p-3 border rounded-lg bg-gray-50 text-gray-700">
+                          {formData.employeeId || "Not provided"}
+                        </div>
+                      )}
+                    </FormField>
+
+                    <FormField 
+                      label="Joining Date" 
+                      icon={Calendar}
+                      visibilityField="joiningDate"
+                      isVisible={formData.fieldVisibility.joiningDate}
+                    >
+                      {editing ? (
+                        <input
+                          type="date"
+                          value={formData.joiningDate}
+                          onChange={(e) => handleInputChange("joiningDate", e.target.value)}
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      ) : (
+                        <div className="w-full p-3 border rounded-lg bg-gray-50 text-gray-700">
+                          {formData.joiningDate || "Not provided"}
+                        </div>
+                      )}
+                    </FormField>
+
+                    <FormField 
+                      label="Experience" 
+                      icon={Briefcase}
+                      visibilityField="experience"
+                      isVisible={formData.fieldVisibility.experience}
+                    >
+                      {editing ? (
+                        <input
+                          type="text"
+                          value={formData.experience}
+                          onChange={(e) => handleInputChange("experience", e.target.value)}
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="e.g., 5 years in IT"
+                        />
+                      ) : (
+                        <div className="w-full p-3 border rounded-lg bg-gray-50 text-gray-700">
+                          {formData.experience || "Not specified"}
+                        </div>
+                      )}
+                    </FormField>
+
+                    <FormField 
+                      label="Qualifications" 
+                      icon={GraduationCap}
+                      visibilityField="qualifications"
+                      isVisible={formData.fieldVisibility.qualifications}
+                    >
+                      {editing ? (
+                        <input
+                          type="text"
+                          value={formData.qualifications}
+                          onChange={(e) => handleInputChange("qualifications", e.target.value)}
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="e.g., B.Tech, MBA"
+                        />
+                      ) : (
+                        <div className="w-full p-3 border rounded-lg bg-gray-50 text-gray-700">
+                          {formData.qualifications || "Not specified"}
+                        </div>
+                      )}
+                    </FormField>
+                  </div>
                 </div>
               )}
             </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-600 mb-2">
-                Phone Number
-              </label>
-              {editing ? (
-                <input
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => handleInputChange("phone", e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter your phone number"
-                />
-              ) : (
-                <div className="w-full p-3 border rounded-lg bg-gray-50 text-gray-700">
-                  {formData.phone || "Not provided"}
+            {/* Social Links Section */}
+            <div className="border rounded-lg overflow-hidden">
+              <SectionHeader
+                title="Social Links"
+                icon={Globe}
+                isExpanded={expandedSections.social}
+                onToggle={() => toggleSection('social')}
+                count={5}
+              />
+              {expandedSections.social && (
+                <div className="p-6 space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField label="LinkedIn" icon={Linkedin}>
+                      {editing ? (
+                        <input
+                          type="url"
+                          value={formData.socialLinks.linkedin}
+                          onChange={(e) => handleInputChange("socialLinks.linkedin", e.target.value)}
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="https://linkedin.com/in/yourprofile"
+                        />
+                      ) : (
+                        <div className="w-full p-3 border rounded-lg bg-gray-50 text-gray-700">
+                          {formData.socialLinks.linkedin || "Not provided"}
+                        </div>
+                      )}
+                    </FormField>
+
+                    <FormField label="Twitter" icon={Twitter}>
+                      {editing ? (
+                        <input
+                          type="url"
+                          value={formData.socialLinks.twitter}
+                          onChange={(e) => handleInputChange("socialLinks.twitter", e.target.value)}
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="https://twitter.com/yourprofile"
+                        />
+                      ) : (
+                        <div className="w-full p-3 border rounded-lg bg-gray-50 text-gray-700">
+                          {formData.socialLinks.twitter || "Not provided"}
+                        </div>
+                      )}
+                    </FormField>
+
+                    <FormField label="Facebook" icon={Facebook}>
+                      {editing ? (
+                        <input
+                          type="url"
+                          value={formData.socialLinks.facebook}
+                          onChange={(e) => handleInputChange("socialLinks.facebook", e.target.value)}
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="https://facebook.com/yourprofile"
+                        />
+                      ) : (
+                        <div className="w-full p-3 border rounded-lg bg-gray-50 text-gray-700">
+                          {formData.socialLinks.facebook || "Not provided"}
+                        </div>
+                      )}
+                    </FormField>
+
+                    <FormField label="Instagram" icon={Instagram}>
+                      {editing ? (
+                        <input
+                          type="url"
+                          value={formData.socialLinks.instagram}
+                          onChange={(e) => handleInputChange("socialLinks.instagram", e.target.value)}
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="https://instagram.com/yourprofile"
+                        />
+                      ) : (
+                        <div className="w-full p-3 border rounded-lg bg-gray-50 text-gray-700">
+                          {formData.socialLinks.instagram || "Not provided"}
+                        </div>
+                      )}
+                    </FormField>
+
+                    <FormField label="Website" icon={Globe}>
+                      {editing ? (
+                        <input
+                          type="url"
+                          value={formData.socialLinks.website}
+                          onChange={(e) => handleInputChange("socialLinks.website", e.target.value)}
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="https://yourwebsite.com"
+                        />
+                      ) : (
+                        <div className="w-full p-3 border rounded-lg bg-gray-50 text-gray-700">
+                          {formData.socialLinks.website || "Not provided"}
+                        </div>
+                      )}
+                    </FormField>
+                  </div>
                 </div>
               )}
             </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-600 mb-2">
-                Role
-              </label>
-              {editing ? (
-                <select
-                  value={formData.role}
-                  onChange={(e) => handleInputChange("role", e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="superadmin">Super Admin</option>
-                  <option value="hr">HR</option>
-                  <option value="sales">Sales</option>
-                </select>
-              ) : (
-                <div className="w-full p-3 border rounded-lg bg-gray-50 text-gray-700 capitalize">
-                  {formData.role}
+            {/* Preferences Section */}
+            <div className="border rounded-lg overflow-hidden">
+              <SectionHeader
+                title="Preferences & Settings"
+                icon={UserIcon}
+                isExpanded={expandedSections.preferences}
+                onToggle={() => toggleSection('preferences')}
+                count={4}
+              />
+              {expandedSections.preferences && (
+                <div className="p-6 space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField label="Theme">
+                      {editing ? (
+                        <select
+                          value={formData.preferences.theme}
+                          onChange={(e) => handleInputChange("preferences.theme", e.target.value)}
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="light">Light</option>
+                          <option value="dark">Dark</option>
+                          <option value="auto">Auto</option>
+                        </select>
+                      ) : (
+                        <div className="w-full p-3 border rounded-lg bg-gray-50 text-gray-700 capitalize">
+                          {formData.preferences.theme}
+                        </div>
+                      )}
+                    </FormField>
+
+                    <FormField label="Language">
+                      {editing ? (
+                        <select
+                          value={formData.preferences.language}
+                          onChange={(e) => handleInputChange("preferences.language", e.target.value)}
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="en">English</option>
+                          <option value="hi">Hindi</option>
+                        </select>
+                      ) : (
+                        <div className="w-full p-3 border rounded-lg bg-gray-50 text-gray-700">
+                          {formData.preferences.language === 'en' ? 'English' : 'Hindi'}
+                        </div>
+                      )}
+                    </FormField>
+
+                    <FormField label="Timezone">
+                      {editing ? (
+                        <select
+                          value={formData.preferences.timezone}
+                          onChange={(e) => handleInputChange("preferences.timezone", e.target.value)}
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="Asia/Kolkata">Asia/Kolkata (IST)</option>
+                          <option value="UTC">UTC</option>
+                          <option value="America/New_York">America/New_York (EST)</option>
+                        </select>
+                      ) : (
+                        <div className="w-full p-3 border rounded-lg bg-gray-50 text-gray-700">
+                          {formData.preferences.timezone}
+                        </div>
+                      )}
+                    </FormField>
+                  </div>
+
+                  {/* Notification Preferences */}
+                  <div className="space-y-4">
+                    <h4 className="text-md font-semibold text-gray-700">Notification Preferences</h4>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 border rounded-lg">
+                        <span className="text-sm font-medium">Email Notifications</span>
+                        {editing ? (
+                          <input
+                            type="checkbox"
+                            checked={formData.preferences.notifications.email}
+                            onChange={(e) => handleInputChange("preferences.notifications.email", e.target.checked)}
+                            className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                          />
+                        ) : (
+                          <span className={`px-2 py-1 rounded text-xs ${
+                            formData.preferences.notifications.email ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          }`}>
+                            {formData.preferences.notifications.email ? 'Enabled' : 'Disabled'}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 border rounded-lg">
+                        <span className="text-sm font-medium">SMS Notifications</span>
+                        {editing ? (
+                          <input
+                            type="checkbox"
+                            checked={formData.preferences.notifications.sms}
+                            onChange={(e) => handleInputChange("preferences.notifications.sms", e.target.checked)}
+                            className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                          />
+                        ) : (
+                          <span className={`px-2 py-1 rounded text-xs ${
+                            formData.preferences.notifications.sms ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          }`}>
+                            {formData.preferences.notifications.sms ? 'Enabled' : 'Disabled'}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 border rounded-lg">
+                        <span className="text-sm font-medium">Push Notifications</span>
+                        {editing ? (
+                          <input
+                            type="checkbox"
+                            checked={formData.preferences.notifications.push}
+                            onChange={(e) => handleInputChange("preferences.notifications.push", e.target.checked)}
+                            className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                          />
+                        ) : (
+                          <span className={`px-2 py-1 rounded text-xs ${
+                            formData.preferences.notifications.push ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          }`}>
+                            {formData.preferences.notifications.push ? 'Enabled' : 'Disabled'}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Field Visibility Settings */}
+            <div className="border rounded-lg overflow-hidden">
+              <SectionHeader
+                title="Field Visibility Settings"
+                icon={Eye}
+                isExpanded={expandedSections.visibility}
+                onToggle={() => toggleSection('visibility')}
+                count={Object.keys(formData.fieldVisibility).length}
+              />
+              {expandedSections.visibility && (
+                <div className="p-6 space-y-4">
+                  <p className="text-sm text-gray-600 mb-4">
+                    Control which information is visible to other users. Toggle the eye icon to show/hide fields.
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {Object.entries(formData.fieldVisibility).map(([field, isVisible]) => (
+                      <div key={field} className="flex items-center justify-between p-3 border rounded-lg">
+                        <span className="text-sm font-medium capitalize">
+                          {field.replace(/([A-Z])/g, ' $1').trim()}
+                        </span>
+                        <button
+                          onClick={() => toggleFieldVisibility(field)}
+                          className={`p-2 rounded-full transition-colors ${
+                            isVisible ? 'text-green-600 bg-green-100 hover:bg-green-200' : 'text-gray-400 bg-gray-100 hover:bg-gray-200'
+                          }`}
+                          title={isVisible ? 'Visible to others' : 'Hidden from others'}
+                        >
+                          {isVisible ? <Eye size={16} /> : <EyeOff size={16} />}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -370,7 +1102,8 @@ export default function AdminProfileTab() {
           <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
             <h4 className="text-sm font-semibold text-blue-800 mb-1">Profile Management</h4>
             <p className="text-sm text-blue-700">
-              As an admin, you have full control over your profile information. You can update your name, email, phone number, and role. 
+              As a super admin, you have full control over your profile information. You can update all your details, 
+              manage social links, set preferences, and control what information is visible to others. 
               Changes will be saved immediately and reflected across the system.
             </p>
           </div>

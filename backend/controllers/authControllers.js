@@ -38,7 +38,68 @@ export const login = async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    res.status(200).json({ message: "Logged in", token, admin });
+    // Return complete admin data with all fields
+    res.status(200).json({ 
+      message: "Logged in", 
+      token, 
+      admin: {
+        id: admin._id,
+        name: admin.name,
+        email: admin.email,
+        phone: admin.phone || "",
+        role: admin.role,
+        image: admin.image || "",
+        bio: admin.bio || "",
+        address: admin.address || {
+          street: "",
+          city: "",
+          state: "",
+          pincode: "",
+          country: "India"
+        },
+        dateOfBirth: admin.dateOfBirth || "",
+        gender: admin.gender || "",
+        department: admin.department || "",
+        designation: admin.designation || "",
+        employeeId: admin.employeeId || "",
+        joiningDate: admin.joiningDate || "",
+        experience: admin.experience || "",
+        qualifications: admin.qualifications || "",
+        socialLinks: admin.socialLinks || {
+          linkedin: "",
+          twitter: "",
+          facebook: "",
+          instagram: "",
+          website: ""
+        },
+        preferences: admin.preferences || {
+          theme: "light",
+          language: "en",
+          timezone: "Asia/Kolkata",
+          notifications: {
+            email: true,
+            sms: true,
+            push: true
+          }
+        },
+        fieldVisibility: admin.fieldVisibility || {
+          phone: true,
+          address: false,
+          dateOfBirth: false,
+          gender: false,
+          department: true,
+          designation: true,
+          employeeId: false,
+          joiningDate: false,
+          experience: true,
+          qualifications: true,
+          socialLinks: true,
+          bio: true
+        },
+        createdAt: admin.createdAt,
+        updatedAt: admin.updatedAt
+      }
+    });
   } catch (err) {
     res.status(500).json({ message: "Error", error: err.message });
   }
@@ -97,7 +158,12 @@ export const userLogin = async (req, res) => {
 // Admin profile update
 export const updateAdminProfile = async (req, res) => {
   try {
-    const { name, email, phone, role, image } = req.body;
+    const { 
+      name, email, phone, role, image,
+      bio, address, dateOfBirth, gender,
+      department, designation, employeeId, joiningDate, experience, qualifications,
+      socialLinks, preferences, fieldVisibility
+    } = req.body;
     const adminId = req.user.id; // From isAdmin middleware
 
     // Check if email is being changed and if it already exists
@@ -111,16 +177,40 @@ export const updateAdminProfile = async (req, res) => {
       }
     }
 
+    // Prepare update object with only provided fields
+    const updateData = {
+      name,
+      email,
+      phone,
+      role,
+      image,
+      bio,
+      address,
+      dateOfBirth,
+      gender,
+      department,
+      designation,
+      employeeId,
+      joiningDate,
+      experience,
+      qualifications,
+      socialLinks,
+      preferences,
+      fieldVisibility,
+      updatedAt: new Date()
+    };
+
+    // Remove undefined fields
+    Object.keys(updateData).forEach(key => {
+      if (updateData[key] === undefined) {
+        delete updateData[key];
+      }
+    });
+
     // Update admin profile
     const updatedAdmin = await Admin.findByIdAndUpdate(
       adminId,
-      {
-        name,
-        email,
-        phone,
-        role,
-        image,
-      },
+      updateData,
       { new: true, runValidators: true }
     );
 
@@ -137,6 +227,21 @@ export const updateAdminProfile = async (req, res) => {
         phone: updatedAdmin.phone,
         role: updatedAdmin.role,
         image: updatedAdmin.image,
+        bio: updatedAdmin.bio,
+        address: updatedAdmin.address,
+        dateOfBirth: updatedAdmin.dateOfBirth,
+        gender: updatedAdmin.gender,
+        department: updatedAdmin.department,
+        designation: updatedAdmin.designation,
+        employeeId: updatedAdmin.employeeId,
+        joiningDate: updatedAdmin.joiningDate,
+        experience: updatedAdmin.experience,
+        qualifications: updatedAdmin.qualifications,
+        socialLinks: updatedAdmin.socialLinks,
+        preferences: updatedAdmin.preferences,
+        fieldVisibility: updatedAdmin.fieldVisibility,
+        createdAt: updatedAdmin.createdAt,
+        updatedAt: updatedAdmin.updatedAt
       },
     });
   } catch (err) {

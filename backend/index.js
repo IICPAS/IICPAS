@@ -290,6 +290,30 @@ app.use("/api/contact-form", contactFormRoutes);
 import chatRoutes from "./routes/chatRoutes.js";
 app.use("/api/chat", chatRoutes);
 
+//Chatbot Settings Routes
+import chatbotSettingsRoutes from "./routes/chatbotSettingsRoutes.js";
+app.use("/api/chatbot", chatbotSettingsRoutes);
+
+//Privacy Policy Routes
+import privacyPolicyRoutes from "./routes/privacyPolicy.js";
+app.use("/api/privacy-policy", privacyPolicyRoutes);
+
+//Refund Policy Routes
+import refundPolicyRoutes from "./routes/refundPolicy.js";
+app.use("/api/refund-policy", refundPolicyRoutes);
+
+//Terms of Service Routes
+import termsOfServiceRoutes from "./routes/termsOfService.js";
+app.use("/api/terms-of-service", termsOfServiceRoutes);
+
+//Terms and Conditions Routes
+import termsAndConditionsRoutes from "./routes/termsAndConditions.js";
+app.use("/api/terms-and-conditions", termsAndConditionsRoutes);
+
+//Cookie Policy Routes
+import cookiePolicyRoutes from "./routes/cookiePolicy.js";
+app.use("/api/cookie-policy", cookiePolicyRoutes);
+
 // Server
 const PORT = process.env.PORT || 8080;
 server.listen(PORT, () =>
