@@ -298,6 +298,10 @@ app.use("/api/chatbot", chatbotSettingsRoutes);
 import privacyPolicyRoutes from "./routes/privacyPolicy.js";
 app.use("/api/privacy-policy", privacyPolicyRoutes);
 
+//Refund Policy Routes
+import refundPolicyRoutes from "./routes/refundPolicy.js";
+app.use("/api/refund-policy", refundPolicyRoutes);
+
 // Server
 const PORT = process.env.PORT || 8080;
 server.listen(PORT, () =>

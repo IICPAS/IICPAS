@@ -89,6 +89,7 @@ import AdminProfileTab from "./AdminProfileTab";
 import ChatConversationsTab from "./ChatConversationsTab";
 import ChatbotSettingsTab from "./ChatbotSettingsTab";
 import PrivacyPolicyTab from "./PrivacyPolicyTab";
+import RefundPolicyTab from "./RefundPolicyTab";
 
 // All available modules with their permissions
 const ALL_MODULES = [
@@ -106,6 +107,7 @@ const ALL_MODULES = [
   { id: "chat-conversations", label: "Chatbot Conversations", icon: <FaComments /> },
   { id: "chatbot-settings", label: "Chatbot Settings", icon: <FaRobot /> },
   { id: "privacy-policy", label: "Privacy Policy", icon: <FaShieldAlt /> },
+  { id: "refund-policy", label: "Refund Policy", icon: <FaShieldAlt /> },
   { id: "jobs", label: "Jobs", icon: <FaBriefcase /> },
   { id: "news", label: "News", icon: <FaNewspaper /> },
   { id: "students", label: "Students", icon: <FaUserGraduate /> },
@@ -528,6 +530,8 @@ function AdminDashboardContent() {
           <ChatbotSettingsTab />
         ) : activeTab === "privacy-policy" ? (
           <PrivacyPolicyTab />
+        ) : activeTab === "refund-policy" ? (
+          <RefundPolicyTab />
         ) : activeTab === "bulk-email" ? (
           <BulkEmailTab />
         ) : activeTab === "contact-info" ? (
