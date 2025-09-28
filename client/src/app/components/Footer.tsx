@@ -31,12 +31,15 @@ export default function Footer() {
       },
     },
     footerLinks: {
-      companyPolicies: [
-        { name: "Privacy Policy", href: "/privacy" },
-        { name: "Refund Policy", href: "/refund" },
-        { name: "Terms & Conditions", href: "/terms-conditions" },
-        { name: "Cookie Policy", href: "/cookies" },
-      ],
+    companyPolicies: [
+      { name: "Privacy Policy", href: "/privacy" },
+      { name: "Refund Policy", href: "/refund" },
+      { name: "Terms & Conditions", href: "/terms-conditions" },
+      { name: "Cookie Policy", href: "/cookies" },
+      { name: "Confidentiality Policy", href: "/confidentiality" },
+      { name: "Disclaimer Policy", href: "/disclaimer" },
+      { name: "IICPA Review", href: "/iicpa-review" },
+    ],
       generalLinks: [
         { name: "About Us", href: "/about" },
         { name: "Courses", href: "/courses" },
@@ -75,11 +78,14 @@ export default function Footer() {
     ],
     bottomBar: {
       copyright: "IICPA Institute. All rights reserved.",
-      legalLinks: [
-        { name: "Terms of Service", href: "/terms" },
-        { name: "Privacy Policy", href: "/privacy" },
-        { name: "Cookie Policy", href: "/cookies" },
-      ],
+    legalLinks: [
+      { name: "Terms of Service", href: "/terms" },
+      { name: "Privacy Policy", href: "/privacy" },
+      { name: "Cookie Policy", href: "/cookies" },
+      { name: "Confidentiality Policy", href: "/confidentiality" },
+      { name: "Disclaimer Policy", href: "/disclaimer" },
+      { name: "IICPA Review", href: "/iicpa-review" },
+    ],
     },
     colors: {
       background: "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900",
