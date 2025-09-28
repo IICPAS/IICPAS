@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Select from "react-select";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import axios from "axios";
@@ -21,9 +21,14 @@ export default function StudentAuthForm() {
     mode: "Online",
     location: "Greater Noida",
     center: "Greater Noida",
+    selectedPackage: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+
+  // --- Group pricing state
+  const [groupPricing, setGroupPricing] = useState([]);
+  const [loadingPricing, setLoadingPricing] = useState(false);
 
   // --- Login form state
   const [loginEmail, setLoginEmail] = useState("");
@@ -57,14 +62,26 @@ export default function StudentAuthForm() {
       mode,
       location,
       center,
+      selectedPackage,
     } = form;
     if (!name || !email || !phone || !password || !confirmPassword)
       return toast.success("All fields required");
     if (password !== confirmPassword) return toast("Passwords do not match!");
+    if (mode === "Offline" && !selectedPackage)
+      return toast.error("Please select a package for offline mode");
     try {
       await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/students/register`,
-        { name, email, phone, password, mode, location, center },
+        {
+          name,
+          email,
+          phone,
+          password,
+          mode,
+          location,
+          center,
+          selectedPackage,
+        },
         { withCredentials: true }
       );
       toast.success("Registration successful!");
@@ -86,18 +103,18 @@ export default function StudentAuthForm() {
         { withCredentials: true }
       );
       toast.success("Login successful");
-      
+
       // Small delay to ensure login state is set
       setTimeout(() => {
         // Check if user came from wishlist page
         const urlParams = new URLSearchParams(window.location.search);
-        const redirectTo = urlParams.get('redirect');
-        
+        const redirectTo = urlParams.get("redirect");
+
         // Also check if user was on wishlist page before
         const referrer = document.referrer;
-        const wasOnWishlist = referrer.includes('/wishlist');
-        
-        if (redirectTo === 'wishlist' || wasOnWishlist) {
+        const wasOnWishlist = referrer.includes("/wishlist");
+
+        if (redirectTo === "wishlist" || wasOnWishlist) {
           // Force a hard reload to refresh the wishlist page state
           window.location.replace("/wishlist");
         } else {
@@ -148,6 +165,31 @@ export default function StudentAuthForm() {
   };
 
   const centerOptions = [{ label: "Greater Noida", value: "Greater Noida" }];
+
+  // --- Fetch group pricing packages
+  const fetchGroupPricing = async () => {
+    setLoadingPricing(true);
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/group-pricing`
+      );
+      setGroupPricing(response.data || []);
+    } catch (error) {
+      console.error("Error fetching group pricing:", error);
+      setGroupPricing([]);
+    } finally {
+      setLoadingPricing(false);
+    }
+  };
+
+  // --- Fetch packages when mode changes to Offline
+  useEffect(() => {
+    if (form.mode === "Offline") {
+      fetchGroupPricing();
+    } else {
+      setForm((prev) => ({ ...prev, selectedPackage: "" }));
+    }
+  }, [form.mode]);
 
   // --- Render ---
   return (
@@ -205,6 +247,39 @@ export default function StudentAuthForm() {
                 onChange={handleCenterChange}
               />
             </div>
+
+            {/* Package Selection for Offline Mode */}
+            {form.mode === "Offline" && (
+              <div className="md:col-span-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  Select Package
+                </label>
+                {loadingPricing ? (
+                  <div className="text-center py-4 text-gray-500">
+                    Loading packages...
+                  </div>
+                ) : groupPricing.length === 0 ? (
+                  <div className="text-center py-4 text-gray-500">
+                    No packages available
+                  </div>
+                ) : (
+                  <select
+                    name="selectedPackage"
+                    value={form.selectedPackage}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-green-400 outline-none"
+                  >
+                    <option value="">Select a package</option>
+                    {groupPricing.map((pkg: any) => (
+                      <option key={pkg._id} value={pkg._id}>
+                        {pkg.level} - ₹{pkg.groupPrice?.toLocaleString()} (
+                        {pkg.courseIds?.length || 0} courses)
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+            )}
             <Input
               label="Email"
               name="email"

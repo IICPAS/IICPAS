@@ -9,6 +9,7 @@ import EditChapter from "./Course/EditChapter";
 import AddOrEditTopicForm from "./Course/AddOrEditTopicForm";
 import CourseAddTab from "./Course/CourseAdd";
 import CourseLevelManager from "./Course/CourseLevelManager";
+import GroupPricingTab from "./Course/GroupPricingTab";
 import axios from "axios";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
@@ -80,6 +81,13 @@ export default function CourseArea() {
     setEditingTopic(null);
   };
 
+  const handleShowGroupPricing = () => {
+    setView("group-pricing");
+    setSelectedCourse(null);
+    setSelectedChapter(null);
+    setEditingTopic(null);
+  };
+
   // Course actions with SweetAlert2
   const handleDeleteCourse = async (course, refreshCourses) => {
     const result = await Swal.fire({
@@ -128,6 +136,7 @@ export default function CourseArea() {
           onDeleteCourse={handleDeleteCourse}
           onToggleStatus={handleToggleStatus}
           onManageLevels={handleShowCourseLevelManager}
+          onGroupPricing={handleShowGroupPricing}
         />
       )}
 
@@ -187,6 +196,10 @@ export default function CourseArea() {
 
       {view === "course-level-manager" && (
         <CourseLevelManager onBack={handleShowCourseList} />
+      )}
+
+      {view === "group-pricing" && (
+        <GroupPricingTab onBack={handleShowCourseList} />
       )}
     </>
   );
