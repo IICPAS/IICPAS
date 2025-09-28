@@ -39,7 +39,8 @@ export default function TermsAndConditionsPage() {
   useEffect(() => {
     const fetchTermsAndConditions = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/terms-and-conditions/active`);
+        const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+        const response = await fetch(`${API_BASE}/terms-and-conditions/active`);
         
         if (!response.ok) {
           throw new Error('Failed to fetch terms and conditions');
