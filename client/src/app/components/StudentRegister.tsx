@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Select from "react-select";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import axios from "axios";
@@ -21,6 +21,7 @@ export default function StudentRegisterForm() {
     mode: "Online",
     location: "Greater Noida",
     center: "Greater Noida",
+    selectedGroupPricing: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -38,14 +39,107 @@ export default function StudentRegisterForm() {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // --- Group pricing state
+  const [groupPricingOptions, setGroupPricingOptions] = useState<any[]>([]);
+  const [selectedGroupPricingDetails, setSelectedGroupPricingDetails] =
+    useState<any>(null);
+
   // --- Register handlers
   const handleChange = (e: any) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+
+    // Clear group pricing selection when mode changes from Offline
+    if (name === "mode" && value !== "Offline") {
+      setForm((prev) => ({ ...prev, selectedGroupPricing: "" }));
+      setSelectedGroupPricingDetails(null);
+    }
+
+    // Debug info - removed unused variable
   };
   const handleCenterChange = (selected: any) => {
     setForm((prev) => ({ ...prev, center: selected.value }));
   };
+
+  const handleGroupPricingChange = (selected: any) => {
+    if (selected) {
+      setForm((prev) => ({ ...prev, selectedGroupPricing: selected.value }));
+      const selectedDetails = groupPricingOptions.find(
+        (option: any) => option.value === selected.value
+      );
+      setSelectedGroupPricingDetails(selectedDetails || null);
+    } else {
+      setForm((prev) => ({ ...prev, selectedGroupPricing: "" }));
+      setSelectedGroupPricingDetails(null);
+    }
+  };
+
+  // Fetch group pricing options - FORCE LOAD TEST DATA
+  useEffect(() => {
+    console.log("🔥 FORCE LOADING TEST DATA");
+
+    // IMMEDIATELY SET TEST DATA
+    const testOptions = [
+      {
+        value: "test1",
+        label: "Executive Level - ₹15,000",
+        level: "Executive Level",
+        price: 15000,
+        description: "Complete Executive Level package",
+        courses: ["course1", "course2"],
+      },
+      {
+        value: "test2",
+        label: "Professional Level - ₹12,000",
+        level: "Professional Level",
+        price: 12000,
+        description: "Complete Professional Level package",
+        courses: ["course3", "course4"],
+      },
+    ];
+
+    setGroupPricingOptions(testOptions);
+    console.log("🔥 TEST DATA LOADED:", testOptions);
+
+    // Also try API
+    const fetchGroupPricing = async () => {
+      try {
+        console.log(
+          "🔥 TRYING API:",
+          `${process.env.NEXT_PUBLIC_API_URL}/api/group-pricing`
+        );
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/group-pricing`
+        );
+        console.log("🔥 API SUCCESS:", response.data);
+        if (response.data && response.data.length > 0) {
+          const options = response.data.map((item: any) => ({
+            value: item._id,
+            label: `${item.level} - ₹${item.groupPrice.toLocaleString()}`,
+            level: item.level,
+            price: item.groupPrice,
+            description: item.description,
+            courses: item.courseIds,
+          }));
+          setGroupPricingOptions(options);
+          console.log("🔥 API DATA LOADED:", options);
+        }
+      } catch (error) {
+        console.error("🔥 API FAILED:", error);
+        // Keep test data
+      }
+    };
+
+    fetchGroupPricing();
+  }, []);
+
+  // Clear group pricing selection when mode changes
+  useEffect(() => {
+    if (form.mode !== "Offline") {
+      setForm((prev) => ({ ...prev, selectedGroupPricing: "" }));
+      setSelectedGroupPricingDetails(null);
+    }
+  }, [form.mode]);
   const handleRegister = async (e: any) => {
     e.preventDefault();
     const {
@@ -57,6 +151,7 @@ export default function StudentRegisterForm() {
       mode,
       location,
       center,
+      selectedGroupPricing,
     } = form;
     if (!name || !email || !phone || !password || !confirmPassword)
       return toast.success("All fields required");
@@ -64,13 +159,30 @@ export default function StudentRegisterForm() {
     try {
       await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/students/register`,
-        { name, email, phone, password, mode, location, center },
+        {
+          name,
+          email,
+          phone,
+          password,
+          mode,
+          location,
+          center,
+          selectedGroupPricing: selectedGroupPricing || null,
+        },
         { withCredentials: true }
       );
-      toast.success("Registration successful!");
+      toast.success("Registration successful!", {
+        style: {
+          zIndex: 9999,
+        },
+      });
       setMode("login");
     } catch (err: any) {
-      toast.success(err?.response?.data?.message || "Registration failed");
+      toast.error(err?.response?.data?.message || "Registration failed", {
+        style: {
+          zIndex: 9999,
+        },
+      });
     }
   };
 
@@ -85,10 +197,18 @@ export default function StudentRegisterForm() {
         { email: loginEmail, password: loginPassword },
         { withCredentials: true }
       );
-      toast.success("Login successful");
+      toast.success("Login successful", {
+        style: {
+          zIndex: 9999,
+        },
+      });
       window.location.href = "/student-dashboard";
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Login failed");
+      toast.error(err?.response?.data?.message || "Login failed", {
+        style: {
+          zIndex: 9999,
+        },
+      });
     }
   };
 
@@ -134,7 +254,10 @@ export default function StudentRegisterForm() {
 
   // --- Render ---
   return (
-    <div className="pt-36 flex justify-center items-center bg-gray-50 p-4 min-h-screen">
+    <div
+      className="pt-36 flex justify-center items-center bg-gray-50 p-4 min-h-screen"
+      style={{ position: "relative", zIndex: 1 }}
+    >
       <div className="w-full max-w-lg  bg-white rounded-xl shadow p-5">
         <div className="flex justify-center items-center">
           <h2 className="text-2xl font-bold text-center mb-6">
@@ -213,6 +336,65 @@ export default function StudentRegisterForm() {
                 toggle={() => setShowConfirm(!showConfirm)}
               />
             </div>
+
+            {/* Course Package Selection - FORCE SHOW */}
+            <div className="md:col-span-2">
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
+                Course Package (Optional)
+              </label>
+
+              {/* FORCE SHOW - Always visible */}
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg mb-3">
+                <p className="text-sm text-red-800 font-bold">
+                  🔥 FORCE SHOW: Mode = {form.mode}, Options ={" "}
+                  {groupPricingOptions.length}
+                </p>
+                <p className="text-xs text-red-600 mt-1">
+                  API URL: {process.env.NEXT_PUBLIC_API_URL}/api/group-pricing
+                </p>
+              </div>
+
+              {/* ALWAYS SHOW DROPDOWN */}
+              <div className="mb-3">
+                <Select
+                  options={groupPricingOptions}
+                  value={groupPricingOptions.find(
+                    (opt: any) => opt.value === form.selectedGroupPricing
+                  )}
+                  onChange={handleGroupPricingChange}
+                  placeholder="🔥 FORCE SHOW - Select a course package..."
+                  isClearable
+                />
+              </div>
+
+              {/* SHOW SELECTED DETAILS */}
+              {selectedGroupPricingDetails && (
+                <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-sm text-green-800 font-medium">
+                    ✅ SELECTED:{" "}
+                    {selectedGroupPricingDetails.description ||
+                      `Complete ${selectedGroupPricingDetails.level} package`}
+                  </p>
+                  <p className="text-xs text-green-600 mt-1">
+                    Includes {selectedGroupPricingDetails.courses?.length || 0}{" "}
+                    courses
+                  </p>
+                </div>
+              )}
+
+              {/* SHOW ALL OPTIONS */}
+              <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800 font-medium">
+                  All Available Options:
+                </p>
+                {groupPricingOptions.map((option: any, index: number) => (
+                  <p key={index} className="text-xs text-blue-600">
+                    {index + 1}. {option.label} - {option.description}
+                  </p>
+                ))}
+              </div>
+            </div>
+
             <button
               type="submit"
               className="md:col-span-2 w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded"
