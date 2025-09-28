@@ -33,10 +33,6 @@ import LiveClassTab from "../components/LiveClassTab";
 import RecordedSessionTab from "./RecordedSessionTab";
 import ProfileTab from "../components/ProfileTab";
 import TestimonialTab from "./TestimonialTab";
-import ReportsTab from "../components/ReportsTab";
-import HelpCentreTab from "../components/HelpCentreTab";
-import FeedbackTab from "../components/FeedbackTab";
-import NotificationsTab from "../components/NotificationsTab";
 
 export default function StudentDashboard() {
   const router = useRouter();
@@ -79,10 +75,6 @@ export default function StudentDashboard() {
       dot: true,
       dotColor: "green",
     },
-    { id: "reports", icon: <FaFileAlt />, label: "Reports" },
-    { id: "help", icon: <FaQuestionCircle />, label: "Help Center" },
-    { id: "feedback", icon: <FaComments />, label: "Feedback" },
-    { id: "notifications", icon: <FaBell />, label: "Notifications" },
     {
       id: "collapse",
       icon: <span>{sidebarCollapsed ? "→" : "←"}</span>,
@@ -93,7 +85,7 @@ export default function StudentDashboard() {
   // Handle URL tab parameter
   useEffect(() => {
     const tab = searchParams.get("tab");
-    if (tab && ["courses", "revision", "live", "recorded", "news", "testimonial", "support", "certificates", "profile", "reports", "help", "feedback", "notifications"].includes(tab)) {
+    if (tab && ["courses", "revision", "live", "recorded", "news", "testimonial", "support", "certificates", "profile"].includes(tab)) {
       setActiveTab(tab);
     }
   }, [searchParams]);
@@ -198,14 +190,6 @@ export default function StudentDashboard() {
         return <TicketTab />;
       case "certificates":
         return <CertificatesTab />;
-      case "reports":
-        return <ReportsTab />;
-      case "help":
-        return <HelpCentreTab />;
-      case "feedback":
-        return <FeedbackTab />;
-      case "notifications":
-        return <NotificationsTab />;
       case "collapse":
         // Handle collapse action
         setSidebarCollapsed(!sidebarCollapsed);
