@@ -40,7 +40,8 @@ const TermsOfServicePage = () => {
   useEffect(() => {
     const fetchTermsOfService = async () => {
       try {
-        const response = await fetch('/api/terms-of-service/active');
+        const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+        const response = await fetch(`${API_BASE}/terms-of-service/active`);
         const data = await response.json();
         
         if (data.success) {
