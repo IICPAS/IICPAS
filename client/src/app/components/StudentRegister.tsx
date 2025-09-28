@@ -18,7 +18,7 @@ export default function StudentRegisterForm() {
     phone: "",
     password: "",
     confirmPassword: "",
-    mode: "Online",
+    mode: "Digital Hub+Virtual",
     location: "Greater Noida",
     center: "Greater Noida",
     selectedGroupPricing: "",
@@ -50,7 +50,7 @@ export default function StudentRegisterForm() {
     setForm((prev) => ({ ...prev, [name]: value }));
 
     // Clear group pricing selection when mode changes from Offline
-    if (name === "mode" && value !== "Offline") {
+    if (name === "mode" && value !== "Digital Hub+Center") {
       setForm((prev) => ({ ...prev, selectedGroupPricing: "" }));
       setSelectedGroupPricingDetails(null);
     }
@@ -135,7 +135,7 @@ export default function StudentRegisterForm() {
 
   // Clear group pricing selection when mode changes
   useEffect(() => {
-    if (form.mode !== "Offline") {
+    if (form.mode !== "Digital Hub+Center") {
       setForm((prev) => ({ ...prev, selectedGroupPricing: "" }));
       setSelectedGroupPricingDetails(null);
     }
@@ -299,7 +299,7 @@ export default function StudentRegisterForm() {
               name="mode"
               value={form.mode}
               onChange={handleChange}
-              options={["Online", "Offline"]}
+              options={["Digital Hub+Virtual", "Digital Hub+Center"]}
             />
             <div className="md:col-span-2">
               <label className="block text-sm font-semibold text-gray-700 mb-1">

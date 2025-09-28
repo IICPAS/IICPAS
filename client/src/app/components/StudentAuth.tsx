@@ -18,7 +18,7 @@ export default function StudentAuthForm() {
     phone: "",
     password: "",
     confirmPassword: "",
-    mode: "Online",
+    mode: "Digital Hub+Virtual",
     location: "Greater Noida",
     center: "Greater Noida",
     selectedPackage: "",
@@ -67,7 +67,7 @@ export default function StudentAuthForm() {
     if (!name || !email || !phone || !password || !confirmPassword)
       return toast.success("All fields required");
     if (password !== confirmPassword) return toast("Passwords do not match!");
-    if (mode === "Offline" && !selectedPackage)
+    if (mode === "Digital Hub+Center" && !selectedPackage)
       return toast.error("Please select a package for offline mode");
     try {
       await axios.post(
@@ -184,7 +184,7 @@ export default function StudentAuthForm() {
 
   // --- Fetch packages when mode changes to Offline
   useEffect(() => {
-    if (form.mode === "Offline") {
+    if (form.mode === "Digital Hub+Center") {
       fetchGroupPricing();
     } else {
       setForm((prev) => ({ ...prev, selectedPackage: "" }));
@@ -235,7 +235,7 @@ export default function StudentAuthForm() {
               name="mode"
               value={form.mode}
               onChange={handleChange}
-              options={["Online", "Offline"]}
+              options={["Digital Hub+Virtual", "Digital Hub+Center"]}
             />
             <div className="md:col-span-2">
               <label className="block text-sm font-semibold text-gray-700 mb-1">
@@ -249,7 +249,7 @@ export default function StudentAuthForm() {
             </div>
 
             {/* Package Selection for Offline Mode */}
-            {form.mode === "Offline" && (
+            {form.mode === "Digital Hub+Center" && (
               <div className="md:col-span-2">
                 <label className="block text-sm font-semibold text-gray-700 mb-1">
                   Select Package
