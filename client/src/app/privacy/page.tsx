@@ -21,6 +21,7 @@ interface ContactInfo {
   email: string;
   phone: string;
   address: string;
+  businessHours?: string;
 }
 
 interface PrivacyPolicyData {
@@ -39,7 +40,7 @@ const PrivacyPolicyPage = () => {
     const fetchPrivacyPolicy = async () => {
       try {
         const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
-        const response = await fetch(`${API_BASE}/privacy-policy`);
+        const response = await fetch(`${API_BASE}/privacy-policy/active`);
         const data = await response.json();
         
         if (data.success) {
@@ -159,11 +160,36 @@ const PrivacyPolicyPage = () => {
                       Phone: {privacyPolicy.contactInfo.phone}
                       <br />
                       Address: {privacyPolicy.contactInfo.address}
+                      {privacyPolicy.contactInfo.businessHours && (
+                        <>
+                          <br />
+                          Business Hours: {privacyPolicy.contactInfo.businessHours}
+                        </>
+                      )}
                     </p>
                   </div>
                 )}
               </section>
             ))}
+
+            <section>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Contact Information</h2>
+              <p className="text-gray-600 leading-relaxed">
+                If you have any questions about this Privacy Policy, please contact us at:
+                <br />
+                Email: {privacyPolicy.contactInfo.email}
+                <br />
+                Phone: {privacyPolicy.contactInfo.phone}
+                <br />
+                Address: {privacyPolicy.contactInfo.address}
+                {privacyPolicy.contactInfo.businessHours && (
+                  <>
+                    <br />
+                    Business Hours: {privacyPolicy.contactInfo.businessHours}
+                  </>
+                )}
+              </p>
+            </section>
           </div>
         </div>
       </div>
