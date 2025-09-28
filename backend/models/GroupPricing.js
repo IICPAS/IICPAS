@@ -23,6 +23,10 @@ const GroupPricingSchema = new Schema({
     type: String,
     default: "",
   },
+  image: {
+    type: String,
+    default: "",
+  },
   status: {
     type: String,
     default: "Active",

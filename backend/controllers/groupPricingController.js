@@ -49,16 +49,37 @@ export const getGroupPricingById = async (req, res) => {
 // Create new group pricing configuration
 export const createGroupPricing = async (req, res) => {
   try {
+    console.log("Create Group Pricing - Request body:", req.body);
+    console.log("Create Group Pricing - Request file:", req.file);
+    
     const { level, courseIds, groupPrice, description } = req.body;
+    const image = req.file ? `/uploads/group_pricing_images/${req.file.filename}` : "";
+
+    // Parse courseIds if it's a string (from FormData)
+    let parsedCourseIds = courseIds;
+    if (typeof courseIds === 'string') {
+      try {
+        parsedCourseIds = JSON.parse(courseIds);
+      } catch (e) {
+        console.log("Error parsing courseIds:", e);
+        return res.status(400).json({
+          success: false,
+          message: "Invalid courseIds format",
+        });
+      }
+    }
+    
+    console.log("Parsed courseIds:", parsedCourseIds);
 
     // Validate required fields
     if (
       !level ||
-      !courseIds ||
-      !Array.isArray(courseIds) ||
-      courseIds.length === 0 ||
+      !parsedCourseIds ||
+      !Array.isArray(parsedCourseIds) ||
+      parsedCourseIds.length === 0 ||
       !groupPrice
     ) {
+      console.log("Validation failed - level:", level, "courseIds:", parsedCourseIds, "groupPrice:", groupPrice);
       return res.status(400).json({
         success: false,
         message: "Level, courseIds, and groupPrice are required",
@@ -66,13 +87,16 @@ export const createGroupPricing = async (req, res) => {
     }
 
     // Validate that all courses exist and belong to the specified level
+    console.log("Looking for courses with IDs:", parsedCourseIds, "and level:", level);
     const courses = await Course.find({
-      _id: { $in: courseIds },
+      _id: { $in: parsedCourseIds },
       level: level,
       status: "Active",
     });
+    
+    console.log("Found courses:", courses.length, "out of", parsedCourseIds.length);
 
-    if (courses.length !== courseIds.length) {
+    if (courses.length !== parsedCourseIds.length) {
       return res.status(400).json({
         success: false,
         message:
@@ -96,9 +120,10 @@ export const createGroupPricing = async (req, res) => {
 
     const newGroupPricing = new GroupPricing({
       level,
-      courseIds,
+      courseIds: parsedCourseIds,
       groupPrice: parseFloat(groupPrice),
       description: description || "",
+      image: image,
     });
 
     const savedGroupPricing = await newGroupPricing.save();
@@ -111,6 +136,7 @@ export const createGroupPricing = async (req, res) => {
     });
   } catch (error) {
     console.error("Error creating group pricing:", error);
+    console.error("Error stack:", error.stack);
     res.status(500).json({
       success: false,
       message: "Failed to create group pricing",
@@ -124,6 +150,20 @@ export const updateGroupPricing = async (req, res) => {
   try {
     const { id } = req.params;
     const { level, courseIds, groupPrice, description, status } = req.body;
+    const image = req.file ? `/uploads/group_pricing_images/${req.file.filename}` : undefined;
+
+    // Parse courseIds if it's a string (from FormData)
+    let parsedCourseIds = courseIds;
+    if (courseIds && typeof courseIds === 'string') {
+      try {
+        parsedCourseIds = JSON.parse(courseIds);
+      } catch (e) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid courseIds format",
+        });
+      }
+    }
 
     const groupPricing = await GroupPricing.findById(id);
     if (!groupPricing) {
@@ -134,7 +174,7 @@ export const updateGroupPricing = async (req, res) => {
     }
 
     // Validate required fields if provided
-    if (courseIds && (!Array.isArray(courseIds) || courseIds.length === 0)) {
+    if (parsedCourseIds && (!Array.isArray(parsedCourseIds) || parsedCourseIds.length === 0)) {
       return res.status(400).json({
         success: false,
         message: "courseIds must be a non-empty array",
@@ -142,9 +182,9 @@ export const updateGroupPricing = async (req, res) => {
     }
 
     // If level or courseIds are being updated, validate courses
-    if (level || courseIds) {
+    if (level || parsedCourseIds) {
       const targetLevel = level || groupPricing.level;
-      const targetCourseIds = courseIds || groupPricing.courseIds;
+      const targetCourseIds = parsedCourseIds || groupPricing.courseIds;
 
       const courses = await Course.find({
         _id: { $in: targetCourseIds },
@@ -163,10 +203,11 @@ export const updateGroupPricing = async (req, res) => {
 
     // Update fields
     if (level) groupPricing.level = level;
-    if (courseIds) groupPricing.courseIds = courseIds;
+    if (parsedCourseIds) groupPricing.courseIds = parsedCourseIds;
     if (groupPrice) groupPricing.groupPrice = parseFloat(groupPrice);
     if (description !== undefined) groupPricing.description = description;
     if (status) groupPricing.status = status;
+    if (image) groupPricing.image = image;
 
     const updatedGroupPricing = await groupPricing.save();
     await updatedGroupPricing.populate(

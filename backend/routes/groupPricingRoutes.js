@@ -8,6 +8,7 @@ import {
   getGroupPricingByLevel,
   getCoursesByLevel,
 } from "../controllers/groupPricingController.js";
+import uploadGroupPricingImage from "../middleware/groupPricingImageUpload.js";
 
 const router = express.Router();
 
@@ -18,10 +19,10 @@ router.get("/", getAllGroupPricing);
 router.get("/:id", getGroupPricingById);
 
 // POST /api/group-pricing - Create new group pricing configuration
-router.post("/", createGroupPricing);
+router.post("/", uploadGroupPricingImage.single("image"), createGroupPricing);
 
 // PUT /api/group-pricing/:id - Update group pricing configuration
-router.put("/:id", updateGroupPricing);
+router.put("/:id", uploadGroupPricingImage.single("image"), updateGroupPricing);
 
 // DELETE /api/group-pricing/:id - Delete group pricing configuration
 router.delete("/:id", deleteGroupPricing);

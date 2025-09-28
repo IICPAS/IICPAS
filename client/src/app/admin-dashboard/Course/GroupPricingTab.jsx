@@ -47,7 +47,9 @@ const GroupPricingTab = ({ onBack }) => {
     courseIds: [],
     groupPrice: "",
     description: "",
+    image: null,
   });
+  const [imagePreview, setImagePreview] = useState(null);
 
   const courseLevels = [
     { value: "Executive Level", label: "Executive Level" },
@@ -98,7 +100,9 @@ const GroupPricingTab = ({ onBack }) => {
       courseIds: [],
       groupPrice: "",
       description: "",
+      image: null,
     });
+    setImagePreview(null);
     setOpenDialog(true);
   };
 
@@ -109,8 +113,22 @@ const GroupPricingTab = ({ onBack }) => {
       courseIds: item.courseIds || [],
       groupPrice: item.groupPrice.toString(),
       description: item.description || "",
+      image: null,
     });
+    setImagePreview(item.image || null);
     setOpenDialog(true);
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData({ ...formData, image: file });
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleDelete = async (item) => {
@@ -157,17 +175,25 @@ const GroupPricingTab = ({ onBack }) => {
     }
 
     try {
-      const payload = {
-        level: formData.level,
-        courseIds: formData.courseIds,
-        groupPrice: parseFloat(formData.groupPrice),
-        description: formData.description,
-      };
+      const formDataToSend = new FormData();
+      formDataToSend.append("level", formData.level);
+      formDataToSend.append("courseIds", JSON.stringify(formData.courseIds));
+      formDataToSend.append("groupPrice", formData.groupPrice);
+      formDataToSend.append("description", formData.description);
+      
+      if (formData.image) {
+        formDataToSend.append("image", formData.image);
+      }
 
       if (editingItem) {
         await axios.put(
           `${API_BASE}/group-pricing/${editingItem._id}`,
-          payload
+          formDataToSend,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
         );
         toast.success("Group pricing updated successfully!", {
           style: {
@@ -176,7 +202,11 @@ const GroupPricingTab = ({ onBack }) => {
           },
         });
       } else {
-        await axios.post(`${API_BASE}/group-pricing`, payload);
+        await axios.post(`${API_BASE}/group-pricing`, formDataToSend, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
         toast.success("Group pricing created successfully!", {
           style: {
             zIndex: 9999,
@@ -465,6 +495,36 @@ const GroupPricingTab = ({ onBack }) => {
               }
               placeholder="Describe this group pricing package..."
             />
+
+            <Box>
+              <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+                Group Pricing Image (Optional)
+              </Typography>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                style={{ marginBottom: 16 }}
+              />
+              {imagePreview && (
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="body2" sx={{ mb: 1 }}>
+                    Image Preview:
+                  </Typography>
+                  <img
+                    src={imagePreview}
+                    alt="Group Pricing Preview"
+                    style={{
+                      maxWidth: "200px",
+                      maxHeight: "150px",
+                      objectFit: "cover",
+                      borderRadius: "8px",
+                      border: "1px solid #ddd",
+                    }}
+                  />
+                </Box>
+              )}
+            </Box>
           </Stack>
         </DialogContent>
         <DialogActions>
