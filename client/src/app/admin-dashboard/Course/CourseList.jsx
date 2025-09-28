@@ -25,7 +25,15 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 
 const CourseList = forwardRef(
   (
-    { onAddCourse, onEditCourse, onAddChapter, onDeleteCourse, onToggleStatus, onManageLevels },
+    {
+      onAddCourse,
+      onEditCourse,
+      onAddChapter,
+      onDeleteCourse,
+      onToggleStatus,
+      onManageLevels,
+      onGroupPricing,
+    },
     ref
   ) => {
     const [courses, setCourses] = useState([]);
@@ -106,11 +114,33 @@ const CourseList = forwardRef(
             )}
             {hasPermission("course", "add") && (
               <Button
+                variant="outlined"
+                onClick={onGroupPricing}
+                sx={{
+                  borderColor: "#2e7d32",
+                  color: "#2e7d32",
+                  borderRadius: "8px",
+                  px: 3,
+                  py: 1,
+                  fontWeight: 600,
+                  textTransform: "none",
+                  "&:hover": {
+                    borderColor: "#1b5e20",
+                    backgroundColor: "#e8f5e8",
+                  },
+                }}
+              >
+                Group Pricing
+              </Button>
+            )}
+            {hasPermission("course", "add") && (
+              <Button
                 variant="contained"
                 startIcon={<AddIcon />}
                 onClick={onAddCourse}
                 sx={{
-                  background: "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
+                  background:
+                    "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
                   borderRadius: "8px",
                   px: 3,
                   py: 1,

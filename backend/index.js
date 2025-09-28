@@ -29,6 +29,7 @@ import revisionTestRoutes from "./routes/Content/revisionTestRoutes.js";
 import categoryRoutes from "./routes/Content/categoryRoutes.js";
 import LiveSessionRoutes from "./routes/LiveSessionRoutes/LiveSessionRoutes.js";
 import courseLevelsRoutes from "./routes/courseLevelsRoutes.js";
+import groupPricingRoutes from "./routes/groupPricingRoutes.js";
 
 //Extra Routes
 import metaTagRoutes from "./routes/metatagsRoute.js";
@@ -247,6 +248,7 @@ app.use("/api/v1/course-ratings", courseRatingRoutes);
 
 // Course Levels Routes
 app.use("/api/course-levels", courseLevelsRoutes);
+app.use("/api/group-pricing", groupPricingRoutes);
 
 // Create HTTP server and Socket.io
 const server = createServer(app);
