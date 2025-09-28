@@ -447,26 +447,23 @@ export default function CoursePage() {
                     </div>
                   </div>
 
-                  {/* Discount Badge */}
-                  {course.discount > 0 && (
-                    <div className="absolute top-3 right-3 bg-green-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-                      {course.discount}% OFF
-                    </div>
-                  )}
+                </div>
 
+                {/* Content Section */}
+                <div className="p-5 space-y-3 relative">
                   {/* Wishlist Star */}
                   <div
-                    className="absolute top-3 left-3 cursor-pointer z-10"
+                    className="absolute top-3 right-3 cursor-pointer z-10"
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleLike(course._id);
                     }}
                   >
                     <button
-                      className={`w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 hover:scale-110 ${
+                      className={`w-8 h-8 flex items-center justify-center transition-all duration-300 hover:scale-110 ${
                         wishlistCourseIds.includes(course._id)
-                          ? "bg-yellow-400 text-white shadow-lg"
-                          : "bg-white/80 text-gray-600 hover:bg-yellow-400 hover:text-white"
+                          ? "text-yellow-500"
+                          : "text-yellow-500 hover:text-yellow-600"
                       }`}
                       title={
                         wishlistCourseIds.includes(course._id)
@@ -490,10 +487,6 @@ export default function CoursePage() {
                       </svg>
                     </button>
                   </div>
-                </div>
-
-                {/* Content Section */}
-                <div className="p-5 space-y-3">
                   {/* Category */}
                   <p className="text-sm text-gray-500 font-medium">
                     {course.category}

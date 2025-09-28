@@ -1,9 +1,91 @@
 "use client";
 
-import Link from "next/link";
+import React, { useState, useEffect } from "react";
 import Header from "../components/Header";
+import Footer from "../components/Footer";
+
+interface Subsection {
+  title?: string;
+  content?: string;
+  listItems?: string[];
+}
+
+interface Section {
+  title: string;
+  content: string;
+  subsections?: Subsection[];
+  listItems?: string[];
+}
+
+interface ContactInfo {
+  email: string;
+  phone: string;
+  address: string;
+}
+
+interface PrivacyPolicyData {
+  title: string;
+  lastUpdated: string;
+  sections: Section[];
+  contactInfo: ContactInfo;
+}
 
 export default function PrivacyPolicy() {
+  const [privacyPolicy, setPrivacyPolicy] = useState<PrivacyPolicyData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchPrivacyPolicy = async () => {
+      try {
+        const response = await fetch('/api/privacy-policy');
+        const data = await response.json();
+        
+        if (data.success) {
+          setPrivacyPolicy(data.data);
+        } else {
+          setError('Failed to load privacy policy');
+        }
+      } catch (err) {
+        setError('Error loading privacy policy');
+        console.error('Error fetching privacy policy:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPrivacyPolicy();
+  }, []);
+
+  if (loading) {
+    return (
+      <>
+        <Header />
+        <div className="pt-10 bg-gray-50 py-12 flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading Privacy Policy...</p>
+          </div>
+        </div>
+        <Footer />
+      </>
+    );
+  }
+
+  if (error || !privacyPolicy) {
+    return (
+      <>
+        <Header />
+        <div className="pt-10 bg-gray-50 py-12 flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <p className="text-red-600 text-lg">{error || 'Privacy policy not found'}</p>
+          </div>
+        </div>
+        <Footer />
+      </>
+    );
+  }
+
   return (
     <>
       <Header />
@@ -11,100 +93,81 @@ export default function PrivacyPolicy() {
         <div className="max-w-4xl mx-auto px-6">
           <div className="bg-white rounded-lg shadow-lg p-8">
             <h1 className="text-4xl font-bold text-gray-900 mb-8 text-center">
-              Privacy Policy
+              {privacyPolicy.title}
             </h1>
+            <p className="text-center text-gray-600 mb-8">
+              Last updated: {privacyPolicy.lastUpdated}
+            </p>
 
             <div className="prose prose-lg max-w-none">
-              <section className="mb-8">
-                <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-                  1. Information We Collect
-                </h2>
-                <p>
-                  IICPA Institute (&ldquo;we,&quot; &ldquo;our,&ldquo; or
-                  &ldquo;us&ldquo;) is committed to protecting your privacy.
-                  This Privacy Policy explains how we collect, use, disclose,
-                  and safeguard your information when you visit our website, use
-                  our services, or interact with us.
-                </p>
-              </section>
+              {privacyPolicy.sections.map((section, index) => (
+                <section key={index} className="mb-8">
+                  <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+                    {index + 1}. {section.title}
+                  </h2>
+                  
+                  {section.content && (
+                    <p className="text-gray-600 leading-relaxed mb-4">
+                      {section.content}
+                    </p>
+                  )}
 
-              <section className="mb-8">
-                <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-                  2. Personal Information
-                </h2>
-                <p>
-                  We may collect personal information such as your name, email
-                  address, phone number, and educational background when you:
-                </p>
-                <ul className="list-disc pl-6 space-y-2">
-                  <li>Register for our courses</li>
-                  <li>Contact us for information</li>
-                  <li>Subscribe to our newsletter</li>
-                  <li>Participate in our surveys</li>
-                </ul>
-              </section>
+                  {section.subsections && section.subsections.length > 0 && (
+                    <div className="space-y-4">
+                      {section.subsections.map((subsection, subIndex) => (
+                        <div key={subIndex}>
+                          {subsection.title && (
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                              {subsection.title}
+                            </h3>
+                          )}
+                          
+                          {subsection.content && (
+                            <p className="text-gray-600 leading-relaxed mb-2">
+                              {subsection.content}
+                            </p>
+                          )}
+                          
+                          {subsection.listItems && subsection.listItems.length > 0 && (
+                            <ul className="list-disc pl-6 space-y-2">
+                              {subsection.listItems.map((item, itemIndex) => (
+                                <li key={itemIndex}>{item}</li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
-              <section className="mb-8">
-                <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-                  3. How We Use Your Information
-                </h2>
-                <p>We use your information to:</p>
-                <ul className="list-disc pl-6 space-y-2">
-                  <li>Provide educational services</li>
-                  <li>Process course registrations</li>
-                  <li>Send important updates</li>
-                  <li>Improve our services</li>
-                </ul>
-              </section>
+                  {section.listItems && section.listItems.length > 0 && (
+                    <ul className="list-disc pl-6 space-y-2">
+                      {section.listItems.map((item, itemIndex) => (
+                        <li key={itemIndex}>{item}</li>
+                      ))}
+                    </ul>
+                  )}
 
-              <section className="mb-8">
-                <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-                  4. Cookies and Tracking
-                </h2>
-                <p>
-                  We use cookies and similar technologies to enhance your
-                  browsing experience, analyze website traffic, and personalize
-                  content. You can control cookie settings through your browser
-                  preferences.
-                </p>
-              </section>
-
-              <section className="mb-8">
-                <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-                  5. Data Security
-                </h2>
-                <p>
-                  We implement appropriate security measures to protect your
-                  personal information from unauthorized access, alteration, or
-                  disclosure.
-                </p>
-              </section>
-
-              <section className="mb-8">
-                <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-                  6. Contact Us
-                </h2>
-                <p>
-                  If you have any questions about this Privacy Policy or our
-                  data practices, please contact us at:
-                </p>
-                <div className="mt-3 p-4 bg-gray-50 rounded-lg">
-                  <p>
-                    <strong>Email:</strong> privacy@iicpa.in
-                  </p>
-                  <p>
-                    <strong>Phone:</strong> +91 98765 43210
-                  </p>
-                  <p>
-                    <strong>Address:</strong> IICPA Institute, Professional
-                    Development Center, New Delhi, India
-                  </p>
-                </div>
-              </section>
+                  {section.title === "Contact Us" && (
+                    <div className="mt-3 p-4 bg-gray-50 rounded-lg">
+                      <p>
+                        <strong>Email:</strong> {privacyPolicy.contactInfo.email}
+                      </p>
+                      <p>
+                        <strong>Phone:</strong> {privacyPolicy.contactInfo.phone}
+                      </p>
+                      <p>
+                        <strong>Address:</strong> {privacyPolicy.contactInfo.address}
+                      </p>
+                    </div>
+                  )}
+                </section>
+              ))}
             </div>
           </div>
         </div>
       </div>
+      <Footer />
     </>
   );
 }
