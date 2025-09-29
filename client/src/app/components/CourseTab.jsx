@@ -25,6 +25,7 @@ import {
   FaGraduationCap,
   FaCheckCircle,
   FaExclamationTriangle,
+  FaShoppingCart,
 } from "react-icons/fa";
 import StarRating from "./StarRating";
 import { toast } from "react-hot-toast";
@@ -32,6 +33,8 @@ import { toast } from "react-hot-toast";
 export default function CourseTab() {
   const [studentId, setStudentId] = useState(null);
   const [courses, setCourses] = useState([]);
+  const [purchasedCourses, setPurchasedCourses] = useState([]); // Student's purchased courses
+  const [availableCourses, setAvailableCourses] = useState([]); // All available courses
   const [loading, setLoading] = useState(true);
   const [lastAccessedCourse, setLastAccessedCourse] = useState(null);
   const [selectedCourse, setSelectedCourse] = useState(null);
@@ -63,32 +66,48 @@ export default function CourseTab() {
         const student = response.data.student;
         setStudentId(student._id);
 
-        // Fetch enrolled courses
+        // Fetch purchased courses
+        let purchasedCoursesData = [];
         if (student.course && student.course.length > 0) {
-          const coursesResponse = await axios.get(
+          const purchasedCoursesResponse = await axios.get(
             `${API}/api/courses/student-courses/${student._id}`,
             {
               withCredentials: true,
             }
           );
 
-          if (coursesResponse.data && coursesResponse.data.courses) {
-            setCourses(coursesResponse.data.courses);
-            if (coursesResponse.data.courses.length > 0) {
-              setSelectedCourse(coursesResponse.data.courses[0]);
-              setLastAccessedCourse(coursesResponse.data.courses[0]);
-            }
+          if (purchasedCoursesResponse.data && purchasedCoursesResponse.data.courses) {
+            purchasedCoursesData = purchasedCoursesResponse.data.courses;
+            setPurchasedCourses(purchasedCoursesData);
+          }
+        }
+
+        // Fetch all available courses
+        const allCoursesResponse = await axios.get(`${API}/api/courses/all`);
+        if (allCoursesResponse.data) {
+          const allCoursesData = allCoursesResponse.data;
+          setAvailableCourses(allCoursesData);
+
+          // Filter out purchased courses from available courses
+          const purchasedCourseIds = student.course || [];
+          const filteredAvailableCourses = allCoursesData.filter(
+            course => !purchasedCourseIds.includes(course._id)
+          );
+          
+          // Combine purchased courses and available courses
+          const combinedCourses = [...purchasedCoursesData, ...filteredAvailableCourses];
+          setCourses(combinedCourses);
+
+          if (combinedCourses.length > 0) {
+            setSelectedCourse(combinedCourses[0]);
+            setLastAccessedCourse(combinedCourses[0]);
           }
         } else {
-          // If no enrolled courses, fetch all available courses
-          const allCoursesResponse = await axios.get(`${API}/api/courses/all`);
-
-          if (allCoursesResponse.data) {
-            setCourses(allCoursesResponse.data);
-            if (allCoursesResponse.data.length > 0) {
-              setSelectedCourse(allCoursesResponse.data[0]);
-              setLastAccessedCourse(allCoursesResponse.data[0]);
-            }
+          // If no courses at all, just set purchased courses
+          setCourses(purchasedCoursesData);
+          if (purchasedCoursesData.length > 0) {
+            setSelectedCourse(purchasedCoursesData[0]);
+            setLastAccessedCourse(purchasedCoursesData[0]);
           }
         }
       }
@@ -171,6 +190,8 @@ export default function CourseTab() {
       },
     ];
     setCourses(demoCourses);
+    setPurchasedCourses(demoCourses); // Demo data represents purchased courses
+    setAvailableCourses([]); // No additional available courses in demo
     setSelectedCourse(demoCourses[0]);
     setLastAccessedCourse(demoCourses[0]);
     setLoading(false);
@@ -179,6 +200,19 @@ export default function CourseTab() {
   useEffect(() => {
     fetchStudentCourses();
   }, []);
+
+  // Helper function to check if a course is purchased
+
+  const isCoursePurchased = (courseId) => {
+    return purchasedCourses.some(course => course._id === courseId);
+  };
+
+  // Handle Buy Now functionality
+  const handleBuyNow = (course) => {
+    // For now, we'll redirect to the course detail page where student can purchase
+    // You can modify this to redirect to a payment page or show a purchase modal
+    router.push(`/course/${course.slug || course._id}`);
+  };
 
   // Check if course is completed (simplified logic - you can enhance this)
   const isCourseCompleted = (course) => {
@@ -315,9 +349,19 @@ export default function CourseTab() {
 
   // Handle detailed view toggle
   const handleDetailedToggle = (courseId) => {
+    // Check if course is purchased before allowing detailed view
+    if (!isCoursePurchased(courseId)) {
+      // If not purchased, redirect to buy page instead
+      const course = courses.find(c => c._id === courseId);
+      if (course) {
+        handleBuyNow(course);
+      }
+      return;
+    }
+
     setViewModes((prev) => ({ ...prev, [courseId]: "detailed" }));
 
-    // Fetch chapters if not already loaded
+    // Fetch chapters if cache data available
     if (!courseChapters[courseId]) {
       fetchChaptersForCourse(courseId);
     }
@@ -860,25 +904,40 @@ export default function CourseTab() {
                       </div>
 
                       {/* Action Buttons */}
-                      <div className="flex gap-3">
-                        <button
-                          onClick={() => handleDetailedToggle(course._id)}
-                          className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 px-4 rounded-xl font-semibold text-sm shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-105 hover:from-blue-700 hover:to-purple-700"
-                        >
-                          <span className="flex items-center justify-center gap-2">
-                            <Book className="text-xl" />
-                            View Course Details
-                          </span>
-                        </button>
+                      <div className="flex gap-3 pt-4 pb-2">
+                        {/* Show different button based on purchase status */}
+                        {isCoursePurchased(course._id) ? (
+                          // Purchased course - show "View Course Details"
+                          <button
+                            onClick={() => handleDetailedToggle(course._id)}
+                            className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 px-4 rounded-xl font-semibold text-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:from-blue-700 hover:to-purple-700"
+                          >
+                            <span className="flex items-center justify-center gap-2">
+                              <Book className="text-xl" />
+                              View Course Details
+                            </span>
+                          </button>
+                        ) : (
+                          // Available course - show "Buy Now"
+                          <button
+                            onClick={() => handleBuyNow(course)}
+                            className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 text-white py-2 px-4 rounded-xl font-semibold text-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:from-green-700 hover:to-emerald-700"
+                          >
+                            <span className="flex items-center justify-center gap-2">
+                              <FaShoppingCart className="text-xl" />
+                              Buy Now
+                            </span>
+                          </button>
+                        )}
                         
-                        {/* Rating Button - Show only if course is completed and not already rated */}
-                        {isCourseCompleted(course) && !courseRatings[course._id] && (
+                        {/* Rating Button - Show only for purchased courses that are completed and not already rated */}
+                        {isCoursePurchased(course._id) && isCourseCompleted(course) && !courseRatings[course._id] && (
                           <button
                             onClick={() => {
                               setCourseToRate(course);
                               setShowRatingModal(true);
                             }}
-                            className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-4 rounded-xl font-semibold text-base shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-105 hover:from-yellow-600 hover:to-orange-600"
+                            className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-4 rounded-xl font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-300 hover:from-yellow-600 hover:to-orange-600"
                           >
                             <span className="flex items-center justify-center gap-2">
                               <FaStar className="text-xl" />
