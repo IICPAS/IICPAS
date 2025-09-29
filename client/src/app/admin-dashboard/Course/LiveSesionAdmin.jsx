@@ -60,12 +60,7 @@ export default function LiveSesionAdmin() {
 
   const fetchSessions = async () => {
     try {
-      const token = localStorage.getItem("adminToken");
-      const res = await fetch(`${API}/api/live-sessions`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await fetch(`${API}/api/live-sessions`);
       const data = await res.json();
       setSessions(data);
     } catch (err) {
@@ -85,12 +80,8 @@ export default function LiveSesionAdmin() {
         const formData = new FormData();
         formData.append("image", uploadedImage);
 
-        const token = localStorage.getItem("adminToken");
         const uploadResponse = await fetch(`${API}/api/upload/image`, {
           method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
           body: formData,
         });
 
@@ -132,15 +123,11 @@ export default function LiveSesionAdmin() {
       thumbnail: thumbnailUrl,
     };
 
-    const token = localStorage.getItem("adminToken");
     const res = await fetch(
       `${API}/api/live-sessions${editId ? `/${editId}` : ""}`,
       {
         method: editId ? "PATCH" : "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       }
     );
@@ -213,12 +200,8 @@ export default function LiveSesionAdmin() {
       confirmButtonText: "Delete",
     });
     if (confirm.isConfirmed) {
-      const token = localStorage.getItem("adminToken");
       const res = await fetch(`${API}/api/live-sessions/${id}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
       });
       if (res.ok) {
         fetchSessions();
@@ -229,12 +212,8 @@ export default function LiveSesionAdmin() {
 
   const toggleStatus = async (id) => {
     try {
-      const token = localStorage.getItem("adminToken");
       const res = await fetch(`${API}/api/live-sessions/toggle/${id}`, {
         method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
       });
       if (res.ok) {
         await fetchSessions();
@@ -359,14 +338,8 @@ export default function LiveSesionAdmin() {
 
     if (confirm.isConfirmed) {
       try {
-        const token = localStorage.getItem("adminToken");
         const deletePromises = selectedSessions.map((id) =>
-          fetch(`${API}/api/live-sessions/${id}`, { 
-            method: "DELETE",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          })
+          fetch(`${API}/api/live-sessions/${id}`, { method: "DELETE" })
         );
 
         await Promise.all(deletePromises);
