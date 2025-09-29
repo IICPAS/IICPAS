@@ -65,7 +65,7 @@ export default function LiveSesionAdmin() {
 
     try {
       // Decode JWT token to check expiration (without verification for timeout check)
-      const payload = JSON.parse(atob(token.split('.')[1]));
+      const payload = JSON.parse(atob(token.split(".")[1]));
       const currentTime = Date.now() / 1000;
 
       if (payload.exp && payload.exp < currentTime) {
@@ -87,7 +87,8 @@ export default function LiveSesionAdmin() {
 
   // Helper function to show token-related errors
   const showTokenError = (message) => {
-    const errorMessage = message || "Authentication token not found. Please log in again.";
+    const errorMessage =
+      message || "Authentication token not found. Please log in again.";
     Swal.fire({
       title: "Authentication Error",
       text: errorMessage,
@@ -103,22 +104,23 @@ export default function LiveSesionAdmin() {
 
   useEffect(() => {
     fetchSessions();
-    
+
     // Debug: Check authentication status
     console.log("🔍 Auth Debug - Component loaded");
-    console.log("🔍 Auth Debug - Token present:", !!localStorage.getItem("adminToken"));
-    console.log("🔍 Auth Debug - User data:", !!localStorage.getItem("adminUser"));
+    console.log(
+      "🔍 Auth Debug - Token present:",
+      !!localStorage.getItem("adminToken")
+    );
+    console.log(
+      "🔍 Auth Debug - User data:",
+      !!localStorage.getItem("adminUser")
+    );
     console.log("🔍 Auth Debug - API Base:", API);
     console.log("🔍 Auth Debug - Environment:", process.env.NODE_ENV);
   }, []);
 
   const fetchSessions = async () => {
     try {
-
-      const res = await fetch(`${API}/api/live-sessions`);
-      const data = await res.json();
-      setSessions(data);
-
       const token = checkTokenValidity();
       if (!token) return;
 
@@ -127,7 +129,7 @@ export default function LiveSesionAdmin() {
           Authorization: `Bearer ${token}`,
         },
       });
-      
+
       if (res.ok) {
         const data = await res.json();
         setSessions(data);
@@ -136,7 +138,6 @@ export default function LiveSesionAdmin() {
       } else {
         console.error("Fetch sessions failed:", res.status);
       }
-
     } catch (err) {
       console.error("Fetch error:", err);
     }
@@ -154,20 +155,24 @@ export default function LiveSesionAdmin() {
         const formData = new FormData();
         formData.append("image", uploadedImage);
 
-
         const token = checkTokenValidity();
-        
+
         if (!token) {
           setLoading(false);
           return;
         }
 
-        console.log("Uploading image with token:", token ? "Token present" : "No token");
+        console.log(
+          "Uploading image with token:",
+          token ? "Token present" : "No token"
+        );
         console.log("Upload URL:", `${API}/api/upload/image`);
-        
 
         const uploadResponse = await fetch(`${API}/api/upload/image`, {
           method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
           body: formData,
         });
 
@@ -180,11 +185,11 @@ export default function LiveSesionAdmin() {
         } else {
           // Handle different HTTP status codes
           let errorMessage = "Failed to upload image";
-          
+
           try {
             const errorData = await uploadResponse.json();
             console.error("Upload failed:", errorData);
-            
+
             if (uploadResponse.status === 401) {
               errorMessage = "Authentication failed. Please log in again.";
               // Clear the invalid token and redirect to login
@@ -204,7 +209,7 @@ export default function LiveSesionAdmin() {
               errorMessage = "Authentication failed. Please log in again.";
             }
           }
-          
+
           Swal.fire("Error", errorMessage, "error");
           setLoading(false);
           return;
@@ -230,19 +235,20 @@ export default function LiveSesionAdmin() {
       thumbnail: thumbnailUrl,
     };
 
-
     const token = checkTokenValidity();
     if (!token) {
       setLoading(false);
       return;
     }
 
-
     const res = await fetch(
       `${API}/api/live-sessions${editId ? `/${editId}` : ""}`,
       {
         method: editId ? "PATCH" : "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(payload),
       }
     );
@@ -315,15 +321,16 @@ export default function LiveSesionAdmin() {
       confirmButtonText: "Delete",
     });
     if (confirm.isConfirmed) {
-
       const token = checkTokenValidity();
       if (!token) return;
 
-
       const res = await fetch(`${API}/api/live-sessions/${id}`, {
         method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
-      
+
       if (res.ok) {
         fetchSessions();
         Swal.fire("Deleted!", "Session deleted.", "success");
@@ -337,15 +344,16 @@ export default function LiveSesionAdmin() {
 
   const toggleStatus = async (id) => {
     try {
-
       const token = checkTokenValidity();
       if (!token) return;
 
-
       const res = await fetch(`${API}/api/live-sessions/toggle/${id}`, {
         method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
-      
+
       if (res.ok) {
         await fetchSessions();
         Swal.fire("Success!", "Session status updated.", "success");
@@ -471,12 +479,16 @@ export default function LiveSesionAdmin() {
 
     if (confirm.isConfirmed) {
       try {
-
         const token = checkTokenValidity();
         if (!token) return;
 
         const deletePromises = selectedSessions.map((id) =>
-          fetch(`${API}/api/live-sessions/${id}`, { method: "DELETE" })
+          fetch(`${API}/api/live-sessions/${id}`, {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          })
         );
 
         await Promise.all(deletePromises);
