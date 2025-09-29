@@ -1,7 +1,12 @@
 // Course Level Constants
 export const DEFAULT_LEVELS = [
+  { value: "Beginner", label: "Beginner" },
+  { value: "Intermediate", label: "Intermediate" },
+  { value: "Advanced", label: "Advanced" },
+  { value: "Expert", label: "Expert" },
   { value: "Executive Level", label: "Executive Level" },
   { value: "Professional Level", label: "Professional Level" },
+  { value: "Digital Hub+Center", label: "Digital Hub+Center" },
 ];
 
 // Function to get course levels from API or use defaults

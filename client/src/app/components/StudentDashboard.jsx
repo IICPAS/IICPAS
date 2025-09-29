@@ -77,7 +77,7 @@ export default function StudentDashboard() {
     },
     {
       id: "collapse",
-      icon: <span>{sidebarCollapsed ? "→" : "←"}</span>,
+      icon: <span className="font-bold text-lg">{sidebarCollapsed ? "⟶" : "⟵"}</span>,
       label: sidebarCollapsed ? "Expand" : "Collapse",
     },
   ];
@@ -191,9 +191,11 @@ export default function StudentDashboard() {
       case "certificates":
         return <CertificatesTab />;
       case "collapse":
-        // Handle collapse action
-        setSidebarCollapsed(!sidebarCollapsed);
-        setActiveTab("courses"); // Switch back to courses tab
+        // Handle collapse action - only on desktop
+        if (window.innerWidth >= 1024) {
+          setSidebarCollapsed(!sidebarCollapsed);
+          setActiveTab("courses"); // Switch back to courses tab
+        }
         return <CoursesTab />;
       default:
         return null;
@@ -202,18 +204,18 @@ export default function StudentDashboard() {
 
   const SidebarContent = () => (
     <div className="h-full flex flex-col">
-      <div className="p-6 pb-4">
-        <div className="flex items-center justify-center mb-6">
-          <div className="bg-white p-3 rounded-lg shadow-lg">
+      <div className={`${sidebarCollapsed ? 'p-2' : 'p-6 pb-4'} transition-all duration-300`}>
+        <div className={`flex items-center justify-center ${sidebarCollapsed ? 'mb-4' : 'mb-6'}`}>
+          <div className={`bg-white ${sidebarCollapsed ? 'p-2' : 'p-3'} rounded-lg shadow-lg`}>
             <img
               src="/images/logo.png"
               alt="IICPA Institute"
-              className="h-12 w-auto object-contain"
+              className={`${sidebarCollapsed ? 'h-8' : 'h-12'} w-auto object-contain`}
             />
           </div>
         </div>
         {/* User Info */}
-        {student && (
+        {student && !sidebarCollapsed && (
           <div className="text-center mb-4 p-3 bg-blue-50 rounded-lg">
             <div 
               onClick={() => setActiveTab("profile")}
@@ -243,22 +245,50 @@ export default function StudentDashboard() {
             </div>
           </div>
         )}
+        {/* Collapsed user profile */}
+        {student && sidebarCollapsed && (
+          <div className="flex justify-center mb-4">
+            <div 
+              onClick={() => setActiveTab("profile")}
+              className="cursor-pointer hover:bg-blue-100 p-2 rounded-full transition-colors duration-200"
+            >
+              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center overflow-hidden">
+                {student.image ? (
+                  <img
+                    src={`${API}/${student.image}`}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      console.log("Sidebar profile image failed to load:", `${API}`);
+                      e.target.style.display = 'none';
+                      e.target.nextElementSibling.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                <div className={`w-full h-full flex items-center justify-center ${student.image ? 'hidden' : ''}`}>
+                  <FaUser size={14} className="text-white" />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
-      <nav className="flex-1 overflow-y-auto px-3 custom-scrollbar">
+      <nav className={`flex-1 overflow-y-auto ${sidebarCollapsed ? 'px-1' : 'px-3'} custom-scrollbar`}>
         {tabs.map((tab) => (
-          <NavItem
-            key={tab.id}
-            icon={tab.icon}
-            label={sidebarCollapsed ? "" : tab.label}
-            active={activeTab === tab.id}
-            dot={tab.dot}
-            dotColor={tab.dotColor}
-            collapsed={sidebarCollapsed}
-            onClick={() => {
-              setActiveTab(tab.id);
-              setIsDrawerOpen(false);
-            }}
-          />
+          <div key={tab.id} className={tab.id === "collapse" ? "hidden lg:block" : ""}>
+            <NavItem
+              icon={tab.icon}
+              label={sidebarCollapsed ? "" : tab.label}
+              active={activeTab === tab.id}
+              dot={tab.dot}
+              dotColor={tab.dotColor}
+              collapsed={sidebarCollapsed}
+              onClick={() => {
+                setActiveTab(tab.id);
+                setIsDrawerOpen(false);
+              }}
+            />
+          </div>
         ))}
       </nav>
     </div>
@@ -273,11 +303,11 @@ export default function StudentDashboard() {
   }
 
   return (
-    <div className="bg-gray-50 h-full">
+    <div className={`bg-gray-50 min-h-screen sidebar-layout ${sidebarCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded'}`}>
       {/* Desktop Sidebar */}
       <aside
         className={`hidden lg:block ${
-          sidebarCollapsed ? "w-16" : "w-70"
+          sidebarCollapsed ? "w-16" : "w-64"
         } h-screen fixed left-0 top-0 bg-gradient-to-b from-blue-100 to-blue-200 border-r border-blue-300 rounded-r-2xl shadow-xl overflow-y-auto custom-scrollbar z-50 transition-all duration-300`}
       >
         <SidebarContent />
@@ -288,11 +318,16 @@ export default function StudentDashboard() {
         onClose={() => setIsDrawerOpen(false)}
         direction="left"
         className="lg:hidden"
+        size="280px"
+        enableOverlay={true}
+        lockBackgroundScroll={true}
       >
-        <SidebarContent />
+        <div className="h-full">
+          <SidebarContent />
+        </div>
       </Drawer>
       {/* Main Content */}
-      <main className={`lg:${sidebarCollapsed ? "ml-16" : "ml-70"} bg-[#f5f6fa] h-screen transition-all duration-300 overflow-y-auto thin-scrollbar`}>
+      <main className="main-content bg-[#f5f6fa] min-h-screen lg:h-screen overflow-y-auto thin-scrollbar">
         {/* Fixed Header */}
         <div className="sticky top-0 z-40 bg-[#f5f6fa] border-b border-gray-200 p-2 md:p-3">
           <div className="flex justify-between items-center">
@@ -469,7 +504,7 @@ function NavItem({
       onClick={onClick}
       className={`flex items-center ${
         collapsed ? "justify-center" : "gap-3"
-      } px-4 py-3 rounded-lg w-full text-left mb-2 transition-all duration-200 ${
+      } ${collapsed ? 'px-2 py-3' : 'px-4 py-3'} rounded-lg w-full text-left mb-2 transition-all duration-200 group relative ${
         active
           ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-md"
           : "hover:bg-blue-50 text-gray-700 hover:text-blue-700"
@@ -477,7 +512,7 @@ function NavItem({
       title={collapsed ? label : ""}
     >
       <span
-        className={`text-lg relative ${
+        className={`${collapsed ? 'text-xl' : 'text-lg'} relative ${
           active ? "text-white" : "text-blue-500"
         }`}
       >
@@ -495,6 +530,12 @@ function NavItem({
         )}
       </span>
       {!collapsed && <span className="font-medium break-words">{label}</span>}
+      {/* Tooltip for collapsed state */}
+      {collapsed && (
+        <div className="absolute left-full ml-2 px-3 py-2 bg-gray-800 text-white text-sm rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none whitespace-nowrap z-50">
+          {label}
+        </div>
+      )}
     </button>
   );
 }

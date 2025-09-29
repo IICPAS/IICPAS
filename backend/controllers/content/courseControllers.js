@@ -260,6 +260,7 @@ export const getCourseLevels = async (req, res) => {
     const defaultLevels = [
       { value: "Executive Level", label: "Executive Level" },
       { value: "Professional Level", label: "Professional Level" },
+      { value: "Digital Hub+Center", label: "Digital Hub+Center" },
     ];
 
     // For now, return default levels. In the future, this could be stored in a database

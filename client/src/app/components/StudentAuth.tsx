@@ -21,14 +21,10 @@ export default function StudentAuthForm() {
     mode: "Digital Hub+Virtual",
     location: "Greater Noida",
     center: "Greater Noida",
-    selectedPackage: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  // --- Group pricing state
-  const [groupPricing, setGroupPricing] = useState([]);
-  const [loadingPricing, setLoadingPricing] = useState(false);
 
   // --- Login form state
   const [loginEmail, setLoginEmail] = useState("");
@@ -62,13 +58,10 @@ export default function StudentAuthForm() {
       mode,
       location,
       center,
-      selectedPackage,
     } = form;
     if (!name || !email || !phone || !password || !confirmPassword)
       return toast.success("All fields required");
-    if (password !== confirmPassword) return toast("Passwords do not match!");
-    if (mode === "Digital Hub+Center" && !selectedPackage)
-      return toast.error("Please select a package for offline mode");
+    if (password !== confirmPassword) return toast.error("Passwords do not match!");
     try {
       await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/students/register`,
@@ -80,14 +73,13 @@ export default function StudentAuthForm() {
           mode,
           location,
           center,
-          selectedPackage,
         },
         { withCredentials: true }
       );
       toast.success("Registration successful!");
       setMode("login");
     } catch (err: any) {
-      toast.success(err?.response?.data?.message || "Registration failed");
+      toast.error(err?.response?.data?.message || "Registration failed");
     }
   };
 
@@ -166,30 +158,6 @@ export default function StudentAuthForm() {
 
   const centerOptions = [{ label: "Greater Noida", value: "Greater Noida" }];
 
-  // --- Fetch group pricing packages
-  const fetchGroupPricing = async () => {
-    setLoadingPricing(true);
-    try {
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/group-pricing`
-      );
-      setGroupPricing(response.data || []);
-    } catch (error) {
-      console.error("Error fetching group pricing:", error);
-      setGroupPricing([]);
-    } finally {
-      setLoadingPricing(false);
-    }
-  };
-
-  // --- Fetch packages when mode changes to Offline
-  useEffect(() => {
-    if (form.mode === "Digital Hub+Center") {
-      fetchGroupPricing();
-    } else {
-      setForm((prev) => ({ ...prev, selectedPackage: "" }));
-    }
-  }, [form.mode]);
 
   // --- Render ---
   return (
@@ -245,41 +213,11 @@ export default function StudentAuthForm() {
                 options={centerOptions}
                 value={centerOptions.find((opt) => opt.value === form.center)}
                 onChange={handleCenterChange}
+                placeholder="Select center"
+                aria-label="Center selection"
               />
             </div>
 
-            {/* Package Selection for Offline Mode */}
-            {form.mode === "Digital Hub+Center" && (
-              <div className="md:col-span-2">
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  Select Package
-                </label>
-                {loadingPricing ? (
-                  <div className="text-center py-4 text-gray-500">
-                    Loading packages...
-                  </div>
-                ) : groupPricing.length === 0 ? (
-                  <div className="text-center py-4 text-gray-500">
-                    No packages available
-                  </div>
-                ) : (
-                  <select
-                    name="selectedPackage"
-                    value={form.selectedPackage}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-green-400 outline-none"
-                  >
-                    <option value="">Select a package</option>
-                    {groupPricing.map((pkg: any) => (
-                      <option key={pkg._id} value={pkg._id}>
-                        {pkg.level} - ₹{pkg.groupPrice?.toLocaleString()} (
-                        {pkg.courseIds?.length || 0} courses)
-                      </option>
-                    ))}
-                  </select>
-                )}
-              </div>
-            )}
             <Input
               label="Email"
               name="email"

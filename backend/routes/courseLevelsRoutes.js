@@ -9,7 +9,8 @@ const DEFAULT_LEVELS = [
   { value: "Advanced", label: "Advanced" },
   { value: "Expert", label: "Expert" },
   { value: "Executive Level", label: "Executive Level" },
-  { value: "Professional Level", label: "Professional Level" }
+  { value: "Professional Level", label: "Professional Level" },
+  { value: "Digital Hub+Center", label: "Digital Hub+Center" }
 ];
 
 // GET /api/course-levels - Get all course levels
