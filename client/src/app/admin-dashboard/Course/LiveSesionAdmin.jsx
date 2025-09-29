@@ -54,20 +54,83 @@ export default function LiveSesionAdmin() {
   const [imagePreview, setImagePreview] = useState("");
   const { hasPermission } = useAuth();
 
+  // Helper function to check if token is valid
+  const checkTokenValidity = () => {
+    const token = localStorage.getItem("adminToken");
+
+    if (!token) {
+      showTokenError();
+      return null;
+    }
+
+    try {
+      // Decode JWT token to check expiration (without verification for timeout check)
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const currentTime = Date.now() / 1000;
+
+      if (payload.exp && payload.exp < currentTime) {
+        showTokenError("Token has expired");
+        localStorage.removeItem("adminToken");
+        localStorage.removeItem("adminUser");
+        return null;
+      }
+
+      return token;
+    } catch (error) {
+      console.error("Token validation error:", error);
+      showTokenError("Invalid token format");
+      localStorage.removeItem("adminToken");
+      localStorage.removeItem("adminUser");
+      return null;
+    }
+  };
+
+  // Helper function to show token-related errors
+  const showTokenError = (message) => {
+    const errorMessage = message || "Authentication token not found. Please log in again.";
+    Swal.fire({
+      title: "Authentication Error",
+      text: errorMessage,
+      icon: "error",
+      confirmButtonText: "Go to Login",
+      timer: 5000,
+      timerProgressBar: true,
+      showCancelButton: false,
+    }).then(() => {
+      window.location.href = "/admin-login";
+    });
+  };
+
   useEffect(() => {
     fetchSessions();
+    
+    // Debug: Check authentication status
+    console.log("🔍 Auth Debug - Component loaded");
+    console.log("🔍 Auth Debug - Token present:", !!localStorage.getItem("adminToken"));
+    console.log("🔍 Auth Debug - User data:", !!localStorage.getItem("adminUser"));
+    console.log("🔍 Auth Debug - API Base:", API);
+    console.log("🔍 Auth Debug - Environment:", process.env.NODE_ENV);
   }, []);
 
   const fetchSessions = async () => {
     try {
-      const token = localStorage.getItem("adminToken");
+      const token = checkTokenValidity();
+      if (!token) return;
+
       const res = await fetch(`${API}/api/live-sessions`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      const data = await res.json();
-      setSessions(data);
+      
+      if (res.ok) {
+        const data = await res.json();
+        setSessions(data);
+      } else if (res.status === 401) {
+        showTokenError("Session expired. Please log in again.");
+      } else {
+        console.error("Fetch sessions failed:", res.status);
+      }
     } catch (err) {
       console.error("Fetch error:", err);
     }
@@ -85,7 +148,16 @@ export default function LiveSesionAdmin() {
         const formData = new FormData();
         formData.append("image", uploadedImage);
 
-        const token = localStorage.getItem("adminToken");
+        const token = checkTokenValidity();
+        
+        if (!token) {
+          setLoading(false);
+          return;
+        }
+
+        console.log("Uploading image with token:", token ? "Token present" : "No token");
+        console.log("Upload URL:", `${API}/api/upload/image`);
+        
         const uploadResponse = await fetch(`${API}/api/upload/image`, {
           method: "POST",
           headers: {
@@ -101,13 +173,34 @@ export default function LiveSesionAdmin() {
           console.log("Using thumbnail URL:", thumbnailUrl);
           Swal.fire("Success!", "Image uploaded successfully!", "success");
         } else {
-          const errorData = await uploadResponse.json();
-          console.error("Upload failed:", errorData);
-          Swal.fire(
-            "Error",
-            errorData.error || "Failed to upload image",
-            "error"
-          );
+          // Handle different HTTP status codes
+          let errorMessage = "Failed to upload image";
+          
+          try {
+            const errorData = await uploadResponse.json();
+            console.error("Upload failed:", errorData);
+            
+            if (uploadResponse.status === 401) {
+              errorMessage = "Authentication failed. Please log in again.";
+              // Clear the invalid token and redirect to login
+              localStorage.removeItem("adminToken");
+              localStorage.removeItem("adminUser");
+              setTimeout(() => {
+                window.location.href = "/admin-login";
+              }, 2000);
+            } else if (uploadResponse.status === 403) {
+              errorMessage = "Access denied. Admin privileges required.";
+            } else {
+              errorMessage = errorData.error || errorMessage;
+            }
+          } catch (parseError) {
+            console.error("Failed to parse error response:", parseError);
+            if (uploadResponse.status === 401) {
+              errorMessage = "Authentication failed. Please log in again.";
+            }
+          }
+          
+          Swal.fire("Error", errorMessage, "error");
           setLoading(false);
           return;
         }
@@ -132,7 +225,12 @@ export default function LiveSesionAdmin() {
       thumbnail: thumbnailUrl,
     };
 
-    const token = localStorage.getItem("adminToken");
+    const token = checkTokenValidity();
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
     const res = await fetch(
       `${API}/api/live-sessions${editId ? `/${editId}` : ""}`,
       {
@@ -213,32 +311,44 @@ export default function LiveSesionAdmin() {
       confirmButtonText: "Delete",
     });
     if (confirm.isConfirmed) {
-      const token = localStorage.getItem("adminToken");
+      const token = checkTokenValidity();
+      if (!token) return;
+
       const res = await fetch(`${API}/api/live-sessions/${id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
+      
       if (res.ok) {
         fetchSessions();
         Swal.fire("Deleted!", "Session deleted.", "success");
+      } else if (res.status === 401) {
+        showTokenError("Session expired. Please log in again.");
+      } else {
+        Swal.fire("Error", "Failed to delete session", "error");
       }
     }
   };
 
   const toggleStatus = async (id) => {
     try {
-      const token = localStorage.getItem("adminToken");
+      const token = checkTokenValidity();
+      if (!token) return;
+
       const res = await fetch(`${API}/api/live-sessions/toggle/${id}`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
+      
       if (res.ok) {
         await fetchSessions();
         Swal.fire("Success!", "Session status updated.", "success");
+      } else if (res.status === 401) {
+        showTokenError("Session expired. Please log in again.");
       } else {
         const error = await res.json();
         Swal.fire("Error!", error.error || "Failed to update status", "error");
@@ -359,7 +469,9 @@ export default function LiveSesionAdmin() {
 
     if (confirm.isConfirmed) {
       try {
-        const token = localStorage.getItem("adminToken");
+        const token = checkTokenValidity();
+        if (!token) return;
+
         const deletePromises = selectedSessions.map((id) =>
           fetch(`${API}/api/live-sessions/${id}`, { 
             method: "DELETE",
