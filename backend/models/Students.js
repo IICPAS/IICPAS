@@ -7,7 +7,7 @@ const StudentSchema = new mongoose.Schema(
     phone: { type: String, required: true },
     password: { type: String, required: true },
     image: { type: String }, // profile image path
-    mode: { type: String }, // online or offline
+    mode: { type: String }, // Digital Hub+Virtual or Digital Hub+Center
     location: { type: String },
     center: { type: String },
 

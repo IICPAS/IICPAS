@@ -312,6 +312,18 @@ app.use("/api/terms-of-service", termsOfServiceRoutes);
 import termsAndConditionsRoutes from "./routes/termsAndConditions.js";
 app.use("/api/terms-and-conditions", termsAndConditionsRoutes);
 
+//Confidentiality Policy Routes
+import confidentialityPolicyRoutes from "./routes/confidentialityPolicy.js";
+app.use("/api/confidentiality-policy", confidentialityPolicyRoutes);
+
+//Disclaimer Policy Routes
+import disclaimerPolicyRoutes from "./routes/disclaimerPolicy.js";
+app.use("/api/disclaimer-policy", disclaimerPolicyRoutes);
+
+//IICPA Review Routes
+import iicpaReviewRoutes from "./routes/iicpaReview.js";
+app.use("/api/iicpa-review", iicpaReviewRoutes);
+
 //Cookie Policy Routes
 import cookiePolicyRoutes from "./routes/cookiePolicy.js";
 app.use("/api/cookie-policy", cookiePolicyRoutes);

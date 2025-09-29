@@ -321,11 +321,19 @@ const TermsOfServiceTab = ({ onEditPolicy }: TermsOfServiceTabProps) => {
                   >
                     Edit
                   </button>
-                  {policy.isActive && (
+                  {policy.isActive ? (
                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                       <FaCheck className="w-3 h-3 mr-1" />
                       Active
                     </span>
+                  ) : (
+                    <button
+                      onClick={() => handleActivate(policy._id)}
+                      className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full hover:bg-blue-200"
+                      title="Activate terms of service"
+                    >
+                      Activate
+                    </button>
                   )}
                   <button
                     onClick={() => handleDelete(policy._id)}

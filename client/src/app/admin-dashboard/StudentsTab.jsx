@@ -1293,8 +1293,8 @@ function StudentProfileManagement() {
                                     disabled={editLoading}
                                   >
                                     <option value="">Select Mode</option>
-                                    <option value="online">Online</option>
-                                    <option value="offline">Offline</option>
+                                    <option value="Digital Hub+Virtual">Digital Hub+Virtual</option>
+                                    <option value="Digital Hub+Center">Digital Hub+Center</option>
                                   </select>
                                 </div>
                                 <div>

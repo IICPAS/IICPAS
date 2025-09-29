@@ -98,6 +98,12 @@ import TermsAndConditionsTab from "./TermsAndConditionsTab";
 import EditTermsAndConditionsTab from "./EditTermsAndConditionsTab";
 import CookiePolicyTab from "./CookiePolicyTab";
 import EditCookiePolicyTab from "./EditCookiePolicyTab";
+import ConfidentialityPolicyTab from "./ConfidentialityPolicyTab";
+import DisclaimerPolicyTab from "./DisclaimerPolicyTab";
+import IICPAReviewTab from "./IICPAReviewTab";
+import EditConfidentialityPolicyTab from "./EditConfidentialityPolicyTab";
+import EditDisclaimerPolicyTab from "./EditDisclaimerPolicyTab";
+import EditIICPAReviewTab from "./EditIICPAReviewTab";
 
 // All available modules with their permissions
 const ALL_MODULES = [
@@ -119,6 +125,9 @@ const ALL_MODULES = [
   { id: "terms-of-service", label: "Terms of Service", icon: <FaShieldAlt /> },
   { id: "terms-and-conditions", label: "Terms & Conditions", icon: <FaShieldAlt /> },
   { id: "cookie-policy", label: "Cookie Policy", icon: <FaShieldAlt /> },
+  { id: "confidentiality-policy", label: "Confidentiality Policy", icon: <FaShieldAlt /> },
+  { id: "disclaimer-policy", label: "Disclaimer Policy", icon: <FaShieldAlt /> },
+  { id: "iicpa-review", label: "IICPA Review", icon: <FaShieldAlt /> },
   { id: "jobs", label: "Jobs", icon: <FaBriefcase /> },
   { id: "news", label: "News", icon: <FaNewspaper /> },
   { id: "students", label: "Students", icon: <FaUserGraduate /> },
@@ -573,6 +582,27 @@ function AdminDashboardContent() {
           <EditCookiePolicyTab 
             onBack={() => setActiveTab("cookie-policy")}
             policyId={activeTab.replace("edit-cookie-policy-", "")}
+          />
+        ) : activeTab === "confidentiality-policy" ? (
+          <ConfidentialityPolicyTab onEditPolicy={(policyId) => setActiveTab(`edit-confidentiality-policy-${policyId}`)} />
+        ) : activeTab.startsWith("edit-confidentiality-policy") ? (
+          <EditConfidentialityPolicyTab 
+            onBack={() => setActiveTab("confidentiality-policy")}
+            policyId={activeTab.replace("edit-confidentiality-policy-", "")}
+          />
+        ) : activeTab === "disclaimer-policy" ? (
+          <DisclaimerPolicyTab onEditPolicy={(policyId) => setActiveTab(`edit-disclaimer-policy-${policyId}`)} />
+        ) : activeTab.startsWith("edit-disclaimer-policy") ? (
+          <EditDisclaimerPolicyTab 
+            onBack={() => setActiveTab("disclaimer-policy")}
+            policyId={activeTab.replace("edit-disclaimer-policy-", "")}
+          />
+        ) : activeTab === "iicpa-review" ? (
+          <IICPAReviewTab onEditReview={(reviewId) => setActiveTab(`edit-iicpa-review-${reviewId}`)} />
+        ) : activeTab.startsWith("edit-iicpa-review") ? (
+          <EditIICPAReviewTab 
+            onBack={() => setActiveTab("iicpa-review")}
+            reviewId={activeTab.replace("edit-iicpa-review-", "")}
           />
         ) : activeTab === "bulk-email" ? (
           <BulkEmailTab />

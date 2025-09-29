@@ -9,7 +9,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import wishlistEventManager from "../../utils/wishlistEventManager";
 
-const skillLevels = ["Executive", "Professional"];
+const skillLevels = ["Executive Level", "Professional Level"];
 
 export default function CoursePage() {
   const router = useRouter();
@@ -28,7 +28,7 @@ export default function CoursePage() {
       title: "Basic Accounting & Tally Foundation",
       slug: "basic-accounting-tally-foundation",
       category: "Accounting",
-      level: "Professional",
+      level: "Professional Level",
       price: 5000,
       discount: 5,
       image: "/images/accounting.webp",
@@ -39,7 +39,7 @@ export default function CoursePage() {
       title: "HR Certification Course",
       slug: "hr-certification-course",
       category: "HR",
-      level: "Executive",
+      level: "Executive Level",
       price: 1000,
       discount: 10,
       image: "/images/young-woman.jpg",
@@ -50,7 +50,7 @@ export default function CoursePage() {
       title: "Excel Certification Course",
       slug: "excel-certification-course",
       category: "Accounting",
-      level: "Professional",
+      level: "Professional Level",
       price: 2000,
       discount: 0,
       image: "/images/course.png",
@@ -61,7 +61,7 @@ export default function CoursePage() {
       title: "Finance Management Course",
       slug: "finance-management-course",
       category: "Finance",
-      level: "Executive",
+      level: "Executive Level",
       price: 3500,
       discount: 15,
       image: "/images/a1.jpeg",
@@ -72,7 +72,7 @@ export default function CoursePage() {
       title: "US CMA Certification Prep",
       slug: "us-cma-certification-prep",
       category: "US CMA",
-      level: "Executive",
+      level: "Executive Level",
       price: 8000,
       discount: 8,
       image: "/images/a2.avif",
@@ -83,7 +83,7 @@ export default function CoursePage() {
       title: "Advanced Excel Mastery",
       slug: "advanced-excel-mastery",
       category: "Excel",
-      level: "Professional",
+      level: "Professional Level",
       price: 2800,
       discount: 12,
       image: "/images/a3.jpeg",

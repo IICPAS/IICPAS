@@ -24,39 +24,39 @@ interface ContactInfo {
   businessHours?: string;
 }
 
-interface PrivacyPolicyData {
+interface DisclaimerPolicyData {
   title: string;
   lastUpdated: string;
   sections: Section[];
   contactInfo: ContactInfo;
 }
 
-const PrivacyPolicyPage = () => {
-  const [privacyPolicy, setPrivacyPolicy] = useState<PrivacyPolicyData | null>(null);
+const DisclaimerPolicyPage = () => {
+  const [disclaimerPolicy, setDisclaimerPolicy] = useState<DisclaimerPolicyData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchPrivacyPolicy = async () => {
+    const fetchDisclaimerPolicy = async () => {
       try {
         const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
-        const response = await fetch(`${API_BASE}/privacy-policy/active`);
+        const response = await fetch(`${API_BASE}/disclaimer-policy/active`);
         const data = await response.json();
         
         if (data.success) {
-          setPrivacyPolicy(data.data);
+          setDisclaimerPolicy(data.data);
         } else {
-          setError('Failed to load privacy policy');
+          setError('Failed to load disclaimer policy');
         }
       } catch (err) {
-        setError('Error loading privacy policy');
-        console.error('Error fetching privacy policy:', err);
+        setError('Error loading disclaimer policy');
+        console.error('Error fetching disclaimer policy:', err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPrivacyPolicy();
+    fetchDisclaimerPolicy();
   }, []);
 
   if (loading) {
@@ -66,7 +66,7 @@ const PrivacyPolicyPage = () => {
         <div className="min-h-screen bg-gray-50 pt-32 pb-16 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading Privacy Policy...</p>
+            <p className="mt-4 text-gray-600">Loading Disclaimer Policy...</p>
           </div>
         </div>
         <Footer />
@@ -74,13 +74,13 @@ const PrivacyPolicyPage = () => {
     );
   }
 
-  if (error || !privacyPolicy) {
+  if (error || !disclaimerPolicy) {
     return (
       <div>
         <Header />
         <div className="min-h-screen bg-gray-50 pt-32 pb-16 flex items-center justify-center">
           <div className="text-center">
-            <p className="text-red-600 text-lg">{error || 'Privacy policy not found'}</p>
+            <p className="text-red-600 text-lg">{error || 'Disclaimer policy not found'}</p>
           </div>
         </div>
         <Footer />
@@ -95,15 +95,15 @@ const PrivacyPolicyPage = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              {privacyPolicy.title}
+              {disclaimerPolicy.title}
             </h1>
             <p className="text-xl text-gray-600">
-              Last updated: {privacyPolicy.lastUpdated}
+              Last updated: {disclaimerPolicy.lastUpdated}
             </p>
           </div>
 
           <div className="bg-white rounded-lg shadow-md p-8 space-y-8">
-            {privacyPolicy.sections.map((section, index) => (
+            {disclaimerPolicy.sections.map((section, index) => (
               <section key={index}>
                 <h2 className="text-2xl font-semibold text-gray-900 mb-4">
                   {section.title}
@@ -155,15 +155,15 @@ const PrivacyPolicyPage = () => {
                   <div className="mt-4">
                     <p className="text-gray-600 leading-relaxed">
                       <br />
-                      Email: {privacyPolicy.contactInfo.email}
+                      Email: {disclaimerPolicy.contactInfo.email}
                       <br />
-                      Phone: {privacyPolicy.contactInfo.phone}
+                      Phone: {disclaimerPolicy.contactInfo.phone}
                       <br />
-                      Address: {privacyPolicy.contactInfo.address}
-                      {privacyPolicy.contactInfo.businessHours && (
+                      Address: {disclaimerPolicy.contactInfo.address}
+                      {disclaimerPolicy.contactInfo.businessHours && (
                         <>
                           <br />
-                          Business Hours: {privacyPolicy.contactInfo.businessHours}
+                          Business Hours: {disclaimerPolicy.contactInfo.businessHours}
                         </>
                       )}
                     </p>
@@ -171,25 +171,6 @@ const PrivacyPolicyPage = () => {
                 )}
               </section>
             ))}
-
-            <section>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">Contact Information</h2>
-              <p className="text-gray-600 leading-relaxed">
-                If you have any questions about this Privacy Policy, please contact us at:
-                <br />
-                Email: {privacyPolicy.contactInfo.email}
-                <br />
-                Phone: {privacyPolicy.contactInfo.phone}
-                <br />
-                Address: {privacyPolicy.contactInfo.address}
-                {privacyPolicy.contactInfo.businessHours && (
-                  <>
-                    <br />
-                    Business Hours: {privacyPolicy.contactInfo.businessHours}
-                  </>
-                )}
-              </p>
-            </section>
           </div>
         </div>
       </div>
@@ -198,4 +179,4 @@ const PrivacyPolicyPage = () => {
   );
 };
 
-export default PrivacyPolicyPage;
+export default DisclaimerPolicyPage;
