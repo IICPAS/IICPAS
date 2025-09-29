@@ -114,6 +114,11 @@ export default function LiveSesionAdmin() {
 
   const fetchSessions = async () => {
     try {
+
+      const res = await fetch(`${API}/api/live-sessions`);
+      const data = await res.json();
+      setSessions(data);
+
       const token = checkTokenValidity();
       if (!token) return;
 
@@ -131,6 +136,7 @@ export default function LiveSesionAdmin() {
       } else {
         console.error("Fetch sessions failed:", res.status);
       }
+
     } catch (err) {
       console.error("Fetch error:", err);
     }
@@ -148,6 +154,7 @@ export default function LiveSesionAdmin() {
         const formData = new FormData();
         formData.append("image", uploadedImage);
 
+
         const token = checkTokenValidity();
         
         if (!token) {
@@ -158,11 +165,9 @@ export default function LiveSesionAdmin() {
         console.log("Uploading image with token:", token ? "Token present" : "No token");
         console.log("Upload URL:", `${API}/api/upload/image`);
         
+
         const uploadResponse = await fetch(`${API}/api/upload/image`, {
           method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
           body: formData,
         });
 
@@ -225,20 +230,19 @@ export default function LiveSesionAdmin() {
       thumbnail: thumbnailUrl,
     };
 
+
     const token = checkTokenValidity();
     if (!token) {
       setLoading(false);
       return;
     }
 
+
     const res = await fetch(
       `${API}/api/live-sessions${editId ? `/${editId}` : ""}`,
       {
         method: editId ? "PATCH" : "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       }
     );
@@ -311,14 +315,13 @@ export default function LiveSesionAdmin() {
       confirmButtonText: "Delete",
     });
     if (confirm.isConfirmed) {
+
       const token = checkTokenValidity();
       if (!token) return;
 
+
       const res = await fetch(`${API}/api/live-sessions/${id}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
       });
       
       if (res.ok) {
@@ -334,14 +337,13 @@ export default function LiveSesionAdmin() {
 
   const toggleStatus = async (id) => {
     try {
+
       const token = checkTokenValidity();
       if (!token) return;
 
+
       const res = await fetch(`${API}/api/live-sessions/toggle/${id}`, {
         method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
       });
       
       if (res.ok) {
@@ -469,16 +471,12 @@ export default function LiveSesionAdmin() {
 
     if (confirm.isConfirmed) {
       try {
+
         const token = checkTokenValidity();
         if (!token) return;
 
         const deletePromises = selectedSessions.map((id) =>
-          fetch(`${API}/api/live-sessions/${id}`, { 
-            method: "DELETE",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          })
+          fetch(`${API}/api/live-sessions/${id}`, { method: "DELETE" })
         );
 
         await Promise.all(deletePromises);

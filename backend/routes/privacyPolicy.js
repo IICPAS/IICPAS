@@ -29,6 +29,31 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Get active privacy policy content (alternative endpoint)
+router.get('/active', async (req, res) => {
+  try {
+    const privacyPolicy = await PrivacyPolicy.findOne({ isActive: true });
+    
+    if (!privacyPolicy) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Privacy policy not found' 
+      });
+    }
+
+    res.json({
+      success: true,
+      data: privacyPolicy
+    });
+  } catch (error) {
+    console.error('Error fetching active privacy policy:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching active privacy policy'
+    });
+  }
+});
+
 // Get all privacy policy versions (admin only)
 router.get('/admin/all', requireAuth, async (req, res) => {
   try {
