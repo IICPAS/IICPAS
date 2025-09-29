@@ -303,7 +303,7 @@ export default function StudentDashboard() {
   }
 
   return (
-    <div className="bg-gray-50 h-full">
+    <div className={`bg-gray-50 min-h-screen sidebar-layout ${sidebarCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded'}`}>
       {/* Desktop Sidebar */}
       <aside
         className={`hidden lg:block ${
@@ -327,7 +327,7 @@ export default function StudentDashboard() {
         </div>
       </Drawer>
       {/* Main Content */}
-      <main className={`lg:${sidebarCollapsed ? "ml-16" : "ml-64"} bg-[#f5f6fa] h-screen transition-all duration-300 overflow-y-auto thin-scrollbar`}>
+      <main className="main-content bg-[#f5f6fa] min-h-screen lg:h-screen overflow-y-auto thin-scrollbar">
         {/* Fixed Header */}
         <div className="sticky top-0 z-40 bg-[#f5f6fa] border-b border-gray-200 p-2 md:p-3">
           <div className="flex justify-between items-center">

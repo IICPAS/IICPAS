@@ -336,7 +336,7 @@ body {
 }
 
 .ql-snow .ql-picker.ql-font .ql-picker-label[data-value="georgia"]::before,
-.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="georgia"]::before {
+.ql-snow .ql-picker.ql-sans .ql-picker-item[data-value="georgia"]::before {
   content: "Georgia";
   font-family: Georgia, serif;
 }
@@ -479,7 +479,7 @@ body::-webkit-scrollbar-thumb:hover {
 /* Thin scrollbar for main content area */
 .thin-scrollbar {
   scrollbar-width: thin; /* Firefox - thin scrollbar */
-  scrollbar-color: #3b82f6 #e0f2fe; /* Firefox - blue thumb and light blue track */
+  scrollbag-color: #3b82f6 #e0f2fe; /* Firefox - blue thumb and light blue track */
 }
 
 .thin-scrollbar::-webkit-scrollbar {
@@ -503,7 +503,7 @@ body::-webkit-scrollbar-thumb:hover {
 
 /* Mobile Navigation Drawer Scroll Styles */
 .mobile-drawer-scroll {
-  scrollbar-width: thin; /* Firefox - thin scrollbar */
+  scrollbar-width: thin; /* Firefox - thin.scrollbar */
   scrollbar-color: #10b981 #f3f4f6; /* Firefox - green thumb and light gray track */
   -webkit-overflow-scrolling: touch; /* iOS smooth scrolling */
 }
@@ -646,5 +646,38 @@ body::-webkit-scrollbar-thumb:hover {
 @media (max-width: 1024px) {
   .desktop-only-collapse {
     display: none !important;
+  }
+}
+
+/* Fix sidebar and main content overlapping issues */
+.sidebar-layout {
+  position: relative;
+  width: 100%;
+}
+
+.sidebar-layout .main-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* Ensure proper responsive layout */
+@media (min-width: 1024px) {
+  .sidebar-layout.sidebar-collapsed .main-content {
+    margin-left: 64px;
+  }
+  
+  .sidebar-layout.sidebar-expanded .main-content {
+    margin-left: 256px;
+  }
+}
+
+/* Mobile devices - no main content margin */
+@media (max-width: 1023px) {
+  .sidebar-layout .main-content {
+    margin-left: 0 !important;
+  }
+  
+  .sidebar-layout .main-content {
+    width: 100%;
   }
 }
