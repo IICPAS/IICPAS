@@ -54,33 +54,33 @@ interface ApiCourse {
   };
 }
 
-// Fallback data
+// Fallback data - Updated to match real API data
 const sampleCourses: Course[] = [
   {
     _id: "1",
-    title: "Basic Accounting & Tally Foundation",
-    image: "/images/a1.jpeg",
-    price: 240,
-    slug: "basic-accounting-tally-foundation",
+    title: "Basic Accounting and Tally Certification Course",
+    image: "https://api.iicpa.in/uploads/1758708914697-217664041.png",
+    price: 15000,
+    slug: "basic-accounting-and-tally-certification-course",
     category: "Accounting",
     status: "Active",
   },
   {
     _id: "2",
-    title: "Advanced Financial Management",
-    image: "/images/a1.jpeg",
-    price: 350,
-    slug: "advanced-financial-management",
-    category: "Finance",
+    title: "Payroll and HR Certification Course",
+    image: "https://api.iicpa.in/uploads/1758720155374-15746882.jpg",
+    price: 3500,
+    slug: "payroll-and-hr-certification-course",
+    category: "HR",
     status: "Active",
   },
   {
     _id: "3",
-    title: "Corporate Tax Planning",
-    image: "/images/a1.jpeg",
-    price: 280,
-    slug: "corporate-tax-planning",
-    category: "Taxation",
+    title: "Excel Certification Course",
+    image: "https://api.iicpa.in/uploads/1758720990274-883667247.jpg",
+    price: 2000,
+    slug: "excel-certification-course",
+    category: "Accounting",
     status: "Active",
   },
 ];
@@ -96,10 +96,15 @@ export default function CourseSection() {
         setLoading(true);
         const API_BASE =
           process.env.NEXT_PUBLIC_API_BASE || "https://api.iicpa.in/api";
+
+        console.log("🔍 CourseSection - Fetching from:", `${API_BASE}/courses`);
+
         const response = await fetch(`${API_BASE}/courses`);
 
         if (response.ok) {
           const data = await response.json();
+          console.log("🔍 CourseSection - API Response:", data);
+
           if (Array.isArray(data) && data.length > 0) {
             const transformedCourses = data.map(
               (course: ApiCourse): Course => ({
@@ -137,15 +142,23 @@ export default function CourseSection() {
                   new Date(a.createdAt || 0).getTime()
               );
 
+            console.log(
+              "🔍 CourseSection - Transformed courses:",
+              activeCourses
+            );
             setCourses(activeCourses);
           } else {
+            console.log(
+              "🔍 CourseSection - No courses found, using sample data"
+            );
             setCourses(sampleCourses);
           }
         } else {
+          console.log("🔍 CourseSection - API failed, using sample data");
           setCourses(sampleCourses);
         }
       } catch (error) {
-        console.error("Error fetching courses:", error);
+        console.error("🔍 CourseSection - Error fetching courses:", error);
         setCourses(sampleCourses);
       } finally {
         setLoading(false);
