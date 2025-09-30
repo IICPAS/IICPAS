@@ -85,15 +85,15 @@ export default function CheckoutPage() {
     }
   };
 
-  const handleRemoveFromCart = async (courseId) => {
+  const handleRemoveFromCart = async (courseId, sessionType = "recorded") => {
     try {
       const response = await axios.post(
         `${API_BASE}/api/v1/students/remove-cart/${student._id}`,
-        { courseId },
+        { courseId, sessionType },
         { withCredentials: true }
       );
 
-      if (response.data.success) {
+      if (response.data.message) {
         // Remove from local state
         setCartCourses((prev) =>
           prev.filter((course) => course._id !== courseId)
@@ -210,7 +210,9 @@ export default function CheckoutPage() {
                   {/* Actions */}
                   <div className="flex space-x-2">
                     <button
-                      onClick={() => handleRemoveFromCart(course._id)}
+                      onClick={() =>
+                        handleRemoveFromCart(course._id, course.sessionType)
+                      }
                       className="px-3 py-1 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                       title="Remove from cart"
                     >

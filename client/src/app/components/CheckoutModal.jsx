@@ -20,27 +20,54 @@ const CheckoutModal = ({
 
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
-  const totalAmount = cartCourses.reduce((sum, course) => {
-    // Use recorded session pricing if available, otherwise fall back to legacy pricing
-    const recordedPrice =
-      course.pricing?.recordedSession?.finalPrice ||
-      course.pricing?.recordedSession?.price;
-    const legacyPrice = course.price;
-    const displayPrice = recordedPrice || legacyPrice;
-    
-    return sum + (displayPrice || 0);
+  const totalAmount = cartCourses.reduce((sum, cartItem) => {
+    // Handle both old and new cart structure
+    let course, sessionType;
+
+    if (
+      typeof cartItem === "string" ||
+      (typeof cartItem === "object" && cartItem._id)
+    ) {
+      // Old format: just courseId or course object
+      course = cartItem;
+      sessionType = "recorded"; // Default to recorded for old format
+    } else if (cartItem.courseId) {
+      // New format: { courseId, sessionType }
+      course = cartItem.courseId;
+      sessionType = cartItem.sessionType || "recorded";
+    } else {
+      return sum; // Skip invalid items
+    }
+
+    // Get pricing based on session type
+    let displayPrice = 0;
+    if (sessionType === "recorded") {
+      displayPrice =
+        course.pricing?.recordedSession?.finalPrice ||
+        course.pricing?.recordedSession?.price ||
+        course.price ||
+        0;
+    } else if (sessionType === "live") {
+      displayPrice =
+        course.pricing?.liveSession?.finalPrice ||
+        course.pricing?.liveSession?.price ||
+        course.price * (course?.pricing?.liveSession?.priceMultiplier || 1.5) ||
+        0;
+    }
+
+    return sum + displayPrice;
   }, 0);
 
-  const handleRemoveFromCart = async (courseId) => {
+  const handleRemoveFromCart = async (courseId, sessionType) => {
     try {
       setLoading(true);
       const response = await axios.post(
         `${API_BASE}/api/v1/students/remove-cart/${student._id}`,
-        { courseId },
+        { courseId, sessionType },
         { withCredentials: true }
       );
 
-      if (response.data.success) {
+      if (response.data.message) {
         Swal.fire({
           title: "Removed",
           text: "Course removed from cart",
@@ -89,12 +116,25 @@ const CheckoutModal = ({
         {
           courseId: selectedCourse._id,
           amount: (() => {
-            // Use recorded session pricing if available, otherwise fall back to legacy pricing
-            const recordedPrice =
-              selectedCourse.pricing?.recordedSession?.finalPrice ||
-              selectedCourse.pricing?.recordedSession?.price;
-            const legacyPrice = selectedCourse.price;
-            return recordedPrice || legacyPrice || 0;
+            const sessionType = selectedCourse.sessionType || "recorded";
+            if (sessionType === "recorded") {
+              return (
+                selectedCourse.pricing?.recordedSession?.finalPrice ||
+                selectedCourse.pricing?.recordedSession?.price ||
+                selectedCourse.price ||
+                0
+              );
+            } else if (sessionType === "live") {
+              return (
+                selectedCourse.pricing?.liveSession?.finalPrice ||
+                selectedCourse.pricing?.liveSession?.price ||
+                selectedCourse.price *
+                  (selectedCourse?.pricing?.liveSession?.priceMultiplier ||
+                    1.5) ||
+                0
+              );
+            }
+            return selectedCourse.price || 0;
           })(),
           utrNumber: utrNumber.trim(),
           notes: notes.trim(),
@@ -172,75 +212,123 @@ const CheckoutModal = ({
               <div className="lg:col-span-2">
                 <h3 className="text-xl font-semibold mb-4">Your Courses</h3>
                 <div className="space-y-4">
-                  {cartCourses.map((course) => (
-                    <div
-                      key={course._id}
-                      className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg"
-                    >
-                      {/* Course Image */}
-                      <div className="w-20 h-20 relative flex-shrink-0">
-                        {course.image ? (
-                          <Image
-                            src={
-                              course.image.startsWith("http")
-                                ? course.image
-                                : course.image.startsWith("/uploads/")
-                                ? `${API_BASE}${course.image}`
-                                : course.image.startsWith("/")
-                                ? course.image
-                                : `${API_BASE}${course.image}`
-                            }
-                            alt={course.title}
-                            fill
-                            className="object-cover rounded-lg"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-gray-200 rounded-lg flex items-center justify-center">
-                            <span className="text-gray-400 text-2xl">📚</span>
+                  {cartCourses.map((cartItem) => {
+                    // Handle both old and new cart structure
+                    let course, sessionType;
+
+                    if (
+                      typeof cartItem === "string" ||
+                      (typeof cartItem === "object" && cartItem._id)
+                    ) {
+                      // Old format: just courseId or course object
+                      course = cartItem;
+                      sessionType = "recorded"; // Default to recorded for old format
+                    } else if (cartItem.courseId) {
+                      // New format: { courseId, sessionType }
+                      course = cartItem.courseId;
+                      sessionType = cartItem.sessionType || "recorded";
+                    } else {
+                      return null; // Skip invalid items
+                    }
+
+                    return (
+                      <div
+                        key={`${course._id}-${sessionType}`}
+                        className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg"
+                      >
+                        {/* Course Image */}
+                        <div className="w-20 h-20 relative flex-shrink-0">
+                          {course.image ? (
+                            <Image
+                              src={
+                                course.image.startsWith("http")
+                                  ? course.image
+                                  : course.image.startsWith("/uploads/")
+                                  ? `${API_BASE}${course.image}`
+                                  : course.image.startsWith("/")
+                                  ? course.image
+                                  : `${API_BASE}${course.image}`
+                              }
+                              alt={course.title}
+                              fill
+                              className="object-cover rounded-lg"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gray-200 rounded-lg flex items-center justify-center">
+                              <span className="text-gray-400 text-2xl">📚</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Course Details */}
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-gray-800">
+                            {course.title}
+                          </h4>
+                          <p className="text-sm text-gray-600">
+                            {course.category}
+                          </p>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span
+                              className={`text-xs px-2 py-1 rounded-full font-medium ${
+                                sessionType === "recorded"
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-blue-100 text-blue-800"
+                              }`}
+                            >
+                              {sessionType === "recorded"
+                                ? "Recorded Session"
+                                : "Live Session"}
+                            </span>
                           </div>
-                        )}
-                      </div>
+                          <p className="text-lg font-bold text-green-600">
+                            ₹
+                            {(() => {
+                              let displayPrice = 0;
+                              if (sessionType === "recorded") {
+                                displayPrice =
+                                  course.pricing?.recordedSession?.finalPrice ||
+                                  course.pricing?.recordedSession?.price ||
+                                  course.price ||
+                                  0;
+                              } else if (sessionType === "live") {
+                                displayPrice =
+                                  course.pricing?.liveSession?.finalPrice ||
+                                  course.pricing?.liveSession?.price ||
+                                  course.price *
+                                    (course?.pricing?.liveSession
+                                      ?.priceMultiplier || 1.5) ||
+                                  0;
+                              }
+                              return displayPrice?.toLocaleString() || "N/A";
+                            })()}
+                          </p>
+                        </div>
 
-                      {/* Course Details */}
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-gray-800">
-                          {course.title}
-                        </h4>
-                        <p className="text-sm text-gray-600">
-                          {course.category}
-                        </p>
-                        <p className="text-lg font-bold text-green-600">
-                          ₹{(() => {
-                            // Use recorded session pricing if available, otherwise fall back to legacy pricing
-                            const recordedPrice =
-                              course.pricing?.recordedSession?.finalPrice ||
-                              course.pricing?.recordedSession?.price;
-                            const legacyPrice = course.price;
-                            const displayPrice = recordedPrice || legacyPrice;
-                            return displayPrice?.toLocaleString() || "N/A";
-                          })()}
-                        </p>
+                        {/* Actions */}
+                        <div className="flex flex-col space-y-2">
+                          <button
+                            onClick={() =>
+                              handleProceedToPayment({ ...course, sessionType })
+                            }
+                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+                            disabled={loading}
+                          >
+                            Pay Now
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleRemoveFromCart(course._id, sessionType)
+                            }
+                            className="px-3 py-1 text-red-600 hover:bg-red-50 rounded-lg transition-colors text-sm"
+                            disabled={loading}
+                          >
+                            Remove
+                          </button>
+                        </div>
                       </div>
-
-                      {/* Actions */}
-                      <div className="flex flex-col space-y-2">
-                        <button
-                          onClick={() => handleProceedToPayment(course)}
-                          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
-                          disabled={loading}
-                        >
-                          Pay Now
-                        </button>
-                        <button
-                          onClick={() => handleRemoveFromCart(course._id)}
-                          className="px-3 py-1 text-red-600 hover:bg-red-50 rounded-lg transition-colors text-sm"
-                          disabled={loading}
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
@@ -250,27 +338,69 @@ const CheckoutModal = ({
                   <h3 className="text-lg font-semibold mb-4">Order Summary</h3>
 
                   <div className="space-y-2 mb-4">
-                    {cartCourses.map((course) => (
-                      <div
-                        key={course._id}
-                        className="flex justify-between text-sm"
-                      >
-                        <span className="text-gray-600 truncate">
-                          {course.title}
-                        </span>
-                        <span className="font-medium">
-                          ₹{(() => {
-                            // Use recorded session pricing if available, otherwise fall back to legacy pricing
-                            const recordedPrice =
-                              course.pricing?.recordedSession?.finalPrice ||
-                              course.pricing?.recordedSession?.price;
-                            const legacyPrice = course.price;
-                            const displayPrice = recordedPrice || legacyPrice;
-                            return displayPrice?.toLocaleString() || "N/A";
-                          })()}
-                        </span>
-                      </div>
-                    ))}
+                    {cartCourses.map((cartItem) => {
+                      // Handle both old and new cart structure
+                      let course, sessionType;
+
+                      if (
+                        typeof cartItem === "string" ||
+                        (typeof cartItem === "object" && cartItem._id)
+                      ) {
+                        // Old format: just courseId or course object
+                        course = cartItem;
+                        sessionType = "recorded"; // Default to recorded for old format
+                      } else if (cartItem.courseId) {
+                        // New format: { courseId, sessionType }
+                        course = cartItem.courseId;
+                        sessionType = cartItem.sessionType || "recorded";
+                      } else {
+                        return null; // Skip invalid items
+                      }
+
+                      return (
+                        <div
+                          key={`${course._id}-${sessionType}`}
+                          className="flex justify-between text-sm"
+                        >
+                          <div className="flex flex-col">
+                            <span className="text-gray-600 truncate">
+                              {course.title}
+                            </span>
+                            <span
+                              className={`text-xs ${
+                                sessionType === "recorded"
+                                  ? "text-green-600"
+                                  : "text-blue-600"
+                              }`}
+                            >
+                              {sessionType === "recorded" ? "Recorded" : "Live"}
+                            </span>
+                          </div>
+                          <span className="font-medium">
+                            ₹
+                            {(() => {
+                              let displayPrice = 0;
+                              if (sessionType === "recorded") {
+                                displayPrice =
+                                  course.pricing?.recordedSession?.finalPrice ||
+                                  course.pricing?.recordedSession?.price ||
+                                  course.price ||
+                                  0;
+                              } else if (sessionType === "live") {
+                                displayPrice =
+                                  course.pricing?.liveSession?.finalPrice ||
+                                  course.pricing?.liveSession?.price ||
+                                  course.price *
+                                    (course?.pricing?.liveSession
+                                      ?.priceMultiplier || 1.5) ||
+                                  0;
+                              }
+                              return displayPrice?.toLocaleString() || "N/A";
+                            })()}
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
 
                   <div className="border-t pt-4">
@@ -306,15 +436,42 @@ const CheckoutModal = ({
                   <h3 className="font-semibold text-gray-800 mb-2">
                     {selectedCourse.title}
                   </h3>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span
+                      className={`text-xs px-2 py-1 rounded-full font-medium ${
+                        selectedCourse.sessionType === "recorded"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-blue-100 text-blue-800"
+                      }`}
+                    >
+                      {selectedCourse.sessionType === "recorded"
+                        ? "Recorded Session"
+                        : "Live Session"}
+                    </span>
+                  </div>
                   <p className="text-2xl font-bold text-green-600">
-                    ₹{(() => {
-                      // Use recorded session pricing if available, otherwise fall back to legacy pricing
-                      const recordedPrice =
-                        selectedCourse.pricing?.recordedSession?.finalPrice ||
-                        selectedCourse.pricing?.recordedSession?.price;
-                      const legacyPrice = selectedCourse.price;
-                      const displayPrice = recordedPrice || legacyPrice;
-                      return (displayPrice || 0).toLocaleString();
+                    ₹
+                    {(() => {
+                      const sessionType =
+                        selectedCourse.sessionType || "recorded";
+                      if (sessionType === "recorded") {
+                        const displayPrice =
+                          selectedCourse.pricing?.recordedSession?.finalPrice ||
+                          selectedCourse.pricing?.recordedSession?.price ||
+                          selectedCourse.price ||
+                          0;
+                        return displayPrice.toLocaleString();
+                      } else if (sessionType === "live") {
+                        const displayPrice =
+                          selectedCourse.pricing?.liveSession?.finalPrice ||
+                          selectedCourse.pricing?.liveSession?.price ||
+                          selectedCourse.price *
+                            (selectedCourse?.pricing?.liveSession
+                              ?.priceMultiplier || 1.5) ||
+                          0;
+                        return displayPrice.toLocaleString();
+                      }
+                      return (selectedCourse.price || 0).toLocaleString();
                     })()}
                   </p>
                 </div>
@@ -336,13 +493,26 @@ const CheckoutModal = ({
                   <p className="text-sm text-gray-600 mt-2">
                     Scan with any UPI app to pay ₹
                     {(() => {
-                      // Use recorded session pricing if available, otherwise fall back to legacy pricing
-                      const recordedPrice =
-                        selectedCourse.pricing?.recordedSession?.finalPrice ||
-                        selectedCourse.pricing?.recordedSession?.price;
-                      const legacyPrice = selectedCourse.price;
-                      const displayPrice = recordedPrice || legacyPrice;
-                      return (displayPrice || 0).toLocaleString();
+                      const sessionType =
+                        selectedCourse.sessionType || "recorded";
+                      if (sessionType === "recorded") {
+                        const displayPrice =
+                          selectedCourse.pricing?.recordedSession?.finalPrice ||
+                          selectedCourse.pricing?.recordedSession?.price ||
+                          selectedCourse.price ||
+                          0;
+                        return displayPrice.toLocaleString();
+                      } else if (sessionType === "live") {
+                        const displayPrice =
+                          selectedCourse.pricing?.liveSession?.finalPrice ||
+                          selectedCourse.pricing?.liveSession?.price ||
+                          selectedCourse.price *
+                            (selectedCourse?.pricing?.liveSession
+                              ?.priceMultiplier || 1.5) ||
+                          0;
+                        return displayPrice.toLocaleString();
+                      }
+                      return (selectedCourse.price || 0).toLocaleString();
                     })()}
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
@@ -432,13 +602,27 @@ const CheckoutModal = ({
                     <li>
                       • Pay the exact amount: ₹
                       {(() => {
-                        // Use recorded session pricing if available, otherwise fall back to legacy pricing
-                        const recordedPrice =
-                          selectedCourse.pricing?.recordedSession?.finalPrice ||
-                          selectedCourse.pricing?.recordedSession?.price;
-                        const legacyPrice = selectedCourse.price;
-                        const displayPrice = recordedPrice || legacyPrice;
-                        return (displayPrice || 0).toLocaleString();
+                        const sessionType =
+                          selectedCourse.sessionType || "recorded";
+                        if (sessionType === "recorded") {
+                          const displayPrice =
+                            selectedCourse.pricing?.recordedSession
+                              ?.finalPrice ||
+                            selectedCourse.pricing?.recordedSession?.price ||
+                            selectedCourse.price ||
+                            0;
+                          return displayPrice.toLocaleString();
+                        } else if (sessionType === "live") {
+                          const displayPrice =
+                            selectedCourse.pricing?.liveSession?.finalPrice ||
+                            selectedCourse.pricing?.liveSession?.price ||
+                            selectedCourse.price *
+                              (selectedCourse?.pricing?.liveSession
+                                ?.priceMultiplier || 1.5) ||
+                            0;
+                          return displayPrice.toLocaleString();
+                        }
+                        return (selectedCourse.price || 0).toLocaleString();
                       })()}
                     </li>
                     <li>• Save the UTR number from your payment receipt</li>
