@@ -305,9 +305,25 @@ export default function CourseDetailPage({
       "API_BASE:",
       API_BASE
     );
+
+    // Set initial course data immediately to prevent blinking
+    const fallbackCourse = dummyCourses[resolvedParams.courseId as keyof typeof dummyCourses];
+    if (fallbackCourse) {
+      setCourse(fallbackCourse);
+      setLoading(false);
+    } else if (resolvedParams.courseId === "basic-accounting-tally-foundation") {
+      setCourse(testCourse);
+      setLoading(false);
+    }
+
+    // Fetch from API in background
     const fetchCourse = async () => {
+      if (!resolvedParams.courseId) {
+        console.log("No courseId found, skipping API call");
+        return;
+      }
+
       try {
-        setLoading(true);
         console.log(
           "Making API call to:",
           `${API_BASE}/api/courses/${resolvedParams.courseId}`
@@ -323,57 +339,13 @@ export default function CourseDetailPage({
         console.error("Error details:", err.response?.data);
         console.error("Error status:", err.response?.status);
         setError("Course not found");
-        // Fallback to dummy data if API fails
-        const fallbackCourse =
-          dummyCourses[resolvedParams.courseId as keyof typeof dummyCourses];
-        if (fallbackCourse) {
-          console.log("Using fallback course:", fallbackCourse);
-          setCourse(fallbackCourse);
-        } else {
-          console.log("No fallback course found for:", resolvedParams.courseId);
-        }
-      } finally {
-        setLoading(false);
+        // Keep existing fallback course if API fails
+        console.log("API failed, keeping fallback course");
       }
     };
 
-    if (resolvedParams.courseId) {
-      fetchCourse();
-    } else {
-      console.log("No courseId found, skipping API call");
-    }
-
-    // Temporary: Set test course data to check image display
-    if (resolvedParams.courseId === "basic-accounting-tally-foundation") {
-      console.log("Setting test course data");
-      setCourse(testCourse);
-      setLoading(false);
-    }
-
-    // Alternative: Direct API call without useEffect dependency issues
-    const directFetch = async () => {
-      try {
-        console.log(
-          "Direct API call to:",
-          `${API_BASE}/api/courses/${resolvedParams.courseId}`
-        );
-        const response = await fetch(
-          `${API_BASE}/api/courses/${resolvedParams.courseId}`
-        );
-        const data = await response.json();
-        console.log("Direct fetch - Course data received:", data);
-        setCourse(data);
-        setLoading(false);
-      } catch (error) {
-        console.error("Direct fetch error:", error);
-        setCourse(testCourse);
-        setLoading(false);
-      }
-    };
-
-    if (resolvedParams.courseId && !course) {
-      directFetch();
-    }
+    // Run API call in background
+    fetchCourse();
   }, [resolvedParams.courseId, API_BASE]);
 
   // Check student authentication

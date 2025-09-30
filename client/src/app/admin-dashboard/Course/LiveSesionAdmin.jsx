@@ -114,11 +114,6 @@ export default function LiveSesionAdmin() {
 
   const fetchSessions = async () => {
     try {
-
-      const res = await fetch(`${API}/api/live-sessions`);
-      const data = await res.json();
-      setSessions(data);
-
       const token = checkTokenValidity();
       if (!token) return;
 

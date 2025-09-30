@@ -20,6 +20,7 @@ export default function CoursePage() {
   const [selectedLevels, setSelectedLevels] = useState([]);
   const [student, setStudent] = useState(null);
   const [wishlistCourseIds, setWishlistCourseIds] = useState([]);
+  const [loading, setLoading] = useState(false); // Initialize as false to prevent initial blinking
 
   // Dummy courses data
   const dummyCourses = [
@@ -102,37 +103,41 @@ export default function CoursePage() {
 
   // Fetch data
   useEffect(() => {
-    // Always set dummy courses first
+    // Set initial data immediately to prevent blinking
     setAllCourses(dummyCourses);
     setCategories(dummyCategories);
+    setLoading(false); // Set loading to false immediately
 
-    // Try to fetch from API, but fallback to dummy data
-    const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
-    axios
-      .get(`${API_BASE}/api/courses`)
-      .then((res) => {
-        const apiCourses = res.data;
-        if (apiCourses && apiCourses.length > 0) {
-          setAllCourses(apiCourses);
-        }
-      })
-      .catch(() => {
-        // Keep dummy courses if API fails
-        console.log("API failed, using dummy courses");
-      });
+    // Fetch from API in background without affecting UI
+    const fetchData = async () => {
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+      
+      try {
+        // Fetch courses and categories in parallel
+        const [coursesResponse, categoriesResponse] = await Promise.allSettled([
+          axios.get(`${API_BASE}/api/courses`),
+          axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/categories`)
+        ]);
 
-    axios
-      .get(`${process.env.NEXT_PUBLIC_API_BASE}/categories`)
-      .then((res) => {
-        const apiCategories = res.data.categories || res.data;
-        if (apiCategories && apiCategories.length > 0) {
-          setCategories(apiCategories);
+        // Update courses if API call succeeded
+        if (coursesResponse.status === 'fulfilled' && coursesResponse.value.data?.length > 0) {
+          setAllCourses(coursesResponse.value.data);
         }
-      })
-      .catch(() => {
-        // Keep dummy categories if API fails
-        console.log("Categories API failed, using dummy categories");
-      });
+
+        // Update categories if API call succeeded
+        if (categoriesResponse.status === 'fulfilled') {
+          const apiCategories = categoriesResponse.value.data.categories || categoriesResponse.value.data;
+          if (apiCategories && apiCategories.length > 0) {
+            setCategories(apiCategories);
+          }
+        }
+      } catch (error) {
+        console.log("API calls failed, using dummy data");
+      }
+    };
+
+    // Run API calls in background
+    fetchData();
 
     // Fetch wishlist state
     fetchWishlistState();

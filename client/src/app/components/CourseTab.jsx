@@ -35,7 +35,7 @@ export default function CourseTab() {
   const [courses, setCourses] = useState([]);
   const [purchasedCourses, setPurchasedCourses] = useState([]); // Student's purchased courses
   const [availableCourses, setAvailableCourses] = useState([]); // All available courses
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Initialize as false to prevent initial blinking
   const [lastAccessedCourse, setLastAccessedCourse] = useState(null);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [activeTab, setActiveTab] = useState("chapters");
@@ -57,7 +57,7 @@ export default function CourseTab() {
   // Fetch student courses from database
   const fetchStudentCourses = async () => {
     try {
-      setLoading(true);
+      // Don't set loading to true initially to prevent blinking
       const response = await axios.get(`${API}/api/v1/students/isstudent`, {
         withCredentials: true,
       });
@@ -115,9 +115,8 @@ export default function CourseTab() {
       console.error("Error fetching courses:", error);
       // Fallback to demo data if API fails
       showDemoData();
-    } finally {
-      setLoading(false);
     }
+    // Remove finally block to prevent loading state changes
   };
 
   // Mock data for demonstration (fallback)
