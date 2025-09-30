@@ -2,12 +2,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState, use, useEffect } from "react";
+import React, { useState, use, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import {
   ChevronDown,
   ChevronUp,
-  Play,
   Star,
   Clock,
   Users,
@@ -16,10 +15,10 @@ import {
 } from "lucide-react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
+import LoginModal from "../../components/LoginModal";
 import jsPDF from "jspdf";
 
 import LiveSchedule from "../../components/LiveSchedule";
-import SimulatorDemo from "../../components/SimulatorDemo";
 
 import axios from "axios";
 
@@ -257,8 +256,7 @@ export default function CourseDetailPage({
   const [courseRatings, setCourseRatings] = useState<any>(null);
   const [ratingsLoading, setRatingsLoading] = useState(true);
   const [student, setStudent] = useState<any>(null);
-  const [isEnrolling, setIsEnrolling] = useState(false);
-  const [isEnrollingRecorded, setIsEnrollingRecorded] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
@@ -282,14 +280,17 @@ export default function CourseDetailPage({
   console.log("Course ID:", resolvedParams.courseId);
 
   // Temporary hardcoded test data to check if image display works
-  const testCourse = {
-    title: "Basic Accounting & Tally Foundation",
-    image: "/uploads/1758703607767-656204190.webp",
-    pricing: {
-      recordedSession: { finalPrice: 4750, price: 5000, discount: 5 },
-      liveSession: { finalPrice: 6650, price: 7000, discount: 5 },
-    },
-  };
+  const testCourse = useMemo(
+    () => ({
+      title: "Basic Accounting & Tally Foundation",
+      image: "/uploads/1758703607767-656204190.webp",
+      pricing: {
+        recordedSession: { finalPrice: 4750, price: 5000, discount: 5 },
+        liveSession: { finalPrice: 6650, price: 7000, discount: 5 },
+      },
+    }),
+    []
+  );
 
   console.log("Test course:", testCourse);
 
@@ -307,11 +308,14 @@ export default function CourseDetailPage({
     );
 
     // Set initial course data immediately to prevent blinking
-    const fallbackCourse = dummyCourses[resolvedParams.courseId as keyof typeof dummyCourses];
+    const fallbackCourse =
+      dummyCourses[resolvedParams.courseId as keyof typeof dummyCourses];
     if (fallbackCourse) {
       setCourse(fallbackCourse);
       setLoading(false);
-    } else if (resolvedParams.courseId === "basic-accounting-tally-foundation") {
+    } else if (
+      resolvedParams.courseId === "basic-accounting-tally-foundation"
+    ) {
       setCourse(testCourse);
       setLoading(false);
     }
@@ -346,7 +350,7 @@ export default function CourseDetailPage({
 
     // Run API call in background
     fetchCourse();
-  }, [resolvedParams.courseId, API_BASE]);
+  }, [resolvedParams.courseId, API_BASE, testCourse]);
 
   // Check student authentication
   useEffect(() => {
@@ -367,104 +371,34 @@ export default function CourseDetailPage({
     checkStudentAuth();
   }, [API_BASE]);
 
-  // Handle Digital Hub+ enrollment
-  const handleDigitalHubPlusEnrollment = async () => {
+  // Handle adding course to cart
+  const handleAddToCart = async (courseId: string) => {
     if (!student) {
-      alert("Please login to enroll in Digital Hub+ Live Sessions");
+      setShowLoginModal(true);
       return;
     }
 
-    setIsEnrolling(true);
     try {
-      // First, get all live sessions for this course category
-      const liveSessionsResponse = await axios.get(
-        `${API_BASE}/api/live-sessions`
-      );
-      const courseLiveSessions = liveSessionsResponse.data.filter(
-        (session: any) =>
-          session.category === course?.category || "CA Foundation"
-      );
-
-      // Enroll student in all live sessions for this course
-      for (const session of courseLiveSessions) {
-        try {
-          await axios.post(
-            `${API_BASE}/api/v1/students/enroll-live-session/${student._id}`,
-            { sessionId: session._id },
-            { withCredentials: true }
-          );
-        } catch (enrollError) {
-          console.error(
-            `Failed to enroll in session ${session._id}:`,
-            enrollError
-          );
-        }
-      }
-
-      alert(
-        "Successfully enrolled in Digital Hub+ Live Sessions! You can now access live classes from your dashboard."
-      );
-    } catch (error) {
-      console.error("Error enrolling in live sessions:", error);
-      alert("Failed to enroll in live sessions. Please try again.");
-    } finally {
-      setIsEnrolling(false);
-    }
-  };
-
-  // Handle Digital Hub Recorded Session enrollment
-  const handleDigitalHubRecordedEnrollment = async () => {
-    if (!student) {
-      alert("Please login to enroll in Digital Hub Recorded Sessions");
-      return;
-    }
-
-    setIsEnrollingRecorded(true);
-    try {
-      const enrollUrl = `${API_BASE}/api/v1/students/enroll-recorded-session/${student._id}`;
-      console.log("Enrolling in recorded session with URL:", enrollUrl);
-      console.log("Course ID:", course._id);
-      console.log("Student ID:", student._id);
-
-      // Enroll student in recorded session (course content)
       const response = await axios.post(
-        enrollUrl,
-        { courseId: course._id },
+        `${API_BASE}/api/v1/students/add-to-cart/${student._id}`,
+        { courseId },
         { withCredentials: true }
       );
 
-      console.log("Enrollment response:", response.data);
-      alert(
-        "Successfully enrolled in Digital Hub Recorded Sessions! You can now access recorded content from your dashboard."
-      );
-    } catch (error: any) {
-      console.error("Error enrolling in recorded sessions:", error);
-      console.error("Error details:", error.response?.data);
-      console.error("Error status:", error.response?.status);
-
-      // Provide more specific error messages
-      let errorMessage =
-        "Failed to enroll in recorded sessions. Please try again.";
-
-      if (error.response?.status === 400) {
-        if (error.response?.data?.message?.includes("already enrolled")) {
-          errorMessage = "You are already enrolled in this recorded session.";
-        } else if (error.response?.data?.message?.includes("Invalid")) {
-          errorMessage =
-            "Invalid course or student information. Please refresh the page and try again.";
-        } else {
-          errorMessage = error.response?.data?.message || errorMessage;
-        }
-      } else if (error.response?.status === 404) {
-        errorMessage =
-          "Course or student not found. Please refresh the page and try again.";
-      } else if (error.response?.status === 401) {
-        errorMessage = "Please login again to enroll in recorded sessions.";
+      if (response.data.success) {
+        alert(`Course added to cart successfully!`);
+        // Refresh the page to update cart count in header
+        window.location.reload();
       }
-
-      alert(errorMessage);
-    } finally {
-      setIsEnrollingRecorded(false);
+    } catch (error: any) {
+      if (
+        error.response?.status === 400 &&
+        error.response?.data?.message?.includes("already in cart")
+      ) {
+        alert("This course is already in your cart!");
+      } else {
+        alert("Failed to add course to cart. Please try again.");
+      }
     }
   };
 
@@ -505,7 +439,7 @@ export default function CourseDetailPage({
     if (course && course._id) {
       fetchCourseRatings();
     }
-  }, [course, API_BASE]);
+  }, [course, API_BASE, resolvedParams.courseId]);
 
   // Loading state
   if (loading && !displayCourse) {
@@ -1048,14 +982,8 @@ export default function CourseDetailPage({
                       <div className="mb-2">
                         <div className="text-center mb-1">
                           <span className="text-xs font-bold text-[#3cd664] block">
-                            {course?.pricing?.recordedSession?.title?.split(
-                              "+"
-                            )[0] || "DIGITAL HUB+"}
-                          </span>
-                          <span className="text-xs font-bold text-[#3cd664] block">
-                            {course?.pricing?.recordedSession?.title?.split(
-                              "+"
-                            )[1] || "RECORDED SESSION"}
+                            {course?.pricing?.recordedSession?.title ||
+                              "DIGITAL HUB RECORDED SESSION"}
                           </span>
                         </div>
                         <div className="text-center">
@@ -1080,14 +1008,11 @@ export default function CourseDetailPage({
                       </div>
 
                       <button
-                        onClick={handleDigitalHubRecordedEnrollment}
-                        disabled={isEnrollingRecorded}
-                        className="w-full bg-[#3cd664] hover:bg-[#33bb58] text-white font-bold py-1 px-2 rounded text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={() => handleAddToCart(course._id || course.id)}
+                        className="w-full bg-[#3cd664] hover:bg-[#33bb58] text-white font-bold py-1 px-2 rounded text-xs"
                       >
-                        {isEnrollingRecorded
-                          ? "Enrolling..."
-                          : course?.pricing?.recordedSession?.buttonText ||
-                            "Add Digital Hub+"}
+                        {course?.pricing?.recordedSession?.buttonText ||
+                          "Add Digital Hub"}
                       </button>
                     </div>
 
@@ -1096,14 +1021,8 @@ export default function CourseDetailPage({
                       <div className="mb-2">
                         <div className="text-center mb-1">
                           <span className="text-xs font-bold text-blue-500 block">
-                            {course?.pricing?.liveSession?.title?.split(
-                              "+"
-                            )[0] || "DIGITAL HUB+"}
-                          </span>
-                          <span className="text-xs font-bold text-blue-500 block">
-                            {course?.pricing?.liveSession?.title?.split(
-                              "+"
-                            )[1] || "LIVE SESSION"}
+                            {course?.pricing?.liveSession?.title ||
+                              "DIGITAL HUB LIVE SESSION"}
                           </span>
                         </div>
                         <div className="text-center">
@@ -1132,14 +1051,11 @@ export default function CourseDetailPage({
                       </div>
 
                       <button
-                        onClick={handleDigitalHubPlusEnrollment}
-                        disabled={isEnrolling}
-                        className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-1 px-2 rounded text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={() => handleAddToCart(course._id || course.id)}
+                        className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-1 px-2 rounded text-xs"
                       >
-                        {isEnrolling
-                          ? "Enrolling..."
-                          : course?.pricing?.liveSession?.buttonText ||
-                            "Add Digital Hub+"}
+                        {course?.pricing?.liveSession?.buttonText ||
+                          "Add Digital Hub+"}
                       </button>
                     </div>
                   </div>
@@ -1222,6 +1138,17 @@ export default function CourseDetailPage({
       </div>
 
       <Footer />
+
+      {/* Login Modal */}
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onLoginSuccess={() => {
+          setShowLoginModal(false);
+          // Refresh student data after login
+          window.location.reload();
+        }}
+      />
     </div>
   );
 }
