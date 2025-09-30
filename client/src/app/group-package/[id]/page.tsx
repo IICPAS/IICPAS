@@ -423,7 +423,11 @@ export default function GroupPackageDetailPage({
                                               <div className="flex items-center gap-2 mb-2">
                                                 <CheckCircle className="w-4 h-4 text-[#3cd664] flex-shrink-0" />
                                                 <span className="font-medium text-sm text-gray-800">
-                                                  {chapter.title}
+                                                  {chapter.title ||
+                                                    chapter.name ||
+                                                    `Chapter ${
+                                                      chapterIndex + 1
+                                                    }`}
                                                 </span>
                                               </div>
                                               {chapter.topics &&
@@ -441,7 +445,11 @@ export default function GroupPackageDetailPage({
                                                           <div className="w-1 h-1 bg-gray-400 rounded-full flex-shrink-0"></div>
                                                           <span className="text-xs text-gray-600">
                                                             {topic.title ||
-                                                              topic}
+                                                              topic.name ||
+                                                              topic ||
+                                                              `Topic ${
+                                                                topicIndex + 1
+                                                              }`}
                                                           </span>
                                                         </div>
                                                       )

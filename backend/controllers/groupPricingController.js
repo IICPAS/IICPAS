@@ -7,7 +7,14 @@ import mongoose from "mongoose";
 export const getAllGroupPricing = async (req, res) => {
   try {
     const groupPricing = await GroupPricing.find({ status: "Active" })
-      .populate("courseIds", "title category level price chapters")
+      .populate({
+        path: "courseIds",
+        select: "title category level price",
+        populate: {
+          path: "chapters",
+          select: "title topics",
+        },
+      })
       .sort({ level: 1, createdAt: -1 });
 
     res.json(groupPricing);
@@ -25,10 +32,18 @@ export const getAllGroupPricing = async (req, res) => {
 export const getGroupPricingById = async (req, res) => {
   try {
     const { id } = req.params;
-    const groupPricing = await GroupPricing.findById(id).populate(
-      "courseIds",
-      "title category level price chapters"
-    );
+    const groupPricing = await GroupPricing.findById(id).populate({
+      path: "courseIds",
+      select: "title category level price",
+      populate: {
+        path: "chapters",
+        select: "title",
+        populate: {
+          path: "topics",
+          select: "title",
+        },
+      },
+    });
 
     if (!groupPricing) {
       return res.status(404).json({
@@ -176,10 +191,18 @@ export const createGroupPricing = async (req, res) => {
     });
 
     const savedGroupPricing = await newGroupPricing.save();
-    await savedGroupPricing.populate(
-      "courseIds",
-      "title category level price chapters"
-    );
+    await savedGroupPricing.populate({
+      path: "courseIds",
+      select: "title category level price",
+      populate: {
+        path: "chapters",
+        select: "title",
+        populate: {
+          path: "topics",
+          select: "title",
+        },
+      },
+    });
 
     // Calculate average rating from included courses
     await savedGroupPricing.calculateAverageRating();
@@ -311,10 +334,18 @@ export const updateGroupPricing = async (req, res) => {
       await updatedGroupPricing.calculateAverageRating();
       await updatedGroupPricing.save();
     }
-    await updatedGroupPricing.populate(
-      "courseIds",
-      "title category level price chapters"
-    );
+    await updatedGroupPricing.populate({
+      path: "courseIds",
+      select: "title category level price",
+      populate: {
+        path: "chapters",
+        select: "title",
+        populate: {
+          path: "topics",
+          select: "title",
+        },
+      },
+    });
 
     res.json({
       success: true,
@@ -441,10 +472,18 @@ export const enrollInGroupPackage = async (req, res) => {
     }
 
     // Check if group pricing exists
-    const groupPricing = await GroupPricing.findById(id).populate(
-      "courseIds",
-      "title category level price chapters"
-    );
+    const groupPricing = await GroupPricing.findById(id).populate({
+      path: "courseIds",
+      select: "title category level price",
+      populate: {
+        path: "chapters",
+        select: "title",
+        populate: {
+          path: "topics",
+          select: "title",
+        },
+      },
+    });
     if (!groupPricing) {
       return res.status(404).json({
         success: false,
