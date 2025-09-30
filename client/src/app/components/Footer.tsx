@@ -94,7 +94,7 @@ export default function Footer() {
       textSecondary: "text-gray-300",
     },
   });
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Initialize as false to prevent initial blinking
   const [mounted, setMounted] = useState(false);
 
   // Track component mount
@@ -201,9 +201,8 @@ export default function Footer() {
           error instanceof Error ? error.message : "Unknown error"
         );
         // Keep using default data if API fails
-      } finally {
-        setLoading(false);
       }
+      // Remove finally block to prevent loading state changes
     };
 
     fetchFooterData();

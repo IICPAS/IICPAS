@@ -18,7 +18,6 @@ export default function StudentRegisterForm() {
     phone: "",
     password: "",
     confirmPassword: "",
-    mode: "Digital Hub+Virtual",
     location: "Greater Noida",
     center: "Greater Noida",
   });
@@ -57,7 +56,6 @@ export default function StudentRegisterForm() {
       phone,
       password,
       confirmPassword,
-      mode,
       location,
       center,
     } = form;
@@ -72,7 +70,6 @@ export default function StudentRegisterForm() {
           email,
           phone,
           password,
-          mode,
           location,
           center,
         },
@@ -200,13 +197,6 @@ export default function StudentRegisterForm() {
               value={form.location}
               onChange={handleChange}
               options={["Greater Noida"]}
-            />
-            <SelectDropdown
-              label="Mode"
-              name="mode"
-              value={form.mode}
-              onChange={handleChange}
-              options={["Digital Hub+Virtual", "Digital Hub+Center"]}
             />
             <div className="md:col-span-2">
               <label className="block text-sm font-semibold text-gray-700 mb-1">

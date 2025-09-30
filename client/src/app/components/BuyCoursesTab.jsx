@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { FaSearch } from "react-icons/fa";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -11,7 +11,7 @@ import wishlistEventManager from "../../utils/wishlistEventManager";
 
 const skillLevels = ["Executive Level", "Professional Level"];
 
-export default function CoursePage() {
+export default function BuyCoursesTab() {
   const router = useRouter();
   const [allCourses, setAllCourses] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -21,6 +21,8 @@ export default function CoursePage() {
   const [student, setStudent] = useState(null);
   const [wishlistCourseIds, setWishlistCourseIds] = useState([]);
   const [loading, setLoading] = useState(false); // Initialize as false to prevent initial blinking
+  const videoRef = useRef(null);
+  const API = process.env.NEXT_PUBLIC_API_URL;
 
   // Dummy courses data
   const dummyCourses = [
@@ -189,6 +191,8 @@ export default function CoursePage() {
       console.error("Error fetching wishlist state:", error);
       // Don't show error to user for background operations
       // Just log it and continue
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -308,67 +312,123 @@ export default function CoursePage() {
     }
   };
 
+  // Auto-play video on component mount
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.play().catch((error) => {
+        console.log("Autoplay failed:", error);
+      });
+    }
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading courses...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <section className="bg-gradient-to-br from-[#f5fcfa] via-white to-[#eef7fc] min-h-screen text-[#0b1224]">
-      <div className="max-w-7xl mx-auto px-4 py-16 flex flex-col md:flex-row gap-10">
-        {/* Sidebar */}
-        <aside className="w-full md:w-1/4">
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold mb-4">Find by Course Name</h2>
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Hero Section with Video */}
+        <div className="relative mb-8 rounded-2xl overflow-hidden shadow-2xl">
+          <div className="relative h-96">
+            {/* Video Background */}
+            <video
+              ref={videoRef}
+              className="absolute inset-0 w-full h-full object-cover"
+              loop
+              muted
+              playsInline
+              autoPlay
+            >
+              <source src="/videos/homehero.mp4" type="video/mp4" />
+              <source src="/videos/homehero.webm" type="video/webm" />
+              {/* Fallback for browsers that don't support video */}
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">Buy Courses</h1>
+          <p className="text-gray-600">Discover and purchase new courses to expand your learning journey</p>
+        </div>
+
+        {/* Top Filters */}
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
+          {/* Search Bar */}
+          <div className="mb-6">
+            <h2 className="text-xl font-bold mb-4">Find by Course Name</h2>
             <div className="relative">
               <input
                 type="text"
                 placeholder="Search courses..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full border rounded-lg px-4 py-2 focus:outline-none shadow"
+                className="w-full border rounded-lg px-4 py-3 focus:outline-none shadow-sm"
               />
-              <FaSearch className="absolute right-3 top-3 text-gray-400" />
+              <FaSearch className="absolute right-3 top-3.5 text-gray-400" />
             </div>
           </div>
 
-          <div className="mb-6">
-            <h3 className="text-xl font-semibold mb-3">Categories</h3>
-            {categories.length === 0 && (
-              <div className="text-gray-400 text-sm">No categories</div>
-            )}
-            {categories.map((cat) => (
-              <label
-                key={cat._id}
-                className="flex items-center space-x-2 text-sm mb-2"
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedCategories.includes(cat.category)}
-                  onChange={() => toggleCategory(cat.category)}
-                  className="accent-green-600"
-                />
-                <span>{cat.category}</span>
-              </label>
-            ))}
-          </div>
+          {/* Categories and Skills Level - Horizontal Layout */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Categories */}
+            <div>
+              <h3 className="text-lg font-semibold mb-3">Categories</h3>
+              <div className="flex flex-wrap gap-2">
+                {categories.length === 0 && (
+                  <div className="text-gray-400 text-sm">No categories</div>
+                )}
+                {categories.map((cat) => (
+                  <label
+                    key={cat._id}
+                    className="flex items-center space-x-2 text-sm cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedCategories.includes(cat.category)}
+                      onChange={() => toggleCategory(cat.category)}
+                      className="accent-green-600"
+                    />
+                    <span>{cat.category}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
 
-          <div className="mb-6">
-            <h3 className="text-xl font-semibold mb-3">Skills Level</h3>
-            {skillLevels.map((level) => (
-              <label
-                key={level}
-                className="flex items-center space-x-2 text-sm mb-2"
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedLevels.includes(level)}
-                  onChange={() => toggleLevel(level)}
-                  className="accent-green-600"
-                />
-                <span>{level}</span>
-              </label>
-            ))}
+            {/* Skills Level */}
+            <div>
+              <h3 className="text-lg font-semibold mb-3">Skills Level</h3>
+              <div className="flex flex-wrap gap-2">
+                {skillLevels.map((level) => (
+                  <label
+                    key={level}
+                    className="flex items-center space-x-2 text-sm cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedLevels.includes(level)}
+                      onChange={() => toggleLevel(level)}
+                      className="accent-green-600"
+                    />
+                    <span>{level}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
           </div>
-        </aside>
+        </div>
 
         {/* Course Cards */}
-        <main className="w-full md:w-3/4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredCourses.length === 0 && (
             <div className="col-span-3 text-gray-500 text-center py-12">
               No courses found.
@@ -451,7 +511,6 @@ export default function CoursePage() {
                       <div className="text-sm">Course Image</div>
                     </div>
                   </div>
-
                 </div>
 
                 {/* Content Section */}
@@ -541,7 +600,7 @@ export default function CoursePage() {
               </motion.div>
             );
           })}
-        </main>
+        </div>
       </div>
     </section>
   );
