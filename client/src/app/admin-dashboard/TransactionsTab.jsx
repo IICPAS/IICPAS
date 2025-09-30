@@ -1,0 +1,549 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import axios from "axios";
+import Swal from "sweetalert2";
+import { FaEye, FaCheck, FaTimes, FaSearch, FaFilter } from "react-icons/fa";
+
+const TransactionsTab = () => {
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalTransactions, setTotalTransactions] = useState(0);
+  const [statusFilter, setStatusFilter] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+
+  useEffect(() => {
+    fetchTransactions();
+  }, [currentPage, statusFilter, searchTerm]);
+
+  const fetchTransactions = async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: "10",
+      });
+
+      if (statusFilter) {
+        params.append("status", statusFilter);
+      }
+
+      if (searchTerm) {
+        params.append("search", searchTerm);
+      }
+
+      const response = await axios.get(
+        `${API_BASE}/api/transactions/all?${params}`,
+        { withCredentials: true }
+      );
+
+      if (response.data.success) {
+        setTransactions(response.data.transactions);
+        setTotalPages(response.data.pagination.pages);
+        setTotalTransactions(response.data.pagination.total);
+      }
+    } catch (error) {
+      console.error("Error fetching transactions:", error);
+      Swal.fire({
+        title: "Error",
+        text: "Failed to fetch transactions",
+        icon: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStatusUpdate = async (transactionId, newStatus, notes = "") => {
+    try {
+      setActionLoading(true);
+      const response = await axios.patch(
+        `${API_BASE}/api/transactions/${transactionId}/status`,
+        { status: newStatus, notes },
+        { withCredentials: true }
+      );
+
+      if (response.data.success) {
+        Swal.fire({
+          title: "Success",
+          text: `Transaction ${newStatus} successfully`,
+          icon: "success",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+
+        // Refresh transactions
+        fetchTransactions();
+        setShowModal(false);
+        setSelectedTransaction(null);
+      }
+    } catch (error) {
+      console.error("Error updating transaction status:", error);
+      Swal.fire({
+        title: "Error",
+        text: "Failed to update transaction status",
+        icon: "error",
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleViewTransaction = (transaction) => {
+    setSelectedTransaction(transaction);
+    setShowModal(true);
+  };
+
+  const getStatusBadge = (status) => {
+    const statusConfig = {
+      pending: { color: "bg-yellow-100 text-yellow-800", text: "Pending" },
+      verified: { color: "bg-green-100 text-green-800", text: "Verified" },
+      rejected: { color: "bg-red-100 text-red-800", text: "Rejected" },
+    };
+
+    const config = statusConfig[status] || statusConfig.pending;
+    return (
+      <span
+        className={`px-2 py-1 rounded-full text-xs font-medium ${config.color}`}
+      >
+        {config.text}
+      </span>
+    );
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString("en-IN", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    setCurrentPage(1);
+    fetchTransactions();
+  };
+
+  const handleFilterChange = (e) => {
+    setStatusFilter(e.target.value);
+    setCurrentPage(1);
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">
+            Transaction Management
+          </h1>
+          <p className="text-gray-600">Manage and verify student payments</p>
+        </div>
+        <div className="text-sm text-gray-500">
+          Total: {totalTransactions} transactions
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white rounded-lg shadow-sm p-4">
+        <form
+          onSubmit={handleSearch}
+          className="flex flex-wrap gap-4 items-end"
+        >
+          <div className="flex-1 min-w-64">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Search
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search by UTR number or notes..."
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <FaSearch className="absolute left-3 top-3 text-gray-400" />
+            </div>
+          </div>
+
+          <div className="min-w-48">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Status Filter
+            </label>
+            <select
+              value={statusFilter}
+              onChange={handleFilterChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="verified">Verified</option>
+              <option value="rejected">Rejected</option>
+            </select>
+          </div>
+
+          <button
+            type="submit"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <FaFilter className="inline mr-2" />
+            Apply Filters
+          </button>
+        </form>
+      </div>
+
+      {/* Transactions Table */}
+      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        {loading ? (
+          <div className="p-8 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading transactions...</p>
+          </div>
+        ) : transactions.length === 0 ? (
+          <div className="p-8 text-center">
+            <p className="text-gray-500">No transactions found</p>
+          </div>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Student
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Course
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Amount
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      UTR Number
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Date
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {transactions.map((transaction) => (
+                    <tr key={transaction._id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {transaction.student?.name || "N/A"}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {transaction.student?.email || "N/A"}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">
+                          {transaction.course?.title || "N/A"}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-green-600">
+                          ₹{transaction.amount?.toLocaleString() || "N/A"}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900 font-mono">
+                          {transaction.utrNumber || "N/A"}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {getStatusBadge(transaction.status)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {formatDate(transaction.createdAt)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => handleViewTransaction(transaction)}
+                            className="text-blue-600 hover:text-blue-900"
+                            title="View Details"
+                          >
+                            <FaEye />
+                          </button>
+                          {transaction.status === "pending" && (
+                            <>
+                              <button
+                                onClick={() =>
+                                  handleStatusUpdate(
+                                    transaction._id,
+                                    "verified"
+                                  )
+                                }
+                                className="text-green-600 hover:text-green-900"
+                                title="Verify Payment"
+                                disabled={actionLoading}
+                              >
+                                <FaCheck />
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleStatusUpdate(
+                                    transaction._id,
+                                    "rejected"
+                                  )
+                                }
+                                className="text-red-600 hover:text-red-900"
+                                title="Reject Payment"
+                                disabled={actionLoading}
+                              >
+                                <FaTimes />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                <div className="flex-1 flex justify-between sm:hidden">
+                  <button
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    onClick={() =>
+                      setCurrentPage(Math.min(totalPages, currentPage + 1))
+                    }
+                    disabled={currentPage === totalPages}
+                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                </div>
+                <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm text-gray-700">
+                      Showing page{" "}
+                      <span className="font-medium">{currentPage}</span> of{" "}
+                      <span className="font-medium">{totalPages}</span>
+                    </p>
+                  </div>
+                  <div>
+                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                      <button
+                        onClick={() =>
+                          setCurrentPage(Math.max(1, currentPage - 1))
+                        }
+                        disabled={currentPage === 1}
+                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                      >
+                        Previous
+                      </button>
+                      <button
+                        onClick={() =>
+                          setCurrentPage(Math.min(totalPages, currentPage + 1))
+                        }
+                        disabled={currentPage === totalPages}
+                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                      >
+                        Next
+                      </button>
+                    </nav>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Transaction Details Modal */}
+      {showModal && selectedTransaction && (
+        <TransactionDetailsModal
+          transaction={selectedTransaction}
+          onClose={() => {
+            setShowModal(false);
+            setSelectedTransaction(null);
+          }}
+          onStatusUpdate={handleStatusUpdate}
+          actionLoading={actionLoading}
+        />
+      )}
+    </div>
+  );
+};
+
+// Transaction Details Modal Component
+const TransactionDetailsModal = ({
+  transaction,
+  onClose,
+  onStatusUpdate,
+  actionLoading,
+}) => {
+  const [notes, setNotes] = useState("");
+
+  const handleStatusUpdate = (status) => {
+    onStatusUpdate(transaction._id, status, notes);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b">
+          <h2 className="text-xl font-bold text-gray-800">
+            Transaction Details
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700 text-2xl"
+          >
+            ×
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 space-y-6">
+          {/* Transaction Info */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Student Name
+              </label>
+              <p className="text-gray-900">
+                {transaction.student?.name || "N/A"}
+              </p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Student Email
+              </label>
+              <p className="text-gray-900">
+                {transaction.student?.email || "N/A"}
+              </p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Course
+              </label>
+              <p className="text-gray-900">
+                {transaction.course?.title || "N/A"}
+              </p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Amount
+              </label>
+              <p className="font-semibold text-green-600">
+                ₹{transaction.amount?.toLocaleString() || "N/A"}
+              </p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                UTR Number
+              </label>
+              <p className="text-gray-900 font-mono">
+                {transaction.utrNumber || "N/A"}
+              </p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Status
+              </label>
+              <span
+                className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  transaction.status === "pending"
+                    ? "bg-yellow-100 text-yellow-800"
+                    : transaction.status === "verified"
+                    ? "bg-green-100 text-green-800"
+                    : "bg-red-100 text-red-800"
+                }`}
+              >
+                {transaction.status?.charAt(0).toUpperCase() +
+                  transaction.status?.slice(1) || "N/A"}
+              </span>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Created At
+              </label>
+              <p className="text-gray-900">
+                {new Date(transaction.createdAt).toLocaleString("en-IN")}
+              </p>
+            </div>
+            {transaction.verifiedBy && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Verified By
+                </label>
+                <p className="text-gray-900">
+                  {transaction.verifiedBy?.name || "N/A"}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Notes */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Notes
+            </label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Add notes for this transaction..."
+              rows={3}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          {/* Actions */}
+          {transaction.status === "pending" && (
+            <div className="flex space-x-3 pt-4 border-t">
+              <button
+                onClick={() => handleStatusUpdate("verified")}
+                disabled={actionLoading}
+                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+              >
+                {actionLoading ? "Processing..." : "Verify Payment"}
+              </button>
+              <button
+                onClick={() => handleStatusUpdate("rejected")}
+                disabled={actionLoading}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+              >
+                {actionLoading ? "Processing..." : "Reject Payment"}
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default TransactionsTab;

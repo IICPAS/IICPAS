@@ -223,6 +223,10 @@ app.use("/api/upload", UploadRoutes);
 //Payment Routes
 app.use("/api/v1/payments", paymentRoutes);
 
+//Transaction Routes
+import transactionRoutes from "./routes/transaction.js";
+app.use("/api/transactions", transactionRoutes);
+
 //Topic Routes
 app.use("/api/v1/topics-trainings", TopicTrainingRoutes);
 app.use("/api/messages", messageRoutes);

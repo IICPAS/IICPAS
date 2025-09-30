@@ -23,6 +23,7 @@ import "react-modern-drawer/dist/index.css";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import AlertMarquee from "./AlertMarquee";
+import CheckoutModal from "./CheckoutModal";
 
 const MySwal = withReactContent(Swal);
 
@@ -62,6 +63,7 @@ export default function Header() {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [cartDrawer, setCartDrawer] = useState(false);
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const [student, setStudent] = useState(null);
   const [cartCourses, setCartCourses] = useState([]);
   const [wishlistCourses, setWishlistCourses] = useState([]);
@@ -282,7 +284,8 @@ export default function Header() {
       });
       return;
     }
-    window.location.href = "/checkout";
+    // Open checkout modal instead of redirecting
+    setShowCheckoutModal(true);
   };
 
   return (
@@ -563,9 +566,23 @@ export default function Header() {
                   <div key={course._id} className="border rounded-lg p-3">
                     <div className="flex items-start gap-3">
                       <img
-                        src={course.image}
+                        src={
+                          course.image
+                            ? course.image.startsWith("http")
+                              ? course.image
+                              : course.image.startsWith("/uploads/")
+                              ? `${API}${course.image}`
+                              : course.image.startsWith("/")
+                              ? course.image
+                              : `${API}/${course.image}`
+                            : "/images/a1.jpeg"
+                        }
                         alt={course.title}
                         className="w-16 h-16 object-cover rounded"
+                        onError={(e) => {
+                          console.log("Cart image failed to load:", e);
+                          e.currentTarget.src = "/images/a1.jpeg";
+                        }}
                       />
                       <div className="flex-1">
                         <h3 className="font-medium text-sm line-clamp-2">
@@ -607,6 +624,17 @@ export default function Header() {
           )}
         </div>
       </Drawer>
+
+      {/* Checkout Modal */}
+      {showCheckoutModal && (
+        <CheckoutModal
+          isOpen={showCheckoutModal}
+          onClose={() => setShowCheckoutModal(false)}
+          cartCourses={cartCourses}
+          student={student}
+          onCartUpdate={fetchStudentAndCart}
+        />
+      )}
     </>
   );
 }

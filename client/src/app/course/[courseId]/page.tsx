@@ -260,24 +260,12 @@ export default function CourseDetailPage({
 
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
-  // Debug logging
-  console.log("Course Page API_BASE:", API_BASE);
-  console.log(
-    "Course Page NEXT_PUBLIC_API_URL:",
-    process.env.NEXT_PUBLIC_API_URL
-  );
-  console.log(
-    "Course Page NEXT_PUBLIC_API_BASE:",
-    process.env.NEXT_PUBLIC_API_BASE
-  );
-  console.log("Course data:", course);
-  console.log("Course image:", course?.image);
+  // Debug logging - removed to prevent console spam
 
   // Unwrap the params Promise using React.use()
   const resolvedParams = use(params);
 
-  console.log("Resolved params:", resolvedParams);
-  console.log("Course ID:", resolvedParams.courseId);
+  // Removed console.log to prevent re-renders
 
   // Temporary hardcoded test data to check if image display works
   const testCourse = useMemo(
@@ -292,20 +280,14 @@ export default function CourseDetailPage({
     []
   );
 
-  console.log("Test course:", testCourse);
+  // Removed console.log to prevent re-renders
 
   // Force course data for testing - bypass loading state
   const displayCourse = course || testCourse;
-  console.log("Display course:", displayCourse);
 
   // Fetch course data from API
   useEffect(() => {
-    console.log(
-      "useEffect triggered with courseId:",
-      resolvedParams.courseId,
-      "API_BASE:",
-      API_BASE
-    );
+    // Removed console.log to prevent re-renders
 
     // Set initial course data immediately to prevent blinking
     const fallbackCourse =
@@ -323,28 +305,17 @@ export default function CourseDetailPage({
     // Fetch from API in background
     const fetchCourse = async () => {
       if (!resolvedParams.courseId) {
-        console.log("No courseId found, skipping API call");
         return;
       }
 
       try {
-        console.log(
-          "Making API call to:",
-          `${API_BASE}/api/courses/${resolvedParams.courseId}`
-        );
         const response = await axios.get(
           `${API_BASE}/api/courses/${resolvedParams.courseId}`
         );
-        console.log("Course data received:", response.data);
-        console.log("Course image:", response.data.image);
         setCourse(response.data);
-      } catch (err: any) {
-        console.error("Error fetching course:", err);
-        console.error("Error details:", err.response?.data);
-        console.error("Error status:", err.response?.status);
+      } catch {
         setError("Course not found");
         // Keep existing fallback course if API fails
-        console.log("API failed, keeping fallback course");
       }
     };
 
@@ -363,8 +334,7 @@ export default function CourseDetailPage({
           }
         );
         setStudent(response.data.student);
-      } catch (err) {
-        console.error("Error checking student auth:", err);
+      } catch {
         setStudent(null);
       }
     };
@@ -422,8 +392,7 @@ export default function CourseDetailPage({
             data: [],
           });
         }
-      } catch (err) {
-        console.error("Error fetching course ratings:", err);
+      } catch {
         // Set default ratings if API fails
         setCourseRatings({
           averageRating: course?.rating || 4.7,

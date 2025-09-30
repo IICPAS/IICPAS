@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState } from "react";
-import { X, User, Mail, Lock, Phone, MapPin, Building } from "lucide-react";
+import { X, User, Mail, Lock, Phone, MapPin, Home } from "lucide-react";
 import axios from "axios";
 import toast from "react-hot-toast";
 
@@ -116,7 +117,7 @@ export default function LoginModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0  backdrop-blur-lg bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
@@ -367,7 +368,7 @@ export default function LoginModal({
                   Center
                 </label>
                 <div className="relative">
-                  <Building
+                  <Home
                     className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
                     size={18}
                   />

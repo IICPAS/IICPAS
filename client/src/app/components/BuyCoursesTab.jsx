@@ -22,7 +22,7 @@ export default function BuyCoursesTab() {
   const [wishlistCourseIds, setWishlistCourseIds] = useState([]);
   const [loading, setLoading] = useState(false); // Initialize as false to prevent initial blinking
   const videoRef = useRef(null);
-  const API = process.env.NEXT_PUBLIC_API_URL;
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
   // Dummy courses data
   const dummyCourses = [
@@ -112,14 +112,11 @@ export default function BuyCoursesTab() {
 
     // Fetch from API in background without affecting UI
     const fetchData = async () => {
-      const API_BASE =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
-
       try {
         // Fetch courses and categories in parallel
         const [coursesResponse, categoriesResponse] = await Promise.allSettled([
           axios.get(`${API_BASE}/api/courses`),
-          axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/categories`),
+          axios.get(`${API_BASE}/categories`),
         ]);
 
         // Update courses if API call succeeded
@@ -140,7 +137,7 @@ export default function BuyCoursesTab() {
           }
         }
       } catch (error) {
-        console.log("API calls failed, using dummy data");
+        // API calls failed, using dummy data
       }
     };
 
@@ -154,9 +151,6 @@ export default function BuyCoursesTab() {
     const unsubscribe = wishlistEventManager.subscribe(
       ({ studentId, courseId, action }) => {
         if (student && student._id === studentId) {
-          console.log(
-            `Wishlist ${action} event received for course ${courseId}`
-          );
           // Refresh wishlist state when other components make changes
           fetchWishlistState();
         }
@@ -172,8 +166,6 @@ export default function BuyCoursesTab() {
   // Fetch current wishlist state
   const fetchWishlistState = async () => {
     try {
-      const API_BASE =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
       const studentRes = await axios.get(
         `${API_BASE}/api/v1/students/isstudent`,
         {
@@ -194,9 +186,8 @@ export default function BuyCoursesTab() {
         setWishlistCourseIds(wishlistIds);
       }
     } catch (error) {
-      console.error("Error fetching wishlist state:", error);
       // Don't show error to user for background operations
-      // Just log it and continue
+      // Just continue silently
     } finally {
       setLoading(false);
     }
@@ -249,8 +240,6 @@ export default function BuyCoursesTab() {
         return;
       }
 
-      const API_BASE =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
       const studentId = student._id;
       const isLiked = wishlistCourseIds.includes(courseId);
 
@@ -263,9 +252,8 @@ export default function BuyCoursesTab() {
 
       if (isLiked) {
         // Remove from wishlist
-        const response = await axios.post(
-          `${API_BASE}/api/v1/students/remove-wishlist/${studentId}`,
-          { courseId },
+        const response = await axios.delete(
+          `${API_BASE}/api/v1/students/remove-from-wishlist/${studentId}/${courseId}`,
           { withCredentials: true }
         );
 
@@ -273,7 +261,7 @@ export default function BuyCoursesTab() {
       } else {
         // Add to wishlist
         const response = await axios.post(
-          `${API_BASE}/api/v1/students/add-wishlist/${studentId}`,
+          `${API_BASE}/api/v1/students/add-to-wishlist/${studentId}`,
           { courseId },
           { withCredentials: true }
         );
@@ -321,8 +309,8 @@ export default function BuyCoursesTab() {
   // Auto-play video on component mount
   useEffect(() => {
     if (videoRef.current) {
-      videoRef.current.play().catch((error) => {
-        console.log("Autoplay failed:", error);
+      videoRef.current.play().catch(() => {
+        // Autoplay failed, continue silently
       });
     }
   }, []);
@@ -495,8 +483,6 @@ export default function BuyCoursesTab() {
                       sizes="(max-width: 768px) 100vw, 33vw"
                       priority={index < 2}
                       onError={(e) => {
-                        console.log("Image failed to load:", e);
-                        console.log("Image src was:", e.currentTarget.src);
                         // Fallback to placeholder
                         e.currentTarget.style.display = "none";
                         const placeholder = e.currentTarget.nextElementSibling;
