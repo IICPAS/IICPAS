@@ -112,23 +112,29 @@ export default function BuyCoursesTab() {
 
     // Fetch from API in background without affecting UI
     const fetchData = async () => {
-      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
-      
+      const API_BASE =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+
       try {
         // Fetch courses and categories in parallel
         const [coursesResponse, categoriesResponse] = await Promise.allSettled([
           axios.get(`${API_BASE}/api/courses`),
-          axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/categories`)
+          axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/categories`),
         ]);
 
         // Update courses if API call succeeded
-        if (coursesResponse.status === 'fulfilled' && coursesResponse.value.data?.length > 0) {
+        if (
+          coursesResponse.status === "fulfilled" &&
+          coursesResponse.value.data?.length > 0
+        ) {
           setAllCourses(coursesResponse.value.data);
         }
 
         // Update categories if API call succeeded
-        if (categoriesResponse.status === 'fulfilled') {
-          const apiCategories = categoriesResponse.value.data.categories || categoriesResponse.value.data;
+        if (categoriesResponse.status === "fulfilled") {
+          const apiCategories =
+            categoriesResponse.value.data.categories ||
+            categoriesResponse.value.data;
           if (apiCategories && apiCategories.length > 0) {
             setCategories(apiCategories);
           }
@@ -358,7 +364,9 @@ export default function BuyCoursesTab() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Buy Courses</h1>
-          <p className="text-gray-600">Discover and purchase new courses to expand your learning journey</p>
+          <p className="text-gray-600">
+            Discover and purchase new courses to expand your learning journey
+          </p>
         </div>
 
         {/* Top Filters */}
@@ -476,10 +484,10 @@ export default function BuyCoursesTab() {
                         course.image.startsWith("http")
                           ? course.image
                           : course.image.startsWith("/uploads/")
-                          ? `http://localhost:8080${course.image}`
+                          ? `${API_BASE}${course.image}`
                           : course.image.startsWith("/")
                           ? course.image
-                          : `http://localhost:8080${course.image}`
+                          : `${API_BASE}${course.image}`
                       }
                       alt={course.title}
                       fill

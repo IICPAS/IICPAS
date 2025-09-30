@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import Swal from "sweetalert2";
 import wishlistEventManager from "../../utils/wishlistEventManager";
+import GroupCourseCard from "../components/GroupCourseCard";
 
 const skillLevels = ["Executive Level", "Professional Level"];
 
@@ -15,6 +16,7 @@ export default function CoursePage() {
   const router = useRouter();
   const [allCourses, setAllCourses] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [groupPricing, setGroupPricing] = useState([]);
   const [search, setSearch] = useState("");
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedLevels, setSelectedLevels] = useState([]);
@@ -22,121 +24,55 @@ export default function CoursePage() {
   const [wishlistCourseIds, setWishlistCourseIds] = useState([]);
   const [loading, setLoading] = useState(false); // Initialize as false to prevent initial blinking
 
-  // Dummy courses data
-  const dummyCourses = [
-    {
-      _id: "1",
-      title: "Basic Accounting & Tally Foundation",
-      slug: "basic-accounting-tally-foundation",
-      category: "Accounting",
-      level: "Professional Level",
-      price: 5000,
-      discount: 5,
-      image: "/images/accounting.webp",
-      description: "Master the fundamentals of accounting and Tally software",
-    },
-    {
-      _id: "2",
-      title: "HR Certification Course",
-      slug: "hr-certification-course",
-      category: "HR",
-      level: "Executive Level",
-      price: 1000,
-      discount: 10,
-      image: "/images/young-woman.jpg",
-      description: "Comprehensive HR certification with practical skills",
-    },
-    {
-      _id: "3",
-      title: "Excel Certification Course",
-      slug: "excel-certification-course",
-      category: "Accounting",
-      level: "Professional Level",
-      price: 2000,
-      discount: 0,
-      image: "/images/course.png",
-      description: "Advanced Excel skills for professionals",
-    },
-    {
-      _id: "4",
-      title: "Finance Management Course",
-      slug: "finance-management-course",
-      category: "Finance",
-      level: "Executive Level",
-      price: 3500,
-      discount: 15,
-      image: "/images/a1.jpeg",
-      description: "Complete guide to financial management and analysis",
-    },
-    {
-      _id: "5",
-      title: "US CMA Certification Prep",
-      slug: "us-cma-certification-prep",
-      category: "US CMA",
-      level: "Executive Level",
-      price: 8000,
-      discount: 8,
-      image: "/images/a2.avif",
-      description: "Prepare for US Certified Management Accountant exam",
-    },
-    {
-      _id: "6",
-      title: "Advanced Excel Mastery",
-      slug: "advanced-excel-mastery",
-      category: "Excel",
-      level: "Professional Level",
-      price: 2800,
-      discount: 12,
-      image: "/images/a3.jpeg",
-      description: "Master advanced Excel functions, macros, and data analysis",
-    },
-  ];
-
-  // Dummy categories
-  const dummyCategories = [
-    { _id: "1", category: "Accounting" },
-    { _id: "2", category: "HR" },
-    { _id: "3", category: "Finance" },
-    { _id: "4", category: "US CMA" },
-    { _id: "5", category: "Excel" },
-  ];
-
   // Fetch data
   useEffect(() => {
-    // Set initial data immediately to prevent blinking
-    setAllCourses(dummyCourses);
-    setCategories(dummyCategories);
-    setLoading(false); // Set loading to false immediately
-
-    // Fetch from API in background without affecting UI
     const fetchData = async () => {
-      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
-      
+      setLoading(true);
+      const API_BASE =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+
       try {
-        // Fetch courses and categories in parallel
-        const [coursesResponse, categoriesResponse] = await Promise.allSettled([
-          axios.get(`${API_BASE}/api/courses`),
-          axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/categories`)
-        ]);
+        // Fetch courses, categories, and group pricing in parallel
+        const [coursesResponse, categoriesResponse, groupPricingResponse] =
+          await Promise.allSettled([
+            axios.get(`${API_BASE}/api/courses`),
+            axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/categories`),
+            axios.get(`${API_BASE}/api/group-pricing`),
+          ]);
 
         // Update courses if API call succeeded
-        if (coursesResponse.status === 'fulfilled' && coursesResponse.value.data?.length > 0) {
+        if (
+          coursesResponse.status === "fulfilled" &&
+          coursesResponse.value.data?.length > 0
+        ) {
           setAllCourses(coursesResponse.value.data);
         }
 
         // Update categories if API call succeeded
-        if (categoriesResponse.status === 'fulfilled') {
-          const apiCategories = categoriesResponse.value.data.categories || categoriesResponse.value.data;
+        if (categoriesResponse.status === "fulfilled") {
+          const apiCategories =
+            categoriesResponse.value.data.categories ||
+            categoriesResponse.value.data;
           if (apiCategories && apiCategories.length > 0) {
             setCategories(apiCategories);
           }
         }
+
+        // Update group pricing if API call succeeded
+        if (
+          groupPricingResponse.status === "fulfilled" &&
+          groupPricingResponse.value.data?.length > 0
+        ) {
+          setGroupPricing(groupPricingResponse.value.data);
+        }
       } catch (error) {
-        console.log("API calls failed, using dummy data");
+        console.log("API calls failed:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    // Run API calls in background
+    // Fetch data from API
     fetchData();
 
     // Fetch wishlist state
@@ -202,6 +138,11 @@ export default function CoursePage() {
     const matchesLevel =
       selectedLevels.length === 0 || selectedLevels.includes(course.level);
     return matchesSearch && matchesCategory && matchesLevel;
+  });
+
+  // Filter group pricing based on selected levels
+  const filteredGroupPricing = groupPricing.filter((group) => {
+    return selectedLevels.length === 0 || selectedLevels.includes(group.level);
   });
 
   // Handlers
@@ -369,11 +310,22 @@ export default function CoursePage() {
 
         {/* Course Cards */}
         <main className="w-full md:w-3/4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCourses.length === 0 && (
-            <div className="col-span-3 text-gray-500 text-center py-12">
-              No courses found.
-            </div>
-          )}
+          {/* Group Pricing Cards */}
+          {filteredGroupPricing.map((group, index) => (
+            <GroupCourseCard
+              key={group._id || `group-${index}`}
+              groupPricing={group}
+              index={index}
+            />
+          ))}
+
+          {/* Individual Course Cards */}
+          {filteredCourses.length === 0 &&
+            filteredGroupPricing.length === 0 && (
+              <div className="col-span-3 text-gray-500 text-center py-12">
+                No courses found.
+              </div>
+            )}
           {filteredCourses.map((course, index) => {
             // Use recorded session pricing if available, otherwise fall back to legacy pricing
             const recordedPrice =
@@ -416,10 +368,10 @@ export default function CoursePage() {
                         course.image.startsWith("http")
                           ? course.image
                           : course.image.startsWith("/uploads/")
-                          ? `http://localhost:8080${course.image}`
+                          ? `${API_BASE}${course.image}`
                           : course.image.startsWith("/")
                           ? course.image
-                          : `http://localhost:8080${course.image}`
+                          : `${API_BASE}${course.image}`
                       }
                       alt={course.title}
                       fill
@@ -451,7 +403,6 @@ export default function CoursePage() {
                       <div className="text-sm">Course Image</div>
                     </div>
                   </div>
-
                 </div>
 
                 {/* Content Section */}
