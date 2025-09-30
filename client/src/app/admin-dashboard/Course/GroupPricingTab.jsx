@@ -34,7 +34,7 @@ import withReactContent from "sweetalert2-react-content";
 import { toast } from "react-hot-toast";
 
 const MySwal = withReactContent(Swal);
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 const GroupPricingTab = ({ onBack }) => {
   const [groupPricing, setGroupPricing] = useState([]);
@@ -64,7 +64,7 @@ const GroupPricingTab = ({ onBack }) => {
   const fetchGroupPricing = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${API_BASE}/group-pricing`);
+      const response = await axios.get(`${API_BASE}/api/group-pricing`);
       const groupPricingData = response.data || [];
 
       // Ensure courses are populated
@@ -85,7 +85,7 @@ const GroupPricingTab = ({ onBack }) => {
 
   const fetchCourses = async () => {
     try {
-      const response = await axios.get(`${API_BASE}/courses`);
+      const response = await axios.get(`${API_BASE}/api/courses`);
       setCourses(response.data || []);
     } catch (error) {
       console.error("Error fetching courses:", error);
@@ -108,9 +108,15 @@ const GroupPricingTab = ({ onBack }) => {
 
   const handleEdit = (item) => {
     setEditingItem(item);
+
+    // Extract course IDs from populated objects
+    const courseIds = (item.courseIds || []).map((course) =>
+      typeof course === "object" ? course._id : course
+    );
+
     setFormData({
       level: item.level,
-      courseIds: item.courseIds || [],
+      courseIds: courseIds,
       groupPrice: item.groupPrice.toString(),
       description: item.description || "",
       image: null,
@@ -144,7 +150,7 @@ const GroupPricingTab = ({ onBack }) => {
     if (!result.isConfirmed) return;
 
     try {
-      await axios.delete(`${API_BASE}/group-pricing/${item._id}`);
+      await axios.delete(`${API_BASE}/api/group-pricing/${item._id}`);
       toast.success("Group pricing deleted successfully!", {
         style: {
           zIndex: 9999,
@@ -180,14 +186,14 @@ const GroupPricingTab = ({ onBack }) => {
       formDataToSend.append("courseIds", JSON.stringify(formData.courseIds));
       formDataToSend.append("groupPrice", formData.groupPrice);
       formDataToSend.append("description", formData.description);
-      
+
       if (formData.image) {
         formDataToSend.append("image", formData.image);
       }
 
       if (editingItem) {
         await axios.put(
-          `${API_BASE}/group-pricing/${editingItem._id}`,
+          `${API_BASE}/api/group-pricing/${editingItem._id}`,
           formDataToSend,
           {
             headers: {
@@ -202,7 +208,7 @@ const GroupPricingTab = ({ onBack }) => {
           },
         });
       } else {
-        await axios.post(`${API_BASE}/group-pricing`, formDataToSend, {
+        await axios.post(`${API_BASE}/api/group-pricing`, formDataToSend, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
