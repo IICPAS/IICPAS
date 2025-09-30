@@ -111,7 +111,26 @@ export default function Header() {
       const allCourses = await axios.get(`${API}/api/courses`);
       const courseList = allCourses.data.courses || allCourses.data;
 
-      setCartCourses(courseList.filter((c) => cartIDs.includes(c._id)));
+      // Process cart courses to use correct pricing
+      const processedCartCourses = courseList
+        .filter((c) => cartIDs.includes(c._id))
+        .map((course) => {
+          // Use recorded session pricing if available, otherwise fall back to legacy pricing
+          const recordedPrice =
+            course.pricing?.recordedSession?.finalPrice ||
+            course.pricing?.recordedSession?.price;
+          const legacyPrice = course.price;
+
+          // Determine which pricing to use
+          const displayPrice = recordedPrice || legacyPrice;
+
+          return {
+            ...course,
+            price: displayPrice, // Override the price with the correct one
+          };
+        });
+
+      setCartCourses(processedCartCourses);
       setWishlistCourses(courseList.filter((c) => wishlistIDs.includes(c._id)));
     } catch {
       setStudent(null);
