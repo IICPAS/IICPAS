@@ -1,6 +1,6 @@
 import GroupPricing from "../models/GroupPricing.js";
 import Course from "../models/Content/Course.js";
-import Student from "../models/Student.js";
+import Student from "../models/Students.js";
 import mongoose from "mongoose";
 
 // Get all group pricing configurations
