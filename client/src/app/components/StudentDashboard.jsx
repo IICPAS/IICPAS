@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Drawer from "react-modern-drawer";
 import "react-modern-drawer/dist/index.css";
 import axios from "axios";
@@ -39,10 +39,10 @@ import TestimonialTab from "./TestimonialTab";
 export default function StudentDashboard() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [activeTab, setActiveTab] = useState("courses");
+  const [activeTab, setActiveTab] = useState("buy-courses"); // Default to Buy Courses for new students
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [student, setStudent] = useState(null);
-  const [checkingAuth, setCheckingAuth] = useState(true);
+  const [checkingAuth, setCheckingAuth] = useState(false); // Initialize as false to prevent initial blinking
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Ticket modal state
@@ -117,9 +117,8 @@ export default function StudentDashboard() {
         }
       } catch (err) {
         router.replace("/student-login");
-      } finally {
-        setCheckingAuth(false);
       }
+      // Remove finally block to prevent loading state changes
     };
     fetchStudent();
   }, [router]);
@@ -172,8 +171,8 @@ export default function StudentDashboard() {
     }
   };
 
-  // Tab rendering
-  const renderTabContent = () => {
+  // Tab rendering with memoization to prevent re-renders
+  const renderTabContent = useMemo(() => {
     switch (activeTab) {
       case "buy-courses":
         return <BuyCoursesTab />;
@@ -199,13 +198,13 @@ export default function StudentDashboard() {
         // Handle collapse action - only on desktop
         if (window.innerWidth >= 1024) {
           setSidebarCollapsed(!sidebarCollapsed);
-          setActiveTab("courses"); // Switch back to courses tab
+          setActiveTab("buy-courses"); // Switch back to buy-courses tab
         }
-        return <CoursesTab />;
+        return <BuyCoursesTab />;
       default:
-        return null;
+        return <BuyCoursesTab />;
     }
-  };
+  }, [activeTab, student, sidebarCollapsed]);
 
   const SidebarContent = () => (
     <div className="h-full flex flex-col">
@@ -385,7 +384,7 @@ export default function StudentDashboard() {
         {/* Back Button - Only show when not on courses tab */}
         
         {/* (optional: banners and prompts) */}
-        {renderTabContent()}
+        {renderTabContent}
         </div>
       </main>
 
