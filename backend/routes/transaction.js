@@ -3,14 +3,13 @@ import Transaction from "../models/Transaction.js";
 import Student from "../models/Students.js";
 import Course from "../models/Content/Course.js";
 import Admin from "../models/Admin.js";
-import { requireAuth } from "../middleware/requireAuth.js";
-import { isAdmin } from "../middleware/isAdmin.js";
+import adminAuth from "../middleware/adminAuth.js";
 import nodemailer from "nodemailer";
 
 const router = express.Router();
 
 // Create a new transaction (for students)
-router.post("/create", requireAuth, async (req, res) => {
+router.post("/create", adminAuth, async (req, res) => {
   try {
     const { courseId, amount, utrNumber, notes } = req.body;
     const studentId = req.user.id;
@@ -76,7 +75,7 @@ router.post("/create", requireAuth, async (req, res) => {
 });
 
 // Get all transactions (admin only)
-router.get("/all", requireAuth, isAdmin, async (req, res) => {
+router.get("/all", adminAuth, async (req, res) => {
   try {
     const { status, page = 1, limit = 10, search } = req.query;
 
@@ -127,7 +126,7 @@ router.get("/all", requireAuth, isAdmin, async (req, res) => {
 });
 
 // Get transaction by ID
-router.get("/:id", requireAuth, async (req, res) => {
+router.get("/:id", adminAuth, async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user.id;
@@ -168,7 +167,7 @@ router.get("/:id", requireAuth, async (req, res) => {
 });
 
 // Update transaction status (admin only)
-router.patch("/:id/status", requireAuth, isAdmin, async (req, res) => {
+router.patch("/:id/status", adminAuth, async (req, res) => {
   try {
     const { id } = req.params;
     const { status, notes } = req.body;
@@ -227,7 +226,7 @@ router.patch("/:id/status", requireAuth, isAdmin, async (req, res) => {
 });
 
 // Get student's transactions
-router.get("/student/my-transactions", requireAuth, async (req, res) => {
+router.get("/student/my-transactions", adminAuth, async (req, res) => {
   try {
     const studentId = req.user.id;
     const { page = 1, limit = 10 } = req.query;

@@ -20,10 +20,16 @@ const CheckoutModal = ({
 
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
-  const totalAmount = cartCourses.reduce(
-    (sum, course) => sum + (course.price || 0),
-    0
-  );
+  const totalAmount = cartCourses.reduce((sum, course) => {
+    // Use recorded session pricing if available, otherwise fall back to legacy pricing
+    const recordedPrice =
+      course.pricing?.recordedSession?.finalPrice ||
+      course.pricing?.recordedSession?.price;
+    const legacyPrice = course.price;
+    const displayPrice = recordedPrice || legacyPrice;
+    
+    return sum + (displayPrice || 0);
+  }, 0);
 
   const handleRemoveFromCart = async (courseId) => {
     try {
@@ -82,7 +88,14 @@ const CheckoutModal = ({
         `${API_BASE}/api/transactions/create`,
         {
           courseId: selectedCourse._id,
-          amount: selectedCourse.price || 0,
+          amount: (() => {
+            // Use recorded session pricing if available, otherwise fall back to legacy pricing
+            const recordedPrice =
+              selectedCourse.pricing?.recordedSession?.finalPrice ||
+              selectedCourse.pricing?.recordedSession?.price;
+            const legacyPrice = selectedCourse.price;
+            return recordedPrice || legacyPrice || 0;
+          })(),
           utrNumber: utrNumber.trim(),
           notes: notes.trim(),
         },
@@ -197,7 +210,15 @@ const CheckoutModal = ({
                           {course.category}
                         </p>
                         <p className="text-lg font-bold text-green-600">
-                          ₹{course.price?.toLocaleString() || "N/A"}
+                          ₹{(() => {
+                            // Use recorded session pricing if available, otherwise fall back to legacy pricing
+                            const recordedPrice =
+                              course.pricing?.recordedSession?.finalPrice ||
+                              course.pricing?.recordedSession?.price;
+                            const legacyPrice = course.price;
+                            const displayPrice = recordedPrice || legacyPrice;
+                            return displayPrice?.toLocaleString() || "N/A";
+                          })()}
                         </p>
                       </div>
 
@@ -238,7 +259,15 @@ const CheckoutModal = ({
                           {course.title}
                         </span>
                         <span className="font-medium">
-                          ₹{course.price?.toLocaleString() || "N/A"}
+                          ₹{(() => {
+                            // Use recorded session pricing if available, otherwise fall back to legacy pricing
+                            const recordedPrice =
+                              course.pricing?.recordedSession?.finalPrice ||
+                              course.pricing?.recordedSession?.price;
+                            const legacyPrice = course.price;
+                            const displayPrice = recordedPrice || legacyPrice;
+                            return displayPrice?.toLocaleString() || "N/A";
+                          })()}
                         </span>
                       </div>
                     ))}
@@ -278,7 +307,15 @@ const CheckoutModal = ({
                     {selectedCourse.title}
                   </h3>
                   <p className="text-2xl font-bold text-green-600">
-                    ₹{(selectedCourse.price || 0).toLocaleString()}
+                    ₹{(() => {
+                      // Use recorded session pricing if available, otherwise fall back to legacy pricing
+                      const recordedPrice =
+                        selectedCourse.pricing?.recordedSession?.finalPrice ||
+                        selectedCourse.pricing?.recordedSession?.price;
+                      const legacyPrice = selectedCourse.price;
+                      const displayPrice = recordedPrice || legacyPrice;
+                      return (displayPrice || 0).toLocaleString();
+                    })()}
                   </p>
                 </div>
 
@@ -298,7 +335,15 @@ const CheckoutModal = ({
                   </div>
                   <p className="text-sm text-gray-600 mt-2">
                     Scan with any UPI app to pay ₹
-                    {(selectedCourse.price || 0).toLocaleString()}
+                    {(() => {
+                      // Use recorded session pricing if available, otherwise fall back to legacy pricing
+                      const recordedPrice =
+                        selectedCourse.pricing?.recordedSession?.finalPrice ||
+                        selectedCourse.pricing?.recordedSession?.price;
+                      const legacyPrice = selectedCourse.price;
+                      const displayPrice = recordedPrice || legacyPrice;
+                      return (displayPrice || 0).toLocaleString();
+                    })()}
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
                     UPI ID: 8810380146@ptaxis
@@ -386,7 +431,15 @@ const CheckoutModal = ({
                     <li>• Scan the QR code with any UPI app</li>
                     <li>
                       • Pay the exact amount: ₹
-                      {(selectedCourse.price || 0).toLocaleString()}
+                      {(() => {
+                        // Use recorded session pricing if available, otherwise fall back to legacy pricing
+                        const recordedPrice =
+                          selectedCourse.pricing?.recordedSession?.finalPrice ||
+                          selectedCourse.pricing?.recordedSession?.price;
+                        const legacyPrice = selectedCourse.price;
+                        const displayPrice = recordedPrice || legacyPrice;
+                        return (displayPrice || 0).toLocaleString();
+                      })()}
                     </li>
                     <li>• Save the UTR number from your payment receipt</li>
                     <li>• Enter the UTR number above and submit</li>

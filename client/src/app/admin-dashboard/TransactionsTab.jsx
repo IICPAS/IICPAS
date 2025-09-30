@@ -39,9 +39,14 @@ const TransactionsTab = () => {
         params.append("search", searchTerm);
       }
 
+      const token = localStorage.getItem("adminToken");
       const response = await axios.get(
         `${API_BASE}/api/transactions/all?${params}`,
-        { withCredentials: true }
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       if (response.data.success) {
@@ -64,10 +69,15 @@ const TransactionsTab = () => {
   const handleStatusUpdate = async (transactionId, newStatus, notes = "") => {
     try {
       setActionLoading(true);
+      const token = localStorage.getItem("adminToken");
       const response = await axios.patch(
         `${API_BASE}/api/transactions/${transactionId}/status`,
         { status: newStatus, notes },
-        { withCredentials: true }
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       if (response.data.success) {
