@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /wp-admin/
+Disallow: /private/
+Disallow: /admin/
+
+Sitemap: https://iicpa.in/sitemap.xml
