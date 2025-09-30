@@ -7,6 +7,7 @@ import {
   deleteGroupPricing,
   getGroupPricingByLevel,
   getCoursesByLevel,
+  enrollInGroupPackage,
 } from "../controllers/groupPricingController.js";
 import uploadGroupPricingImage from "../middleware/groupPricingImageUpload.js";
 
@@ -17,6 +18,9 @@ router.get("/", getAllGroupPricing);
 
 // GET /api/group-pricing/:id - Get group pricing by ID
 router.get("/:id", getGroupPricingById);
+
+// POST /api/group-pricing/:id/enroll - Enroll student in group package
+router.post("/:id/enroll", enrollInGroupPackage);
 
 // POST /api/group-pricing - Create new group pricing configuration
 router.post("/", uploadGroupPricingImage.single("image"), createGroupPricing);

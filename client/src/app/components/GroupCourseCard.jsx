@@ -8,9 +8,8 @@ export default function GroupCourseCard({ groupPricing, index }) {
   const router = useRouter();
 
   const handleClick = () => {
-    // Navigate to group pricing detail page or show modal
-    console.log("Group pricing clicked:", groupPricing);
-    // For now, we'll just log it. Later we can create a group pricing detail page
+    // Navigate to group package detail page
+    router.push(`/group-package/${groupPricing._id}`);
   };
 
   return (
@@ -109,16 +108,13 @@ export default function GroupCourseCard({ groupPricing, index }) {
             <p className="text-gray-400 text-xs">Complete package price</p>
           </div>
 
-          {/* Dummy Enroll Button */}
+          {/* Enroll Button */}
           <button
             className="bg-gray-900 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
             onClick={(e) => {
               e.stopPropagation();
-              // This is a dummy button - functionality can be added later
-              console.log(
-                "Dummy enroll button clicked for group:",
-                groupPricing._id
-              );
+              // Navigate to group package detail page for enrollment
+              router.push(`/group-package/${groupPricing._id}`);
             }}
           >
             Enroll Now →
