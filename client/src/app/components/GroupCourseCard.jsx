@@ -73,7 +73,7 @@ export default function GroupCourseCard({ groupPricing, index }) {
 
         {/* Course Count Badge */}
         <div className="absolute top-3 right-3 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-          {groupPricing.courseIds?.length || 0} Courses
+          Courses: {groupPricing.courseIds?.length || 0}
         </div>
       </div>
 
@@ -96,10 +96,8 @@ export default function GroupCourseCard({ groupPricing, index }) {
 
         {/* Course Count Display */}
         <div className="flex items-center space-x-2 text-sm text-gray-600">
-          <span className="font-medium">Includes:</span>
-          <span>
-            {groupPricing.courseIds?.length || 0} comprehensive courses
-          </span>
+          <span className="font-medium">Courses:</span>
+          <span>{groupPricing.courseIds?.length || 0}</span>
         </div>
 
         {/* Price Section */}
