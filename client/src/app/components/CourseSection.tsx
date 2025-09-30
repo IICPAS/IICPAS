@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { memo } from "react";
 
 interface Course {
   _id: string;
@@ -85,95 +84,17 @@ const sampleCourses: Course[] = [
   },
 ];
 
-export default function CourseSection() {
+const CourseSection = memo(function CourseSection() {
   const router = useRouter();
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        setLoading(true);
-        const API_BASE =
-          process.env.NEXT_PUBLIC_API_BASE || "https://api.iicpa.in/api";
-        const response = await fetch(`${API_BASE}/courses`);
-
-        if (response.ok) {
-          const data = await response.json();
-          if (Array.isArray(data) && data.length > 0) {
-            const transformedCourses = data.map(
-              (course: ApiCourse): Course => ({
-                _id: course._id,
-                title: course.title?.trim() || "Untitled Course",
-                image: course.image
-                  ? course.image.startsWith("http")
-                    ? course.image
-                    : course.image.startsWith("/uploads/")
-                    ? `https://api.iicpa.in${course.image}`
-                    : `https://api.iicpa.in/${course.image}`
-                  : "/images/a1.jpeg",
-                price: course.price || 0,
-                slug:
-                  course.slug ||
-                  course.title
-                    ?.toLowerCase()
-                    .replace(/\s+/g, "-")
-                    .replace(/[^\w-]/g, "") ||
-                  "course",
-                category: course.category || "General",
-                discount: course.discount || 0,
-                status: course.status || "Active",
-                description: course.description || "",
-                createdAt: course.createdAt || new Date().toISOString(),
-                pricing: course.pricing || undefined,
-              })
-            );
-
-            const activeCourses = transformedCourses
-              .filter((c) => c.status === "Active")
-              .sort(
-                (a, b) =>
-                  new Date(b.createdAt || 0).getTime() -
-                  new Date(a.createdAt || 0).getTime()
-              );
-
-            setCourses(activeCourses);
-          } else {
-            setCourses(sampleCourses);
-          }
-        } else {
-          setCourses(sampleCourses);
-        }
-      } catch (error) {
-        console.error("Error fetching courses:", error);
-        setCourses(sampleCourses);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCourses();
-  }, []);
+  // Use static courses to prevent any blinking
+  const courses = sampleCourses;
 
   const handleEnrollNow = (course: Course) => {
     router.push(`/course/${course.slug}`);
   };
 
-  if (loading) {
-    return (
-      <section className="py-16 px-4 md:px-20 bg-[#f9fbfa]">
-        <div className="flex items-center justify-center min-h-96">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading courses...</p>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
   return (
-    <section className="py-16 px-4 md:px-20 bg-[#f9fbfa]">
+    <section className="py-16 px-4 md:px-20 bg-[#f9fbfa] min-h-[600px]">
       <div className="max-w-7xl mx-auto">
         <h2 className="text-3xl md:text-4xl font-extrabold text-center mb-12 text-gray-800">
           Our Courses Designed For{" "}
@@ -186,30 +107,14 @@ export default function CourseSection() {
           {courses.slice(0, 3).map((course) => (
             <div
               key={course._id}
-              className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
+              className="bg-white rounded-lg shadow-lg overflow-hidden min-h-[400px]"
             >
               <div className="relative h-48 w-full">
-                <Image
+                <img
                   src={course.image}
                   alt={course.title}
-                  fill
-                  className="object-cover"
-                  onError={(e) => {
-                    e.currentTarget.style.display = "none";
-                    const placeholder = e.currentTarget
-                      .nextElementSibling as HTMLElement;
-                    if (placeholder) placeholder.style.display = "flex";
-                  }}
+                  className="w-full h-full object-cover block"
                 />
-                <div
-                  className="w-full h-full items-center justify-center text-gray-400 bg-gray-200"
-                  style={{ display: "none" }}
-                >
-                  <div className="text-center">
-                    <div className="text-4xl mb-2">📚</div>
-                    <div className="text-sm">Course Image</div>
-                  </div>
-                </div>
                 <div className="absolute top-4 left-4">
                   <span className="bg-[#3cd664] text-white px-3 py-1 rounded-full text-sm font-medium">
                     {course.category}
@@ -223,52 +128,14 @@ export default function CourseSection() {
                 </h3>
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex flex-col">
-                    {(() => {
-                      // Use recorded session pricing if available, otherwise fall back to legacy pricing
-                      const recordedPrice =
-                        course.pricing?.recordedSession?.finalPrice ||
-                        course.pricing?.recordedSession?.price;
-                      const recordedDiscount =
-                        course.pricing?.recordedSession?.discount;
-                      const legacyPrice = course.price;
-                      const legacyDiscount = course.discount;
-
-                      // Determine which pricing to use
-                      const displayPrice = recordedPrice || legacyPrice;
-                      const displayDiscount =
-                        recordedDiscount || legacyDiscount;
-
-                      if (displayDiscount && displayDiscount > 0) {
-                        const originalPrice =
-                          course.pricing?.recordedSession?.price || legacyPrice;
-                        return (
-                          <>
-                            <span className="text-lg font-bold text-[#3cd664]">
-                              ₹{displayPrice.toLocaleString()}
-                            </span>
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm text-gray-500 line-through">
-                                ₹{originalPrice.toLocaleString()}
-                              </span>
-                              <span className="bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-medium">
-                                {displayDiscount}% OFF
-                              </span>
-                            </div>
-                          </>
-                        );
-                      } else {
-                        return (
-                          <span className="text-2xl font-bold text-[#3cd664]">
-                            ₹{displayPrice.toLocaleString()}
-                          </span>
-                        );
-                      }
-                    })()}
+                    <span className="text-2xl font-bold text-[#3cd664]">
+                      ₹{course.price.toLocaleString()}
+                    </span>
                   </div>
                 </div>
                 <button
                   onClick={() => handleEnrollNow(course)}
-                  className="w-full bg-[#3cd664] text-white py-3 px-4 rounded-lg font-semibold hover:bg-[#2ea54a] transition-colors duration-300"
+                  className="w-full bg-[#3cd664] text-white py-3 px-4 rounded-lg font-semibold"
                 >
                   Enroll Now
                 </button>
@@ -280,7 +147,7 @@ export default function CourseSection() {
         <div className="text-center mt-12">
           <button
             onClick={() => router.push("/course")}
-            className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-300"
+            className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold"
           >
             View All Courses ({courses.length})
           </button>
@@ -288,4 +155,6 @@ export default function CourseSection() {
       </div>
     </section>
   );
-}
+});
+
+export default CourseSection;
