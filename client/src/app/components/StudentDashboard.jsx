@@ -21,11 +21,13 @@ import {
   FaQuestionCircle,
   FaComments,
   FaBell,
+  FaShoppingCart,
 } from "react-icons/fa";
 import toast from "react-hot-toast";
 
 import CertificatesTab from "../components/CertificateTab";
 import CoursesTab from "../components/CourseTab";
+import BuyCoursesTab from "../components/BuyCoursesTab";
 import RevisionTab from "./RevisionTab";
 import TicketTab from "../components/TicketTab";
 import NewsTab from "./NewsTab";
@@ -61,6 +63,7 @@ export default function StudentDashboard() {
 
   // Sidebar tabs
   const tabs = [
+    { id: "buy-courses", icon: <FaShoppingCart />, label: "Buy Courses" },
     { id: "courses", icon: <FaBook />, label: "Courses" },
     { id: "revision", icon: <FaBook />, label: "Assessment" },
     { id: "live", icon: <FaVideo />, label: "Live Class", dot: true },
@@ -85,7 +88,7 @@ export default function StudentDashboard() {
   // Handle URL tab parameter
   useEffect(() => {
     const tab = searchParams.get("tab");
-    if (tab && ["courses", "revision", "live", "recorded", "news", "testimonial", "support", "certificates", "profile"].includes(tab)) {
+    if (tab && ["buy-courses", "courses", "revision", "live", "recorded", "news", "testimonial", "support", "certificates", "profile"].includes(tab)) {
       setActiveTab(tab);
     }
   }, [searchParams]);
@@ -172,6 +175,8 @@ export default function StudentDashboard() {
   // Tab rendering
   const renderTabContent = () => {
     switch (activeTab) {
+      case "buy-courses":
+        return <BuyCoursesTab />;
       case "courses":
         return <CoursesTab />;
       case "revision":
