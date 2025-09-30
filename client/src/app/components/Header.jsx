@@ -23,6 +23,7 @@ import "react-modern-drawer/dist/index.css";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import AlertMarquee from "./AlertMarquee";
+import CheckoutModal from "./CheckoutModal";
 
 const MySwal = withReactContent(Swal);
 
@@ -62,6 +63,7 @@ export default function Header() {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [cartDrawer, setCartDrawer] = useState(false);
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const [student, setStudent] = useState(null);
   const [cartCourses, setCartCourses] = useState([]);
   const [wishlistCourses, setWishlistCourses] = useState([]);
@@ -126,14 +128,14 @@ export default function Header() {
   // Prevent body scroll when drawer is open
   useEffect(() => {
     if (drawerOpen) {
-      document.body.classList.add('drawer-open');
+      document.body.classList.add("drawer-open");
     } else {
-      document.body.classList.remove('drawer-open');
+      document.body.classList.remove("drawer-open");
     }
-    
+
     // Cleanup on unmount
     return () => {
-      document.body.classList.remove('drawer-open');
+      document.body.classList.remove("drawer-open");
     };
   }, [drawerOpen]);
 
@@ -282,7 +284,8 @@ export default function Header() {
       });
       return;
     }
-    window.location.href = "/checkout";
+    // Open checkout modal instead of redirecting
+    setShowCheckoutModal(true);
   };
 
   return (
@@ -294,7 +297,10 @@ export default function Header() {
       >
         <div className="w-full px-2 md:px-6 py-3 flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="text-xl font-bold text-[#003057] flex-shrink-0">
+          <Link
+            href="/"
+            className="text-xl font-bold text-[#003057] flex-shrink-0"
+          >
             <img src="/images/logo.png" alt="IICPA Logo" className="h-12" />
           </Link>
 
@@ -347,6 +353,19 @@ export default function Header() {
 
           {/* Right side - Desktop Only */}
           <div className="hidden lg:flex items-center space-x-3 flex-shrink-0">
+            {/* Cart Icon - Show for all users */}
+            <button
+              onClick={() => setCartDrawer(true)}
+              className="relative p-2 text-gray-700 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors"
+            >
+              <ShoppingCart size={20} />
+              {cartCourses.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-green-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                  {cartCourses.length}
+                </span>
+              )}
+            </button>
+
             {isAdmin ? (
               <Link
                 href="/admin-dashboard"
@@ -517,7 +536,6 @@ export default function Header() {
         open={cartDrawer}
         onClose={() => setCartDrawer(false)}
         direction="right"
-        className="lg:hidden"
         size={320}
       >
         <div className="h-full bg-white flex flex-col">
@@ -536,7 +554,10 @@ export default function Header() {
           <div className="flex-1 overflow-y-auto p-4">
             {cartCourses.length === 0 ? (
               <div className="text-center py-8">
-                <ShoppingCart size={48} className="mx-auto text-gray-400 mb-4" />
+                <ShoppingCart
+                  size={48}
+                  className="mx-auto text-gray-400 mb-4"
+                />
                 <p className="text-gray-500">Your cart is empty</p>
               </div>
             ) : (
@@ -545,9 +566,23 @@ export default function Header() {
                   <div key={course._id} className="border rounded-lg p-3">
                     <div className="flex items-start gap-3">
                       <img
-                        src={course.image}
+                        src={
+                          course.image
+                            ? course.image.startsWith("http")
+                              ? course.image
+                              : course.image.startsWith("/uploads/")
+                              ? `${API}${course.image}`
+                              : course.image.startsWith("/")
+                              ? course.image
+                              : `${API}/${course.image}`
+                            : "/images/a1.jpeg"
+                        }
                         alt={course.title}
                         className="w-16 h-16 object-cover rounded"
+                        onError={(e) => {
+                          console.log("Cart image failed to load:", e);
+                          e.currentTarget.src = "/images/a1.jpeg";
+                        }}
                       />
                       <div className="flex-1">
                         <h3 className="font-medium text-sm line-clamp-2">
@@ -589,6 +624,17 @@ export default function Header() {
           )}
         </div>
       </Drawer>
+
+      {/* Checkout Modal */}
+      {showCheckoutModal && (
+        <CheckoutModal
+          isOpen={showCheckoutModal}
+          onClose={() => setShowCheckoutModal(false)}
+          cartCourses={cartCourses}
+          student={student}
+          onCartUpdate={fetchStudentAndCart}
+        />
+      )}
     </>
   );
 }

@@ -104,6 +104,7 @@ import IICPAReviewTab from "./IICPAReviewTab";
 import EditConfidentialityPolicyTab from "./EditConfidentialityPolicyTab";
 import EditDisclaimerPolicyTab from "./EditDisclaimerPolicyTab";
 import EditIICPAReviewTab from "./EditIICPAReviewTab";
+import TransactionsTab from "./TransactionsTab";
 
 // All available modules with their permissions
 const ALL_MODULES = [
@@ -118,20 +119,37 @@ const ALL_MODULES = [
   },
   { id: "enquiries", label: "Enquiries", icon: <FaEnvelope /> },
   { id: "messages", label: "Messages", icon: <FaComments /> },
-  { id: "chat-conversations", label: "Chatbot Conversations", icon: <FaComments /> },
+  {
+    id: "chat-conversations",
+    label: "Chatbot Conversations",
+    icon: <FaComments />,
+  },
   { id: "chatbot-settings", label: "Chatbot Settings", icon: <FaRobot /> },
   { id: "privacy-policy", label: "Privacy Policy", icon: <FaShieldAlt /> },
   { id: "refund-policy", label: "Refund Policy", icon: <FaShieldAlt /> },
   { id: "terms-of-service", label: "Terms of Service", icon: <FaShieldAlt /> },
-  { id: "terms-and-conditions", label: "Terms & Conditions", icon: <FaShieldAlt /> },
+  {
+    id: "terms-and-conditions",
+    label: "Terms & Conditions",
+    icon: <FaShieldAlt />,
+  },
   { id: "cookie-policy", label: "Cookie Policy", icon: <FaShieldAlt /> },
-  { id: "confidentiality-policy", label: "Confidentiality Policy", icon: <FaShieldAlt /> },
-  { id: "disclaimer-policy", label: "Disclaimer Policy", icon: <FaShieldAlt /> },
+  {
+    id: "confidentiality-policy",
+    label: "Confidentiality Policy",
+    icon: <FaShieldAlt />,
+  },
+  {
+    id: "disclaimer-policy",
+    label: "Disclaimer Policy",
+    icon: <FaShieldAlt />,
+  },
   { id: "iicpa-review", label: "IICPA Review", icon: <FaShieldAlt /> },
   { id: "jobs", label: "Jobs", icon: <FaBriefcase /> },
   { id: "news", label: "News", icon: <FaNewspaper /> },
   { id: "students", label: "Students", icon: <FaUserGraduate /> },
   { id: "payments", label: "Payments", icon: <FaCreditCard /> },
+  { id: "transactions", label: "Transactions", icon: <FaCreditCard /> },
   { id: "staff", label: "Staff Management", icon: <FaUsers /> },
   { id: "companies", label: "Companies", icon: <FaStarOfDavid /> },
   { id: "colleges", label: "Colleges", icon: <FaUniversity /> },
@@ -246,7 +264,7 @@ function AdminDashboardContent() {
           </div>
         </div>
         {/* User Info */}
-        <div 
+        <div
           className="text-center mb-4 p-3 bg-blue-50 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors"
           onClick={() => {
             setActiveTab("profile");
@@ -257,16 +275,22 @@ function AdminDashboardContent() {
             <div className="w-10 h-10 rounded-full overflow-hidden bg-blue-600 flex items-center justify-center">
               {user?.image ? (
                 <img
-                  src={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}${user.image}`}
+                  src={`${
+                    process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"
+                  }${user.image}`}
                   alt="Profile"
                   className="w-full h-full object-cover"
                   onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.nextElementSibling.style.display = 'flex';
+                    e.target.style.display = "none";
+                    e.target.nextElementSibling.style.display = "flex";
                   }}
                 />
               ) : null}
-              <div className={`w-full h-full flex items-center justify-center ${user?.image ? 'hidden' : ''}`}>
+              <div
+                className={`w-full h-full flex items-center justify-center ${
+                  user?.image ? "hidden" : ""
+                }`}
+              >
                 <FaUser size={16} className="text-white" />
               </div>
             </div>
@@ -508,6 +532,8 @@ function AdminDashboardContent() {
           <StudentsTab />
         ) : activeTab === "payments" ? (
           <PaymentsTab />
+        ) : activeTab === "transactions" ? (
+          <TransactionsTab />
         ) : activeTab === "jobs" ? (
           <JobsAdminPanel />
         ) : activeTab === "staff" ? (
@@ -549,58 +575,90 @@ function AdminDashboardContent() {
         ) : activeTab === "chatbot-settings" ? (
           <ChatbotSettingsTab />
         ) : activeTab === "privacy-policy" ? (
-          <PrivacyPolicyTab onEditPolicy={(policyId) => setActiveTab(`edit-privacy-policy-${policyId}`)} />
+          <PrivacyPolicyTab
+            onEditPolicy={(policyId) =>
+              setActiveTab(`edit-privacy-policy-${policyId}`)
+            }
+          />
         ) : activeTab.startsWith("edit-privacy-policy") ? (
-          <EditPrivacyPolicyTab 
-            onBack={() => setActiveTab("privacy-policy")} 
+          <EditPrivacyPolicyTab
+            onBack={() => setActiveTab("privacy-policy")}
             policyId={activeTab.replace("edit-privacy-policy-", "")}
           />
         ) : activeTab === "refund-policy" ? (
-          <RefundPolicyTab onEditPolicy={(policyId) => setActiveTab(`edit-refund-policy-${policyId}`)} />
+          <RefundPolicyTab
+            onEditPolicy={(policyId) =>
+              setActiveTab(`edit-refund-policy-${policyId}`)
+            }
+          />
         ) : activeTab.startsWith("edit-refund-policy") ? (
-          <EditRefundPolicyTab 
+          <EditRefundPolicyTab
             onBack={() => setActiveTab("refund-policy")}
             policyId={activeTab.replace("edit-refund-policy-", "")}
           />
         ) : activeTab === "terms-of-service" ? (
-          <TermsOfServiceTab onEditPolicy={(policyId) => setActiveTab(`edit-terms-of-service-${policyId}`)} />
+          <TermsOfServiceTab
+            onEditPolicy={(policyId) =>
+              setActiveTab(`edit-terms-of-service-${policyId}`)
+            }
+          />
         ) : activeTab.startsWith("edit-terms-of-service") ? (
-          <EditTermsOfServiceTab 
+          <EditTermsOfServiceTab
             onBack={() => setActiveTab("terms-of-service")}
             policyId={activeTab.replace("edit-terms-of-service-", "")}
           />
         ) : activeTab === "terms-and-conditions" ? (
-          <TermsAndConditionsTab onEditPolicy={(policyId) => setActiveTab(`edit-terms-and-conditions-${policyId}`)} />
+          <TermsAndConditionsTab
+            onEditPolicy={(policyId) =>
+              setActiveTab(`edit-terms-and-conditions-${policyId}`)
+            }
+          />
         ) : activeTab.startsWith("edit-terms-and-conditions") ? (
-          <EditTermsAndConditionsTab 
+          <EditTermsAndConditionsTab
             onBack={() => setActiveTab("terms-and-conditions")}
             policyId={activeTab.replace("edit-terms-and-conditions-", "")}
           />
         ) : activeTab === "cookie-policy" ? (
-          <CookiePolicyTab onEditPolicy={(policyId) => setActiveTab(`edit-cookie-policy-${policyId}`)} />
+          <CookiePolicyTab
+            onEditPolicy={(policyId) =>
+              setActiveTab(`edit-cookie-policy-${policyId}`)
+            }
+          />
         ) : activeTab.startsWith("edit-cookie-policy") ? (
-          <EditCookiePolicyTab 
+          <EditCookiePolicyTab
             onBack={() => setActiveTab("cookie-policy")}
             policyId={activeTab.replace("edit-cookie-policy-", "")}
           />
         ) : activeTab === "confidentiality-policy" ? (
-          <ConfidentialityPolicyTab onEditPolicy={(policyId) => setActiveTab(`edit-confidentiality-policy-${policyId}`)} />
+          <ConfidentialityPolicyTab
+            onEditPolicy={(policyId) =>
+              setActiveTab(`edit-confidentiality-policy-${policyId}`)
+            }
+          />
         ) : activeTab.startsWith("edit-confidentiality-policy") ? (
-          <EditConfidentialityPolicyTab 
+          <EditConfidentialityPolicyTab
             onBack={() => setActiveTab("confidentiality-policy")}
             policyId={activeTab.replace("edit-confidentiality-policy-", "")}
           />
         ) : activeTab === "disclaimer-policy" ? (
-          <DisclaimerPolicyTab onEditPolicy={(policyId) => setActiveTab(`edit-disclaimer-policy-${policyId}`)} />
+          <DisclaimerPolicyTab
+            onEditPolicy={(policyId) =>
+              setActiveTab(`edit-disclaimer-policy-${policyId}`)
+            }
+          />
         ) : activeTab.startsWith("edit-disclaimer-policy") ? (
-          <EditDisclaimerPolicyTab 
+          <EditDisclaimerPolicyTab
             onBack={() => setActiveTab("disclaimer-policy")}
             policyId={activeTab.replace("edit-disclaimer-policy-", "")}
           />
         ) : activeTab === "iicpa-review" ? (
-          <IICPAReviewTab onEditReview={(reviewId) => setActiveTab(`edit-iicpa-review-${reviewId}`)} />
+          <IICPAReviewTab
+            onEditReview={(reviewId) =>
+              setActiveTab(`edit-iicpa-review-${reviewId}`)
+            }
+          />
         ) : activeTab.startsWith("edit-iicpa-review") ? (
-          <EditIICPAReviewTab 
+          <EditIICPAReviewTab
             onBack={() => setActiveTab("iicpa-review")}
             reviewId={activeTab.replace("edit-iicpa-review-", "")}
           />

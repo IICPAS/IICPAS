@@ -80,7 +80,11 @@ export default function StudentDashboard() {
     },
     {
       id: "collapse",
-      icon: <span className="font-bold text-lg">{sidebarCollapsed ? "⟶" : "⟵"}</span>,
+      icon: (
+        <span className="font-bold text-lg">
+          {sidebarCollapsed ? "⟶" : "⟵"}
+        </span>
+      ),
       label: sidebarCollapsed ? "Expand" : "Collapse",
     },
   ];
@@ -88,7 +92,21 @@ export default function StudentDashboard() {
   // Handle URL tab parameter
   useEffect(() => {
     const tab = searchParams.get("tab");
-    if (tab && ["buy-courses", "courses", "revision", "live", "recorded", "news", "testimonial", "support", "certificates", "profile"].includes(tab)) {
+    if (
+      tab &&
+      [
+        "buy-courses",
+        "courses",
+        "revision",
+        "live",
+        "recorded",
+        "news",
+        "testimonial",
+        "support",
+        "certificates",
+        "profile",
+      ].includes(tab)
+    ) {
       setActiveTab(tab);
     }
   }, [searchParams]);
@@ -157,13 +175,15 @@ export default function StudentDashboard() {
     }
   };
 
-
   // Handle logout
   const handleLogout = async () => {
     try {
-      await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/students/logout`, {
-        withCredentials: true,
-      });
+      await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/students/logout`,
+        {
+          withCredentials: true,
+        }
+      );
       router.push("/student-login");
     } catch (err) {
       console.error("Logout error", err);
@@ -196,7 +216,7 @@ export default function StudentDashboard() {
         return <CertificatesTab />;
       case "collapse":
         // Handle collapse action - only on desktop
-        if (window.innerWidth >= 1024) {
+        if (typeof window !== "undefined" && window.innerWidth >= 1024) {
           setSidebarCollapsed(!sidebarCollapsed);
           setActiveTab("buy-courses"); // Switch back to buy-courses tab
         }
@@ -208,20 +228,34 @@ export default function StudentDashboard() {
 
   const SidebarContent = () => (
     <div className="h-full flex flex-col">
-      <div className={`${sidebarCollapsed ? 'p-2' : 'p-6 pb-4'} transition-all duration-300`}>
-        <div className={`flex items-center justify-center ${sidebarCollapsed ? 'mb-4' : 'mb-6'}`}>
-          <div className={`bg-white ${sidebarCollapsed ? 'p-2' : 'p-3'} rounded-lg shadow-lg`}>
+      <div
+        className={`${
+          sidebarCollapsed ? "p-2" : "p-6 pb-4"
+        } transition-all duration-300`}
+      >
+        <div
+          className={`flex items-center justify-center ${
+            sidebarCollapsed ? "mb-4" : "mb-6"
+          }`}
+        >
+          <div
+            className={`bg-white ${
+              sidebarCollapsed ? "p-2" : "p-3"
+            } rounded-lg shadow-lg`}
+          >
             <img
               src="/images/logo.png"
               alt="IICPA Institute"
-              className={`${sidebarCollapsed ? 'h-8' : 'h-12'} w-auto object-contain`}
+              className={`${
+                sidebarCollapsed ? "h-8" : "h-12"
+              } w-auto object-contain`}
             />
           </div>
         </div>
         {/* User Info */}
         {student && !sidebarCollapsed && (
           <div className="text-center mb-4 p-3 bg-blue-50 rounded-lg">
-            <div 
+            <div
               onClick={() => setActiveTab("profile")}
               className="cursor-pointer hover:bg-blue-100 p-2 rounded-md transition-colors duration-200"
             >
@@ -233,13 +267,20 @@ export default function StudentDashboard() {
                       alt="Profile"
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        console.log("Sidebar profile image failed to load:", `${API}/${student.image}`);
-                        e.target.style.display = 'none';
-                        e.target.nextElementSibling.style.display = 'flex';
+                        console.log(
+                          "Sidebar profile image failed to load:",
+                          `${API}/${student.image}`
+                        );
+                        e.target.style.display = "none";
+                        e.target.nextElementSibling.style.display = "flex";
                       }}
                     />
                   ) : null}
-                  <div className={`w-full h-full flex items-center justify-center ${student.image ? 'hidden' : ''}`}>
+                  <div
+                    className={`w-full h-full flex items-center justify-center ${
+                      student.image ? "hidden" : ""
+                    }`}
+                  >
                     <FaUser size={16} className="text-white" />
                   </div>
                 </div>
@@ -252,7 +293,7 @@ export default function StudentDashboard() {
         {/* Collapsed user profile */}
         {student && sidebarCollapsed && (
           <div className="flex justify-center mb-4">
-            <div 
+            <div
               onClick={() => setActiveTab("profile")}
               className="cursor-pointer hover:bg-blue-100 p-2 rounded-full transition-colors duration-200"
             >
@@ -263,13 +304,20 @@ export default function StudentDashboard() {
                     alt="Profile"
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      console.log("Sidebar profile image failed to load:", `${API}`);
-                      e.target.style.display = 'none';
-                      e.target.nextElementSibling.style.display = 'flex';
+                      console.log(
+                        "Sidebar profile image failed to load:",
+                        `${API}`
+                      );
+                      e.target.style.display = "none";
+                      e.target.nextElementSibling.style.display = "flex";
                     }}
                   />
                 ) : null}
-                <div className={`w-full h-full flex items-center justify-center ${student.image ? 'hidden' : ''}`}>
+                <div
+                  className={`w-full h-full flex items-center justify-center ${
+                    student.image ? "hidden" : ""
+                  }`}
+                >
                   <FaUser size={14} className="text-white" />
                 </div>
               </div>
@@ -277,9 +325,16 @@ export default function StudentDashboard() {
           </div>
         )}
       </div>
-      <nav className={`flex-1 overflow-y-auto ${sidebarCollapsed ? 'px-1' : 'px-3'} custom-scrollbar`}>
+      <nav
+        className={`flex-1 overflow-y-auto ${
+          sidebarCollapsed ? "px-1" : "px-3"
+        } custom-scrollbar`}
+      >
         {tabs.map((tab) => (
-          <div key={tab.id} className={tab.id === "collapse" ? "hidden lg:block" : ""}>
+          <div
+            key={tab.id}
+            className={tab.id === "collapse" ? "hidden lg:block" : ""}
+          >
             <NavItem
               icon={tab.icon}
               label={sidebarCollapsed ? "" : tab.label}
@@ -307,7 +362,11 @@ export default function StudentDashboard() {
   }
 
   return (
-    <div className={`bg-gray-50 min-h-screen sidebar-layout ${sidebarCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded'}`}>
+    <div
+      className={`bg-gray-50 min-h-screen sidebar-layout ${
+        sidebarCollapsed ? "sidebar-collapsed" : "sidebar-expanded"
+      }`}
+    >
       {/* Desktop Sidebar */}
       <aside
         className={`hidden lg:block ${
@@ -348,7 +407,7 @@ export default function StudentDashboard() {
             />
             <div className="flex items-center gap-2 md:gap-3 ml-4">
               {/* Mobile logout button */}
-              <button 
+              <button
                 onClick={handleLogout}
                 className="md:hidden p-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
                 title="Logout"
@@ -366,7 +425,7 @@ export default function StudentDashboard() {
                 <div className="bg-yellow-400 px-3 py-1 rounded-full font-semibold">
                   50
                 </div>
-                <button 
+                <button
                   onClick={handleLogout}
                   className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors font-medium"
                 >
@@ -377,14 +436,13 @@ export default function StudentDashboard() {
             </div>
           </div>
         </div>
-        
+
         {/* Scrollable Content */}
         <div className="p-2 md:p-3">
-        
-        {/* Back Button - Only show when not on courses tab */}
-        
-        {/* (optional: banners and prompts) */}
-        {renderTabContent}
+          {/* Back Button - Only show when not on courses tab */}
+
+          {/* (optional: banners and prompts) */}
+          {renderTabContent}
         </div>
       </main>
 
@@ -506,9 +564,9 @@ function NavItem({
   return (
     <button
       onClick={onClick}
-      className={`flex items-center ${
-        collapsed ? "justify-center" : "gap-3"
-      } ${collapsed ? 'px-2 py-3' : 'px-4 py-3'} rounded-lg w-full text-left mb-2 transition-all duration-200 group relative ${
+      className={`flex items-center ${collapsed ? "justify-center" : "gap-3"} ${
+        collapsed ? "px-2 py-3" : "px-4 py-3"
+      } rounded-lg w-full text-left mb-2 transition-all duration-200 group relative ${
         active
           ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-md"
           : "hover:bg-blue-50 text-gray-700 hover:text-blue-700"
@@ -516,7 +574,7 @@ function NavItem({
       title={collapsed ? label : ""}
     >
       <span
-        className={`${collapsed ? 'text-xl' : 'text-lg'} relative ${
+        className={`${collapsed ? "text-xl" : "text-lg"} relative ${
           active ? "text-white" : "text-blue-500"
         }`}
       >
