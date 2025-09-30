@@ -19,10 +19,23 @@ const StudentSchema = new mongoose.Schema(
     ],
 
     course: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],
-    cart: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],
+    cart: [
+      {
+        courseId: { type: mongoose.Schema.Types.ObjectId, ref: "Course" },
+        sessionType: {
+          type: String,
+          enum: ["recorded", "live"],
+          required: true,
+        },
+      },
+    ],
     wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],
-    enrolledLiveSessions: [{ type: mongoose.Schema.Types.ObjectId, ref: "LiveSession" }],
-    enrolledRecordedSessions: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],
+    enrolledLiveSessions: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "LiveSession" },
+    ],
+    enrolledRecordedSessions: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "Course" },
+    ],
     otp: { type: String },
     otpExpiry: { type: Date },
   },

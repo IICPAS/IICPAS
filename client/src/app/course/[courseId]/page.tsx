@@ -270,6 +270,8 @@ export default function CourseDetailPage({
   // Temporary hardcoded test data to check if image display works
   const testCourse = useMemo(
     () => ({
+      _id: "68d7eab196f732ef361fd287", // Real course ID from database
+      id: "68d7eab196f732ef361fd287",
       title: "Basic Accounting & Tally Foundation",
       image: "/uploads/1758703607767-656204190.webp",
       pricing: {
@@ -342,7 +344,10 @@ export default function CourseDetailPage({
   }, [API_BASE]);
 
   // Handle adding course to cart
-  const handleAddToCart = async (courseId: string) => {
+  const handleAddToCart = async (
+    courseId: string,
+    sessionType: "recorded" | "live"
+  ) => {
     if (!student) {
       setShowLoginModal(true);
       return;
@@ -351,21 +356,21 @@ export default function CourseDetailPage({
     try {
       const response = await axios.post(
         `${API_BASE}/api/v1/students/add-to-cart/${student._id}`,
-        { courseId },
+        { courseId, sessionType },
         { withCredentials: true }
       );
 
-      if (response.data.success) {
+      if (response.data.message) {
         alert(`Course added to cart successfully!`);
-        // Refresh the page to update cart count in header
-        window.location.reload();
+        // Trigger a custom event to update cart in header
+        window.dispatchEvent(new CustomEvent("cartUpdated"));
       }
     } catch (error: any) {
       if (
         error.response?.status === 400 &&
         error.response?.data?.message?.includes("already in cart")
       ) {
-        alert("This course is already in your cart!");
+        alert("This course with this session type is already in your cart!");
       } else {
         alert("Failed to add course to cart. Please try again.");
       }
@@ -637,35 +642,38 @@ export default function CourseDetailPage({
                   {course.title}
                 </h1>
 
-                {/* Rating - Show if available */}
-                {(courseRatings?.averageRating ||
-                  courseRatings?.totalRatings) && (
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="flex items-center">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`w-5 h-5 ${
-                            i < Math.floor(courseRatings?.averageRating || 0)
-                              ? "text-yellow-400 fill-current"
-                              : "text-gray-300"
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    <span className="text-sm font-bold text-gray-900">
-                      {courseRatings?.averageRating || 0}
-                    </span>
-                    <span className="text-xs text-gray-600">
-                      [{courseRatings?.totalRatings || 0}]
-                    </span>
-                    {ratingsLoading && (
-                      <span className="text-sm text-gray-500">
-                        Loading ratings...
-                      </span>
-                    )}
+                {/* Rating - Always show stars with proper rating */}
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="flex items-center">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`w-5 h-5 ${
+                          i <
+                          Math.floor(
+                            courseRatings?.averageRating ||
+                              course?.rating ||
+                              4.7
+                          )
+                            ? "text-yellow-400 fill-current"
+                            : "text-gray-300"
+                        }`}
+                      />
+                    ))}
                   </div>
-                )}
+                  <span className="text-sm font-bold text-gray-900">
+                    {courseRatings?.averageRating || course?.rating || 4.7}
+                  </span>
+                  <span className="text-xs text-gray-600">
+                    ({courseRatings?.totalRatings || course?.reviewCount || 449}{" "}
+                    reviews)
+                  </span>
+                  {ratingsLoading && (
+                    <span className="text-sm text-gray-500">
+                      Loading ratings...
+                    </span>
+                  )}
+                </div>
 
                 {/* Description */}
                 <div
@@ -977,7 +985,9 @@ export default function CourseDetailPage({
                       </div>
 
                       <button
-                        onClick={() => handleAddToCart(course._id || course.id)}
+                        onClick={() =>
+                          handleAddToCart(course._id || course.id, "recorded")
+                        }
                         className="w-full bg-[#3cd664] hover:bg-[#33bb58] text-white font-bold py-1 px-2 rounded text-xs"
                       >
                         {course?.pricing?.recordedSession?.buttonText ||
@@ -1020,7 +1030,9 @@ export default function CourseDetailPage({
                       </div>
 
                       <button
-                        onClick={() => handleAddToCart(course._id || course.id)}
+                        onClick={() =>
+                          handleAddToCart(course._id || course.id, "live")
+                        }
                         className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-1 px-2 rounded text-xs"
                       >
                         {course?.pricing?.liveSession?.buttonText ||

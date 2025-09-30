@@ -100,7 +100,7 @@ export default function Header() {
         `${API}/api/v1/students/get-cart/${studentData._id}`,
         { withCredentials: true }
       );
-      const cartIDs = cartRes.data.cart || [];
+      const cartItems = cartRes.data.cart || [];
 
       const wishlistRes = await axios.get(
         `${API}/api/v1/students/get-wishlist/${studentData._id}`,
@@ -111,24 +111,54 @@ export default function Header() {
       const allCourses = await axios.get(`${API}/api/courses`);
       const courseList = allCourses.data.courses || allCourses.data;
 
-      // Process cart courses to use correct pricing
-      const processedCartCourses = courseList
-        .filter((c) => cartIDs.includes(c._id))
-        .map((course) => {
-          // Use recorded session pricing if available, otherwise fall back to legacy pricing
-          const recordedPrice =
-            course.pricing?.recordedSession?.finalPrice ||
-            course.pricing?.recordedSession?.price;
-          const legacyPrice = course.price;
+      // Process cart courses to use correct pricing and handle new cart structure
+      const processedCartCourses = cartItems
+        .map((cartItem) => {
+          // Handle both old and new cart structure
+          let courseId, sessionType;
 
-          // Determine which pricing to use
-          const displayPrice = recordedPrice || legacyPrice;
+          if (
+            typeof cartItem === "string" ||
+            (typeof cartItem === "object" && cartItem._id)
+          ) {
+            // Old format: just courseId or course object
+            courseId = cartItem._id || cartItem;
+            sessionType = "recorded"; // Default to recorded for old format
+          } else if (cartItem.courseId) {
+            // New format: { courseId, sessionType }
+            courseId = cartItem.courseId;
+            sessionType = cartItem.sessionType || "recorded";
+          } else {
+            return null;
+          }
+
+          const course = courseList.find((c) => c._id === courseId);
+          if (!course) return null;
+
+          // Get pricing based on session type
+          let displayPrice = 0;
+          if (sessionType === "recorded") {
+            displayPrice =
+              course.pricing?.recordedSession?.finalPrice ||
+              course.pricing?.recordedSession?.price ||
+              course.price ||
+              0;
+          } else if (sessionType === "live") {
+            displayPrice =
+              course.pricing?.liveSession?.finalPrice ||
+              course.pricing?.liveSession?.price ||
+              course.price *
+                (course?.pricing?.liveSession?.priceMultiplier || 1.5) ||
+              0;
+          }
 
           return {
             ...course,
+            sessionType,
             price: displayPrice, // Override the price with the correct one
           };
-        });
+        })
+        .filter(Boolean); // Remove null entries
 
       setCartCourses(processedCartCourses);
       setWishlistCourses(courseList.filter((c) => wishlistIDs.includes(c._id)));
@@ -142,6 +172,18 @@ export default function Header() {
   useEffect(() => {
     setIsClient(true);
     fetchStudentAndCart();
+  }, []);
+
+  // Listen for cart update events
+  useEffect(() => {
+    const handleCartUpdate = () => {
+      fetchStudentAndCart();
+    };
+
+    window.addEventListener("cartUpdated", handleCartUpdate);
+    return () => {
+      window.removeEventListener("cartUpdated", handleCartUpdate);
+    };
   }, []);
 
   // Prevent body scroll when drawer is open
@@ -184,7 +226,7 @@ export default function Header() {
     }
   };
 
-  const handleBuyNow = async (courseId) => {
+  const handleBuyNow = async (courseId, sessionType = "recorded") => {
     if (!student) {
       window.location.href = "/student-login";
       return;
@@ -192,10 +234,10 @@ export default function Header() {
     try {
       const response = await axios.post(
         `${API}/api/v1/students/add-to-cart/${student._id}`,
-        { courseId },
+        { courseId, sessionType },
         { withCredentials: true }
       );
-      if (response.data.success) {
+      if (response.data.message) {
         MySwal.fire({
           title: "Added to Cart!",
           text: "Course added to cart successfully",
@@ -214,13 +256,14 @@ export default function Header() {
     }
   };
 
-  const handleRemoveFromCart = async (courseId) => {
+  const handleRemoveFromCart = async (courseId, sessionType = "recorded") => {
     try {
-      const response = await axios.delete(
-        `${API}/api/v1/students/remove-from-cart/${student._id}/${courseId}`,
+      const response = await axios.post(
+        `${API}/api/v1/students/remove-cart/${student._id}`,
+        { courseId, sessionType },
         { withCredentials: true }
       );
-      if (response.data.success) {
+      if (response.data.message) {
         MySwal.fire({
           title: "Removed!",
           text: "Course removed from cart",
@@ -612,7 +655,9 @@ export default function Header() {
                         </p>
                       </div>
                       <button
-                        onClick={() => handleRemoveFromCart(course._id)}
+                        onClick={() =>
+                          handleRemoveFromCart(course._id, course.sessionType)
+                        }
                         className="p-1 hover:bg-gray-100 rounded"
                       >
                         <Trash2 size={16} className="text-red-500" />

@@ -5,7 +5,10 @@ import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import uploadStudentImage from "../middleware/studentImageUpload.js";
 import isStudent from "../middleware/isStudent.js";
-import { deleteStudent, updateStudentStatus } from "../controllers/studentController.js";
+import {
+  deleteStudent,
+  updateStudentStatus,
+} from "../controllers/studentController.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { isAdmin } from "../middleware/isAdmin.js";
 
@@ -62,22 +65,22 @@ router.post("/register", async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     const students = await Student.find({})
-      .populate('course', 'title')
-      .populate('enrolledLiveSessions', 'title')
-      .populate('enrolledRecordedSessions', 'title')
-      .select('-password -otp -otpExpiry')
+      .populate("course", "title")
+      .populate("enrolledLiveSessions", "title")
+      .populate("enrolledRecordedSessions", "title")
+      .select("-password -otp -otpExpiry")
       .sort({ createdAt: -1 });
 
-    res.json({ 
-      message: "Students retrieved successfully", 
+    res.json({
+      message: "Students retrieved successfully",
       students,
-      count: students.length 
+      count: students.length,
     });
   } catch (err) {
     console.error("Error fetching students:", err);
-    res.status(500).json({ 
-      message: "Failed to fetch students", 
-      error: err.message 
+    res.status(500).json({
+      message: "Failed to fetch students",
+      error: err.message,
     });
   }
 });
@@ -123,7 +126,10 @@ router.get("/isstudent", async (req, res) => {
   if (!token) return res.status(401).json({ student: null });
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "default_jwt_secret_for_development");
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || "default_jwt_secret_for_development"
+    );
     const student = await Student.findById(decoded.id);
     if (!student) return res.status(404).json({ student: null });
 
@@ -313,11 +319,13 @@ router.post("/verify-buy/:id", async (req, res) => {
     }
 
     // Check if this course has live sessions and enroll student
-    const LiveSession = (await import("../../models/LiveSession/LiveSession.js")).default;
-    const courseLiveSessions = await LiveSession.find({ 
-      category: course.category || "CA Foundation" 
+    const LiveSession = (
+      await import("../../models/LiveSession/LiveSession.js")
+    ).default;
+    const courseLiveSessions = await LiveSession.find({
+      category: course.category || "CA Foundation",
     });
-    
+
     // Enroll student in all live sessions for this course category
     for (const session of courseLiveSessions) {
       if (!student.enrolledLiveSessions.includes(session._id)) {
@@ -505,115 +513,129 @@ router.post("/ticket/:id", async (req, res) => {
 });
 
 // Profile update route with image upload support
-router.put("/profile", uploadStudentImage.single("profileImage"), async (req, res) => {
-  try {
-    console.log("Profile update request received");
-    console.log("Request body:", req.body);
-    console.log("Request file:", req.file);
-    console.log("Request cookies:", req.cookies);
+router.put(
+  "/profile",
+  uploadStudentImage.single("profileImage"),
+  async (req, res) => {
+    try {
+      console.log("Profile update request received");
+      console.log("Request body:", req.body);
+      console.log("Request file:", req.file);
+      console.log("Request cookies:", req.cookies);
 
-    const token = req.cookies.token;
-    if (!token) {
-      console.log("No token found in cookies");
-      return res.status(401).json({ message: "Unauthorized - No token found" });
-    }
-
-    console.log("Token found, verifying...");
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "default_jwt_secret_for_development");
-    console.log("Token decoded:", decoded);
-
-    const student = await Student.findById(decoded.id);
-    if (!student) {
-      console.log("Student not found with ID:", decoded.id);
-      return res.status(404).json({ message: "Student not found" });
-    }
-
-    console.log("Student found:", student.name);
-
-    // Handle image upload
-    if (req.file) {
-      console.log("Image file received:", req.file.filename);
-      student.image = req.file.path;
-    } else {
-      console.log("No image file in request");
-    }
-
-    await student.save();
-    console.log("Student saved successfully");
-
-    res.json({ 
-      message: "Profile updated successfully", 
-      student: {
-        id: student._id,
-        name: student.name,
-        email: student.email,
-        phone: student.phone,
-        image: student.image,
-        mode: student.mode,
-        location: student.location,
-        center: student.center
+      const token = req.cookies.token;
+      if (!token) {
+        console.log("No token found in cookies");
+        return res
+          .status(401)
+          .json({ message: "Unauthorized - No token found" });
       }
-    });
-  } catch (err) {
-    console.error("Profile update error:", err);
-    res.status(500).json({ message: "Update failed", error: err.message });
+
+      console.log("Token found, verifying...");
+      const decoded = jwt.verify(
+        token,
+        process.env.JWT_SECRET || "default_jwt_secret_for_development"
+      );
+      console.log("Token decoded:", decoded);
+
+      const student = await Student.findById(decoded.id);
+      if (!student) {
+        console.log("Student not found with ID:", decoded.id);
+        return res.status(404).json({ message: "Student not found" });
+      }
+
+      console.log("Student found:", student.name);
+
+      // Handle image upload
+      if (req.file) {
+        console.log("Image file received:", req.file.filename);
+        student.image = req.file.path;
+      } else {
+        console.log("No image file in request");
+      }
+
+      await student.save();
+      console.log("Student saved successfully");
+
+      res.json({
+        message: "Profile updated successfully",
+        student: {
+          id: student._id,
+          name: student.name,
+          email: student.email,
+          phone: student.phone,
+          image: student.image,
+          mode: student.mode,
+          location: student.location,
+          center: student.center,
+        },
+      });
+    } catch (err) {
+      console.error("Profile update error:", err);
+      res.status(500).json({ message: "Update failed", error: err.message });
+    }
   }
-});
+);
 
 // Superadmin route to update student profile details (excluding profile image)
-router.put("/admin/update-profile/:studentId", requireAuth, isAdmin, async (req, res) => {
-  try {
-    const { studentId } = req.params;
-    const { name, email, phone, mode, location, center, password } = req.body;
+router.put(
+  "/admin/update-profile/:studentId",
+  requireAuth,
+  isAdmin,
+  async (req, res) => {
+    try {
+      const { studentId } = req.params;
+      const { name, email, phone, mode, location, center, password } = req.body;
 
-    // Find the student
-    const student = await Student.findById(studentId);
-    if (!student) {
-      return res.status(404).json({ message: "Student not found" });
-    }
-
-    // Check if email is being changed and if it already exists
-    if (email && email !== student.email) {
-      const existingStudent = await Student.findOne({ email });
-      if (existingStudent) {
-        return res.status(400).json({ message: "Email already exists" });
+      // Find the student
+      const student = await Student.findById(studentId);
+      if (!student) {
+        return res.status(404).json({ message: "Student not found" });
       }
-    }
 
-    // Update allowed fields (excluding profile image)
-    if (name) student.name = name;
-    if (email) student.email = email;
-    if (phone) student.phone = phone;
-    if (mode) student.mode = mode;
-    if (location) student.location = location;
-    if (center) student.center = center;
-
-    // Handle password update if provided
-    if (password) {
-      const hashed = await bcrypt.hash(password, 10);
-      student.password = hashed;
-    }
-
-    await student.save();
-
-    res.json({ 
-      message: "Student profile updated successfully", 
-      student: {
-        id: student._id,
-        name: student.name,
-        email: student.email,
-        phone: student.phone,
-        mode: student.mode,
-        location: student.location,
-        center: student.center,
-        image: student.image // Include image for reference but it wasn't updated
+      // Check if email is being changed and if it already exists
+      if (email && email !== student.email) {
+        const existingStudent = await Student.findOne({ email });
+        if (existingStudent) {
+          return res.status(400).json({ message: "Email already exists" });
+        }
       }
-    });
-  } catch (err) {
-    console.error("Superadmin profile update error:", err);
-    res.status(500).json({ message: "Update failed", error: err.message });
+
+      // Update allowed fields (excluding profile image)
+      if (name) student.name = name;
+      if (email) student.email = email;
+      if (phone) student.phone = phone;
+      if (mode) student.mode = mode;
+      if (location) student.location = location;
+      if (center) student.center = center;
+
+      // Handle password update if provided
+      if (password) {
+        const hashed = await bcrypt.hash(password, 10);
+        student.password = hashed;
+      }
+
+      await student.save();
+
+      res.json({
+        message: "Student profile updated successfully",
+        student: {
+          id: student._id,
+          name: student.name,
+          email: student.email,
+          phone: student.phone,
+          mode: student.mode,
+          location: student.location,
+          center: student.center,
+          image: student.image, // Include image for reference but it wasn't updated
+        },
+      });
+    } catch (err) {
+      console.error("Superadmin profile update error:", err);
+      res.status(500).json({ message: "Update failed", error: err.message });
+    }
   }
-});
+);
 
 // Legacy profile update route (keeping for backward compatibility)
 router.patch("/student/profile/:id", async (req, res) => {
@@ -643,19 +665,32 @@ router.patch("/student/profile/:id", async (req, res) => {
 
 router.post("/add-to-cart/:id", async (req, res) => {
   try {
-    console.log(req.params.id);
     const student = await Student.findById(req.params.id);
     if (!student) return res.status(404).json({ message: "Student not found" });
 
-    const { courseId } = req.body;
+    const { courseId, sessionType } = req.body;
     if (!courseId)
       return res.status(400).json({ message: "courseId is required" });
+    if (!sessionType || !["recorded", "live"].includes(sessionType))
+      return res.status(400).json({
+        message: "sessionType is required and must be 'recorded' or 'live'",
+      });
 
-    if (student.cart.includes(courseId)) {
-      return res.status(400).json({ message: "Course already in cart" });
+    // Check if this course with this session type is already in cart
+    const existingCartItem = student.cart.find(
+      (item) =>
+        item.courseId &&
+        item.courseId.toString() === courseId &&
+        item.sessionType === sessionType
+    );
+
+    if (existingCartItem) {
+      return res.status(400).json({
+        message: "This course with this session type is already in cart",
+      });
     }
 
-    student.cart.push(courseId);
+    student.cart.push({ courseId, sessionType });
     await student.save();
 
     res.json({ message: "Course added to cart", cart: student.cart });
@@ -671,15 +706,30 @@ router.post("/remove-cart/:id", async (req, res) => {
     const student = await Student.findById(req.params.id);
     if (!student) return res.status(404).json({ message: "Student not found" });
 
-    const { courseId } = req.body;
+    const { courseId, sessionType } = req.body;
     if (!courseId)
       return res.status(400).json({ message: "courseId is required" });
+    if (!sessionType || !["recorded", "live"].includes(sessionType))
+      return res.status(400).json({
+        message: "sessionType is required and must be 'recorded' or 'live'",
+      });
 
-    const index = student.cart.indexOf(courseId);
-    if (index === -1)
-      return res.status(404).json({ message: "Course not in cart" });
+    const initialLength = student.cart.length;
+    student.cart = student.cart.filter(
+      (item) =>
+        !(
+          item.courseId &&
+          item.courseId.toString() === courseId &&
+          item.sessionType === sessionType
+        )
+    );
 
-    student.cart.splice(index, 1);
+    if (student.cart.length === initialLength) {
+      return res
+        .status(404)
+        .json({ message: "Course with this session type not in cart" });
+    }
+
     await student.save();
 
     res.json({ message: "Course removed from cart", cart: student.cart });
@@ -802,7 +852,7 @@ router.post("/add-wishlist/:id", isStudent, async (req, res) => {
     console.log("Add wishlist request:", {
       studentId: req.params.id,
       courseId: req.body.courseId,
-      user: req.user
+      user: req.user,
     });
 
     const student = await Student.findById(req.params.id);
@@ -837,7 +887,7 @@ router.post("/add-wishlist/:id", isStudent, async (req, res) => {
     console.log("Course added to wishlist successfully:", {
       studentId: student._id,
       courseId: courseId,
-      wishlistLength: student.wishlist.length
+      wishlistLength: student.wishlist.length,
     });
 
     res.json({
@@ -861,7 +911,7 @@ router.post("/remove-wishlist/:id", isStudent, async (req, res) => {
     console.log("Remove wishlist request:", {
       studentId: req.params.id,
       courseId: req.body.courseId,
-      user: req.user
+      user: req.user,
     });
 
     const student = await Student.findById(req.params.id);
@@ -891,7 +941,7 @@ router.post("/remove-wishlist/:id", isStudent, async (req, res) => {
     console.log("Course removed from wishlist successfully:", {
       studentId: student._id,
       courseId: courseId,
-      wishlistLength: student.wishlist.length
+      wishlistLength: student.wishlist.length,
     });
 
     res.json({
@@ -944,7 +994,9 @@ router.post("/enroll-live-session/:id", async (req, res) => {
     }
 
     // Check if live session exists
-    const LiveSession = (await import("../../models/LiveSession/LiveSession.js")).default;
+    const LiveSession = (
+      await import("../../models/LiveSession/LiveSession.js")
+    ).default;
     const liveSession = await LiveSession.findById(sessionId);
     if (!liveSession) {
       return res.status(404).json({ message: "Live session not found" });
@@ -952,7 +1004,9 @@ router.post("/enroll-live-session/:id", async (req, res) => {
 
     // Check if student is already enrolled
     if (student.enrolledLiveSessions.includes(sessionId)) {
-      return res.status(400).json({ message: "Student is already enrolled in this live session" });
+      return res
+        .status(400)
+        .json({ message: "Student is already enrolled in this live session" });
     }
 
     // Add live session to student's enrolled sessions
@@ -976,7 +1030,9 @@ router.post("/enroll-live-session/:id", async (req, res) => {
 // GET /api/v1/students/enrolled-live-sessions/:id - Get student's enrolled live sessions
 router.get("/enrolled-live-sessions/:id", async (req, res) => {
   try {
-    const student = await Student.findById(req.params.id).populate("enrolledLiveSessions");
+    const student = await Student.findById(req.params.id).populate(
+      "enrolledLiveSessions"
+    );
     if (!student) {
       return res.status(404).json({ message: "Student not found" });
     }
@@ -1000,7 +1056,7 @@ router.post("/enroll-recorded-session/:id", async (req, res) => {
     console.log("Enrollment request received:", {
       studentId: req.params.id,
       courseId: req.body.courseId,
-      body: req.body
+      body: req.body,
     });
 
     // Validate student ID format
@@ -1037,7 +1093,9 @@ router.post("/enroll-recorded-session/:id", async (req, res) => {
     // Check if student is already enrolled in recorded sessions
     if (student.enrolledRecordedSessions.includes(courseId)) {
       console.log("Student already enrolled in course:", courseId);
-      return res.status(400).json({ message: "Student is already enrolled in this recorded session" });
+      return res.status(400).json({
+        message: "Student is already enrolled in this recorded session",
+      });
     }
 
     // Add course to student's enrolled recorded sessions
@@ -1046,7 +1104,7 @@ router.post("/enroll-recorded-session/:id", async (req, res) => {
 
     console.log("Enrollment successful:", {
       studentId: student._id,
-      courseId: courseId
+      courseId: courseId,
     });
 
     res.json({
@@ -1067,7 +1125,9 @@ router.post("/enroll-recorded-session/:id", async (req, res) => {
 // GET /api/v1/students/enrolled-recorded-sessions/:id - Get student's enrolled recorded sessions
 router.get("/enrolled-recorded-sessions/:id", async (req, res) => {
   try {
-    const student = await Student.findById(req.params.id).populate("enrolledRecordedSessions");
+    const student = await Student.findById(req.params.id).populate(
+      "enrolledRecordedSessions"
+    );
     if (!student) {
       return res.status(404).json({ message: "Student not found" });
     }
