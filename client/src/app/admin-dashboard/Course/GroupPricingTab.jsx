@@ -48,6 +48,12 @@ const GroupPricingTab = ({ onBack }) => {
     groupPrice: "",
     description: "",
     image: null,
+    recordedPrice: "",
+    recordedFinalPrice: "",
+    recordedDiscount: "",
+    livePrice: "",
+    liveFinalPrice: "",
+    liveDiscount: "",
   });
   const [imagePreview, setImagePreview] = useState(null);
 
@@ -101,6 +107,12 @@ const GroupPricingTab = ({ onBack }) => {
       groupPrice: "",
       description: "",
       image: null,
+      recordedPrice: "",
+      recordedFinalPrice: "",
+      recordedDiscount: "",
+      livePrice: "",
+      liveFinalPrice: "",
+      liveDiscount: "",
     });
     setImagePreview(null);
     setOpenDialog(true);
@@ -120,6 +132,14 @@ const GroupPricingTab = ({ onBack }) => {
       groupPrice: item.groupPrice.toString(),
       description: item.description || "",
       image: null,
+      recordedPrice: item.pricing?.recordedSession?.price?.toString() || "",
+      recordedFinalPrice:
+        item.pricing?.recordedSession?.finalPrice?.toString() || "",
+      recordedDiscount:
+        item.pricing?.recordedSession?.discount?.toString() || "",
+      livePrice: item.pricing?.liveSession?.price?.toString() || "",
+      liveFinalPrice: item.pricing?.liveSession?.finalPrice?.toString() || "",
+      liveDiscount: item.pricing?.liveSession?.discount?.toString() || "",
     });
     setImagePreview(item.image || null);
     setOpenDialog(true);
@@ -170,7 +190,15 @@ const GroupPricingTab = ({ onBack }) => {
   };
 
   const handleSave = async () => {
-    if (!formData.level || !formData.courseIds.length || !formData.groupPrice) {
+    if (
+      !formData.level ||
+      !formData.courseIds.length ||
+      !formData.groupPrice ||
+      !formData.recordedPrice ||
+      !formData.recordedFinalPrice ||
+      !formData.livePrice ||
+      !formData.liveFinalPrice
+    ) {
       toast.error("Please fill in all required fields", {
         style: {
           zIndex: 9999,
@@ -186,6 +214,12 @@ const GroupPricingTab = ({ onBack }) => {
       formDataToSend.append("courseIds", JSON.stringify(formData.courseIds));
       formDataToSend.append("groupPrice", formData.groupPrice);
       formDataToSend.append("description", formData.description);
+      formDataToSend.append("recordedPrice", formData.recordedPrice);
+      formDataToSend.append("recordedFinalPrice", formData.recordedFinalPrice);
+      formDataToSend.append("recordedDiscount", formData.recordedDiscount);
+      formDataToSend.append("livePrice", formData.livePrice);
+      formDataToSend.append("liveFinalPrice", formData.liveFinalPrice);
+      formDataToSend.append("liveDiscount", formData.liveDiscount);
 
       if (formData.image) {
         formDataToSend.append("image", formData.image);
@@ -501,6 +535,113 @@ const GroupPricingTab = ({ onBack }) => {
               }
               placeholder="Describe this group pricing package..."
             />
+
+            {/* Pricing Section */}
+            <Typography variant="h6" sx={{ mt: 2, mb: 1, fontWeight: 600 }}>
+              Pricing Configuration
+            </Typography>
+
+            {/* Recorded Session Pricing */}
+            <Typography
+              variant="subtitle1"
+              sx={{ mt: 2, mb: 1, fontWeight: 500 }}
+            >
+              Recorded Session Pricing
+            </Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={4}>
+                <TextField
+                  fullWidth
+                  label="Original Price (₹)"
+                  type="number"
+                  value={formData.recordedPrice}
+                  onChange={(e) =>
+                    setFormData({ ...formData, recordedPrice: e.target.value })
+                  }
+                  required
+                  inputProps={{ min: 0, step: 0.01 }}
+                />
+              </Grid>
+              <Grid item xs={4}>
+                <TextField
+                  fullWidth
+                  label="Final Price (₹)"
+                  type="number"
+                  value={formData.recordedFinalPrice}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      recordedFinalPrice: e.target.value,
+                    })
+                  }
+                  required
+                  inputProps={{ min: 0, step: 0.01 }}
+                />
+              </Grid>
+              <Grid item xs={4}>
+                <TextField
+                  fullWidth
+                  label="Discount (%)"
+                  type="number"
+                  value={formData.recordedDiscount}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      recordedDiscount: e.target.value,
+                    })
+                  }
+                  inputProps={{ min: 0, max: 100, step: 0.01 }}
+                />
+              </Grid>
+            </Grid>
+
+            {/* Live Session Pricing */}
+            <Typography
+              variant="subtitle1"
+              sx={{ mt: 2, mb: 1, fontWeight: 500 }}
+            >
+              Live Session Pricing
+            </Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={4}>
+                <TextField
+                  fullWidth
+                  label="Original Price (₹)"
+                  type="number"
+                  value={formData.livePrice}
+                  onChange={(e) =>
+                    setFormData({ ...formData, livePrice: e.target.value })
+                  }
+                  required
+                  inputProps={{ min: 0, step: 0.01 }}
+                />
+              </Grid>
+              <Grid item xs={4}>
+                <TextField
+                  fullWidth
+                  label="Final Price (₹)"
+                  type="number"
+                  value={formData.liveFinalPrice}
+                  onChange={(e) =>
+                    setFormData({ ...formData, liveFinalPrice: e.target.value })
+                  }
+                  required
+                  inputProps={{ min: 0, step: 0.01 }}
+                />
+              </Grid>
+              <Grid item xs={4}>
+                <TextField
+                  fullWidth
+                  label="Discount (%)"
+                  type="number"
+                  value={formData.liveDiscount}
+                  onChange={(e) =>
+                    setFormData({ ...formData, liveDiscount: e.target.value })
+                  }
+                  inputProps={{ min: 0, max: 100, step: 0.01 }}
+                />
+              </Grid>
+            </Grid>
 
             <Box>
               <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>

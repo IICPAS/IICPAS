@@ -111,53 +111,92 @@ const CheckoutModal = ({
     setIsSubmitting(true);
 
     try {
-      const response = await axios.post(
-        `${API_BASE}/api/transactions/create`,
-        {
-          courseId: selectedCourse._id,
-          amount: (() => {
-            const sessionType = selectedCourse.sessionType || "recorded";
-            if (sessionType === "recorded") {
-              return (
-                selectedCourse.pricing?.recordedSession?.finalPrice ||
-                selectedCourse.pricing?.recordedSession?.price ||
-                selectedCourse.price ||
-                0
-              );
-            } else if (sessionType === "live") {
-              return (
-                selectedCourse.pricing?.liveSession?.finalPrice ||
-                selectedCourse.pricing?.liveSession?.price ||
-                selectedCourse.price *
-                  (selectedCourse?.pricing?.liveSession?.priceMultiplier ||
-                    1.5) ||
-                0
-              );
-            }
-            return selectedCourse.price || 0;
-          })(),
-          utrNumber: utrNumber.trim(),
-          notes: notes.trim(),
-        },
-        {
-          withCredentials: true,
-        }
-      );
+      // Check if this is a group package or individual course
+      const isGroupPackage =
+        selectedCourse.courseIds && selectedCourse.courseIds.length > 0;
+
+      let response;
+      if (isGroupPackage) {
+        // Handle group package enrollment
+        response = await axios.post(
+          `${API_BASE}/api/group-pricing/${selectedCourse._id}/enroll`,
+          {
+            studentId: student._id,
+            sessionType: selectedCourse.sessionType || "recorded",
+          },
+          {
+            withCredentials: true,
+          }
+        );
+      } else {
+        // Handle individual course transaction
+        response = await axios.post(
+          `${API_BASE}/api/transactions/create`,
+          {
+            courseId: selectedCourse._id,
+            amount: (() => {
+              const sessionType = selectedCourse.sessionType || "recorded";
+              if (sessionType === "recorded") {
+                return (
+                  selectedCourse.pricing?.recordedSession?.finalPrice ||
+                  selectedCourse.pricing?.recordedSession?.price ||
+                  selectedCourse.price ||
+                  0
+                );
+              } else if (sessionType === "live") {
+                return (
+                  selectedCourse.pricing?.liveSession?.finalPrice ||
+                  selectedCourse.pricing?.liveSession?.price ||
+                  selectedCourse.price *
+                    (selectedCourse?.pricing?.liveSession?.priceMultiplier ||
+                      1.5) ||
+                  0
+                );
+              }
+              return selectedCourse.price || 0;
+            })(),
+            utrNumber: utrNumber.trim(),
+            notes: notes.trim(),
+          },
+          {
+            withCredentials: true,
+          }
+        );
+      }
 
       if (response.data.success) {
-        Swal.fire({
-          title: "Payment Submitted!",
-          text: "Your payment has been submitted for verification. You will receive an email once it's verified.",
-          icon: "success",
-          confirmButtonText: "OK",
-        }).then(() => {
-          // Update cart after successful payment submission
-          onCartUpdate();
-          setSelectedCourse(null);
-          setUtrNumber("");
-          setNotes("");
-          onClose();
-        });
+        const isGroupPackage =
+          selectedCourse.courseIds && selectedCourse.courseIds.length > 0;
+
+        if (isGroupPackage) {
+          Swal.fire({
+            title: "Enrollment Successful!",
+            text: `You have been successfully enrolled in the ${response.data.data.packageName} with ${response.data.data.enrolledCourses} courses.`,
+            icon: "success",
+            confirmButtonText: "OK",
+          }).then(() => {
+            // Update cart after successful enrollment
+            onCartUpdate();
+            setSelectedCourse(null);
+            setUtrNumber("");
+            setNotes("");
+            onClose();
+          });
+        } else {
+          Swal.fire({
+            title: "Payment Submitted!",
+            text: "Your payment has been submitted for verification. You will receive an email once it's verified.",
+            icon: "success",
+            confirmButtonText: "OK",
+          }).then(() => {
+            // Update cart after successful payment submission
+            onCartUpdate();
+            setSelectedCourse(null);
+            setUtrNumber("");
+            setNotes("");
+            onClose();
+          });
+        }
       }
     } catch (error) {
       console.error("Error submitting payment:", error);
