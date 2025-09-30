@@ -316,8 +316,8 @@ export default function CoursePage() {
             />
           ))}
 
-          {/* Individual Course Cards - Only show if no group pricing is selected */}
-          {filteredGroupPricing.length === 0 && (
+          {/* Individual Course Cards - Show initially, hide when level filter is selected */}
+          {selectedLevels.length === 0 && (
             <>
               {filteredCourses.length === 0 && (
                 <div className="col-span-3 text-gray-500 text-center py-12">
