@@ -141,7 +141,9 @@ export default function CoursePage() {
 
   // Filter group pricing based on selected levels
   const filteredGroupPricing = groupPricing.filter((group) => {
-    return selectedLevels.length === 0 || selectedLevels.includes(group.level);
+    // Group pricing should only be shown if a level filter is explicitly selected
+    // AND the group's level matches one of the selected levels
+    return selectedLevels.length > 0 && selectedLevels.includes(group.level);
   });
 
   // Handlers
