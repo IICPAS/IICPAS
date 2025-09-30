@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { memo } from "react";
 
@@ -88,12 +89,10 @@ const CourseSection = memo(function CourseSection() {
   const router = useRouter();
 
   const [courses, setCourses] = useState<Course[]>([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        setLoading(true);
         const API_BASE =
           process.env.NEXT_PUBLIC_API_BASE || "https://api.iicpa.in/api";
 
@@ -160,17 +159,11 @@ const CourseSection = memo(function CourseSection() {
       } catch (error) {
         console.error("🔍 CourseSection - Error fetching courses:", error);
         setCourses(sampleCourses);
-      } finally {
-        setLoading(false);
       }
     };
 
     fetchCourses();
   }, []);
-
-  // Use static courses to prevent any blinking
-  const courses = sampleCourses;
-
 
   const handleEnrollNow = (course: Course) => {
     router.push(`/course/${course.slug}`);
