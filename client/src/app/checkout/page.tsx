@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import Swal from "sweetalert2";
-import PaymentModal from "../components/PaymentModal";
+import CheckoutModal from "../components/CheckoutModal";
 import Image from "next/image";
 
 export default function CheckoutPage() {
@@ -12,8 +12,7 @@ export default function CheckoutPage() {
   const [cartCourses, setCartCourses] = useState([]);
   const [student, setStudent] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const [totalAmount, setTotalAmount] = useState(0);
 
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
@@ -122,26 +121,12 @@ export default function CheckoutPage() {
     }
   };
 
-  const handleProceedToPayment = (course) => {
-    setSelectedCourse(course);
-    setShowPaymentModal(true);
+  const handleOpenCheckout = () => {
+    setShowCheckoutModal(true);
   };
 
-  const handlePaymentSuccess = () => {
-    // Remove the course from cart after successful payment submission
-    setCartCourses((prev) => prev.filter((c) => c._id !== selectedCourse._id));
-    const newTotal = cartCourses
-      .filter((c) => c._id !== selectedCourse._id)
-      .reduce((sum, course) => sum + (course.price || 0), 0);
-    setTotalAmount(newTotal);
-    setSelectedCourse(null);
-
-    // If no more courses in cart, redirect to dashboard
-    if (cartCourses.length === 1) {
-      setTimeout(() => {
-        router.push("/student-dashboard");
-      }, 2000);
-    }
+  const handleCartUpdate = () => {
+    fetchStudentAndCart();
   };
 
   if (loading) {
@@ -231,12 +216,6 @@ export default function CheckoutPage() {
                     >
                       Remove
                     </button>
-                    <button
-                      onClick={() => handleProceedToPayment(course)}
-                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                    >
-                      Pay Now
-                    </button>
                   </div>
                 </div>
               ))}
@@ -269,31 +248,25 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-              <h3 className="font-semibold text-blue-800 mb-2">
-                Payment Instructions
-              </h3>
-              <ul className="text-sm text-blue-700 space-y-1">
-                <li>• Click "Pay Now" for each course individually</li>
-                <li>• Scan the QR code with any UPI app</li>
-                <li>• Enter the UTR number from your payment receipt</li>
-                <li>• Your payment will be verified within 24 hours</li>
-              </ul>
+            <div className="mt-6">
+              <button
+                onClick={handleOpenCheckout}
+                className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors font-medium text-lg"
+              >
+                Proceed to Checkout
+              </button>
             </div>
           </div>
         )}
 
-        {/* Payment Modal */}
-        {showPaymentModal && selectedCourse && (
-          <PaymentModal
-            isOpen={showPaymentModal}
-            onClose={() => {
-              setShowPaymentModal(false);
-              setSelectedCourse(null);
-            }}
-            course={selectedCourse}
-            totalAmount={selectedCourse.price}
-            onSuccess={handlePaymentSuccess}
+        {/* Checkout Modal */}
+        {showCheckoutModal && (
+          <CheckoutModal
+            isOpen={showCheckoutModal}
+            onClose={() => setShowCheckoutModal(false)}
+            cartCourses={cartCourses}
+            student={student}
+            onCartUpdate={handleCartUpdate}
           />
         )}
       </div>
