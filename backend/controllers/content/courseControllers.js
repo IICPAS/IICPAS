@@ -140,6 +140,34 @@ export const createCourse = async (req, res) => {
       }
     }
 
+    // Parse pricing data if it's a JSON string
+    let parsedPricing = {};
+    if (pricing) {
+      try {
+        parsedPricing =
+          typeof pricing === "string"
+            ? JSON.parse(pricing)
+            : pricing;
+      } catch (error) {
+        console.error("Error parsing pricing data:", error);
+        parsedPricing = {};
+      }
+    }
+
+    // Parse tabs data if it's a JSON string
+    let parsedTabs = {};
+    if (tabs) {
+      try {
+        parsedTabs =
+          typeof tabs === "string"
+            ? JSON.parse(tabs)
+            : tabs;
+      } catch (error) {
+        console.error("Error parsing tabs data:", error);
+        parsedTabs = {};
+      }
+    }
+
     // Handle uploaded image (if present)
     let imageUrl = "";
     if (req.file) {
@@ -169,8 +197,8 @@ export const createCourse = async (req, res) => {
       metaKeywords,
       metaDescription,
       chapters,
-      pricing,
-      tabs,
+      pricing: parsedPricing,
+      tabs: parsedTabs,
     });
 
     await course.save();

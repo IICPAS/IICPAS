@@ -30,12 +30,19 @@ const StudentSchema = new mongoose.Schema(
       },
     ],
     wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],
+
+    enrolledLiveSessions: [{ type: mongoose.Schema.Types.ObjectId, ref: "LiveSession" }],
+    enrolledRecordedSessions: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],
+    enrolledLiveSessionsCenter: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],
+    enrolledRecordedSessionsCenter: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],
+
     enrolledLiveSessions: [
       { type: mongoose.Schema.Types.ObjectId, ref: "LiveSession" },
     ],
     enrolledRecordedSessions: [
       { type: mongoose.Schema.Types.ObjectId, ref: "Course" },
     ],
+
     otp: { type: String },
     otpExpiry: { type: Date },
   },

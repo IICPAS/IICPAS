@@ -256,7 +256,14 @@ export default function CourseDetailPage({
   const [courseRatings, setCourseRatings] = useState<any>(null);
   const [ratingsLoading, setRatingsLoading] = useState(true);
   const [student, setStudent] = useState<any>(null);
+
+  const [isEnrolling, setIsEnrolling] = useState(false);
+  const [isEnrollingRecorded, setIsEnrollingRecorded] = useState(false);
+  const [isEnrollingRecordedCenter, setIsEnrollingRecordedCenter] = useState(false);
+  const [isEnrollingLiveCenter, setIsEnrollingLiveCenter] = useState(false);
+
   const [showLoginModal, setShowLoginModal] = useState(false);
+
 
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
@@ -374,6 +381,118 @@ export default function CourseDetailPage({
       } else {
         alert("Failed to add course to cart. Please try again.");
       }
+    }
+  };
+
+  // Handle Digital Hub Recorded Session + Center enrollment
+  const handleDigitalHubRecordedCenterEnrollment = async () => {
+    if (!student) {
+      alert("Please login to enroll in Digital Hub Recorded Sessions + Center");
+      return;
+    }
+
+    setIsEnrollingRecordedCenter(true);
+    try {
+      const enrollUrl = `${API_BASE}/api/v1/students/enroll-recorded-session-center/${student._id}`;
+      console.log("Enrolling in recorded session + center with URL:", enrollUrl);
+      console.log("Course ID:", course._id);
+      console.log("Student ID:", student._id);
+
+      // Enroll student in recorded session + center
+      const response = await axios.post(
+        enrollUrl,
+        { courseId: course._id },
+        { withCredentials: true }
+      );
+
+      console.log("Enrollment response:", response.data);
+      alert(
+        "Successfully enrolled in Digital Hub Recorded Sessions + Center! You can now access recorded content and center facilities from your dashboard."
+      );
+    } catch (error: any) {
+      console.error("Error enrolling in recorded sessions + center:", error);
+      console.error("Error details:", error.response?.data);
+      console.error("Error status:", error.response?.status);
+
+      // Provide more specific error messages
+      let errorMessage =
+        "Failed to enroll in recorded sessions + center. Please try again.";
+
+      if (error.response?.status === 400) {
+        if (error.response?.data?.message?.includes("already enrolled")) {
+          errorMessage = "You are already enrolled in this recorded session + center.";
+        } else if (error.response?.data?.message?.includes("Invalid")) {
+          errorMessage =
+            "Invalid course or student information. Please refresh the page and try again.";
+        } else {
+          errorMessage = error.response?.data?.message || errorMessage;
+        }
+      } else if (error.response?.status === 404) {
+        errorMessage =
+          "Course or student not found. Please refresh the page and try again.";
+      } else if (error.response?.status === 401) {
+        errorMessage = "Please login again to enroll in recorded sessions + center.";
+      }
+
+      alert(errorMessage);
+    } finally {
+      setIsEnrollingRecordedCenter(false);
+    }
+  };
+
+  // Handle Digital Hub Live Session + Center enrollment
+  const handleDigitalHubLiveCenterEnrollment = async () => {
+    if (!student) {
+      alert("Please login to enroll in Digital Hub Live Sessions + Center");
+      return;
+    }
+
+    setIsEnrollingLiveCenter(true);
+    try {
+      const enrollUrl = `${API_BASE}/api/v1/students/enroll-live-session-center/${student._id}`;
+      console.log("Enrolling in live session + center with URL:", enrollUrl);
+      console.log("Course ID:", course._id);
+      console.log("Student ID:", student._id);
+
+      // Enroll student in live session + center
+      const response = await axios.post(
+        enrollUrl,
+        { courseId: course._id },
+        { withCredentials: true }
+      );
+
+      console.log("Enrollment response:", response.data);
+      alert(
+        "Successfully enrolled in Digital Hub Live Sessions + Center! You can now access live sessions and center facilities from your dashboard."
+      );
+    } catch (error: any) {
+      console.error("Error enrolling in live sessions + center:", error);
+      console.error("Error details:", error.response?.data);
+      console.error("Error status:", error.response?.status);
+
+      // Provide more specific error messages
+      let errorMessage =
+        "Failed to enroll in live sessions + center. Please try again.";
+
+      if (error.response?.status === 400) {
+        if (error.response?.data?.message?.includes("already enrolled")) {
+          errorMessage = "You are already enrolled in this live session + center.";
+        } else if (error.response?.data?.message?.includes("Invalid")) {
+          errorMessage =
+            "Invalid course or student information. Please refresh the page and try again.";
+        } else {
+          errorMessage = error.response?.data?.message || errorMessage;
+        }
+      } else if (error.response?.status === 404) {
+        errorMessage =
+          "Course or student not found. Please refresh the page and try again.";
+      } else if (error.response?.status === 401) {
+        errorMessage = "Please login again to enroll in live sessions + center.";
+      }
+
+      alert(errorMessage);
+    } finally {
+      setIsEnrollingLiveCenter(false);
     }
   };
 
@@ -1037,6 +1156,115 @@ export default function CourseDetailPage({
                       >
                         {course?.pricing?.liveSession?.buttonText ||
                           "Add Digital Hub+"}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Center Options Cards - Side by Side */}
+                  <div className="grid grid-cols-2 gap-2 mb-4">
+                    {/* Recorded Session + Center Option */}
+                    <div className="border-2 border-[#3cd664] rounded-lg p-2">
+                      <div className="mb-2">
+                        <div className="text-center mb-1">
+                          <span className="text-xs font-bold text-[#3cd664] block">
+                            {course?.pricing?.recordedSessionCenter?.title?.split(
+                              "+"
+                            )[0] || "DIGITAL HUB+"}
+                          </span>
+                          <span className="text-xs font-bold text-[#3cd664] block">
+                            {course?.pricing?.recordedSessionCenter?.title?.split(
+                              "+"
+                            )[1] || "RECORDED SESSION+"}
+                          </span>
+                          <span className="text-xs font-bold text-[#3cd664] block">
+                            {course?.pricing?.recordedSessionCenter?.title?.split(
+                              "+"
+                            )[2] || "CENTER"}
+                          </span>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-sm font-bold text-[#3cd664]">
+                            ₹
+                            {course?.pricing?.recordedSessionCenter?.finalPrice
+                              ? course.pricing.recordedSessionCenter.finalPrice.toLocaleString()
+                              : course?.pricing?.recordedSessionCenter?.price
+                              ? course.pricing.recordedSessionCenter.price.toLocaleString()
+                              : course.price
+                              ? (course.price * 1.8).toLocaleString()
+                              : "3,600"}
+                          </div>
+                          {course?.pricing?.recordedSessionCenter?.discount &&
+                            course.pricing.recordedSessionCenter.discount > 0 && (
+                              <div className="text-xs text-gray-500 line-through">
+                                ₹
+                                {course.pricing.recordedSessionCenter.price.toLocaleString()}
+                              </div>
+                            )}
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={handleDigitalHubRecordedCenterEnrollment}
+                        disabled={isEnrollingRecordedCenter}
+                        className="w-full bg-[#3cd664] hover:bg-[#33bb58] text-white font-bold py-1 px-2 rounded text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isEnrollingRecordedCenter
+                          ? "Enrolling..."
+                          : course?.pricing?.recordedSessionCenter?.buttonText ||
+                            "Add Digital Hub+ Center"}
+                      </button>
+                    </div>
+
+                    {/* Live Session + Center Option */}
+                    <div className="border-2 border-blue-500 rounded-lg p-2">
+                      <div className="mb-2">
+                        <div className="text-center mb-1">
+                          <span className="text-xs font-bold text-blue-500 block">
+                            {course?.pricing?.liveSessionCenter?.title?.split(
+                              "+"
+                            )[0] || "DIGITAL HUB+"}
+                          </span>
+                          <span className="text-xs font-bold text-blue-500 block">
+                            {course?.pricing?.liveSessionCenter?.title?.split(
+                              "+"
+                            )[1] || "LIVE SESSION+"}
+                          </span>
+                          <span className="text-xs font-bold text-blue-500 block">
+                            {course?.pricing?.liveSessionCenter?.title?.split(
+                              "+"
+                            )[2] || "CENTER"}
+                          </span>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-sm font-bold text-blue-500">
+                            ₹
+                            {course?.pricing?.liveSessionCenter?.finalPrice
+                              ? course.pricing.liveSessionCenter.finalPrice.toLocaleString()
+                              : course?.pricing?.liveSessionCenter?.price
+                              ? course.pricing.liveSessionCenter.price.toLocaleString()
+                              : course.price
+                              ? (course.price * 2.2).toLocaleString()
+                              : "4,400"}
+                          </div>
+                          {course?.pricing?.liveSessionCenter?.discount &&
+                            course.pricing.liveSessionCenter.discount > 0 && (
+                              <div className="text-xs text-gray-500 line-through">
+                                ₹
+                                {course.pricing.liveSessionCenter.price.toLocaleString()}
+                              </div>
+                            )}
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={handleDigitalHubLiveCenterEnrollment}
+                        disabled={isEnrollingLiveCenter}
+                        className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-1 px-2 rounded text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isEnrollingLiveCenter
+                          ? "Enrolling..."
+                          : course?.pricing?.liveSessionCenter?.buttonText ||
+                            "Add Digital Hub+ Center"}
                       </button>
                     </div>
                   </div>

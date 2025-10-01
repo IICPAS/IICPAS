@@ -1145,6 +1145,164 @@ router.get("/enrolled-recorded-sessions/:id", async (req, res) => {
   }
 });
 
+// POST /api/v1/students/enroll-recorded-session-center/:id - Enroll student in recorded session + center
+router.post("/enroll-recorded-session-center/:id", async (req, res) => {
+  try {
+    console.log("Center enrollment request received:", {
+      studentId: req.params.id,
+      courseId: req.body.courseId,
+      body: req.body
+    });
+
+    // Validate student ID format
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      console.log("Invalid student ID format:", req.params.id);
+      return res.status(400).json({ message: "Invalid student ID format" });
+    }
+
+    const student = await Student.findById(req.params.id);
+    if (!student) {
+      console.log("Student not found:", req.params.id);
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    const { courseId } = req.body;
+    if (!courseId) {
+      console.log("Course ID missing from request body");
+      return res.status(400).json({ message: "courseId is required" });
+    }
+
+    // Validate course ID format
+    if (!mongoose.Types.ObjectId.isValid(courseId)) {
+      console.log("Invalid course ID format:", courseId);
+      return res.status(400).json({ message: "Invalid course ID format" });
+    }
+
+    // Check if course exists
+    const course = await Course.findById(courseId);
+    if (!course) {
+      console.log("Course not found:", courseId);
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    // Check if student is already enrolled in recorded sessions + center
+    if (student.enrolledRecordedSessionsCenter && student.enrolledRecordedSessionsCenter.includes(courseId)) {
+      console.log("Student already enrolled in course + center:", courseId);
+      return res.status(400).json({ message: "Student is already enrolled in this recorded session + center" });
+    }
+
+    // Add course to student's enrolled recorded sessions + center
+    if (!student.enrolledRecordedSessionsCenter) {
+      student.enrolledRecordedSessionsCenter = [];
+    }
+    student.enrolledRecordedSessionsCenter.push(courseId);
+    
+    // Also add to regular recorded sessions if not already enrolled
+    if (!student.enrolledRecordedSessions.includes(courseId)) {
+      student.enrolledRecordedSessions.push(courseId);
+    }
+    
+    await student.save();
+
+    console.log("Center enrollment successful:", {
+      studentId: student._id,
+      courseId: courseId
+    });
+
+    res.json({
+      message: "Student enrolled in recorded session + center successfully",
+      studentId: student._id,
+      courseId: courseId,
+      enrolledRecordedSessionsCenter: student.enrolledRecordedSessionsCenter,
+    });
+  } catch (err) {
+    console.error("Center enrollment error:", err);
+    res.status(500).json({
+      message: "Failed to enroll student in recorded session + center",
+      error: err.message,
+    });
+  }
+});
+
+// POST /api/v1/students/enroll-live-session-center/:id - Enroll student in live session + center
+router.post("/enroll-live-session-center/:id", async (req, res) => {
+  try {
+    console.log("Live session + center enrollment request received:", {
+      studentId: req.params.id,
+      courseId: req.body.courseId,
+      body: req.body
+    });
+
+    // Validate student ID format
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      console.log("Invalid student ID format:", req.params.id);
+      return res.status(400).json({ message: "Invalid student ID format" });
+    }
+
+    const student = await Student.findById(req.params.id);
+    if (!student) {
+      console.log("Student not found:", req.params.id);
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    const { courseId } = req.body;
+    if (!courseId) {
+      console.log("Course ID missing from request body");
+      return res.status(400).json({ message: "courseId is required" });
+    }
+
+    // Validate course ID format
+    if (!mongoose.Types.ObjectId.isValid(courseId)) {
+      console.log("Invalid course ID format:", courseId);
+      return res.status(400).json({ message: "Invalid course ID format" });
+    }
+
+    // Check if course exists
+    const course = await Course.findById(courseId);
+    if (!course) {
+      console.log("Course not found:", courseId);
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    // Check if student is already enrolled in live sessions + center
+    if (student.enrolledLiveSessionsCenter && student.enrolledLiveSessionsCenter.includes(courseId)) {
+      console.log("Student already enrolled in live session + center:", courseId);
+      return res.status(400).json({ message: "Student is already enrolled in this live session + center" });
+    }
+
+    // Add course to student's enrolled live sessions + center
+    if (!student.enrolledLiveSessionsCenter) {
+      student.enrolledLiveSessionsCenter = [];
+    }
+    student.enrolledLiveSessionsCenter.push(courseId);
+    
+    // Also add to regular live sessions if not already enrolled
+    if (!student.enrolledLiveSessions.includes(courseId)) {
+      student.enrolledLiveSessions.push(courseId);
+    }
+    
+    await student.save();
+
+    console.log("Live session + center enrollment successful:", {
+      studentId: student._id,
+      courseId: courseId
+    });
+
+    res.json({
+      message: "Student enrolled in live session + center successfully",
+      studentId: student._id,
+      courseId: courseId,
+      enrolledLiveSessionsCenter: student.enrolledLiveSessionsCenter,
+    });
+  } catch (err) {
+    console.error("Live session + center enrollment error:", err);
+    res.status(500).json({
+      message: "Failed to enroll student in live session + center",
+      error: err.message,
+    });
+  }
+});
+
 // DELETE /api/v1/students/:id - Delete a student
 router.delete("/:id", deleteStudent);
 
