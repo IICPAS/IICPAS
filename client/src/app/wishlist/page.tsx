@@ -57,10 +57,10 @@ export default function WishlistPage() {
       const allCourses = await axios.get(`${API}/api/courses`);
       const courseList = allCourses.data.courses || allCourses.data;
 
-      const filteredWishlistCourses = courseList.filter((c: Course) => 
+      const filteredWishlistCourses = courseList.filter((c: Course) =>
         wishlistIDs.includes(c._id)
       );
-      
+
       setWishlistCourses(filteredWishlistCourses);
     } catch (error) {
       console.error("Error fetching wishlist:", error);
@@ -90,12 +90,12 @@ export default function WishlistPage() {
           { withCredentials: true }
         );
         fetchWishlist();
-        
+
         // Notify other components of the change
         if (student) {
-          wishlistEventManager.notifyChange(student._id, courseId, 'removed');
+          wishlistEventManager.notifyChange(student._id, courseId, "removed");
         }
-        
+
         Swal.fire("Removed!", "Course removed from wishlist.", "success");
       } catch (error) {
         console.error("Error removing from wishlist:", error);
@@ -116,11 +116,13 @@ export default function WishlistPage() {
 
     try {
       await axios.post(
-        `${API}/api/v1/students/add-cart/${student?._id}`,
-        { courseId },
+        `${API}/api/v1/students/add-to-cart/${student?._id}`,
+        { courseId, sessionType: "recorded" },
         { withCredentials: true }
       );
       Swal.fire("Added!", "Course added to cart.", "success");
+      // Trigger cart update event
+      window.dispatchEvent(new CustomEvent("cartUpdated"));
     } catch (error) {
       console.error("Error adding to cart:", error);
       Swal.fire("Error", "Failed to add to cart.", "error");
@@ -180,9 +182,12 @@ export default function WishlistPage() {
 
     if (result.isConfirmed) {
       try {
-        await axios.delete(`${API}/api/v1/students/clear-wishlist/${student?._id}`, {
-          withCredentials: true,
-        });
+        await axios.delete(
+          `${API}/api/v1/students/clear-wishlist/${student?._id}`,
+          {
+            withCredentials: true,
+          }
+        );
         fetchWishlist();
         Swal.fire("Cleared!", "Your wishlist has been emptied.", "success");
       } catch (error) {
@@ -217,14 +222,21 @@ export default function WishlistPage() {
                 viewBox="0 0 24 24"
                 xmlns="http://www.w3.org/2000/svg"
               >
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                <path d="M17 11h-2v-2h2v2zm0 4h-2v-2h2v2zm-4-4h-2v-2h2v2zm0 4h-2v-2h2v2z" fill="white"/>
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                <path
+                  d="M17 11h-2v-2h2v2zm0 4h-2v-2h2v2zm-4-4h-2v-2h2v2zm0 4h-2v-2h2v2z"
+                  fill="white"
+                />
               </svg>
             </div>
-            
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">My Wishlist</h1>
-            <p className="text-xl text-gray-600 mb-8">Login to view and manage your favorite courses</p>
-            
+
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">
+              My Wishlist
+            </h1>
+            <p className="text-xl text-gray-600 mb-8">
+              Login to view and manage your favorite courses
+            </p>
+
             {/* Login Button */}
             <button
               onClick={() => router.push("/student-login?redirect=wishlist")}
@@ -232,7 +244,7 @@ export default function WishlistPage() {
             >
               Login to Continue
             </button>
-            
+
             {/* Demo Credentials */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 max-w-md mx-auto">
               <h3 className="text-lg font-semibold text-blue-800 mb-4">
@@ -241,11 +253,15 @@ export default function WishlistPage() {
               <div className="text-sm text-blue-700 space-y-2">
                 <div className="flex justify-between">
                   <span className="font-medium">Email:</span>
-                  <span className="font-mono bg-blue-100 px-2 py-1 rounded">student@test.com</span>
+                  <span className="font-mono bg-blue-100 px-2 py-1 rounded">
+                    student@test.com
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="font-medium">Password:</span>
-                  <span className="font-mono bg-blue-100 px-2 py-1 rounded">test123</span>
+                  <span className="font-mono bg-blue-100 px-2 py-1 rounded">
+                    test123
+                  </span>
                 </div>
               </div>
               <p className="text-xs text-blue-600 mt-4">
@@ -264,12 +280,16 @@ export default function WishlistPage() {
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">My Wishlist</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              My Wishlist
+            </h1>
             <p className="text-gray-600">
-              {wishlistCourses.length} {wishlistCourses.length === 1 ? 'course' : 'courses'} in your wishlist
+              {wishlistCourses.length}{" "}
+              {wishlistCourses.length === 1 ? "course" : "courses"} in your
+              wishlist
             </p>
           </div>
-          
+
           {wishlistCourses.length > 0 && (
             <button
               onClick={handleClearWishlist}
@@ -287,8 +307,12 @@ export default function WishlistPage() {
             <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
               <FaHeart className="text-4xl text-gray-400" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Your wishlist is empty</h2>
-            <p className="text-gray-600 mb-8">Start adding courses to your wishlist!</p>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Your wishlist is empty
+            </h2>
+            <p className="text-gray-600 mb-8">
+              Start adding courses to your wishlist!
+            </p>
             <button
               onClick={() => router.push("/course")}
               className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors"
@@ -306,12 +330,16 @@ export default function WishlistPage() {
                 {/* Course Image */}
                 <div className="relative h-48 w-full overflow-hidden">
                   <Image
-                    src={course.image?.startsWith('http') ? course.image : `${API}${course.image}`}
+                    src={
+                      course.image?.startsWith("http")
+                        ? course.image
+                        : `${API}${course.image}`
+                    }
                     alt={course.title}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                   />
-                  
+
                   {/* Remove from Wishlist Button */}
                   <button
                     onClick={() => handleRemoveFromWishlist(course._id)}
@@ -327,20 +355,24 @@ export default function WishlistPage() {
                   <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
                     {course.title}
                   </h3>
-                  
+
                   {course.category && (
-                    <p className="text-sm text-blue-600 mb-2">{course.category}</p>
+                    <p className="text-sm text-blue-600 mb-2">
+                      {course.category}
+                    </p>
                   )}
-                  
+
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-2xl font-bold text-green-600">
                       ₹{course.price?.toLocaleString()}
                     </span>
-                    
+
                     {course.rating && (
                       <div className="flex items-center gap-1 text-yellow-500">
                         <FaStar className="text-sm" />
-                        <span className="text-sm font-medium">{course.rating}</span>
+                        <span className="text-sm font-medium">
+                          {course.rating}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -354,7 +386,7 @@ export default function WishlistPage() {
                       <FaShoppingCart />
                       Add to Cart
                     </button>
-                    
+
                     <button
                       onClick={() => handleBuyNow(course)}
                       className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors"

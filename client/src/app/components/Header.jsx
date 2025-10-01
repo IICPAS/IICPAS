@@ -23,6 +23,7 @@ import "react-modern-drawer/dist/index.css";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import AlertMarquee from "./AlertMarquee";
+import CheckoutModal from "./CheckoutModal";
 
 const MySwal = withReactContent(Swal);
 
@@ -62,6 +63,7 @@ export default function Header() {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [cartDrawer, setCartDrawer] = useState(false);
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const [student, setStudent] = useState(null);
   const [cartCourses, setCartCourses] = useState([]);
   const [wishlistCourses, setWishlistCourses] = useState([]);
@@ -98,7 +100,7 @@ export default function Header() {
         `${API}/api/v1/students/get-cart/${studentData._id}`,
         { withCredentials: true }
       );
-      const cartIDs = cartRes.data.cart || [];
+      const cartItems = cartRes.data.cart || [];
 
       const wishlistRes = await axios.get(
         `${API}/api/v1/students/get-wishlist/${studentData._id}`,
@@ -109,7 +111,56 @@ export default function Header() {
       const allCourses = await axios.get(`${API}/api/courses`);
       const courseList = allCourses.data.courses || allCourses.data;
 
-      setCartCourses(courseList.filter((c) => cartIDs.includes(c._id)));
+      // Process cart courses to use correct pricing and handle new cart structure
+      const processedCartCourses = cartItems
+        .map((cartItem) => {
+          // Handle both old and new cart structure
+          let courseId, sessionType;
+
+          if (
+            typeof cartItem === "string" ||
+            (typeof cartItem === "object" && cartItem._id)
+          ) {
+            // Old format: just courseId or course object
+            courseId = cartItem._id || cartItem;
+            sessionType = "recorded"; // Default to recorded for old format
+          } else if (cartItem.courseId) {
+            // New format: { courseId, sessionType }
+            courseId = cartItem.courseId;
+            sessionType = cartItem.sessionType || "recorded";
+          } else {
+            return null;
+          }
+
+          const course = courseList.find((c) => c._id === courseId);
+          if (!course) return null;
+
+          // Get pricing based on session type
+          let displayPrice = 0;
+          if (sessionType === "recorded") {
+            displayPrice =
+              course.pricing?.recordedSession?.finalPrice ||
+              course.pricing?.recordedSession?.price ||
+              course.price ||
+              0;
+          } else if (sessionType === "live") {
+            displayPrice =
+              course.pricing?.liveSession?.finalPrice ||
+              course.pricing?.liveSession?.price ||
+              course.price *
+                (course?.pricing?.liveSession?.priceMultiplier || 1.5) ||
+              0;
+          }
+
+          return {
+            ...course,
+            sessionType,
+            price: displayPrice, // Override the price with the correct one
+          };
+        })
+        .filter(Boolean); // Remove null entries
+
+      setCartCourses(processedCartCourses);
       setWishlistCourses(courseList.filter((c) => wishlistIDs.includes(c._id)));
     } catch {
       setStudent(null);
@@ -123,17 +174,29 @@ export default function Header() {
     fetchStudentAndCart();
   }, []);
 
+  // Listen for cart update events
+  useEffect(() => {
+    const handleCartUpdate = () => {
+      fetchStudentAndCart();
+    };
+
+    window.addEventListener("cartUpdated", handleCartUpdate);
+    return () => {
+      window.removeEventListener("cartUpdated", handleCartUpdate);
+    };
+  }, []);
+
   // Prevent body scroll when drawer is open
   useEffect(() => {
     if (drawerOpen) {
-      document.body.classList.add('drawer-open');
+      document.body.classList.add("drawer-open");
     } else {
-      document.body.classList.remove('drawer-open');
+      document.body.classList.remove("drawer-open");
     }
-    
+
     // Cleanup on unmount
     return () => {
-      document.body.classList.remove('drawer-open');
+      document.body.classList.remove("drawer-open");
     };
   }, [drawerOpen]);
 
@@ -163,7 +226,7 @@ export default function Header() {
     }
   };
 
-  const handleBuyNow = async (courseId) => {
+  const handleBuyNow = async (courseId, sessionType = "recorded") => {
     if (!student) {
       window.location.href = "/student-login";
       return;
@@ -171,10 +234,10 @@ export default function Header() {
     try {
       const response = await axios.post(
         `${API}/api/v1/students/add-to-cart/${student._id}`,
-        { courseId },
+        { courseId, sessionType },
         { withCredentials: true }
       );
-      if (response.data.success) {
+      if (response.data.message) {
         MySwal.fire({
           title: "Added to Cart!",
           text: "Course added to cart successfully",
@@ -193,13 +256,14 @@ export default function Header() {
     }
   };
 
-  const handleRemoveFromCart = async (courseId) => {
+  const handleRemoveFromCart = async (courseId, sessionType = "recorded") => {
     try {
-      const response = await axios.delete(
-        `${API}/api/v1/students/remove-from-cart/${student._id}/${courseId}`,
+      const response = await axios.post(
+        `${API}/api/v1/students/remove-cart/${student._id}`,
+        { courseId, sessionType },
         { withCredentials: true }
       );
-      if (response.data.success) {
+      if (response.data.message) {
         MySwal.fire({
           title: "Removed!",
           text: "Course removed from cart",
@@ -282,7 +346,8 @@ export default function Header() {
       });
       return;
     }
-    window.location.href = "/checkout";
+    // Open checkout modal instead of redirecting
+    setShowCheckoutModal(true);
   };
 
   return (
@@ -294,7 +359,10 @@ export default function Header() {
       >
         <div className="w-full px-2 md:px-6 py-3 flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="text-xl font-bold text-[#003057] flex-shrink-0">
+          <Link
+            href="/"
+            className="text-xl font-bold text-[#003057] flex-shrink-0"
+          >
             <img src="/images/logo.png" alt="IICPA Logo" className="h-12" />
           </Link>
 
@@ -347,6 +415,19 @@ export default function Header() {
 
           {/* Right side - Desktop Only */}
           <div className="hidden lg:flex items-center space-x-3 flex-shrink-0">
+            {/* Cart Icon - Show for all users */}
+            <button
+              onClick={() => setCartDrawer(true)}
+              className="relative p-2 text-gray-700 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors"
+            >
+              <ShoppingCart size={20} />
+              {cartCourses.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-green-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                  {cartCourses.length}
+                </span>
+              )}
+            </button>
+
             {isAdmin ? (
               <Link
                 href="/admin-dashboard"
@@ -517,7 +598,6 @@ export default function Header() {
         open={cartDrawer}
         onClose={() => setCartDrawer(false)}
         direction="right"
-        className="lg:hidden"
         size={320}
       >
         <div className="h-full bg-white flex flex-col">
@@ -536,7 +616,10 @@ export default function Header() {
           <div className="flex-1 overflow-y-auto p-4">
             {cartCourses.length === 0 ? (
               <div className="text-center py-8">
-                <ShoppingCart size={48} className="mx-auto text-gray-400 mb-4" />
+                <ShoppingCart
+                  size={48}
+                  className="mx-auto text-gray-400 mb-4"
+                />
                 <p className="text-gray-500">Your cart is empty</p>
               </div>
             ) : (
@@ -545,9 +628,23 @@ export default function Header() {
                   <div key={course._id} className="border rounded-lg p-3">
                     <div className="flex items-start gap-3">
                       <img
-                        src={course.image}
+                        src={
+                          course.image
+                            ? course.image.startsWith("http")
+                              ? course.image
+                              : course.image.startsWith("/uploads/")
+                              ? `${API}${course.image}`
+                              : course.image.startsWith("/")
+                              ? course.image
+                              : `${API}/${course.image}`
+                            : "/images/a1.jpeg"
+                        }
                         alt={course.title}
                         className="w-16 h-16 object-cover rounded"
+                        onError={(e) => {
+                          console.log("Cart image failed to load:", e);
+                          e.currentTarget.src = "/images/a1.jpeg";
+                        }}
                       />
                       <div className="flex-1">
                         <h3 className="font-medium text-sm line-clamp-2">
@@ -558,7 +655,9 @@ export default function Header() {
                         </p>
                       </div>
                       <button
-                        onClick={() => handleRemoveFromCart(course._id)}
+                        onClick={() =>
+                          handleRemoveFromCart(course._id, course.sessionType)
+                        }
                         className="p-1 hover:bg-gray-100 rounded"
                       >
                         <Trash2 size={16} className="text-red-500" />
@@ -589,6 +688,17 @@ export default function Header() {
           )}
         </div>
       </Drawer>
+
+      {/* Checkout Modal */}
+      {showCheckoutModal && (
+        <CheckoutModal
+          isOpen={showCheckoutModal}
+          onClose={() => setShowCheckoutModal(false)}
+          cartCourses={cartCourses}
+          student={student}
+          onCartUpdate={fetchStudentAndCart}
+        />
+      )}
     </>
   );
 }

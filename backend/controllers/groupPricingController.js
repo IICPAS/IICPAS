@@ -1,11 +1,20 @@
 import GroupPricing from "../models/GroupPricing.js";
 import Course from "../models/Content/Course.js";
+import Student from "../models/Students.js";
+import mongoose from "mongoose";
 
 // Get all group pricing configurations
 export const getAllGroupPricing = async (req, res) => {
   try {
     const groupPricing = await GroupPricing.find({ status: "Active" })
-      .populate("courseIds", "title category level price")
+      .populate({
+        path: "courseIds",
+        select: "title category level price",
+        populate: {
+          path: "chapters",
+          select: "title topics",
+        },
+      })
       .sort({ level: 1, createdAt: -1 });
 
     res.json(groupPricing);
@@ -23,10 +32,18 @@ export const getAllGroupPricing = async (req, res) => {
 export const getGroupPricingById = async (req, res) => {
   try {
     const { id } = req.params;
-    const groupPricing = await GroupPricing.findById(id).populate(
-      "courseIds",
-      "title category level price"
-    );
+    const groupPricing = await GroupPricing.findById(id).populate({
+      path: "courseIds",
+      select: "title category level price",
+      populate: {
+        path: "chapters",
+        select: "title",
+        populate: {
+          path: "topics",
+          select: "title",
+        },
+      },
+    });
 
     if (!groupPricing) {
       return res.status(404).json({
@@ -51,13 +68,26 @@ export const createGroupPricing = async (req, res) => {
   try {
     console.log("Create Group Pricing - Request body:", req.body);
     console.log("Create Group Pricing - Request file:", req.file);
-    
-    const { level, courseIds, groupPrice, description } = req.body;
-    const image = req.file ? `/uploads/group_pricing_images/${req.file.filename}` : "";
+
+    const {
+      level,
+      courseIds,
+      groupPrice,
+      description,
+      recordedPrice,
+      recordedFinalPrice,
+      recordedDiscount,
+      livePrice,
+      liveFinalPrice,
+      liveDiscount,
+    } = req.body;
+    const image = req.file
+      ? `/uploads/group_pricing_images/${req.file.filename}`
+      : "";
 
     // Parse courseIds if it's a string (from FormData)
     let parsedCourseIds = courseIds;
-    if (typeof courseIds === 'string') {
+    if (typeof courseIds === "string") {
       try {
         parsedCourseIds = JSON.parse(courseIds);
       } catch (e) {
@@ -68,7 +98,7 @@ export const createGroupPricing = async (req, res) => {
         });
       }
     }
-    
+
     console.log("Parsed courseIds:", parsedCourseIds);
 
     // Validate required fields
@@ -77,24 +107,46 @@ export const createGroupPricing = async (req, res) => {
       !parsedCourseIds ||
       !Array.isArray(parsedCourseIds) ||
       parsedCourseIds.length === 0 ||
-      !groupPrice
+      !groupPrice ||
+      !recordedPrice ||
+      !recordedFinalPrice ||
+      !livePrice ||
+      !liveFinalPrice
     ) {
-      console.log("Validation failed - level:", level, "courseIds:", parsedCourseIds, "groupPrice:", groupPrice);
+      console.log(
+        "Validation failed - level:",
+        level,
+        "courseIds:",
+        parsedCourseIds,
+        "groupPrice:",
+        groupPrice
+      );
       return res.status(400).json({
         success: false,
-        message: "Level, courseIds, and groupPrice are required",
+        message:
+          "Level, courseIds, groupPrice, and pricing details are required",
       });
     }
 
     // Validate that all courses exist and belong to the specified level
-    console.log("Looking for courses with IDs:", parsedCourseIds, "and level:", level);
+    console.log(
+      "Looking for courses with IDs:",
+      parsedCourseIds,
+      "and level:",
+      level
+    );
     const courses = await Course.find({
       _id: { $in: parsedCourseIds },
       level: level,
       status: "Active",
     });
-    
-    console.log("Found courses:", courses.length, "out of", parsedCourseIds.length);
+
+    console.log(
+      "Found courses:",
+      courses.length,
+      "out of",
+      parsedCourseIds.length
+    );
 
     if (courses.length !== parsedCourseIds.length) {
       return res.status(400).json({
@@ -124,10 +176,37 @@ export const createGroupPricing = async (req, res) => {
       groupPrice: parseFloat(groupPrice),
       description: description || "",
       image: image,
+      pricing: {
+        recordedSession: {
+          price: parseFloat(recordedPrice),
+          finalPrice: parseFloat(recordedFinalPrice),
+          discount: parseFloat(recordedDiscount) || 0,
+        },
+        liveSession: {
+          price: parseFloat(livePrice),
+          finalPrice: parseFloat(liveFinalPrice),
+          discount: parseFloat(liveDiscount) || 0,
+        },
+      },
     });
 
     const savedGroupPricing = await newGroupPricing.save();
-    await savedGroupPricing.populate("courseIds", "title category level price");
+    await savedGroupPricing.populate({
+      path: "courseIds",
+      select: "title category level price",
+      populate: {
+        path: "chapters",
+        select: "title",
+        populate: {
+          path: "topics",
+          select: "title",
+        },
+      },
+    });
+
+    // Calculate average rating from included courses
+    await savedGroupPricing.calculateAverageRating();
+    await savedGroupPricing.save();
 
     res.status(201).json({
       success: true,
@@ -149,12 +228,26 @@ export const createGroupPricing = async (req, res) => {
 export const updateGroupPricing = async (req, res) => {
   try {
     const { id } = req.params;
-    const { level, courseIds, groupPrice, description, status } = req.body;
-    const image = req.file ? `/uploads/group_pricing_images/${req.file.filename}` : undefined;
+    const {
+      level,
+      courseIds,
+      groupPrice,
+      description,
+      status,
+      recordedPrice,
+      recordedFinalPrice,
+      recordedDiscount,
+      livePrice,
+      liveFinalPrice,
+      liveDiscount,
+    } = req.body;
+    const image = req.file
+      ? `/uploads/group_pricing_images/${req.file.filename}`
+      : undefined;
 
     // Parse courseIds if it's a string (from FormData)
     let parsedCourseIds = courseIds;
-    if (courseIds && typeof courseIds === 'string') {
+    if (courseIds && typeof courseIds === "string") {
       try {
         parsedCourseIds = JSON.parse(courseIds);
       } catch (e) {
@@ -174,7 +267,10 @@ export const updateGroupPricing = async (req, res) => {
     }
 
     // Validate required fields if provided
-    if (parsedCourseIds && (!Array.isArray(parsedCourseIds) || parsedCourseIds.length === 0)) {
+    if (
+      parsedCourseIds &&
+      (!Array.isArray(parsedCourseIds) || parsedCourseIds.length === 0)
+    ) {
       return res.status(400).json({
         success: false,
         message: "courseIds must be a non-empty array",
@@ -209,11 +305,47 @@ export const updateGroupPricing = async (req, res) => {
     if (status) groupPricing.status = status;
     if (image) groupPricing.image = image;
 
+    // Update pricing structure
+    if (recordedPrice || recordedFinalPrice || recordedDiscount !== undefined) {
+      if (recordedPrice)
+        groupPricing.pricing.recordedSession.price = parseFloat(recordedPrice);
+      if (recordedFinalPrice)
+        groupPricing.pricing.recordedSession.finalPrice =
+          parseFloat(recordedFinalPrice);
+      if (recordedDiscount !== undefined)
+        groupPricing.pricing.recordedSession.discount =
+          parseFloat(recordedDiscount);
+    }
+
+    if (livePrice || liveFinalPrice || liveDiscount !== undefined) {
+      if (livePrice)
+        groupPricing.pricing.liveSession.price = parseFloat(livePrice);
+      if (liveFinalPrice)
+        groupPricing.pricing.liveSession.finalPrice =
+          parseFloat(liveFinalPrice);
+      if (liveDiscount !== undefined)
+        groupPricing.pricing.liveSession.discount = parseFloat(liveDiscount);
+    }
+
     const updatedGroupPricing = await groupPricing.save();
-    await updatedGroupPricing.populate(
-      "courseIds",
-      "title category level price"
-    );
+
+    // Recalculate average rating if courses changed
+    if (parsedCourseIds) {
+      await updatedGroupPricing.calculateAverageRating();
+      await updatedGroupPricing.save();
+    }
+    await updatedGroupPricing.populate({
+      path: "courseIds",
+      select: "title category level price",
+      populate: {
+        path: "chapters",
+        select: "title",
+        populate: {
+          path: "topics",
+          select: "title",
+        },
+      },
+    });
 
     res.json({
       success: true,
@@ -303,6 +435,115 @@ export const getCoursesByLevel = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to fetch courses",
+      error: error.message,
+    });
+  }
+};
+
+// Enroll student in group package
+export const enrollInGroupPackage = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { studentId, sessionType } = req.body;
+
+    // Validate student ID format
+    if (!mongoose.Types.ObjectId.isValid(studentId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid student ID format",
+      });
+    }
+
+    // Validate group pricing ID format
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid group pricing ID format",
+      });
+    }
+
+    // Check if student exists
+    const student = await Student.findById(studentId);
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+      });
+    }
+
+    // Check if group pricing exists
+    const groupPricing = await GroupPricing.findById(id).populate({
+      path: "courseIds",
+      select: "title category level price",
+      populate: {
+        path: "chapters",
+        select: "title",
+        populate: {
+          path: "topics",
+          select: "title",
+        },
+      },
+    });
+    if (!groupPricing) {
+      return res.status(404).json({
+        success: false,
+        message: "Group package not found",
+      });
+    }
+
+    // Validate session type
+    if (!sessionType || !["recorded", "live"].includes(sessionType)) {
+      return res.status(400).json({
+        success: false,
+        message: "Session type must be 'recorded' or 'live'",
+      });
+    }
+
+    // Check if student is already enrolled in any of the courses in this package
+    const enrolledCourses = groupPricing.courseIds.filter(
+      (course) =>
+        student.enrolledRecordedSessions.includes(course._id) ||
+        student.enrolledLiveSessions.includes(course._id)
+    );
+
+    if (enrolledCourses.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Student is already enrolled in some courses from this package: ${enrolledCourses
+          .map((c) => c.title)
+          .join(", ")}`,
+      });
+    }
+
+    // Enroll student in all courses in the package
+    const courseIds = groupPricing.courseIds.map((course) => course._id);
+
+    if (sessionType === "recorded") {
+      // Add all courses to recorded sessions
+      student.enrolledRecordedSessions.push(...courseIds);
+    } else {
+      // Add all courses to live sessions
+      student.enrolledLiveSessions.push(...courseIds);
+    }
+
+    await student.save();
+
+    res.json({
+      success: true,
+      message: `Successfully enrolled in ${groupPricing.level} package with ${sessionType} sessions`,
+      data: {
+        packageId: groupPricing._id,
+        packageName: `${groupPricing.level} Course Package`,
+        sessionType,
+        enrolledCourses: courseIds.length,
+        courseTitles: groupPricing.courseIds.map((course) => course.title),
+      },
+    });
+  } catch (error) {
+    console.error("Error enrolling in group package:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to enroll in group package",
       error: error.message,
     });
   }

@@ -2,12 +2,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState, use, useEffect } from "react";
+import React, { useState, use, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import {
   ChevronDown,
   ChevronUp,
-  Play,
   Star,
   Clock,
   Users,
@@ -16,10 +15,10 @@ import {
 } from "lucide-react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
+import LoginModal from "../../components/LoginModal";
 import jsPDF from "jspdf";
 
 import LiveSchedule from "../../components/LiveSchedule";
-import SimulatorDemo from "../../components/SimulatorDemo";
 
 import axios from "axios";
 
@@ -257,63 +256,57 @@ export default function CourseDetailPage({
   const [courseRatings, setCourseRatings] = useState<any>(null);
   const [ratingsLoading, setRatingsLoading] = useState(true);
   const [student, setStudent] = useState<any>(null);
+
   const [isEnrolling, setIsEnrolling] = useState(false);
   const [isEnrollingRecorded, setIsEnrollingRecorded] = useState(false);
   const [isEnrollingRecordedCenter, setIsEnrollingRecordedCenter] = useState(false);
   const [isEnrollingLiveCenter, setIsEnrollingLiveCenter] = useState(false);
 
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
-  // Debug logging
-  console.log("Course Page API_BASE:", API_BASE);
-  console.log(
-    "Course Page NEXT_PUBLIC_API_URL:",
-    process.env.NEXT_PUBLIC_API_URL
-  );
-  console.log(
-    "Course Page NEXT_PUBLIC_API_BASE:",
-    process.env.NEXT_PUBLIC_API_BASE
-  );
-  console.log("Course data:", course);
-  console.log("Course image:", course?.image);
+  // Debug logging - removed to prevent console spam
 
   // Unwrap the params Promise using React.use()
   const resolvedParams = use(params);
 
-  console.log("Resolved params:", resolvedParams);
-  console.log("Course ID:", resolvedParams.courseId);
+  // Removed console.log to prevent re-renders
 
   // Temporary hardcoded test data to check if image display works
-  const testCourse = {
-    title: "Basic Accounting & Tally Foundation",
-    image: "/uploads/1758703607767-656204190.webp",
-    pricing: {
-      recordedSession: { finalPrice: 4750, price: 5000, discount: 5 },
-      liveSession: { finalPrice: 6650, price: 7000, discount: 5 },
-    },
-  };
+  const testCourse = useMemo(
+    () => ({
+      _id: "68d7eab196f732ef361fd287", // Real course ID from database
+      id: "68d7eab196f732ef361fd287",
+      title: "Basic Accounting & Tally Foundation",
+      image: "/uploads/1758703607767-656204190.webp",
+      pricing: {
+        recordedSession: { finalPrice: 4750, price: 5000, discount: 5 },
+        liveSession: { finalPrice: 6650, price: 7000, discount: 5 },
+      },
+    }),
+    []
+  );
 
-  console.log("Test course:", testCourse);
+  // Removed console.log to prevent re-renders
 
   // Force course data for testing - bypass loading state
   const displayCourse = course || testCourse;
-  console.log("Display course:", displayCourse);
 
   // Fetch course data from API
   useEffect(() => {
-    console.log(
-      "useEffect triggered with courseId:",
-      resolvedParams.courseId,
-      "API_BASE:",
-      API_BASE
-    );
+    // Removed console.log to prevent re-renders
 
     // Set initial course data immediately to prevent blinking
-    const fallbackCourse = dummyCourses[resolvedParams.courseId as keyof typeof dummyCourses];
+    const fallbackCourse =
+      dummyCourses[resolvedParams.courseId as keyof typeof dummyCourses];
     if (fallbackCourse) {
       setCourse(fallbackCourse);
       setLoading(false);
-    } else if (resolvedParams.courseId === "basic-accounting-tally-foundation") {
+    } else if (
+      resolvedParams.courseId === "basic-accounting-tally-foundation"
+    ) {
       setCourse(testCourse);
       setLoading(false);
     }
@@ -321,34 +314,23 @@ export default function CourseDetailPage({
     // Fetch from API in background
     const fetchCourse = async () => {
       if (!resolvedParams.courseId) {
-        console.log("No courseId found, skipping API call");
         return;
       }
 
       try {
-        console.log(
-          "Making API call to:",
-          `${API_BASE}/api/courses/${resolvedParams.courseId}`
-        );
         const response = await axios.get(
           `${API_BASE}/api/courses/${resolvedParams.courseId}`
         );
-        console.log("Course data received:", response.data);
-        console.log("Course image:", response.data.image);
         setCourse(response.data);
-      } catch (err: any) {
-        console.error("Error fetching course:", err);
-        console.error("Error details:", err.response?.data);
-        console.error("Error status:", err.response?.status);
+      } catch {
         setError("Course not found");
         // Keep existing fallback course if API fails
-        console.log("API failed, keeping fallback course");
       }
     };
 
     // Run API call in background
     fetchCourse();
-  }, [resolvedParams.courseId, API_BASE]);
+  }, [resolvedParams.courseId, API_BASE, testCourse]);
 
   // Check student authentication
   useEffect(() => {
@@ -361,112 +343,44 @@ export default function CourseDetailPage({
           }
         );
         setStudent(response.data.student);
-      } catch (err) {
-        console.error("Error checking student auth:", err);
+      } catch {
         setStudent(null);
       }
     };
     checkStudentAuth();
   }, [API_BASE]);
 
-  // Handle Digital Hub+ enrollment
-  const handleDigitalHubPlusEnrollment = async () => {
+  // Handle adding course to cart
+  const handleAddToCart = async (
+    courseId: string,
+    sessionType: "recorded" | "live"
+  ) => {
     if (!student) {
-      alert("Please login to enroll in Digital Hub+ Live Sessions");
+      setShowLoginModal(true);
       return;
     }
 
-    setIsEnrolling(true);
     try {
-      // First, get all live sessions for this course category
-      const liveSessionsResponse = await axios.get(
-        `${API_BASE}/api/live-sessions`
-      );
-      const courseLiveSessions = liveSessionsResponse.data.filter(
-        (session: any) =>
-          session.category === course?.category || "CA Foundation"
-      );
-
-      // Enroll student in all live sessions for this course
-      for (const session of courseLiveSessions) {
-        try {
-          await axios.post(
-            `${API_BASE}/api/v1/students/enroll-live-session/${student._id}`,
-            { sessionId: session._id },
-            { withCredentials: true }
-          );
-        } catch (enrollError) {
-          console.error(
-            `Failed to enroll in session ${session._id}:`,
-            enrollError
-          );
-        }
-      }
-
-      alert(
-        "Successfully enrolled in Digital Hub+ Live Sessions! You can now access live classes from your dashboard."
-      );
-    } catch (error) {
-      console.error("Error enrolling in live sessions:", error);
-      alert("Failed to enroll in live sessions. Please try again.");
-    } finally {
-      setIsEnrolling(false);
-    }
-  };
-
-  // Handle Digital Hub Recorded Session enrollment
-  const handleDigitalHubRecordedEnrollment = async () => {
-    if (!student) {
-      alert("Please login to enroll in Digital Hub Recorded Sessions");
-      return;
-    }
-
-    setIsEnrollingRecorded(true);
-    try {
-      const enrollUrl = `${API_BASE}/api/v1/students/enroll-recorded-session/${student._id}`;
-      console.log("Enrolling in recorded session with URL:", enrollUrl);
-      console.log("Course ID:", course._id);
-      console.log("Student ID:", student._id);
-
-      // Enroll student in recorded session (course content)
       const response = await axios.post(
-        enrollUrl,
-        { courseId: course._id },
+        `${API_BASE}/api/v1/students/add-to-cart/${student._id}`,
+        { courseId, sessionType },
         { withCredentials: true }
       );
 
-      console.log("Enrollment response:", response.data);
-      alert(
-        "Successfully enrolled in Digital Hub Recorded Sessions! You can now access recorded content from your dashboard."
-      );
-    } catch (error: any) {
-      console.error("Error enrolling in recorded sessions:", error);
-      console.error("Error details:", error.response?.data);
-      console.error("Error status:", error.response?.status);
-
-      // Provide more specific error messages
-      let errorMessage =
-        "Failed to enroll in recorded sessions. Please try again.";
-
-      if (error.response?.status === 400) {
-        if (error.response?.data?.message?.includes("already enrolled")) {
-          errorMessage = "You are already enrolled in this recorded session.";
-        } else if (error.response?.data?.message?.includes("Invalid")) {
-          errorMessage =
-            "Invalid course or student information. Please refresh the page and try again.";
-        } else {
-          errorMessage = error.response?.data?.message || errorMessage;
-        }
-      } else if (error.response?.status === 404) {
-        errorMessage =
-          "Course or student not found. Please refresh the page and try again.";
-      } else if (error.response?.status === 401) {
-        errorMessage = "Please login again to enroll in recorded sessions.";
+      if (response.data.message) {
+        alert(`Course added to cart successfully!`);
+        // Trigger a custom event to update cart in header
+        window.dispatchEvent(new CustomEvent("cartUpdated"));
       }
-
-      alert(errorMessage);
-    } finally {
-      setIsEnrollingRecorded(false);
+    } catch (error: any) {
+      if (
+        error.response?.status === 400 &&
+        error.response?.data?.message?.includes("already in cart")
+      ) {
+        alert("This course with this session type is already in your cart!");
+      } else {
+        alert("Failed to add course to cart. Please try again.");
+      }
     }
   };
 
@@ -602,8 +516,7 @@ export default function CourseDetailPage({
             data: [],
           });
         }
-      } catch (err) {
-        console.error("Error fetching course ratings:", err);
+      } catch {
         // Set default ratings if API fails
         setCourseRatings({
           averageRating: course?.rating || 4.7,
@@ -619,7 +532,7 @@ export default function CourseDetailPage({
     if (course && course._id) {
       fetchCourseRatings();
     }
-  }, [course, API_BASE]);
+  }, [course, API_BASE, resolvedParams.courseId]);
 
   // Loading state
   if (loading && !displayCourse) {
@@ -848,35 +761,38 @@ export default function CourseDetailPage({
                   {course.title}
                 </h1>
 
-                {/* Rating - Show if available */}
-                {(courseRatings?.averageRating ||
-                  courseRatings?.totalRatings) && (
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="flex items-center">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`w-5 h-5 ${
-                            i < Math.floor(courseRatings?.averageRating || 0)
-                              ? "text-yellow-400 fill-current"
-                              : "text-gray-300"
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    <span className="text-sm font-bold text-gray-900">
-                      {courseRatings?.averageRating || 0}
-                    </span>
-                    <span className="text-xs text-gray-600">
-                      [{courseRatings?.totalRatings || 0}]
-                    </span>
-                    {ratingsLoading && (
-                      <span className="text-sm text-gray-500">
-                        Loading ratings...
-                      </span>
-                    )}
+                {/* Rating - Always show stars with proper rating */}
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="flex items-center">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`w-5 h-5 ${
+                          i <
+                          Math.floor(
+                            courseRatings?.averageRating ||
+                              course?.rating ||
+                              4.7
+                          )
+                            ? "text-yellow-400 fill-current"
+                            : "text-gray-300"
+                        }`}
+                      />
+                    ))}
                   </div>
-                )}
+                  <span className="text-sm font-bold text-gray-900">
+                    {courseRatings?.averageRating || course?.rating || 4.7}
+                  </span>
+                  <span className="text-xs text-gray-600">
+                    ({courseRatings?.totalRatings || course?.reviewCount || 449}{" "}
+                    reviews)
+                  </span>
+                  {ratingsLoading && (
+                    <span className="text-sm text-gray-500">
+                      Loading ratings...
+                    </span>
+                  )}
+                </div>
 
                 {/* Description */}
                 <div
@@ -1162,14 +1078,8 @@ export default function CourseDetailPage({
                       <div className="mb-2">
                         <div className="text-center mb-1">
                           <span className="text-xs font-bold text-[#3cd664] block">
-                            {course?.pricing?.recordedSession?.title?.split(
-                              "+"
-                            )[0] || "DIGITAL HUB+"}
-                          </span>
-                          <span className="text-xs font-bold text-[#3cd664] block">
-                            {course?.pricing?.recordedSession?.title?.split(
-                              "+"
-                            )[1] || "RECORDED SESSION"}
+                            {course?.pricing?.recordedSession?.title ||
+                              "DIGITAL HUB RECORDED SESSION"}
                           </span>
                         </div>
                         <div className="text-center">
@@ -1194,14 +1104,13 @@ export default function CourseDetailPage({
                       </div>
 
                       <button
-                        onClick={handleDigitalHubRecordedEnrollment}
-                        disabled={isEnrollingRecorded}
-                        className="w-full bg-[#3cd664] hover:bg-[#33bb58] text-white font-bold py-1 px-2 rounded text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={() =>
+                          handleAddToCart(course._id || course.id, "recorded")
+                        }
+                        className="w-full bg-[#3cd664] hover:bg-[#33bb58] text-white font-bold py-1 px-2 rounded text-xs"
                       >
-                        {isEnrollingRecorded
-                          ? "Enrolling..."
-                          : course?.pricing?.recordedSession?.buttonText ||
-                            "Add Digital Hub+"}
+                        {course?.pricing?.recordedSession?.buttonText ||
+                          "Add Digital Hub"}
                       </button>
                     </div>
 
@@ -1210,14 +1119,8 @@ export default function CourseDetailPage({
                       <div className="mb-2">
                         <div className="text-center mb-1">
                           <span className="text-xs font-bold text-blue-500 block">
-                            {course?.pricing?.liveSession?.title?.split(
-                              "+"
-                            )[0] || "DIGITAL HUB+"}
-                          </span>
-                          <span className="text-xs font-bold text-blue-500 block">
-                            {course?.pricing?.liveSession?.title?.split(
-                              "+"
-                            )[1] || "LIVE SESSION"}
+                            {course?.pricing?.liveSession?.title ||
+                              "DIGITAL HUB LIVE SESSION"}
                           </span>
                         </div>
                         <div className="text-center">
@@ -1246,14 +1149,13 @@ export default function CourseDetailPage({
                       </div>
 
                       <button
-                        onClick={handleDigitalHubPlusEnrollment}
-                        disabled={isEnrolling}
-                        className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-1 px-2 rounded text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={() =>
+                          handleAddToCart(course._id || course.id, "live")
+                        }
+                        className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-1 px-2 rounded text-xs"
                       >
-                        {isEnrolling
-                          ? "Enrolling..."
-                          : course?.pricing?.liveSession?.buttonText ||
-                            "Add Digital Hub+"}
+                        {course?.pricing?.liveSession?.buttonText ||
+                          "Add Digital Hub+"}
                       </button>
                     </div>
                   </div>
@@ -1445,6 +1347,17 @@ export default function CourseDetailPage({
       </div>
 
       <Footer />
+
+      {/* Login Modal */}
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onLoginSuccess={() => {
+          setShowLoginModal(false);
+          // Refresh student data after login
+          window.location.reload();
+        }}
+      />
     </div>
   );
 }
