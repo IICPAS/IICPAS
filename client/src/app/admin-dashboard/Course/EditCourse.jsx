@@ -89,6 +89,11 @@ export default function EditCourse({ courseId, onBack }) {
           recordedSessionDiscount: c.pricing?.recordedSession?.discount || "",
           liveSessionPrice: c.pricing?.liveSession?.price || "",
           liveSessionDiscount: c.pricing?.liveSession?.discount || "",
+          // Center pricing fields
+          recordedSessionCenterPrice: c.pricing?.recordedSessionCenter?.price || "",
+          recordedSessionCenterDiscount: c.pricing?.recordedSessionCenter?.discount || "",
+          liveSessionCenterPrice: c.pricing?.liveSessionCenter?.price || "",
+          liveSessionCenterDiscount: c.pricing?.liveSessionCenter?.discount || "",
         });
 
         // Load simulations
@@ -213,6 +218,22 @@ export default function EditCourse({ courseId, onBack }) {
       : price || "";
   };
 
+  const getRecordedSessionCenterFinalPrice = () => {
+    const price = parseFloat(form.recordedSessionCenterPrice) || 0;
+    const discount = parseFloat(form.recordedSessionCenterDiscount) || 0;
+    return price && discount
+      ? Math.max(0, price - (price * discount) / 100)
+      : price || "";
+  };
+
+  const getLiveSessionCenterFinalPrice = () => {
+    const price = parseFloat(form.liveSessionCenterPrice) || 0;
+    const discount = parseFloat(form.liveSessionCenterDiscount) || 0;
+    return price && discount
+      ? Math.max(0, price - (price * discount) / 100)
+      : price || "";
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -237,6 +258,20 @@ export default function EditCourse({ courseId, onBack }) {
           discount: parseFloat(form.liveSessionDiscount) || 0,
           finalPrice: getLiveSessionFinalPrice(),
         },
+        recordedSessionCenter: {
+          title: "DIGITAL HUB+ RECORDED SESSION+ CENTER",
+          buttonText: "Add Digital Hub+ Center",
+          price: parseFloat(form.recordedSessionCenterPrice) || 0,
+          discount: parseFloat(form.recordedSessionCenterDiscount) || 0,
+          finalPrice: getRecordedSessionCenterFinalPrice(),
+        },
+        liveSessionCenter: {
+          title: "DIGITAL HUB+ LIVE SESSION+ CENTER",
+          buttonText: "Add Digital Hub+ Center",
+          price: parseFloat(form.liveSessionCenterPrice) || 0,
+          discount: parseFloat(form.liveSessionCenterDiscount) || 0,
+          finalPrice: getLiveSessionCenterFinalPrice(),
+        },
       };
       fd.append("pricing", JSON.stringify(pricing));
 
@@ -250,6 +285,10 @@ export default function EditCourse({ courseId, onBack }) {
             "recordedSessionDiscount",
             "liveSessionPrice",
             "liveSessionDiscount",
+            "recordedSessionCenterPrice",
+            "recordedSessionCenterDiscount",
+            "liveSessionCenterPrice",
+            "liveSessionCenterDiscount",
           ].includes(k)
         )
           return;
@@ -439,6 +478,82 @@ export default function EditCourse({ courseId, onBack }) {
                   <label>Live Session Final Price</label>
                   <input
                     value={getLiveSessionFinalPrice()}
+                    readOnly
+                    className="w-full border p-2 rounded bg-gray-100"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Recorded Session + Center Pricing */}
+            <div className="border p-4 rounded-lg bg-green-50">
+              <h4 className="font-semibold text-green-800 mb-3">
+                Recorded Session + Center Pricing
+              </h4>
+              <div className="space-y-3">
+                <div>
+                  <label>Recorded Session + Center Price</label>
+                  <input
+                    name="recordedSessionCenterPrice"
+                    type="number"
+                    value={form.recordedSessionCenterPrice}
+                    onChange={handleInputChange}
+                    className="w-full border p-2 rounded"
+                    required
+                  />
+                </div>
+                <div>
+                  <label>Recorded Session + Center Discount (%)</label>
+                  <input
+                    name="recordedSessionCenterDiscount"
+                    type="number"
+                    value={form.recordedSessionCenterDiscount}
+                    onChange={handleInputChange}
+                    className="w-full border p-2 rounded"
+                  />
+                </div>
+                <div>
+                  <label>Recorded Session + Center Final Price</label>
+                  <input
+                    value={getRecordedSessionCenterFinalPrice()}
+                    readOnly
+                    className="w-full border p-2 rounded bg-gray-100"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Live Session + Center Pricing */}
+            <div className="border p-4 rounded-lg bg-blue-50">
+              <h4 className="font-semibold text-blue-800 mb-3">
+                Live Session + Center Pricing
+              </h4>
+              <div className="space-y-3">
+                <div>
+                  <label>Live Session + Center Price</label>
+                  <input
+                    name="liveSessionCenterPrice"
+                    type="number"
+                    value={form.liveSessionCenterPrice}
+                    onChange={handleInputChange}
+                    className="w-full border p-2 rounded"
+                    required
+                  />
+                </div>
+                <div>
+                  <label>Live Session + Center Discount (%)</label>
+                  <input
+                    name="liveSessionCenterDiscount"
+                    type="number"
+                    value={form.liveSessionCenterDiscount}
+                    onChange={handleInputChange}
+                    className="w-full border p-2 rounded"
+                  />
+                </div>
+                <div>
+                  <label>Live Session + Center Final Price</label>
+                  <input
+                    value={getLiveSessionCenterFinalPrice()}
                     readOnly
                     className="w-full border p-2 rounded bg-gray-100"
                   />
