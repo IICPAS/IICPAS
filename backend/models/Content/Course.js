@@ -56,6 +56,20 @@ const CourseSchema = new Schema({
       discount: { type: Number, default: 0 },
       finalPrice: { type: Number, required: true },
     },
+    recordedSessionCenter: {
+      title: { type: String, default: "DIGITAL HUB+ RECORDED SESSION+ CENTER" },
+      buttonText: { type: String, default: "Add Digital Hub+ Center" },
+      price: { type: Number, required: true },
+      discount: { type: Number, default: 0 },
+      finalPrice: { type: Number, required: true },
+    },
+    liveSessionCenter: {
+      title: { type: String, default: "DIGITAL HUB+ LIVE SESSION+ CENTER" },
+      buttonText: { type: String, default: "Add Digital Hub+ Center" },
+      price: { type: Number, required: true },
+      discount: { type: Number, default: 0 },
+      finalPrice: { type: Number, required: true },
+    },
   },
 
   // Dynamic tab configuration
