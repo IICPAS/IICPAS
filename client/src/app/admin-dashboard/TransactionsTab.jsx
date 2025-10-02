@@ -3,7 +3,14 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
-import { FaEye, FaCheck, FaTimes, FaSearch, FaFilter } from "react-icons/fa";
+import {
+  FaEye,
+  FaCheck,
+  FaTimes,
+  FaSearch,
+  FaFilter,
+  FaEnvelope,
+} from "react-icons/fa";
 
 const TransactionsTab = () => {
   const [transactions, setTransactions] = useState([]);
@@ -39,20 +46,14 @@ const TransactionsTab = () => {
         params.append("search", searchTerm);
       }
 
-      const token = localStorage.getItem("adminToken");
       const response = await axios.get(
-        `${API_BASE}/api/transactions/all?${params}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        `${API_BASE}/api/v1/transactions/admin/all?${params}`
       );
 
       if (response.data.success) {
         setTransactions(response.data.transactions);
-        setTotalPages(response.data.pagination.pages);
-        setTotalTransactions(response.data.pagination.total);
+        setTotalPages(response.data.pagination.totalPages);
+        setTotalTransactions(response.data.pagination.totalCount);
       }
     } catch (error) {
       console.error("Error fetching transactions:", error);
@@ -69,15 +70,9 @@ const TransactionsTab = () => {
   const handleStatusUpdate = async (transactionId, newStatus, notes = "") => {
     try {
       setActionLoading(true);
-      const token = localStorage.getItem("adminToken");
-      const response = await axios.patch(
-        `${API_BASE}/api/transactions/${transactionId}/status`,
-        { status: newStatus, notes },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const response = await axios.put(
+        `${API_BASE}/api/v1/transactions/admin/update-status/${transactionId}`,
+        { status: newStatus, adminNotes: notes, adminId: "admin-user-001" }
       );
 
       if (response.data.success) {
@@ -106,6 +101,55 @@ const TransactionsTab = () => {
     }
   };
 
+  const handleSendReceipt = async (transactionId) => {
+    try {
+      setActionLoading(true);
+      const response = await axios.post(
+        `${API_BASE}/api/v1/transactions/admin/send-receipt/${transactionId}`,
+        {}
+      );
+
+      if (response.data.success) {
+        const emailResult = response.data.emailResult;
+        Swal.fire({
+          title: "Receipt Sent! 📧",
+          html: `
+            <div class="text-left">
+              <p><strong>PDF Receipt sent successfully!</strong></p>
+              <p>📨 Sent to: <span class="text-blue-600">${
+                emailResult?.email || "Student email"
+              }</span></p>
+              ${
+                emailResult?.messageId
+                  ? `<p class="text-sm text-gray-500">Message ID: ${emailResult.messageId.slice(
+                      0,
+                      8
+                    )}...</p>`
+                  : ""
+              }
+            </div>
+          `,
+          icon: "success",
+          timer: 3000,
+          timerProgressBar: true,
+          confirmButtonText: "Great!",
+        });
+        fetchTransactions(); // Refresh the list
+        setShowModal(false);
+        setSelectedTransaction(null);
+      }
+    } catch (error) {
+      console.error("Error sending receipt:", error);
+      Swal.fire({
+        title: "Error",
+        text: error.response?.data?.message || "Failed to send receipt",
+        icon: "error",
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleViewTransaction = (transaction) => {
     setSelectedTransaction(transaction);
     setShowModal(true);
@@ -114,7 +158,7 @@ const TransactionsTab = () => {
   const getStatusBadge = (status) => {
     const statusConfig = {
       pending: { color: "bg-yellow-100 text-yellow-800", text: "Pending" },
-      verified: { color: "bg-green-100 text-green-800", text: "Verified" },
+      approved: { color: "bg-green-100 text-green-800", text: "Approved" },
       rejected: { color: "bg-red-100 text-red-800", text: "Rejected" },
     };
 
@@ -197,7 +241,7 @@ const TransactionsTab = () => {
             >
               <option value="">All Status</option>
               <option value="pending">Pending</option>
-              <option value="verified">Verified</option>
+              <option value="approved">Approved</option>
               <option value="rejected">Rejected</option>
             </select>
           </div>
@@ -258,16 +302,16 @@ const TransactionsTab = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
                           <div className="text-sm font-medium text-gray-900">
-                            {transaction.student?.name || "N/A"}
+                            {transaction.studentId?.name || "N/A"}
                           </div>
                           <div className="text-sm text-gray-500">
-                            {transaction.student?.email || "N/A"}
+                            {transaction.studentId?.email || "N/A"}
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {transaction.course?.title || "N/A"}
+                          {transaction.courseId?.title || "N/A"}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -301,7 +345,7 @@ const TransactionsTab = () => {
                                 onClick={() =>
                                   handleStatusUpdate(
                                     transaction._id,
-                                    "verified"
+                                    "approved"
                                   )
                                 }
                                 className="text-green-600 hover:text-green-900"
@@ -323,6 +367,64 @@ const TransactionsTab = () => {
                               >
                                 <FaTimes />
                               </button>
+                            </>
+                          )}
+                          {transaction.status === "approved" && (
+                            <>
+                              <button
+                                onClick={() => {
+                                  Swal.fire({
+                                    title: transaction.receiptSent
+                                      ? "Send Receipt Again by Email?"
+                                      : "Send Receipt by Email?",
+                                    html: `
+                                      <div class="text-left">
+                                        <p><strong>This will send a PDF receipt to:</strong></p>
+                                        <p class="text-blue-600 font-medium">${
+                                          transaction.studentId?.email ||
+                                          "Student email"
+                                        }</p>
+                                        ${
+                                          transaction.receiptSent
+                                            ? `<p class="text-yellow-600 text-sm mb-2">⚠️ Receipt was previously sent</p>`
+                                            : ""
+                                        }
+                                        <p class="text-sm text-gray-500 mt-2">The email will include:</p>
+                                        <ul class="text-sm text-gray-500 ml-4">
+                                          <li>• Professional PDF receipt attachment</li>
+                                          <li>• Transaction details & UTR number</li>
+                                          <li>• Course information & payment summary</li>
+                                        </ul>
+                                      </div>
+                                    `,
+                                    icon: "question",
+                                    showCancelButton: true,
+                                    confirmButtonText: transaction.receiptSent
+                                      ? "Yes, Send Again 📧"
+                                      : "Yes, Send Receipt 📧",
+                                    cancelButtonText: "Cancel",
+                                    confirmButtonColor: "#10b981",
+                                    cancelButtonColor: "#6b7280",
+                                  }).then((result) => {
+                                    if (result.isConfirmed) {
+                                      handleSendReceipt(transaction._id);
+                                    }
+                                  });
+                                }}
+                                className="text-blue-600 hover:text-blue-900"
+                                title="Send Receipt by Email"
+                                disabled={actionLoading}
+                              >
+                                <FaEnvelope />
+                              </button>
+                              {transaction.receiptSent && (
+                                <span
+                                  className="text-green-600 ml-1"
+                                  title="Receipt Previously Sent"
+                                >
+                                  ✓
+                                </span>
+                              )}
                             </>
                           )}
                         </div>
@@ -400,6 +502,7 @@ const TransactionsTab = () => {
             setSelectedTransaction(null);
           }}
           onStatusUpdate={handleStatusUpdate}
+          onSendReceipt={handleSendReceipt}
           actionLoading={actionLoading}
         />
       )}
@@ -412,6 +515,7 @@ const TransactionDetailsModal = ({
   transaction,
   onClose,
   onStatusUpdate,
+  onSendReceipt,
   actionLoading,
 }) => {
   const [notes, setNotes] = useState("");
@@ -421,7 +525,7 @@ const TransactionDetailsModal = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 backdrop-blur-lg bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
@@ -445,7 +549,7 @@ const TransactionDetailsModal = ({
                 Student Name
               </label>
               <p className="text-gray-900">
-                {transaction.student?.name || "N/A"}
+                {transaction.studentId?.name || "N/A"}
               </p>
             </div>
             <div>
@@ -453,7 +557,7 @@ const TransactionDetailsModal = ({
                 Student Email
               </label>
               <p className="text-gray-900">
-                {transaction.student?.email || "N/A"}
+                {transaction.studentId?.email || "N/A"}
               </p>
             </div>
             <div>
@@ -461,7 +565,7 @@ const TransactionDetailsModal = ({
                 Course
               </label>
               <p className="text-gray-900">
-                {transaction.course?.title || "N/A"}
+                {transaction.courseId?.title || "N/A"}
               </p>
             </div>
             <div>
@@ -505,13 +609,13 @@ const TransactionDetailsModal = ({
                 {new Date(transaction.createdAt).toLocaleString("en-IN")}
               </p>
             </div>
-            {transaction.verifiedBy && (
+            {transaction.approvedBy && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Verified By
+                  Approved By
                 </label>
                 <p className="text-gray-900">
-                  {transaction.verifiedBy?.name || "N/A"}
+                  {transaction.approvedBy?.name || "N/A"}
                 </p>
               </div>
             )}
@@ -535,11 +639,11 @@ const TransactionDetailsModal = ({
           {transaction.status === "pending" && (
             <div className="flex space-x-3 pt-4 border-t">
               <button
-                onClick={() => handleStatusUpdate("verified")}
+                onClick={() => handleStatusUpdate("approved")}
                 disabled={actionLoading}
                 className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
               >
-                {actionLoading ? "Processing..." : "Verify Payment"}
+                {actionLoading ? "Processing..." : "Approve Payment"}
               </button>
               <button
                 onClick={() => handleStatusUpdate("rejected")}
@@ -547,6 +651,23 @@ const TransactionDetailsModal = ({
                 className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
               >
                 {actionLoading ? "Processing..." : "Reject Payment"}
+              </button>
+            </div>
+          )}
+
+          {/* Send Receipt for Approved Transactions */}
+          {transaction.status === "approved" && (
+            <div className="flex space-x-3 pt-4 border-t">
+              <button
+                onClick={() => onSendReceipt(transaction._id)}
+                disabled={actionLoading || transaction.receiptSent}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+              >
+                {transaction.receiptSent
+                  ? "Receipt Sent ✓"
+                  : actionLoading
+                  ? "Sending..."
+                  : "Send Receipt"}
               </button>
             </div>
           )}

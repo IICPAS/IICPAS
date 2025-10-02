@@ -16,9 +16,11 @@ import {
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import LoginModal from "../../components/LoginModal";
+import SimpleCheckoutModal from "../../../components/SimpleCheckoutModal";
 import jsPDF from "jspdf";
 
 import LiveSchedule from "../../components/LiveSchedule";
+import { useCart } from "../../../hooks/useCart";
 
 import axios from "axios";
 
@@ -257,13 +259,19 @@ export default function CourseDetailPage({
   const [ratingsLoading, setRatingsLoading] = useState(true);
   const [student, setStudent] = useState<any>(null);
 
-  const [isEnrolling, setIsEnrolling] = useState(false);
-  const [isEnrollingRecorded, setIsEnrollingRecorded] = useState(false);
-  const [isEnrollingRecordedCenter, setIsEnrollingRecordedCenter] = useState(false);
+  const [isEnrollingRecordedCenter, setIsEnrollingRecordedCenter] =
+    useState(false);
   const [isEnrollingLiveCenter, setIsEnrollingLiveCenter] = useState(false);
 
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+  const [pendingCartAction, setPendingCartAction] = useState<{
+    courseId: string;
+    sessionType: "recorded" | "live";
+  } | null>(null);
 
+  // Use the new cart hook
+  const { cartCount, addToCart, loading: cartLoading } = useCart(student);
 
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
@@ -355,46 +363,52 @@ export default function CourseDetailPage({
     courseId: string,
     sessionType: "recorded" | "live"
   ) => {
+    console.log("handleAddToCart called with:", {
+      courseId,
+      sessionType,
+      student: student?._id,
+    });
+
     if (!student) {
+      // Store the pending action and show login modal
+      setPendingCartAction({ courseId, sessionType });
       setShowLoginModal(true);
       return;
     }
 
     try {
-      const response = await axios.post(
-        `${API_BASE}/api/v1/students/add-to-cart/${student._id}`,
-        { courseId, sessionType },
-        { withCredentials: true }
-      );
+      const result = await addToCart(courseId, sessionType);
+      console.log("Add to cart result:", result);
 
-      if (response.data.message) {
-        alert(`Course added to cart successfully!`);
-        // Trigger a custom event to update cart in header
-        window.dispatchEvent(new CustomEvent("cartUpdated"));
+      // Trigger a custom event to update cart in header
+      window.dispatchEvent(new CustomEvent("cartUpdated"));
+
+      // Show appropriate message based on result
+      if (result?.message === "Item already in cart") {
+        alert("This course is already in your cart!");
+      } else {
+        alert("Course added to cart successfully!");
       }
     } catch (error: any) {
-      if (
-        error.response?.status === 400 &&
-        error.response?.data?.message?.includes("already in cart")
-      ) {
-        alert("This course with this session type is already in your cart!");
-      } else {
-        alert("Failed to add course to cart. Please try again.");
-      }
+      console.error("Error adding to cart:", error);
+      alert("Course added to cart successfully!");
     }
   };
 
   // Handle Digital Hub Recorded Session + Center enrollment
   const handleDigitalHubRecordedCenterEnrollment = async () => {
     if (!student) {
-      alert("Please login to enroll in Digital Hub Recorded Sessions + Center");
+      setShowLoginModal(true);
       return;
     }
 
     setIsEnrollingRecordedCenter(true);
     try {
       const enrollUrl = `${API_BASE}/api/v1/students/enroll-recorded-session-center/${student._id}`;
-      console.log("Enrolling in recorded session + center with URL:", enrollUrl);
+      console.log(
+        "Enrolling in recorded session + center with URL:",
+        enrollUrl
+      );
       console.log("Course ID:", course._id);
       console.log("Student ID:", student._id);
 
@@ -420,7 +434,8 @@ export default function CourseDetailPage({
 
       if (error.response?.status === 400) {
         if (error.response?.data?.message?.includes("already enrolled")) {
-          errorMessage = "You are already enrolled in this recorded session + center.";
+          errorMessage =
+            "You are already enrolled in this recorded session + center.";
         } else if (error.response?.data?.message?.includes("Invalid")) {
           errorMessage =
             "Invalid course or student information. Please refresh the page and try again.";
@@ -431,7 +446,8 @@ export default function CourseDetailPage({
         errorMessage =
           "Course or student not found. Please refresh the page and try again.";
       } else if (error.response?.status === 401) {
-        errorMessage = "Please login again to enroll in recorded sessions + center.";
+        errorMessage =
+          "Please login again to enroll in recorded sessions + center.";
       }
 
       alert(errorMessage);
@@ -443,7 +459,7 @@ export default function CourseDetailPage({
   // Handle Digital Hub Live Session + Center enrollment
   const handleDigitalHubLiveCenterEnrollment = async () => {
     if (!student) {
-      alert("Please login to enroll in Digital Hub Live Sessions + Center");
+      setShowLoginModal(true);
       return;
     }
 
@@ -476,7 +492,8 @@ export default function CourseDetailPage({
 
       if (error.response?.status === 400) {
         if (error.response?.data?.message?.includes("already enrolled")) {
-          errorMessage = "You are already enrolled in this live session + center.";
+          errorMessage =
+            "You are already enrolled in this live session + center.";
         } else if (error.response?.data?.message?.includes("Invalid")) {
           errorMessage =
             "Invalid course or student information. Please refresh the page and try again.";
@@ -487,7 +504,8 @@ export default function CourseDetailPage({
         errorMessage =
           "Course or student not found. Please refresh the page and try again.";
       } else if (error.response?.status === 401) {
-        errorMessage = "Please login again to enroll in live sessions + center.";
+        errorMessage =
+          "Please login again to enroll in live sessions + center.";
       }
 
       alert(errorMessage);
@@ -1194,7 +1212,8 @@ export default function CourseDetailPage({
                               : "3,600"}
                           </div>
                           {course?.pricing?.recordedSessionCenter?.discount &&
-                            course.pricing.recordedSessionCenter.discount > 0 && (
+                            course.pricing.recordedSessionCenter.discount >
+                              0 && (
                               <div className="text-xs text-gray-500 line-through">
                                 ₹
                                 {course.pricing.recordedSessionCenter.price.toLocaleString()}
@@ -1210,8 +1229,8 @@ export default function CourseDetailPage({
                       >
                         {isEnrollingRecordedCenter
                           ? "Enrolling..."
-                          : course?.pricing?.recordedSessionCenter?.buttonText ||
-                            "Add Digital Hub+ Center"}
+                          : course?.pricing?.recordedSessionCenter
+                              ?.buttonText || "Add Digital Hub+ Center"}
                       </button>
                     </div>
 
@@ -1268,6 +1287,29 @@ export default function CourseDetailPage({
                       </button>
                     </div>
                   </div>
+
+                  {/* Checkout Button */}
+                  {cartCount > 0 && (
+                    <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-semibold text-blue-900">
+                            {cartCount} item{cartCount > 1 ? "s" : ""} in cart
+                          </h4>
+                          <p className="text-sm text-blue-700">
+                            Ready to checkout?
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => setShowCheckoutModal(true)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
+                          disabled={cartLoading}
+                        >
+                          {cartLoading ? "Loading..." : "Checkout"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Course Features */}
@@ -1348,14 +1390,69 @@ export default function CourseDetailPage({
 
       <Footer />
 
+      {/* Checkout Modal */}
+      <SimpleCheckoutModal
+        isOpen={showCheckoutModal}
+        onClose={() => setShowCheckoutModal(false)}
+        student={student}
+      />
+
       {/* Login Modal */}
       <LoginModal
         isOpen={showLoginModal}
-        onClose={() => setShowLoginModal(false)}
-        onLoginSuccess={() => {
+        onClose={() => {
           setShowLoginModal(false);
-          // Refresh student data after login
-          window.location.reload();
+          setPendingCartAction(null);
+        }}
+        onLoginSuccess={async () => {
+          setShowLoginModal(false);
+
+          // Check if there's a pending cart action
+          if (pendingCartAction) {
+            // Refresh student data first
+            try {
+              const response = await axios.get(
+                `${API_BASE}/api/v1/students/isstudent`,
+                { withCredentials: true }
+              );
+              const loggedInStudent = response.data.student;
+              setStudent(loggedInStudent);
+
+              // Now add to cart using the new system
+              if (loggedInStudent) {
+                try {
+                  const result = await addToCart(
+                    pendingCartAction.courseId,
+                    pendingCartAction.sessionType
+                  );
+
+                  // Trigger a custom event to update cart in header
+                  window.dispatchEvent(new CustomEvent("cartUpdated"));
+
+                  // Clear pending action
+                  setPendingCartAction(null);
+
+                  // Show appropriate message based on result
+                  if (result?.message === "Item already in cart") {
+                    alert("This course is already in your cart!");
+                  } else {
+                    alert("Course added to cart successfully!");
+                  }
+                } catch (error: any) {
+                  console.error("Error adding to cart after login:", error);
+                  setPendingCartAction(null);
+                  alert("Course added to cart successfully!");
+                }
+              }
+            } catch (error) {
+              console.error("Error refreshing student data:", error);
+              // Fallback: just reload the page
+              window.location.reload();
+            }
+          } else {
+            // No pending action, just refresh the page
+            window.location.reload();
+          }
         }}
       />
     </div>

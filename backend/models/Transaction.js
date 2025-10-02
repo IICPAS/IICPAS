@@ -1,73 +1,73 @@
 import mongoose from "mongoose";
 
 const TransactionSchema = new mongoose.Schema({
-  // Student information
-  student: {
+  studentId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Student",
     required: true,
   },
-
-  // Course information
-  course: {
+  courseId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Course",
     required: true,
   },
-
-  // Payment details
-  amount: { type: Number, required: true },
-  currency: { type: String, default: "INR" },
-
-  // UTR-based payment details
-  utrNumber: { type: String, required: true },
-  paymentMethod: { type: String, default: "UPI" },
-
-  // UPI details
-  upiDetails: {
-    name: { type: String, default: "Lokesh Gupta" },
-    upiHandle: { type: String, default: "8810380146@ptaxis" },
+  sessionType: {
+    type: String,
+    enum: ["recorded", "live"],
+    required: true,
   },
-
-  // Transaction status
+  amount: {
+    type: Number,
+    required: true,
+  },
+  utrNumber: {
+    type: String,
+    required: true,
+  },
+  paymentScreenshot: {
+    type: String, // File path to uploaded screenshot
+    required: true,
+  },
+  additionalNotes: {
+    type: String,
+    default: "",
+  },
   status: {
     type: String,
-    enum: ["pending", "verified", "rejected"],
+    enum: ["pending", "approved", "rejected"],
     default: "pending",
   },
-
-  // Admin verification
-  verifiedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Admin",
+  adminNotes: {
+    type: String,
+    default: "",
+  },
+  approvedBy: {
+    type: String,
     default: null,
   },
-  verifiedAt: { type: Date, default: null },
-
-  // Additional information
-  notes: { type: String, default: "" },
-
-  // Legacy fields for backward compatibility
-  email: { type: String },
-  name: { type: String },
-  for: { type: String },
-  razorpay_order_id: { type: String },
-  razorpay_payment_id: { type: String },
-  bookingId: { type: String },
-  receiptLink: { type: String },
-
-  // Timestamps
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now },
+  receiptSent: {
+    type: Boolean,
+    default: false,
+  },
+  receiptSentAt: {
+    type: Date,
+    default: null,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
 // Update the updatedAt field before saving
 TransactionSchema.pre("save", function (next) {
-  this.updatedAt = new Date();
+  this.updatedAt = Date.now();
   next();
 });
 
-const Transaction =
-  mongoose.models.Transaction ||
-  mongoose.model("Transaction", TransactionSchema);
+const Transaction = mongoose.model("Transaction", TransactionSchema);
 export default Transaction;

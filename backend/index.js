@@ -10,7 +10,9 @@ import cors from "cors";
 import contactRoutesOld from "./routes/contactRoutes.js";
 import connectDB from "./config/db.js";
 import studentRoutes from "./routes/studentRoutes.js";
+import newCartRoutes from "./routes/newCartRoutes.js";
 import paymentRoutes from "./routes/PaymentRoutes/paymentRoutes.js";
+import transactionRoutes from "./routes/transactionRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import blogRoutes from "./routes/blogRoutes.js";
 import JobAdminRoutes from "./routes/JobAdminRoutes.js";
@@ -214,6 +216,12 @@ app.use("/api/apply/jobs-external", JobApplicationRoute);
 //Student Routes
 app.use("/api/v1/students", studentRoutes);
 
+//New Cart Routes
+app.use("/api/v1/cart", newCartRoutes);
+
+//Transaction Routes
+app.use("/api/v1/transactions", transactionRoutes);
+
 //Center Routes
 app.use("/api/v1/centers", centerRoutes);
 
@@ -223,9 +231,9 @@ app.use("/api/upload", UploadRoutes);
 //Payment Routes
 app.use("/api/v1/payments", paymentRoutes);
 
-//Transaction Routes
-import transactionRoutes from "./routes/transaction.js";
-app.use("/api/transactions", transactionRoutes);
+//Transaction Routes (Legacy)
+import legacyTransactionRoutes from "./routes/transaction.js";
+app.use("/api/transactions", legacyTransactionRoutes);
 
 //Topic Routes
 app.use("/api/v1/topics-trainings", TopicTrainingRoutes);

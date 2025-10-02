@@ -15,6 +15,7 @@ const CheckoutModal = ({
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [utrNumber, setUtrNumber] = useState("");
   const [notes, setNotes] = useState("");
+  const [paymentScreenshot, setPaymentScreenshot] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -22,19 +23,22 @@ const CheckoutModal = ({
 
   const totalAmount = cartCourses.reduce((sum, cartItem) => {
     // Handle both old and new cart structure
-    let course, sessionType;
+    let course,
+      sessionType,
+      quantity = 1;
 
     if (
       typeof cartItem === "string" ||
-      (typeof cartItem === "object" && cartItem._id)
+      (typeof cartItem === "object" && cartItem._id && !cartItem.courseId)
     ) {
       // Old format: just courseId or course object
       course = cartItem;
       sessionType = "recorded"; // Default to recorded for old format
-    } else if (cartItem.courseId) {
-      // New format: { courseId, sessionType }
-      course = cartItem.courseId;
+    } else if (cartItem.courseId || cartItem.course) {
+      // New format: { courseId, sessionType, quantity, course }
+      course = cartItem.course || cartItem.courseId;
       sessionType = cartItem.sessionType || "recorded";
+      quantity = cartItem.quantity || 1;
     } else {
       return sum; // Skip invalid items
     }
@@ -43,20 +47,48 @@ const CheckoutModal = ({
     let displayPrice = 0;
     if (sessionType === "recorded") {
       displayPrice =
-        course.pricing?.recordedSession?.finalPrice ||
-        course.pricing?.recordedSession?.price ||
-        course.price ||
+        course?.pricing?.recordedSession?.finalPrice ||
+        course?.pricing?.recordedSession?.price ||
+        course?.price ||
         0;
     } else if (sessionType === "live") {
       displayPrice =
-        course.pricing?.liveSession?.finalPrice ||
-        course.pricing?.liveSession?.price ||
-        course.price * (course?.pricing?.liveSession?.priceMultiplier || 1.5) ||
+        course?.pricing?.liveSession?.finalPrice ||
+        course?.pricing?.liveSession?.price ||
+        course?.price *
+          (course?.pricing?.liveSession?.priceMultiplier || 1.5) ||
         0;
     }
 
-    return sum + displayPrice;
+    return sum + displayPrice * quantity;
   }, 0);
+
+  const handleUpdateQuantity = async (courseId, sessionType, newQuantity) => {
+    if (newQuantity < 1) return;
+
+    try {
+      setLoading(true);
+      const response = await axios.post(
+        `${API_BASE}/api/v1/students/update-cart-quantity/${student._id}`,
+        { courseId, sessionType, quantity: newQuantity },
+        { withCredentials: true }
+      );
+
+      if (response.data.message) {
+        // Update cart
+        onCartUpdate();
+      }
+    } catch (error) {
+      console.error("Error updating quantity:", error);
+      Swal.fire({
+        title: "Error",
+        text: "Failed to update quantity",
+        icon: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleRemoveFromCart = async (courseId, sessionType) => {
     try {
@@ -95,6 +127,32 @@ const CheckoutModal = ({
     setSelectedCourse(course);
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      const allowedTypes = [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+      ];
+      if (!allowedTypes.includes(file.type)) {
+        alert("Please select a valid image file (JPEG, PNG, GIF, WebP)");
+        return;
+      }
+
+      // Validate file size (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert("File size must be less than 5MB");
+        return;
+      }
+
+      setPaymentScreenshot(file);
+    }
+  };
+
   const handlePaymentSubmit = async (e) => {
     e.preventDefault();
 
@@ -102,6 +160,16 @@ const CheckoutModal = ({
       Swal.fire({
         title: "Error",
         text: "Please enter the UTR number",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+      return;
+    }
+
+    if (!paymentScreenshot) {
+      Swal.fire({
+        title: "Error",
+        text: "Please upload a payment screenshot",
         icon: "error",
         confirmButtonText: "OK",
       });
@@ -129,37 +197,49 @@ const CheckoutModal = ({
           }
         );
       } else {
-        // Handle individual course transaction
+        // Handle individual course transaction with file upload
+        const formData = new FormData();
+        formData.append("courseId", selectedCourse._id);
+        formData.append(
+          "sessionType",
+          selectedCourse.sessionType || "recorded"
+        );
+
+        const amount = (() => {
+          const sessionType = selectedCourse.sessionType || "recorded";
+          if (sessionType === "recorded") {
+            return (
+              selectedCourse.pricing?.recordedSession?.finalPrice ||
+              selectedCourse.pricing?.recordedSession?.price ||
+              selectedCourse.price ||
+              0
+            );
+          } else if (sessionType === "live") {
+            return (
+              selectedCourse.pricing?.liveSession?.finalPrice ||
+              selectedCourse.pricing?.liveSession?.price ||
+              selectedCourse.price *
+                (selectedCourse?.pricing?.liveSession?.priceMultiplier ||
+                  1.5) ||
+              0
+            );
+          }
+          return selectedCourse.price || 0;
+        })();
+
+        formData.append("amount", amount);
+        formData.append("utrNumber", utrNumber.trim());
+        formData.append("additionalNotes", notes.trim());
+        formData.append("paymentScreenshot", paymentScreenshot);
+        formData.append("studentId", student._id);
+
         response = await axios.post(
-          `${API_BASE}/api/transactions/create`,
+          `${API_BASE}/api/v1/transactions/submit-payment`,
+          formData,
           {
-            courseId: selectedCourse._id,
-            amount: (() => {
-              const sessionType = selectedCourse.sessionType || "recorded";
-              if (sessionType === "recorded") {
-                return (
-                  selectedCourse.pricing?.recordedSession?.finalPrice ||
-                  selectedCourse.pricing?.recordedSession?.price ||
-                  selectedCourse.price ||
-                  0
-                );
-              } else if (sessionType === "live") {
-                return (
-                  selectedCourse.pricing?.liveSession?.finalPrice ||
-                  selectedCourse.pricing?.liveSession?.price ||
-                  selectedCourse.price *
-                    (selectedCourse?.pricing?.liveSession?.priceMultiplier ||
-                      1.5) ||
-                  0
-                );
-              }
-              return selectedCourse.price || 0;
-            })(),
-            utrNumber: utrNumber.trim(),
-            notes: notes.trim(),
-          },
-          {
-            withCredentials: true,
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
           }
         );
       }
@@ -180,6 +260,7 @@ const CheckoutModal = ({
             setSelectedCourse(null);
             setUtrNumber("");
             setNotes("");
+            setPaymentScreenshot(null);
             onClose();
           });
         } else {
@@ -194,6 +275,7 @@ const CheckoutModal = ({
             setSelectedCourse(null);
             setUtrNumber("");
             setNotes("");
+            setPaymentScreenshot(null);
             onClose();
           });
         }
@@ -253,31 +335,39 @@ const CheckoutModal = ({
                 <div className="space-y-4">
                   {cartCourses.map((cartItem) => {
                     // Handle both old and new cart structure
-                    let course, sessionType;
+                    let course,
+                      sessionType,
+                      quantity = 1;
 
                     if (
                       typeof cartItem === "string" ||
-                      (typeof cartItem === "object" && cartItem._id)
+                      (typeof cartItem === "object" &&
+                        cartItem._id &&
+                        !cartItem.courseId)
                     ) {
                       // Old format: just courseId or course object
                       course = cartItem;
                       sessionType = "recorded"; // Default to recorded for old format
-                    } else if (cartItem.courseId) {
-                      // New format: { courseId, sessionType }
-                      course = cartItem.courseId;
+                    } else if (cartItem.courseId || cartItem.course) {
+                      // New format: { courseId, sessionType, quantity, course }
+                      course = cartItem.course || cartItem.courseId;
                       sessionType = cartItem.sessionType || "recorded";
+                      quantity = cartItem.quantity || 1;
                     } else {
                       return null; // Skip invalid items
                     }
 
+                    const courseId = course?._id || course?.id;
+                    if (!courseId) return null;
+
                     return (
                       <div
-                        key={`${course._id}-${sessionType}`}
+                        key={`${courseId}-${sessionType}`}
                         className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg"
                       >
                         {/* Course Image */}
                         <div className="w-20 h-20 relative flex-shrink-0">
-                          {course.image ? (
+                          {course?.image ? (
                             <Image
                               src={
                                 course.image.startsWith("http")
@@ -288,7 +378,7 @@ const CheckoutModal = ({
                                   ? course.image
                                   : `${API_BASE}${course.image}`
                               }
-                              alt={course.title}
+                              alt={course.title || "Course"}
                               fill
                               className="object-cover rounded-lg"
                             />
@@ -302,12 +392,12 @@ const CheckoutModal = ({
                         {/* Course Details */}
                         <div className="flex-1">
                           <h4 className="font-semibold text-gray-800">
-                            {course.title}
+                            {course?.title || "Course"}
                           </h4>
                           <p className="text-sm text-gray-600">
-                            {course.category}
+                            {course?.category || "General"}
                           </p>
-                          <div className="flex items-center gap-2 mb-1">
+                          <div className="flex items-center gap-2 mb-2">
                             <span
                               className={`text-xs px-2 py-1 rounded-full font-medium ${
                                 sessionType === "recorded"
@@ -320,35 +410,108 @@ const CheckoutModal = ({
                                 : "Live Session"}
                             </span>
                           </div>
-                          <p className="text-lg font-bold text-green-600">
-                            ₹
-                            {(() => {
-                              let displayPrice = 0;
-                              if (sessionType === "recorded") {
-                                displayPrice =
-                                  course.pricing?.recordedSession?.finalPrice ||
-                                  course.pricing?.recordedSession?.price ||
-                                  course.price ||
-                                  0;
-                              } else if (sessionType === "live") {
-                                displayPrice =
-                                  course.pricing?.liveSession?.finalPrice ||
-                                  course.pricing?.liveSession?.price ||
-                                  course.price *
-                                    (course?.pricing?.liveSession
-                                      ?.priceMultiplier || 1.5) ||
-                                  0;
-                              }
-                              return displayPrice?.toLocaleString() || "N/A";
-                            })()}
-                          </p>
+
+                          {/* Quantity Controls */}
+                          <div className="flex items-center gap-3 mb-2">
+                            <span className="text-sm text-gray-600">
+                              Quantity:
+                            </span>
+                            <div className="flex items-center border border-gray-300 rounded-lg">
+                              <button
+                                onClick={() =>
+                                  handleUpdateQuantity(
+                                    courseId,
+                                    sessionType,
+                                    quantity - 1
+                                  )
+                                }
+                                className="px-3 py-1 text-gray-600 hover:bg-gray-100 disabled:opacity-50"
+                                disabled={loading || quantity <= 1}
+                              >
+                                -
+                              </button>
+                              <span className="px-3 py-1 border-x border-gray-300 min-w-[40px] text-center">
+                                {quantity}
+                              </span>
+                              <button
+                                onClick={() =>
+                                  handleUpdateQuantity(
+                                    courseId,
+                                    sessionType,
+                                    quantity + 1
+                                  )
+                                }
+                                className="px-3 py-1 text-gray-600 hover:bg-gray-100 disabled:opacity-50"
+                                disabled={loading}
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm text-gray-600">
+                              ₹
+                              {(() => {
+                                let displayPrice = 0;
+                                if (sessionType === "recorded") {
+                                  displayPrice =
+                                    course?.pricing?.recordedSession
+                                      ?.finalPrice ||
+                                    course?.pricing?.recordedSession?.price ||
+                                    course?.price ||
+                                    0;
+                                } else if (sessionType === "live") {
+                                  displayPrice =
+                                    course?.pricing?.liveSession?.finalPrice ||
+                                    course?.pricing?.liveSession?.price ||
+                                    course?.price *
+                                      (course?.pricing?.liveSession
+                                        ?.priceMultiplier || 1.5) ||
+                                    0;
+                                }
+                                return displayPrice?.toLocaleString() || "0";
+                              })()}{" "}
+                              × {quantity}
+                            </p>
+                            <p className="text-lg font-bold text-green-600">
+                              = ₹
+                              {(() => {
+                                let displayPrice = 0;
+                                if (sessionType === "recorded") {
+                                  displayPrice =
+                                    course?.pricing?.recordedSession
+                                      ?.finalPrice ||
+                                    course?.pricing?.recordedSession?.price ||
+                                    course?.price ||
+                                    0;
+                                } else if (sessionType === "live") {
+                                  displayPrice =
+                                    course?.pricing?.liveSession?.finalPrice ||
+                                    course?.pricing?.liveSession?.price ||
+                                    course?.price *
+                                      (course?.pricing?.liveSession
+                                        ?.priceMultiplier || 1.5) ||
+                                    0;
+                                }
+                                return (
+                                  (displayPrice * quantity)?.toLocaleString() ||
+                                  "0"
+                                );
+                              })()}
+                            </p>
+                          </div>
                         </div>
 
                         {/* Actions */}
                         <div className="flex flex-col space-y-2">
                           <button
                             onClick={() =>
-                              handleProceedToPayment({ ...course, sessionType })
+                              handleProceedToPayment({
+                                ...course,
+                                sessionType,
+                                quantity,
+                              })
                             }
                             className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
                             disabled={loading}
@@ -357,7 +520,7 @@ const CheckoutModal = ({
                           </button>
                           <button
                             onClick={() =>
-                              handleRemoveFromCart(course._id, sessionType)
+                              handleRemoveFromCart(courseId, sessionType)
                             }
                             className="px-3 py-1 text-red-600 hover:bg-red-50 rounded-lg transition-colors text-sm"
                             disabled={loading}
@@ -379,31 +542,39 @@ const CheckoutModal = ({
                   <div className="space-y-2 mb-4">
                     {cartCourses.map((cartItem) => {
                       // Handle both old and new cart structure
-                      let course, sessionType;
+                      let course,
+                        sessionType,
+                        quantity = 1;
 
                       if (
                         typeof cartItem === "string" ||
-                        (typeof cartItem === "object" && cartItem._id)
+                        (typeof cartItem === "object" &&
+                          cartItem._id &&
+                          !cartItem.courseId)
                       ) {
                         // Old format: just courseId or course object
                         course = cartItem;
                         sessionType = "recorded"; // Default to recorded for old format
-                      } else if (cartItem.courseId) {
-                        // New format: { courseId, sessionType }
-                        course = cartItem.courseId;
+                      } else if (cartItem.courseId || cartItem.course) {
+                        // New format: { courseId, sessionType, quantity, course }
+                        course = cartItem.course || cartItem.courseId;
                         sessionType = cartItem.sessionType || "recorded";
+                        quantity = cartItem.quantity || 1;
                       } else {
                         return null; // Skip invalid items
                       }
 
+                      const courseId = course?._id || course?.id;
+                      if (!courseId) return null;
+
                       return (
                         <div
-                          key={`${course._id}-${sessionType}`}
+                          key={`${courseId}-${sessionType}`}
                           className="flex justify-between text-sm"
                         >
                           <div className="flex flex-col">
                             <span className="text-gray-600 truncate">
-                              {course.title}
+                              {course?.title || "Course"} × {quantity}
                             </span>
                             <span
                               className={`text-xs ${
@@ -421,20 +592,24 @@ const CheckoutModal = ({
                               let displayPrice = 0;
                               if (sessionType === "recorded") {
                                 displayPrice =
-                                  course.pricing?.recordedSession?.finalPrice ||
+                                  course?.pricing?.recordedSession
+                                    ?.finalPrice ||
                                   course.pricing?.recordedSession?.price ||
                                   course.price ||
                                   0;
                               } else if (sessionType === "live") {
                                 displayPrice =
-                                  course.pricing?.liveSession?.finalPrice ||
-                                  course.pricing?.liveSession?.price ||
-                                  course.price *
+                                  course?.pricing?.liveSession?.finalPrice ||
+                                  course?.pricing?.liveSession?.price ||
+                                  course?.price *
                                     (course?.pricing?.liveSession
                                       ?.priceMultiplier || 1.5) ||
                                   0;
                               }
-                              return displayPrice?.toLocaleString() || "N/A";
+                              return (
+                                (displayPrice * quantity)?.toLocaleString() ||
+                                "0"
+                              );
                             })()}
                           </span>
                         </div>
@@ -458,7 +633,9 @@ const CheckoutModal = ({
                     <ul className="text-sm text-blue-700 space-y-1">
                       <li>• Click "Pay Now" for each course individually</li>
                       <li>• Scan the QR code with any UPI app</li>
+                      <li>• Take a screenshot of your payment confirmation</li>
                       <li>• Enter the UTR number from your payment receipt</li>
+                      <li>• Upload the payment screenshot</li>
                       <li>• Your payment will be verified within 24 hours</li>
                     </ul>
                   </div>
@@ -591,6 +768,32 @@ const CheckoutModal = ({
 
                     <div>
                       <label
+                        htmlFor="paymentScreenshot"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
+                        Payment Screenshot *
+                      </label>
+                      <input
+                        type="file"
+                        id="paymentScreenshot"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        required
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Upload a screenshot of your payment confirmation (Max
+                        5MB)
+                      </p>
+                      {paymentScreenshot && (
+                        <p className="text-xs text-green-600 mt-1">
+                          ✓ File selected: {paymentScreenshot.name}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label
                         htmlFor="notes"
                         className="block text-sm font-medium text-gray-700 mb-2"
                       >
@@ -665,7 +868,11 @@ const CheckoutModal = ({
                       })()}
                     </li>
                     <li>• Save the UTR number from your payment receipt</li>
-                    <li>• Enter the UTR number above and submit</li>
+                    <li>• Take a screenshot of your payment confirmation</li>
+                    <li>
+                      • Enter the UTR number and upload the screenshot above
+                    </li>
+                    <li>• Submit to complete your payment</li>
                     <li>• Your payment will be verified within 24 hours</li>
                   </ul>
                 </div>

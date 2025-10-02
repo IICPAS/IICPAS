@@ -72,6 +72,7 @@ export default function Header() {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
 
   const API = process.env.NEXT_PUBLIC_API_URL;
+  console.log("API URL:", API);
 
   const isDashboardPage =
     pathname.includes("-dashboard") || pathname.includes("/dashboard");
@@ -94,13 +95,17 @@ export default function Header() {
         withCredentials: true,
       });
       const studentData = res.data.student;
+      console.log("Student data:", studentData);
       setStudent(studentData);
 
+      console.log("Making cart request for student ID:", studentData._id);
       const cartRes = await axios.get(
-        `${API}/api/v1/students/get-cart/${studentData._id}`,
+        `${API}/api/v1/cart/get/${studentData._id}`,
         { withCredentials: true }
       );
+      console.log("Header cart response:", cartRes.data);
       const cartItems = cartRes.data.cart || [];
+      console.log("Cart items from API:", cartItems);
 
       const wishlistRes = await axios.get(
         `${API}/api/v1/students/get-wishlist/${studentData._id}`,
@@ -111,29 +116,24 @@ export default function Header() {
       const allCourses = await axios.get(`${API}/api/courses`);
       const courseList = allCourses.data.courses || allCourses.data;
 
-      // Process cart courses to use correct pricing and handle new cart structure
+      // Process cart courses using new cart structure
       const processedCartCourses = cartItems
         .map((cartItem) => {
-          // Handle both old and new cart structure
-          let courseId, sessionType;
+          console.log("Header processing cart item:", cartItem);
 
-          if (
-            typeof cartItem === "string" ||
-            (typeof cartItem === "object" && cartItem._id)
-          ) {
-            // Old format: just courseId or course object
-            courseId = cartItem._id || cartItem;
-            sessionType = "recorded"; // Default to recorded for old format
-          } else if (cartItem.courseId) {
-            // New format: { courseId, sessionType }
-            courseId = cartItem.courseId;
-            sessionType = cartItem.sessionType || "recorded";
-          } else {
+          // New cart API returns: { courseId, course, sessionType, quantity }
+          const course = cartItem.course;
+          const sessionType = cartItem.sessionType || "recorded";
+          const quantity = cartItem.quantity || 1;
+
+          console.log("Course object:", course);
+          console.log("Session type:", sessionType);
+          console.log("Quantity:", quantity);
+
+          if (!course) {
+            console.log("No course found for cart item");
             return null;
           }
-
-          const course = courseList.find((c) => c._id === courseId);
-          if (!course) return null;
 
           // Get pricing based on session type
           let displayPrice = 0;
@@ -152,17 +152,26 @@ export default function Header() {
               0;
           }
 
-          return {
+          console.log("Display price:", displayPrice);
+
+          const processedItem = {
             ...course,
             sessionType,
+            quantity,
             price: displayPrice, // Override the price with the correct one
           };
+
+          console.log("Processed cart item:", processedItem);
+          return processedItem;
         })
         .filter(Boolean); // Remove null entries
 
+      console.log("Header processed cart courses:", processedCartCourses);
       setCartCourses(processedCartCourses);
       setWishlistCourses(courseList.filter((c) => wishlistIDs.includes(c._id)));
-    } catch {
+    } catch (error) {
+      console.error("Error in fetchStudentAndCart:", error);
+      console.error("Error response:", error.response?.data);
       setStudent(null);
       setCartCourses([]);
       setWishlistCourses([]);
@@ -233,11 +242,11 @@ export default function Header() {
     }
     try {
       const response = await axios.post(
-        `${API}/api/v1/students/add-to-cart/${student._id}`,
+        `${API}/api/v1/cart/add/${student._id}`,
         { courseId, sessionType },
         { withCredentials: true }
       );
-      if (response.data.message) {
+      if (response.data.success) {
         MySwal.fire({
           title: "Added to Cart!",
           text: "Course added to cart successfully",
@@ -258,12 +267,14 @@ export default function Header() {
 
   const handleRemoveFromCart = async (courseId, sessionType = "recorded") => {
     try {
-      const response = await axios.post(
-        `${API}/api/v1/students/remove-cart/${student._id}`,
-        { courseId, sessionType },
-        { withCredentials: true }
+      const response = await axios.delete(
+        `${API}/api/v1/cart/remove/${student._id}`,
+        {
+          data: { courseId, sessionType },
+          withCredentials: true,
+        }
       );
-      if (response.data.message) {
+      if (response.data.success) {
         MySwal.fire({
           title: "Removed!",
           text: "Course removed from cart",
@@ -423,7 +434,19 @@ export default function Header() {
               <ShoppingCart size={20} />
               {cartCourses.length > 0 && (
                 <span className="absolute -top-1 -right-1 bg-green-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
-                  {cartCourses.length}
+                  {(() => {
+                    const count = cartCourses.reduce(
+                      (total, item) => total + (item.quantity || 1),
+                      0
+                    );
+                    console.log(
+                      "Header cart count:",
+                      count,
+                      "from items:",
+                      cartCourses
+                    );
+                    return count;
+                  })()}
                 </span>
               )}
             </button>
@@ -650,9 +673,21 @@ export default function Header() {
                         <h3 className="font-medium text-sm line-clamp-2">
                           {course.title}
                         </h3>
-                        <p className="text-green-600 font-semibold text-sm">
-                          ₹{course.price}
+                        <p className="text-xs text-gray-500 mb-1">
+                          {course.sessionType === "recorded"
+                            ? "Recorded Session"
+                            : "Live Session"}
                         </p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-green-600 font-semibold text-sm">
+                            ₹{course.price}
+                          </p>
+                          {course.quantity > 1 && (
+                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                              Qty: {course.quantity}
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <button
                         onClick={() =>
@@ -675,7 +710,12 @@ export default function Header() {
               <div className="flex justify-between items-center">
                 <span className="font-semibold">Total:</span>
                 <span className="text-green-600 font-bold">
-                  ₹{cartCourses.reduce((sum, course) => sum + course.price, 0)}
+                  ₹
+                  {cartCourses.reduce(
+                    (sum, course) =>
+                      sum + course.price * (course.quantity || 1),
+                    0
+                  )}
                 </span>
               </div>
               <button
