@@ -30,7 +30,6 @@ import "react-modern-drawer/dist/index.css";
 import TopicsManager from "./Topic/TopicsManager";
 import GuidesTab from "./GuidesTab";
 import KitsTab from "./KitsTab";
-import CenterLocationTab from "./CenterLocationTab";
 
 import {
   FaBars,
@@ -68,6 +67,7 @@ import {
   FaComments,
   FaUser,
   FaRobot,
+  FaChevronLeft,
 } from "react-icons/fa";
 import CompanyTab from "./CompanyTab";
 import CourseArea from "./CourseBuilder";
@@ -81,7 +81,6 @@ import IPWhitelistTab from "./IPWhitelistTab";
 import DemoDigitalHubTab from "./DemoDigitalHubTab";
 import FAQTab from "./FAQTab";
 import CourseRatingApprovalTab from "./CourseRatingApprovalTab";
-import CenterManagementTab from "./CenterManagementTab";
 import MessagesTab from "./MessagesTab";
 import BulkEmailTab from "./BulkEmailTab";
 import ContactInfoTab from "./ContactInfoTab";
@@ -203,10 +202,13 @@ const WEBSITE_SETTINGS_MODULES = [
 ];
 
 function AdminDashboardContent() {
-  const { user, hasPermission, canAccess, logout } = useAuth();
+  const { user, canAccess, logout } = useAuth();
   const [activeTab, setActiveTab] = useState("");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [websiteSettingsOpen, setWebsiteSettingsOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [hoveredTab, setHoveredTab] = useState<string | null>(null);
+  const [hoveredPosition, setHoveredPosition] = useState({ x: 0, y: 0 });
   const router = useRouter();
 
   // Filter modules based on user permissions
@@ -250,71 +252,115 @@ function AdminDashboardContent() {
     setActiveTab("");
   };
 
+  const handleTabClick = (tabId: string) => {
+    setActiveTab(tabId);
+    setHoveredTab(null);
+  };
+
+  const handleTabHover = (tabId: string, event: React.MouseEvent) => {
+    setHoveredTab(tabId);
+    const rect = event.currentTarget.getBoundingClientRect();
+    setHoveredPosition({
+      x: rect.right + 10,
+      y: rect.top + rect.height / 2,
+    });
+  };
+
   // SIDEBAR: scrollable, hidden scrollbar
   const renderSidebar = (isMobile = false) => (
     <div className="h-full flex flex-col">
-      <div className="p-6 pb-4">
-        <div className="flex items-center justify-center mb-6">
+      <div className={`p-6 pb-4 ${!isMobile ? "relative" : ""}`}>
+        {/* Collapse/Expand Button - Desktop Only */}
+        {!isMobile && (
+          <button
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            className="absolute top-4 right-2 p-2 rounded-lg bg-white shadow-md hover:bg-gray-50 transition-colors z-10"
+            title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {sidebarCollapsed ? (
+              <FaChevronRight className="text-gray-600 text-sm" />
+            ) : (
+              <FaChevronLeft className="text-gray-600 text-sm" />
+            )}
+          </button>
+        )}
+
+        <div
+          className={`flex items-center justify-center mb-6 ${
+            sidebarCollapsed && !isMobile ? "px-2" : ""
+          }`}
+        >
           <div className="bg-white p-3 rounded-lg shadow-lg">
             <img
               src="/images/logo.png"
               alt="IICPA Institute"
-              className="h-12 w-auto object-contain"
+              className={`${
+                sidebarCollapsed && !isMobile ? "h-8 w-8" : "h-12 w-auto"
+              } object-contain`}
             />
           </div>
         </div>
+
         {/* User Info */}
-        <div
-          className="text-center mb-4 p-3 bg-blue-50 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors"
-          onClick={() => {
-            setActiveTab("profile");
-            if (isMobile) setDrawerOpen(false);
-          }}
-        >
-          <div className="flex items-center justify-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-full overflow-hidden bg-blue-600 flex items-center justify-center">
-              {user?.image ? (
-                <img
-                  src={`${
-                    process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"
-                  }${user.image}`}
-                  alt="Profile"
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.target.style.display = "none";
-                    e.target.nextElementSibling.style.display = "flex";
-                  }}
-                />
-              ) : null}
-              <div
-                className={`w-full h-full flex items-center justify-center ${
-                  user?.image ? "hidden" : ""
-                }`}
-              >
-                <FaUser size={16} className="text-white" />
+        {(!sidebarCollapsed || isMobile) && (
+          <div
+            className="text-center mb-4 p-3 bg-blue-50 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors"
+            onClick={() => {
+              setActiveTab("profile");
+              if (isMobile) setDrawerOpen(false);
+            }}
+          >
+            <div className="flex items-center justify-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-full overflow-hidden bg-blue-600 flex items-center justify-center">
+                {user?.image ? (
+                  <img
+                    src={`${
+                      process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"
+                    }${user.image}`}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = "none";
+                      const sibling = target.nextElementSibling as HTMLElement;
+                      if (sibling) sibling.style.display = "flex";
+                    }}
+                  />
+                ) : null}
+                <div
+                  className={`w-full h-full flex items-center justify-center ${
+                    user?.image ? "hidden" : ""
+                  }`}
+                >
+                  <FaUser size={16} className="text-white" />
+                </div>
+              </div>
+              <div className="text-left">
+                <p className="font-semibold text-blue-800">{user?.name}</p>
+                <p className="text-sm text-blue-600">{user?.role}</p>
               </div>
             </div>
-            <div className="text-left">
-              <p className="font-semibold text-blue-800">{user?.name}</p>
-              <p className="text-sm text-blue-600">{user?.role}</p>
-            </div>
           </div>
-        </div>
+        )}
       </div>
       <nav className="flex-1 overflow-y-auto px-3 custom-scrollbar">
         {/* Accessible main modules */}
         {accessibleModules.slice(0, 3).map((tab) => (
           <button
             key={tab.id}
-            onClick={() => {
-              setActiveTab(tab.id);
-              if (isMobile) setDrawerOpen(false);
-            }}
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg w-full text-left mb-2 transition-all duration-200 ${
+            onClick={() => !isMobile && handleTabClick(tab.id)}
+            onMouseEnter={(e) => (isMobile ? null : handleTabHover(tab.id, e))}
+            onMouseLeave={() => (isMobile ? null : setHoveredTab(null))}
+            className={`flex items-center ${
+              sidebarCollapsed && !isMobile
+                ? "justify-center px-2"
+                : "gap-3 px-4"
+            } py-3 rounded-lg w-full text-left mb-2 transition-all duration-200 ${
               activeTab === tab.id
                 ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-md"
                 : "hover:bg-blue-50 text-gray-700 hover:text-blue-700"
             }`}
+            title={sidebarCollapsed && !isMobile ? tab.label : ""}
           >
             <span
               className={`text-lg ${
@@ -323,90 +369,154 @@ function AdminDashboardContent() {
             >
               {tab.icon}
             </span>
-            <span className="font-medium">{tab.label}</span>
+            {(!sidebarCollapsed || isMobile) && (
+              <span className="font-medium">{tab.label}</span>
+            )}
           </button>
         ))}
 
         {/* Website Settings Dropdown - Position 4 */}
-        {accessibleWebsiteSettings.length > 0 && (
-          <div className="mb-2">
+        {accessibleWebsiteSettings.length > 0 &&
+          (!sidebarCollapsed || isMobile) && (
+            <div className="mb-2">
+              <button
+                onClick={() => {
+                  if (!isMobile) setWebsiteSettingsOpen(!websiteSettingsOpen);
+                  if (isMobile) {
+                    setActiveTab("website-settings");
+                    setDrawerOpen(false);
+                  }
+                }}
+                className={`flex items-center ${
+                  sidebarCollapsed && !isMobile
+                    ? "justify-center px-2"
+                    : "justify-between gap-3 px-4"
+                } py-3 rounded-lg w-full text-left transition-all duration-200 ${
+                  accessibleWebsiteSettings.some((tab) => activeTab === tab.id)
+                    ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-md"
+                    : "hover:bg-blue-50 text-gray-700 hover:text-blue-700"
+                }`}
+                title={sidebarCollapsed && !isMobile ? "Website Settings" : ""}
+              >
+                <div
+                  className={`flex items-center ${
+                    sidebarCollapsed && !isMobile ? "" : "gap-3"
+                  }`}
+                >
+                  <span
+                    className={`text-lg ${
+                      accessibleWebsiteSettings.some(
+                        (tab) => activeTab === tab.id
+                      )
+                        ? "text-white"
+                        : "text-blue-500"
+                    }`}
+                  >
+                    <FaCog />
+                  </span>
+                  {!sidebarCollapsed && (
+                    <span className="font-medium">Website Settings</span>
+                  )}
+                </div>
+                {!sidebarCollapsed && (
+                  <span
+                    className={`text-sm transition-transform duration-200 ${
+                      accessibleWebsiteSettings.some(
+                        (tab) => activeTab === tab.id
+                      )
+                        ? "text-white"
+                        : "text-blue-500"
+                    }`}
+                  >
+                    {websiteSettingsOpen ? (
+                      <FaChevronDown />
+                    ) : (
+                      <FaChevronRight />
+                    )}
+                  </span>
+                )}
+              </button>
+
+              {/* Dropdown content */}
+              {(!sidebarCollapsed || isMobile) && websiteSettingsOpen && (
+                <div className="ml-6 mt-2 space-y-1">
+                  {accessibleWebsiteSettings.map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => {
+                        setActiveTab(tab.id);
+                        if (isMobile) setDrawerOpen(false);
+                      }}
+                      className={`flex items-center gap-3 px-4 py-2 rounded-lg w-full text-left transition-all duration-200 ${
+                        activeTab === tab.id
+                          ? "bg-gradient-to-r from-blue-400 to-blue-500 text-white font-semibold shadow-md"
+                          : "hover:bg-blue-50 text-gray-600 hover:text-blue-600"
+                      }`}
+                    >
+                      <span
+                        className={`text-sm ${
+                          activeTab === tab.id ? "text-white" : "text-blue-400"
+                        }`}
+                      >
+                        {tab.icon}
+                      </span>
+                      <span className="font-medium text-sm">{tab.label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+        {/* Website Settings Icon Only when collapsed */}
+        {accessibleWebsiteSettings.length > 0 &&
+          sidebarCollapsed &&
+          !isMobile && (
             <button
-              onClick={() => setWebsiteSettingsOpen(!websiteSettingsOpen)}
-              className={`flex items-center justify-between gap-3 px-4 py-3 rounded-lg w-full text-left transition-all duration-200 ${
+              onClick={() => setActiveTab("website-settings")}
+              className={`flex items-center justify-center px-2 py-3 rounded-lg w-full mb-2 transition-all duration-200 ${
                 accessibleWebsiteSettings.some((tab) => activeTab === tab.id)
                   ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-md"
                   : "hover:bg-blue-50 text-gray-700 hover:text-blue-700"
               }`}
+              title="Website Settings"
             >
-              <div className="flex items-center gap-3">
-                <span
-                  className={`text-lg ${
-                    accessibleWebsiteSettings.some(
-                      (tab) => activeTab === tab.id
-                    )
-                      ? "text-white"
-                      : "text-blue-500"
-                  }`}
-                >
-                  <FaCog />
-                </span>
-                <span className="font-medium">Website Settings</span>
-              </div>
               <span
-                className={`text-sm transition-transform duration-200 ${
+                className={`text-lg ${
                   accessibleWebsiteSettings.some((tab) => activeTab === tab.id)
                     ? "text-white"
                     : "text-blue-500"
                 }`}
               >
-                {websiteSettingsOpen ? <FaChevronDown /> : <FaChevronRight />}
+                <FaCog />
               </span>
             </button>
-
-            {/* Dropdown content */}
-            {websiteSettingsOpen && (
-              <div className="ml-6 mt-2 space-y-1">
-                {accessibleWebsiteSettings.map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => {
-                      setActiveTab(tab.id);
-                      if (isMobile) setDrawerOpen(false);
-                    }}
-                    className={`flex items-center gap-3 px-4 py-2 rounded-lg w-full text-left transition-all duration-200 ${
-                      activeTab === tab.id
-                        ? "bg-gradient-to-r from-blue-400 to-blue-500 text-white font-semibold shadow-md"
-                        : "hover:bg-blue-50 text-gray-600 hover:text-blue-600"
-                    }`}
-                  >
-                    <span
-                      className={`text-sm ${
-                        activeTab === tab.id ? "text-white" : "text-blue-400"
-                      }`}
-                    >
-                      {tab.icon}
-                    </span>
-                    <span className="font-medium text-sm">{tab.label}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+          )}
 
         {/* Remaining accessible modules */}
         {accessibleModules.slice(3).map((tab) => (
           <button
             key={tab.id}
-            onClick={() => {
-              setActiveTab(tab.id);
-              if (isMobile) setDrawerOpen(false);
-            }}
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg w-full text-left mb-2 transition-all duration-200 ${
+            onClick={() =>
+              !isMobile
+                ? handleTabClick(tab.id)
+                : (() => {
+                    setActiveTab(tab.id);
+                    setDrawerOpen(false);
+                  })()
+            }
+            onMouseEnter={(e) => (isMobile ? null : handleTabHover(tab.id, e))}
+            onMouseLeave={() => (isMobile ? null : setHoveredTab(null))}
+            className={`flex items-center ${
+              sidebarCollapsed && !isMobile
+                ? "justify-center px-2"
+                : "gap-3 px-4"
+            } py-3 rounded-lg w-full text-left mb-2 transition-all duration-200 ${
               activeTab === tab.id
                 ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-md"
                 : "hover:bg-blue-50 text-gray-700 hover:text-blue-700"
             }`}
+            title={sidebarCollapsed && !isMobile ? tab.label : ""}
           >
             <span
               className={`text-lg ${
@@ -415,7 +525,9 @@ function AdminDashboardContent() {
             >
               {tab.icon}
             </span>
-            <span className="font-medium">{tab.label}</span>
+            {(!sidebarCollapsed || isMobile) && (
+              <span className="font-medium">{tab.label}</span>
+            )}
           </button>
         ))}
       </nav>
@@ -424,8 +536,28 @@ function AdminDashboardContent() {
 
   return (
     <div className="bg-gray-50">
+      {/* Tooltip for collapsed sidebar items */}
+      {hoveredTab && sidebarCollapsed && (
+        <div
+          className="fixed bg-gray-800 text-white px-3 py-2 rounded-lg shadow-lg z-50 text-sm"
+          style={{
+            left: `${hoveredPosition.x}px`,
+            top: `${hoveredPosition.y - 20}px`,
+          }}
+        >
+          {ALL_MODULES.find((module) => module.id === hoveredTab)?.label ||
+            WEBSITE_SETTINGS_MODULES.find((module) => module.id === hoveredTab)
+              ?.label ||
+            hoveredTab}
+          <div className="absolute -left-1 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-gray-800 rotate-45"></div>
+        </div>
+      )}
       {/* Sidebar - Desktop: fixed position, scrollable, hidden scrollbar */}
-      <aside className="hidden lg:block w-70 h-screen fixed left-0 top-0 bg-gradient-to-b from-blue-100 to-blue-200 border-r border-blue-300 rounded-r-2xl shadow-xl overflow-y-auto custom-scrollbar z-50">
+      <aside
+        className={`hidden lg:block ${
+          sidebarCollapsed ? "w-20" : "w-70"
+        } h-screen fixed left-0 top-0 bg-gradient-to-b from-blue-100 to-blue-200 border-r border-blue-300 rounded-r-2xl shadow-xl overflow-y-auto custom-scrollbar z-50 transition-all duration-300`}
+      >
         {renderSidebar()}
       </aside>
 
@@ -477,7 +609,11 @@ function AdminDashboardContent() {
       </Drawer>
 
       {/* Main Content: scrolls independently of sidebar */}
-      <main className="min-h-screen p-6 pt-8 overflow-y-auto lg:ml-70 relative">
+      <main
+        className={`min-h-screen p-6 pt-8 overflow-y-auto relative transition-all duration-300 ${
+          sidebarCollapsed ? "lg:ml-20" : "lg:ml-70"
+        }`}
+      >
         {/* Back Button - Only show when not on dashboard home */}
         {activeTab !== "" && (
           <div className="mb-6">
@@ -567,7 +703,14 @@ function AdminDashboardContent() {
         ) : activeTab === "course-ratings" ? (
           <CourseRatingApprovalTab />
         ) : activeTab === "center-location" ? (
-          <CenterLocationTab />
+          <div className="bg-white rounded-lg p-6">
+            <h2 className="text-xl font-bold mb-4">
+              Center Location Management
+            </h2>
+            <p className="text-gray-600">
+              Center location management functionality will be implemented here.
+            </p>
+          </div>
         ) : activeTab === "messages" ? (
           <MessagesTab />
         ) : activeTab === "chat-conversations" ? (

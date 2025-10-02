@@ -27,14 +27,27 @@ const StudentSchema = new mongoose.Schema(
           enum: ["recorded", "live"],
           required: true,
         },
+        quantity: {
+          type: Number,
+          default: 1,
+          min: 1,
+        },
       },
     ],
     wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],
 
-    enrolledLiveSessions: [{ type: mongoose.Schema.Types.ObjectId, ref: "LiveSession" }],
-    enrolledRecordedSessions: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],
-    enrolledLiveSessionsCenter: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],
-    enrolledRecordedSessionsCenter: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],
+    enrolledLiveSessions: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "LiveSession" },
+    ],
+    enrolledRecordedSessions: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "Course" },
+    ],
+    enrolledLiveSessionsCenter: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "Course" },
+    ],
+    enrolledRecordedSessionsCenter: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "Course" },
+    ],
 
     enrolledLiveSessions: [
       { type: mongoose.Schema.Types.ObjectId, ref: "LiveSession" },
