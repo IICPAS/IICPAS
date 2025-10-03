@@ -5,6 +5,11 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import { FaPlayCircle, FaBookOpen, FaCalculator, FaChartBar, FaFileAlt, FaVideo, FaDownload, FaEye, FaTimes } from "react-icons/fa";
 
+// Utility function to strip HTML tags
+const stripHtmlTags = (html: string): string => {
+  return html ? html.replace(/<[^>]*>/g, '') : '';
+};
+
 interface DemoData {
   mainSection?: {
     title: string;
@@ -153,7 +158,7 @@ const DemoDigitalHubSection = () => {
           {
             _id: "1",
             title: "Basic Accounting & Tally Foundation",
-            description: "Comprehensive accounting course covering all aspects of modern accounting practices.",
+            description: "Master the fundamentals of accounting with comprehensive training in modern accounting practices and Tally software. Learn double-entry bookkeeping, financial statement preparation, inventory management, and GST compliance. This course covers practical accounting scenarios, ledger maintenance, and automated accounting solutions. Gain expertise in taxation, banking procedures, and financial reporting standards. Prepare for real-world accounting challenges with hands-on practice and industry-relevant case studies.",
             level: "Foundation",
             category: "Accounting",
             price: 999,
@@ -162,7 +167,7 @@ const DemoDigitalHubSection = () => {
           {
             _id: "2",
             title: "HR Certification Course",
-            description: "Complete guide to human resource management and practices.",
+            description: "Comprehensive human resource management program covering recruitment, training, performance management, and employee relations. Learn modern HR practices, labor laws compliance, payroll management, and organizational development strategies. Master talent acquisition techniques, onboarding processes, and employee engagement methods. Understand compensation structures, benefits administration, and workplace diversity. Develop skills in conflict resolution, performance evaluation, and strategic HR planning for organizational success.",
             level: "Executive Level",
             category: "HR",
             price: 1200,
@@ -171,7 +176,7 @@ const DemoDigitalHubSection = () => {
           {
             _id: "3",
             title: "Excel Certification Course",
-            description: "Master Excel from basics to advanced functions and data analysis.",
+            description: "Complete Microsoft Excel mastery course covering basic functions to advanced data analysis and automation. Learn formulas, functions, pivot tables, data visualization, and VBA programming. Master advanced features like macros, conditional formatting, data validation, and complex analytical tools. Understand business intelligence concepts, dashboard creation, and automated reporting systems. Gain expertise in data modeling, statistical analysis, and professional spreadsheet design for business applications.",
             level: "Core",
             category: "Technology",
             price: 800,
@@ -180,7 +185,7 @@ const DemoDigitalHubSection = () => {
           {
             _id: "4",
             title: "Learn the Foundations of Visual Communication",
-            description: "Design principles and visual communication fundamentals.",
+            description: "Master the principles of visual design and communication for modern marketing and media. Learn color theory, typography, layout design, and branding concepts. Understand design software tools, digital marketing graphics, and social media visual content creation. Develop skills in logo design, poster creation, and multimedia presentations. Explore user experience design, visual storytelling, and cross-platform design consistency. Build a professional portfolio showcasing your visual communication expertise.",
             level: "Foundation",
             category: "Design",
             price: 1500,
@@ -189,7 +194,7 @@ const DemoDigitalHubSection = () => {
           {
             _id: "5",
             title: "Cooking Made Easy: Essential Skills for Everyday Meals",
-            description: "Learn essential cooking techniques and recipes for daily meals.",
+            description: "Learn essential culinary skills and techniques for preparing delicious, healthy meals at home. Master knife skills, cooking methods, meal planning, and kitchen organization. Understand ingredient selection, food safety practices, and nutritional meal preparation. Explore various cuisines, seasonal cooking, and dietary modifications. Develop confidence in creating balanced meals, managing cooking time, and reducing food waste. Transform your daily cooking experience with professional techniques and creative recipes.",
             level: "Foundation",
             category: "Lifestyle",
             price: 600,
@@ -198,7 +203,7 @@ const DemoDigitalHubSection = () => {
           {
             _id: "6",
             title: "How to Capture Stunning Photos with Ease",
-            description: "Photography fundamentals and techniques for beautiful photos.",
+            description: "Master photography fundamentals and advanced techniques for creating professional-quality images. Learn camera settings, composition rules, lighting techniques, and post-processing basics. Understand different photography genres including portraits, landscapes, events, and commercial photography. Develop skills in photo editing software, color correction, and digital workflow management. Explore creative photography concepts, storytelling through images, and building a photography portfolio. Transform your passion into professional photography skills with hands-on practice and expert guidance.",
             level: "Foundation",
             category: "Photography",
             price: 900,
@@ -314,7 +319,9 @@ const DemoDigitalHubSection = () => {
                       <IconComponent className={`text-2xl ${colorScheme.text} group-hover:scale-110 transition-transform`} />
                     </div>
                     <h4 className="text-xl font-bold text-gray-900 mb-3">{course.title}</h4>
-                    <p className="text-gray-600 mb-4">{course.description}</p>
+                    <div className="text-gray-600 mb-4 text-sm leading-relaxed h-20 overflow-hidden">
+                      <p>{stripHtmlTags(course.description)}</p>
+                    </div>
                     <div className="flex items-center justify-between">
                       <div className="text-sm text-gray-500">
                         <span className="font-medium">Level:</span> {course.level}
