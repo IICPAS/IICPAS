@@ -76,7 +76,8 @@ export default function BlogsPage() {
     // Filter by category
     if (selectedCategory !== "all") {
       filtered = filtered.filter(
-        (blog) => blog.category?.toLowerCase() === selectedCategory.toLowerCase()
+        (blog) =>
+          blog.category?.toLowerCase() === selectedCategory.toLowerCase()
       );
     }
 
@@ -85,7 +86,10 @@ export default function BlogsPage() {
   }, [searchTerm, selectedCategory, blogs]);
 
   // Get unique categories
-  const categories = ["all", ...new Set(blogs.map((blog) => blog.category).filter(Boolean))];
+  const categories = [
+    "all",
+    ...new Set(blogs.map((blog) => blog.category).filter(Boolean)),
+  ];
 
   // Get paginated blogs
   const indexOfLastBlog = currentPage * blogsPerPage;
@@ -155,7 +159,7 @@ export default function BlogsPage() {
               }}
               transition={{
                 duration: 20,
-                                                ease: "linear",
+                ease: "linear",
                 repeat: Infinity,
               }}
             />
@@ -274,7 +278,8 @@ export default function BlogsPage() {
 
                 {/* Results Count */}
                 <div className="text-sm text-gray-600 bg-white/60 backdrop-blur-md px-4 py-2 rounded-xl border border-gray-200">
-                  Showing {currentBlogs.length} of {filteredBlogs.length} articles
+                  Showing {currentBlogs.length} of {filteredBlogs.length}{" "}
+                  articles
                 </div>
               </div>
             </motion.div>
@@ -289,425 +294,448 @@ export default function BlogsPage() {
               {/* Sidebar */}
               <div className="lg:w-80 flex-shrink-0">
                 <div className="lg:sticky lg:top-24">
-                  <BlogsSidebar 
-                    blogs={blogs} 
-                    selectedCategory={selectedCategory} 
-                    onCategoryChange={setSelectedCategory} 
+                  <BlogsSidebar
+                    blogs={blogs}
+                    selectedCategory={selectedCategory}
+                    onCategoryChange={setSelectedCategory}
                   />
                 </div>
               </div>
-              
+
               {/* Main Content */}
               <div className="flex-1 min-w-0">
-            {filteredBlogs.length === 0 ? (
-              <motion.div
-                className="text-center py-20"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.6 }}
-              >
-                <div className="text-6xl mb-4">🔍</div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                  {searchTerm || selectedCategory !== "all" ? "No Results Found" : "No Blogs Yet"}
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  {searchTerm || selectedCategory !== "all" 
-                    ? "Try adjusting your search term or category filter" 
-                    : "Check back soon for amazing content!"
-                  }
-                </p>
-                {(searchTerm || selectedCategory !== "all") && (
-                  <button
-                    onClick={() => {
-                      setSearchTerm("");
-                      setSelectedCategory("all");
-                    }}
-                    className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:shadow-lg"
+                {filteredBlogs.length === 0 ? (
+                  <motion.div
+                    className="text-center py-20"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.6 }}
                   >
-                    Clear Filters
-                  </button>
-                )}
-              </motion.div>
-            ) : (
-              <div className={`${viewMode === "grid" 
-                ? "grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" 
-                : "space-y-6"
-              }`}>
-                {currentBlogs.map((blog, index) => {
-                  // Generate fallback image based on blog title or use default
-                  const getFallbackImage = (title) => {
-                    const images = [
-                      "/images/accounting.webp",
-                      "/images/course.png",
-                      "/images/live-class.jpg",
-                      "/images/student.png",
-                      "/images/university.png",
-                      "/images/vr-student.jpg",
-                    ];
-                    const hash = title.split("").reduce((a, b) => {
-                      a = (a << 5) - a + b.charCodeAt(0);
-                      return a & a;
-                    }, 0);
-                    return images[Math.abs(hash) % images.length];
-                  };
-
-                  const imageUrl = blog.imageUrl?.startsWith("http")
-                    ? blog.imageUrl
-                    : blog.imageUrl
-                    ? `${API_BASE.replace("/api", "")}/${blog.imageUrl}`
-                    : getFallbackImage(blog.title);
-
-                  return viewMode === "grid" ? (
-                    <motion.div
-                      key={blog._id}
-                      className="group relative bg-white rounded-3xl shadow-2xl border border-gray-100/50 overflow-hidden transform-gpu hover:shadow-3xl transition-all duration-700 hover:-translate-y-2"
-                      initial={{ opacity: 0, y: 50, rotateX: 15 }}
-                      whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
-                      transition={{
-                        duration: 0.8,
-                        delay: index * 0.1,
-                        type: "spring",
-                        stiffness: 100,
-                      }}
-                      whileHover={{
-                        scale: 1.02,
-                        rotateY: 2,
-                        z: 50,
-                      }}
-                      style={{
-                        transformStyle: "preserve-3d",
-                        boxShadow:
-                          "0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)",
-                      }}
-                    >
-                      {/* Glassmorphism Background */}
-                      <div className="absolute inset-0 bg-gradient-to-br from-white/80 via-white/60 to-white/40 backdrop-blur-xl" />
-
-                      {/* Image Container with Advanced Effects */}
-                      <motion.div
-                        className="relative overflow-hidden h-72"
-                        whileHover={{ scale: 1.08 }}
-                        transition={{ duration: 0.6, ease: "easeOut" }}
+                    <div className="text-6xl mb-4">🔍</div>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                      {searchTerm || selectedCategory !== "all"
+                        ? "No Results Found"
+                        : "No Blogs Yet"}
+                    </h3>
+                    <p className="text-gray-600 mb-4">
+                      {searchTerm || selectedCategory !== "all"
+                        ? "Try adjusting your search term or category filter"
+                        : "Check back soon for amazing content!"}
+                    </p>
+                    {(searchTerm || selectedCategory !== "all") && (
+                      <button
+                        onClick={() => {
+                          setSearchTerm("");
+                          setSelectedCategory("all");
+                        }}
+                        className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:shadow-lg"
                       >
-                        <img
-                          src={imageUrl}
-                          alt={blog.title}
-                          className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-110"
-                          onError={(e) => {
-                            e.target.src = getFallbackImage(blog.title);
-                          }}
-                        />
+                        Clear Filters
+                      </button>
+                    )}
+                  </motion.div>
+                ) : (
+                  <div
+                    className={`${
+                      viewMode === "grid"
+                        ? "grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+                        : "space-y-6"
+                    }`}
+                  >
+                    {currentBlogs.map((blog, index) => {
+                      // Generate fallback image based on blog title or use default
+                      const getFallbackImage = (title) => {
+                        const images = [
+                          "/images/accounting.webp",
+                          "/images/course.png",
+                          "/images/live-class.jpg",
+                          "/images/student.png",
+                          "/images/university.png",
+                          "/images/vr-student.jpg",
+                        ];
+                        const hash = title.split("").reduce((a, b) => {
+                          a = (a << 5) - a + b.charCodeAt(0);
+                          return a & a;
+                        }, 0);
+                        return images[Math.abs(hash) % images.length];
+                      };
 
-                        {/* Multi-layer Gradient Overlays */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                        <div className="absolute inset-0 bg-gradient-to-br from-green-500/20 via-transparent to-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                      const imageUrl = blog.imageUrl?.startsWith("http")
+                        ? blog.imageUrl
+                        : blog.imageUrl
+                        ? `${API_BASE.replace("/api", "")}/${blog.imageUrl}`
+                        : getFallbackImage(blog.title);
 
-                        {/* Floating Date Badge */}
+                      return viewMode === "grid" ? (
                         <motion.div
-                          className="absolute top-6 left-6 bg-white/95 backdrop-blur-md text-gray-800 text-xs font-bold px-4 py-2 rounded-2xl flex items-center gap-2 shadow-xl border border-white/20"
-                          whileHover={{ scale: 1.1, rotate: 2 }}
-                          transition={{ duration: 0.3 }}
-                        >
-                          <Calendar size={16} className="text-green-500" />
-                          {blog.createdAt
-                            ? new Date(blog.createdAt).toLocaleDateString(
-                                "en-GB",
-                                {
-                                  day: "2-digit",
-                                  month: "short",
-                                  year: "numeric",
-                                }
-                              )
-                            : "Recent"}
-                        </motion.div>
-
-                        {/* Category Badge */}
-                        <motion.div
-                          className="absolute top-6 right-6 bg-gradient-to-r from-green-500 to-blue-500 text-white text-xs font-bold px-4 py-2 rounded-2xl flex items-center gap-2 shadow-xl"
-                          whileHover={{ scale: 1.1, rotate: -2 }}
-                          transition={{ duration: 0.3 }}
-                        >
-                          <Tag size={14} />
-                          <span>{blog.category || "General"}</span>
-                        </motion.div>
-
-                        {/* Reading Time Badge */}
-                        <motion.div
-                          className="absolute bottom-6 left-6 bg-black/80 backdrop-blur-md text-white text-xs font-medium px-3 py-2 rounded-xl flex items-center gap-2"
-                          initial={{ opacity: 0, y: 20 }}
-                          whileInView={{ opacity: 1, y: 0 }}
+                          key={blog._id}
+                          className="group relative bg-white rounded-3xl shadow-2xl border border-gray-100/50 overflow-hidden transform-gpu hover:shadow-3xl transition-all duration-700 hover:-translate-y-2"
+                          initial={{ opacity: 0, y: 50, rotateX: 15 }}
+                          whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
                           transition={{
-                            duration: 0.5,
-                            delay: 0.3 + index * 0.1,
+                            duration: 0.8,
+                            delay: index * 0.1,
+                            type: "spring",
+                            stiffness: 100,
+                          }}
+                          whileHover={{
+                            scale: 1.02,
+                            rotateY: 2,
+                            z: 50,
+                          }}
+                          style={{
+                            transformStyle: "preserve-3d",
+                            boxShadow:
+                              "0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)",
                           }}
                         >
-                          <Clock size={14} />
-                          <span>
-                            {Math.ceil(blog.content.length / 500)} min read
-                          </span>
-                        </motion.div>
+                          {/* Glassmorphism Background */}
+                          <div className="absolute inset-0 bg-gradient-to-br from-white/80 via-white/60 to-white/40 backdrop-blur-xl" />
 
-                        {/* Interactive Read More Overlay */}
-                        <motion.div
-                          className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500"
-                          initial={{ scale: 0.5, rotate: -180 }}
-                          whileHover={{ scale: 1, rotate: 0 }}
-                        >
+                          {/* Image Container with Advanced Effects */}
                           <motion.div
-                            className="bg-white/95 backdrop-blur-xl rounded-2xl p-4 shadow-2xl border border-white/30"
-                            whileHover={{ scale: 1.1 }}
-                            transition={{ duration: 0.3 }}
+                            className="relative overflow-hidden h-72"
+                            whileHover={{ scale: 1.08 }}
+                            transition={{ duration: 0.6, ease: "easeOut" }}
                           >
-                            <BookOpen
-                              size={32}
-                              className="text-green-500 mx-auto"
+                            <img
+                              src={imageUrl}
+                              alt={blog.title}
+                              className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-110"
+                              onError={(e) => {
+                                e.target.src = getFallbackImage(blog.title);
+                              }}
                             />
-                            <p className="text-sm font-semibold text-gray-800 mt-2">
-                              Read Article
-                            </p>
-                          </motion.div>
-                        </motion.div>
-                      </motion.div>
 
-                      {/* Enhanced Content Container */}
-                      <div className="relative p-8 flex flex-col justify-between flex-1 min-h-[280px]">
-                        {/* Author Section with Avatar */}
+                            {/* Multi-layer Gradient Overlays */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                            <div className="absolute inset-0 bg-gradient-to-br from-green-500/20 via-transparent to-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                            {/* Floating Date Badge */}
+                            <motion.div
+                              className="absolute top-6 left-6 bg-white/95 backdrop-blur-md text-gray-800 text-xs font-bold px-4 py-2 rounded-2xl flex items-center gap-2 shadow-xl border border-white/20"
+                              whileHover={{ scale: 1.1, rotate: 2 }}
+                              transition={{ duration: 0.3 }}
+                            >
+                              <Calendar size={16} className="text-green-500" />
+                              {blog.createdAt
+                                ? new Date(blog.createdAt).toLocaleDateString(
+                                    "en-GB",
+                                    {
+                                      day: "2-digit",
+                                      month: "short",
+                                      year: "numeric",
+                                    }
+                                  )
+                                : "Recent"}
+                            </motion.div>
+
+                            {/* Category Badge */}
+                            <motion.div
+                              className="absolute top-6 right-6 bg-gradient-to-r from-green-500 to-blue-500 text-white text-xs font-bold px-4 py-2 rounded-2xl flex items-center gap-2 shadow-xl"
+                              whileHover={{ scale: 1.1, rotate: -2 }}
+                              transition={{ duration: 0.3 }}
+                            >
+                              <Tag size={14} />
+                              <span>{blog.category || "General"}</span>
+                            </motion.div>
+
+                            {/* Reading Time Badge */}
+                            <motion.div
+                              className="absolute bottom-6 left-6 bg-black/80 backdrop-blur-md text-white text-xs font-medium px-3 py-2 rounded-xl flex items-center gap-2"
+                              initial={{ opacity: 0, y: 20 }}
+                              whileInView={{ opacity: 1, y: 0 }}
+                              transition={{
+                                duration: 0.5,
+                                delay: 0.3 + index * 0.1,
+                              }}
+                            >
+                              <Clock size={14} />
+                              <span>
+                                {Math.ceil(blog.content.length / 500)} min read
+                              </span>
+                            </motion.div>
+
+                            {/* Interactive Read More Overlay */}
+                            <motion.div
+                              className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500"
+                              initial={{ scale: 0.5, rotate: -180 }}
+                              whileHover={{ scale: 1, rotate: 0 }}
+                            >
+                              <motion.div
+                                className="bg-white/95 backdrop-blur-xl rounded-2xl p-4 shadow-2xl border border-white/30"
+                                whileHover={{ scale: 1.1 }}
+                                transition={{ duration: 0.3 }}
+                              >
+                                <BookOpen
+                                  size={32}
+                                  className="text-green-500 mx-auto"
+                                />
+                                <p className="text-sm font-semibold text-gray-800 mt-2">
+                                  Read Article
+                                </p>
+                              </motion.div>
+                            </motion.div>
+                          </motion.div>
+
+                          {/* Enhanced Content Container */}
+                          <div className="relative p-8 flex flex-col justify-between flex-1 min-h-[280px]">
+                            {/* Author Section with Avatar */}
+                            <motion.div
+                              className="mb-6"
+                              initial={{ opacity: 0, x: -30 }}
+                              whileInView={{ opacity: 1, x: 0 }}
+                              transition={{
+                                duration: 0.6,
+                                delay: 0.2 + index * 0.1,
+                              }}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                                  {blog.author?.charAt(0) || "A"}
+                                </div>
+                                <div>
+                                  <p className="text-sm font-semibold text-gray-800">
+                                    {blog.author || "Anonymous"}
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    Content Creator
+                                  </p>
+                                </div>
+                              </div>
+                            </motion.div>
+
+                            {/* Enhanced Title */}
+                            <motion.div
+                              initial={{ opacity: 0, y: 30 }}
+                              whileInView={{ opacity: 1, y: 0 }}
+                              transition={{
+                                duration: 0.6,
+                                delay: 0.3 + index * 0.1,
+                              }}
+                            >
+                              <Link
+                                href={`/blogs/${encodeURIComponent(
+                                  blog.title.replace(/\s+/g, "-").toLowerCase()
+                                )}`}
+                                className="text-2xl font-bold leading-tight mb-4 text-gray-900 hover:text-transparent hover:bg-gradient-to-r hover:from-green-600 hover:to-blue-600 hover:bg-clip-text transition-all duration-500 group-hover:underline decoration-2 underline-offset-4"
+                              >
+                                {blog.title}
+                              </Link>
+                            </motion.div>
+
+                            {/* Enhanced Content Preview */}
+                            <motion.p
+                              className="text-gray-600 text-sm leading-relaxed mb-6 flex-1 line-clamp-3"
+                              initial={{ opacity: 0, y: 30 }}
+                              whileInView={{ opacity: 1, y: 0 }}
+                              transition={{
+                                duration: 0.6,
+                                delay: 0.4 + index * 0.1,
+                              }}
+                            >
+                              {blog.content
+                                .replace(/<[^>]+>/g, "")
+                                .slice(0, 150)}
+                              {blog.content.length > 150 && "..."}
+                            </motion.p>
+
+                            {/* Enhanced Read More Button */}
+                            <motion.div
+                              initial={{ opacity: 0, y: 30 }}
+                              whileInView={{ opacity: 1, y: 0 }}
+                              transition={{
+                                duration: 0.6,
+                                delay: 0.5 + index * 0.1,
+                              }}
+                            >
+                              <Link
+                                href={`/blogs/${encodeURIComponent(
+                                  blog.title.replace(/\s+/g, "-").toLowerCase()
+                                )}`}
+                                className="group/btn inline-flex items-center gap-3 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-6 py-3 rounded-2xl font-semibold text-sm transition-all duration-300 hover:shadow-xl hover:shadow-green-500/25 hover:-translate-y-1"
+                              >
+                                <span>Read Full Article</span>
+                                <motion.div
+                                  whileHover={{ x: 5, rotate: 5 }}
+                                  transition={{ duration: 0.3 }}
+                                >
+                                  <ArrowRight size={18} />
+                                </motion.div>
+                              </Link>
+                            </motion.div>
+                          </div>
+
+                          {/* Decorative Elements */}
+                          <div className="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-br from-green-400/20 to-blue-500/20 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                          <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-gradient-to-tr from-blue-400/20 to-green-500/20 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                        </motion.div>
+                      ) : (
+                        // List View Mode
                         <motion.div
-                          className="mb-6"
-                          initial={{ opacity: 0, x: -30 }}
+                          key={blog._id}
+                          className="group relative bg-white rounded-2xl shadow-lg border border-gray-100/50 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                          initial={{ opacity: 0, x: -50 }}
                           whileInView={{ opacity: 1, x: 0 }}
                           transition={{
                             duration: 0.6,
-                            delay: 0.2 + index * 0.1,
+                            delay: index * 0.05,
                           }}
                         >
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                              {blog.author?.charAt(0) || "A"}
-                            </div>
-                            <div>
-                              <p className="text-sm font-semibold text-gray-800">
-                                {blog.author || "Anonymous"}
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                Content Creator
-                              </p>
-                            </div>
-                          </div>
-                        </motion.div>
+                          <div className="flex flex-col md:flex-row">
+                            {/* Image Container for List View */}
+                            <div className="relative md:w-80 h-48 md:h-full overflow-hidden">
+                              <img
+                                src={imageUrl}
+                                alt={blog.title}
+                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                onError={(e) => {
+                                  e.target.src = getFallbackImage(blog.title);
+                                }}
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-                        {/* Enhanced Title */}
-                        <motion.div
-                          initial={{ opacity: 0, y: 30 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          transition={{
-                            duration: 0.6,
-                            delay: 0.3 + index * 0.1,
-                          }}
-                        >
-                          <Link
-                            href={`/blogs/${encodeURIComponent(
-                              blog.title.replace(/\s+/g, "-").toLowerCase()
-                            )}`}
-                            className="text-2xl font-bold leading-tight mb-4 text-gray-900 hover:text-transparent hover:bg-gradient-to-r hover:from-green-600 hover:to-blue-600 hover:bg-clip-text transition-all duration-500 group-hover:underline decoration-2 underline-offset-4"
-                          >
-                            {blog.title}
-                          </Link>
-                        </motion.div>
+                              {/* Date Badge */}
+                              <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md text-gray-800 text-xs font-semibold px-3 py-1 rounded-xl">
+                                <Calendar className="inline w-3 h-3 mr-1" />
+                                {blog.createdAt
+                                  ? new Date(blog.createdAt).toLocaleDateString(
+                                      "en-GB",
+                                      {
+                                        day: "2-digit",
+                                        month: "short",
+                                        year: "numeric",
+                                      }
+                                    )
+                                  : "Recent"}
+                              </div>
 
-                        {/* Enhanced Content Preview */}
-                        <motion.p
-                          className="text-gray-600 text-sm leading-relaxed mb-6 flex-1 line-clamp-3"
-                          initial={{ opacity: 0, y: 30 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          transition={{
-                            duration: 0.6,
-                            delay: 0.4 + index * 0.1,
-                          }}
-                        >
-                          {blog.content.replace(/<[^>]+>/g, "").slice(0, 150)}
-                          {blog.content.length > 150 && "..."}
-                        </motion.p>
-
-                        {/* Enhanced Read More Button */}
-                        <motion.div
-                          initial={{ opacity: 0, y: 30 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          transition={{
-                            duration: 0.6,
-                            delay: 0.5 + index * 0.1,
-                          }}
-                        >
-                          <Link
-                            href={`/blogs/${encodeURIComponent(
-                              blog.title.replace(/\s+/g, "-").toLowerCase()
-                            )}`}
-                            className="group/btn inline-flex items-center gap-3 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-6 py-3 rounded-2xl font-semibold text-sm transition-all duration-300 hover:shadow-xl hover:shadow-green-500/25 hover:-translate-y-1"
-                          >
-                            <span>Read Full Article</span>
-                            <motion.div
-                              whileHover={{ x: 5, rotate: 5 }}
-                              transition={{ duration: 0.3 }}
-                            >
-                              <ArrowRight size={18} />
-                            </motion.div>
-                          </Link>
-                        </motion.div>
-                      </div>
-
-                      {/* Decorative Elements */}
-                      <div className="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-br from-green-400/20 to-blue-500/20 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                      <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-gradient-to-tr from-blue-400/20 to-green-500/20 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                    </motion.div>
-                  ) : (
-                    // List View Mode
-                    <motion.div
-                      key={blog._id}
-                      className="group relative bg-white rounded-2xl shadow-lg border border-gray-100/50 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
-                      initial={{ opacity: 0, x: -50 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      transition={{
-                        duration: 0.6,
-                        delay: index * 0.05,
-                      }}
-                    >
-                      <div className="flex flex-col md:flex-row">
-                        {/* Image Container for List View */}
-                        <div className="relative md:w-80 h-48 md:h-full overflow-hidden">
-                          <img
-                            src={imageUrl}
-                            alt={blog.title}
-                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                            onError={(e) => {
-                              e.target.src = getFallbackImage(blog.title);
-                            }}
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                          
-                          {/* Date Badge */}
-                          <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md text-gray-800 text-xs font-semibold px-3 py-1 rounded-xl">
-                            <Calendar className="inline w-3 h-3 mr-1" />
-                            {blog.createdAt
-                              ? new Date(blog.createdAt).toLocaleDateString("en-GB", {
-                                  day: "2-digit",
-                                  month: "short",
-                                  year: "numeric",
-                                })
-                              : "Recent"}
-                          </div>
-
-                          {/* Category Badge */}
-                          <div className="absolute top-4 right-4 bg-gradient-to-r from-green-500 to-blue-500 text-white text-xs font-semibold px-3 py-1 rounded-xl">
-                            <Tag className="inline w-3 h-3 mr-1" />
-                            {blog.category || "General"}
-                          </div>
-                        </div>
-
-                        {/* Content Container for List View */}
-                        <div className="flex-1 p-6">
-                          <div className="flex items-center gap-3 mb-4">
-                            <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                              {blog.author?.charAt(0) || "A"}
-                            </div>
-                            <div>
-                              <p className="text-sm font-semibold text-gray-800">{blog.author || "Anonymous"}</p>
-                              <p className="text-xs text-gray-500">Content Creator</p>
-                            </div>
-                          </div>
-
-                          <Link
-                            href={`/blogs/${encodeURIComponent(
-                              blog.title.replace(/\s+/g, "-").toLowerCase()
-                            )}`}
-                            className="text-xl md:text-2xl font-bold leading-tight mb-4 text-gray-900 hover:text-transparent hover:bg-gradient-to-r hover:from-green-600 hover:to-blue-600 hover:bg-clip-text transition-all duration-500 block"
-                          >
-                            {blog.title}
-                          </Link>
-
-                          <p className="text-gray-600 mb-4 leading-relaxed">
-                            {blog.content.replace(/<[^>]+>/g, "").slice(0, 200)}
-                            {blog.content.length > 200 && "..."}
-                          </p>
-
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4 text-sm text-gray-500">
-                              <div className="flex items-center gap-1">
-                                <Clock className="w-4 h-4" />
-                                <span>{Math.ceil(blog.content.length / 500)} min read</span>
+                              {/* Category Badge */}
+                              <div className="absolute top-4 right-4 bg-gradient-to-r from-green-500 to-blue-500 text-white text-xs font-semibold px-3 py-1 rounded-xl">
+                                <Tag className="inline w-3 h-3 mr-1" />
+                                {blog.category || "General"}
                               </div>
                             </div>
 
-                            <Link
-                              href={`/blogs/${encodeURIComponent(
-                                blog.title.replace(/\s+/g, "-").toLowerCase()
-                              )}`}
-                              className="inline-flex items-center gap-2 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-6 py-2 rounded-xl font-semibold text-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
-                            >
-                              <span>Read More</span>
-                              <ArrowRight className="w-4 h-4" />
-                            </Link>
+                            {/* Content Container for List View */}
+                            <div className="flex-1 p-6">
+                              <div className="flex items-center gap-3 mb-4">
+                                <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                                  {blog.author?.charAt(0) || "A"}
+                                </div>
+                                <div>
+                                  <p className="text-sm font-semibold text-gray-800">
+                                    {blog.author || "Anonymous"}
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    Content Creator
+                                  </p>
+                                </div>
+                              </div>
+
+                              <Link
+                                href={`/blogs/${encodeURIComponent(
+                                  blog.title.replace(/\s+/g, "-").toLowerCase()
+                                )}`}
+                                className="text-xl md:text-2xl font-bold leading-tight mb-4 text-gray-900 hover:text-transparent hover:bg-gradient-to-r hover:from-green-600 hover:to-blue-600 hover:bg-clip-text transition-all duration-500 block"
+                              >
+                                {blog.title}
+                              </Link>
+
+                              <p className="text-gray-600 mb-4 leading-relaxed">
+                                {blog.content
+                                  .replace(/<[^>]+>/g, "")
+                                  .slice(0, 200)}
+                                {blog.content.length > 200 && "..."}
+                              </p>
+
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4 text-sm text-gray-500">
+                                  <div className="flex items-center gap-1">
+                                    <Clock className="w-4 h-4" />
+                                    <span>
+                                      {Math.ceil(blog.content.length / 500)} min
+                                      read
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <Link
+                                  href={`/blogs/${encodeURIComponent(
+                                    blog.title
+                                      .replace(/\s+/g, "-")
+                                      .toLowerCase()
+                                  )}`}
+                                  className="inline-flex items-center gap-2 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-6 py-2 rounded-xl font-semibold text-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+                                >
+                                  <span>Read More</span>
+                                  <ArrowRight className="w-4 h-4" />
+                                </Link>
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            )}
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <motion.div
-                  className="flex items-center justify-center gap-2 mt-16"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.3 }}
-                >
-                  {/* Previous Button */}
-                  <button
-                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                    disabled={currentPage === 1}
-                    className={`px-4 py-2 rounded-xl font-semibold transition-all duration-200 ${
-                      currentPage === 1
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                        : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:shadow-lg"
-                    }`}
-                  >
-                    Previous
-                  </button>
-
-                  {/* Page Numbers */}
-                  <div className="flex items-center gap-2">
-                    {pageNumbers.map((pageNum) => (
-                      <button
-                        key={pageNum}
-                        onClick={() => setCurrentPage(pageNum)}
-                        className={`px-4 py-2 rounded-xl font-semibold transition-all duration-200 ${
-                          currentPage === pageNum
-                            ? "bg-gradient-to-r from-green-500 to-blue-600 text-white shadow-lg"
-                            : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:shadow-lg"
-                        }`}
-                      >
-                        {pageNum}
-                      </button>
-                    ))}
+                        </motion.div>
+                      );
+                    })}
                   </div>
+                )}
 
-                  {/* Next Button */}
-                  <button
-                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                    disabled={currentPage === totalPages}
-                    className={`px-4 py-2 rounded-xl font-semibold transition-all duration-200 ${
-                      currentPage === totalPages
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                        : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:shadow-lg"
-                    }`}
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <motion.div
+                    className="flex items-center justify-center gap-2 mt-16"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.3 }}
                   >
-                    Next
-                  </button>
-                </motion.div>
-              )}
-                </div>
+                    {/* Previous Button */}
+                    <button
+                      onClick={() =>
+                        setCurrentPage(Math.max(1, currentPage - 1))
+                      }
+                      disabled={currentPage === 1}
+                      className={`px-4 py-2 rounded-xl font-semibold transition-all duration-200 ${
+                        currentPage === 1
+                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                          : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:shadow-lg"
+                      }`}
+                    >
+                      Previous
+                    </button>
+
+                    {/* Page Numbers */}
+                    <div className="flex items-center gap-2">
+                      {pageNumbers.map((pageNum) => (
+                        <button
+                          key={pageNum}
+                          onClick={() => setCurrentPage(pageNum)}
+                          className={`px-4 py-2 rounded-xl font-semibold transition-all duration-200 ${
+                            currentPage === pageNum
+                              ? "bg-gradient-to-r from-green-500 to-blue-600 text-white shadow-lg"
+                              : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:shadow-lg"
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Next Button */}
+                    <button
+                      onClick={() =>
+                        setCurrentPage(Math.min(totalPages, currentPage + 1))
+                      }
+                      disabled={currentPage === totalPages}
+                      className={`px-4 py-2 rounded-xl font-semibold transition-all duration-200 ${
+                        currentPage === totalPages
+                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                          : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:shadow-lg"
+                      }`}
+                    >
+                      Next
+                    </button>
+                  </motion.div>
+                )}
               </div>
             </div>
           </div>
