@@ -17,7 +17,32 @@ export const getAllGroupPricing = async (req, res) => {
       })
       .sort({ level: 1, createdAt: -1 });
 
-    res.json(groupPricing);
+    // Ensure center pricing structures exist for all records
+    const groupPricingWithDefaults = groupPricing.map((pricing) => {
+      if (!pricing.pricing.recordedSessionCenter) {
+        pricing.pricing.recordedSessionCenter = {
+          title: "DIGITAL HUB+ RECORDED SESSION+ CENTER",
+          buttonText: "Add Digital Hub+ Center",
+          price: 0,
+          discount: 0,
+          finalPrice: 0,
+        };
+      }
+
+      if (!pricing.pricing.liveSessionCenter) {
+        pricing.pricing.liveSessionCenter = {
+          title: "DIGITAL HUB+ LIVE SESSION+ CENTER",
+          buttonText: "Add Digital Hub+ Center",
+          price: 0,
+          discount: 0,
+          finalPrice: 0,
+        };
+      }
+
+      return pricing;
+    });
+
+    res.json(groupPricingWithDefaults);
   } catch (error) {
     console.error("Error fetching group pricing:", error);
     res.status(500).json({
@@ -52,6 +77,27 @@ export const getGroupPricingById = async (req, res) => {
       });
     }
 
+    // Ensure center pricing structures exist
+    if (!groupPricing.pricing.recordedSessionCenter) {
+      groupPricing.pricing.recordedSessionCenter = {
+        title: "DIGITAL HUB+ RECORDED SESSION+ CENTER",
+        buttonText: "Add Digital Hub+ Center",
+        price: 0,
+        discount: 0,
+        finalPrice: 0,
+      };
+    }
+
+    if (!groupPricing.pricing.liveSessionCenter) {
+      groupPricing.pricing.liveSessionCenter = {
+        title: "DIGITAL HUB+ LIVE SESSION+ CENTER",
+        buttonText: "Add Digital Hub+ Center",
+        price: 0,
+        discount: 0,
+        finalPrice: 0,
+      };
+    }
+
     res.json(groupPricing);
   } catch (error) {
     console.error("Error fetching group pricing:", error);
@@ -80,6 +126,12 @@ export const createGroupPricing = async (req, res) => {
       livePrice,
       liveFinalPrice,
       liveDiscount,
+      recordedPriceCenter,
+      recordedFinalPriceCenter,
+      recordedDiscountCenter,
+      livePriceCenter,
+      liveFinalPriceCenter,
+      liveDiscountCenter,
     } = req.body;
     const image = req.file
       ? `/uploads/group_pricing_images/${req.file.filename}`
@@ -111,7 +163,11 @@ export const createGroupPricing = async (req, res) => {
       !recordedPrice ||
       !recordedFinalPrice ||
       !livePrice ||
-      !liveFinalPrice
+      !liveFinalPrice ||
+      !recordedPriceCenter ||
+      !recordedFinalPriceCenter ||
+      !livePriceCenter ||
+      !liveFinalPriceCenter
     ) {
       console.log(
         "Validation failed - level:",
@@ -187,6 +243,16 @@ export const createGroupPricing = async (req, res) => {
           finalPrice: parseFloat(liveFinalPrice),
           discount: parseFloat(liveDiscount) || 0,
         },
+        recordedSessionCenter: {
+          price: parseFloat(recordedPriceCenter),
+          finalPrice: parseFloat(recordedFinalPriceCenter),
+          discount: parseFloat(recordedDiscountCenter) || 0,
+        },
+        liveSessionCenter: {
+          price: parseFloat(livePriceCenter),
+          finalPrice: parseFloat(liveFinalPriceCenter),
+          discount: parseFloat(liveDiscountCenter) || 0,
+        },
       },
     });
 
@@ -232,14 +298,20 @@ export const updateGroupPricing = async (req, res) => {
       level,
       courseIds,
       groupPrice,
-      description,
       status,
+      description,
       recordedPrice,
       recordedFinalPrice,
       recordedDiscount,
       livePrice,
       liveFinalPrice,
       liveDiscount,
+      recordedPriceCenter,
+      recordedFinalPriceCenter,
+      recordedDiscountCenter,
+      livePriceCenter,
+      liveFinalPriceCenter,
+      liveDiscountCenter,
     } = req.body;
     const image = req.file
       ? `/uploads/group_pricing_images/${req.file.filename}`
@@ -325,6 +397,63 @@ export const updateGroupPricing = async (req, res) => {
           parseFloat(liveFinalPrice);
       if (liveDiscount !== undefined)
         groupPricing.pricing.liveSession.discount = parseFloat(liveDiscount);
+    }
+
+    // Initialize center pricing structures if they don't exist
+    if (!groupPricing.pricing.recordedSessionCenter) {
+      groupPricing.pricing.recordedSessionCenter = {
+        title: "DIGITAL HUB+ RECORDED SESSION+ CENTER",
+        buttonText: "Add Digital Hub+ Center",
+        price: 0,
+        discount: 0,
+        finalPrice: 0,
+      };
+    }
+
+    if (!groupPricing.pricing.liveSessionCenter) {
+      groupPricing.pricing.liveSessionCenter = {
+        title: "DIGITAL HUB+ LIVE SESSION+ CENTER",
+        buttonText: "Add Digital Hub+ Center",
+        price: 0,
+        discount: 0,
+        finalPrice: 0,
+      };
+    }
+
+    // Update recorded session center pricing
+    if (
+      recordedPriceCenter ||
+      recordedFinalPriceCenter ||
+      recordedDiscountCenter !== undefined
+    ) {
+      if (recordedPriceCenter)
+        groupPricing.pricing.recordedSessionCenter.price =
+          parseFloat(recordedPriceCenter);
+      if (recordedFinalPriceCenter)
+        groupPricing.pricing.recordedSessionCenter.finalPrice = parseFloat(
+          recordedFinalPriceCenter
+        );
+      if (recordedDiscountCenter !== undefined)
+        groupPricing.pricing.recordedSessionCenter.discount = parseFloat(
+          recordedDiscountCenter
+        );
+    }
+
+    // Update live session center pricing
+    if (
+      livePriceCenter ||
+      liveFinalPriceCenter ||
+      liveDiscountCenter !== undefined
+    ) {
+      if (livePriceCenter)
+        groupPricing.pricing.liveSessionCenter.price =
+          parseFloat(livePriceCenter);
+      if (liveFinalPriceCenter)
+        groupPricing.pricing.liveSessionCenter.finalPrice =
+          parseFloat(liveFinalPriceCenter);
+      if (liveDiscountCenter !== undefined)
+        groupPricing.pricing.liveSessionCenter.discount =
+          parseFloat(liveDiscountCenter);
     }
 
     const updatedGroupPricing = await groupPricing.save();
