@@ -4,14 +4,7 @@ import { useState } from "react";
 import Header from "../components/Header";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
-import {
-  FaUser,
-  FaLock,
-  FaEye,
-  FaEyeSlash,
-  FaEnvelope,
-  FaUsers,
-} from "react-icons/fa";
+import { FaLock, FaEye, FaEyeSlash, FaEnvelope, FaUsers } from "react-icons/fa";
 
 export default function TeamLogin() {
   const [email, setEmail] = useState("");
@@ -31,12 +24,12 @@ export default function TeamLogin() {
     try {
       const result = await login(email, password);
       if (result.success) {
-        // Redirect to team dashboard instead of admin dashboard
-        router.push("/team-dashboard");
+        // Use role-based redirect from AuthContext
+        router.push(result.redirectUrl || "/team-dashboard");
       } else {
         setError(result.message);
       }
-    } catch (error) {
+    } catch {
       setError("Login failed. Please try again.");
     } finally {
       setLoading(false);
