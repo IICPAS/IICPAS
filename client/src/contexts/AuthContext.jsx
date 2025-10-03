@@ -62,7 +62,11 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem("adminToken", userData.token);
       localStorage.setItem("adminUser", JSON.stringify(userData));
 
-      return { success: true };
+      // Return redirect URL based on role
+      const redirectUrl =
+        userData.role === "Admin" ? "/admin-dashboard" : "/team-dashboard";
+
+      return { success: true, redirectUrl };
     } catch (error) {
       console.error("Login error:", error);
       return {

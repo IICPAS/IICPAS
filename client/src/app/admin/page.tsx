@@ -25,11 +25,12 @@ export default function AdminLogin() {
     try {
       const result = await login(email, password);
       if (result.success) {
-        router.push("/admin-dashboard");
+        // Use role-based redirect from AuthContext
+        router.push(result.redirectUrl || "/admin-dashboard");
       } else {
         setError(result.message);
       }
-    } catch (error) {
+    } catch {
       setError("Log failed. Please try again.");
     } finally {
       setLoading(false);
