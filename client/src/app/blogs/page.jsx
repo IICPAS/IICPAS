@@ -480,7 +480,7 @@ export default function BlogsPage() {
 
                           {/* Enhanced Content Container */}
                           <div className="relative p-8 flex flex-col justify-between flex-1 min-h-[280px]">
-                            {/* Author Section with Avatar */}
+                            {/* Blog Meta */}
                             <motion.div
                               className="mb-6"
                               initial={{ opacity: 0, x: -30 }}
@@ -490,17 +490,27 @@ export default function BlogsPage() {
                                 delay: 0.2 + index * 0.1,
                               }}
                             >
-                              <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                                  {blog.author?.charAt(0) || "A"}
+                              <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
+                                <div className="inline-flex items-center gap-1.5">
+                                  <Calendar className="w-3 h-3" />
+                                  <span>
+                                    {blog.createdAt
+                                      ? new Date(
+                                          blog.createdAt
+                                        ).toLocaleDateString("en-GB", {
+                                          day: "2-digit",
+                                          month: "short",
+                                          year: "numeric",
+                                        })
+                                      : "Recent"}
+                                  </span>
                                 </div>
-                                <div>
-                                  <p className="text-sm font-semibold text-gray-800">
-                                    {blog.author || "Anonymous"}
-                                  </p>
-                                  <p className="text-xs text-gray-500">
-                                    Content Creator
-                                  </p>
+                                <div className="inline-flex items-center gap-1.5">
+                                  <Clock className="w-3 h-3" />
+                                  <span>
+                                    {Math.ceil(blog.content.length / 500)} min
+                                    read
+                                  </span>
                                 </div>
                               </div>
                             </motion.div>
@@ -619,17 +629,27 @@ export default function BlogsPage() {
 
                             {/* Content Container for List View */}
                             <div className="flex-1 p-6">
-                              <div className="flex items-center gap-3 mb-4">
-                                <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                                  {blog.author?.charAt(0) || "A"}
+                              <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
+                                <div className="inline-flex items-center gap-1.5">
+                                  <Calendar className="w-3 h-3" />
+                                  <span>
+                                    {blog.createdAt
+                                      ? new Date(
+                                          blog.createdAt
+                                        ).toLocaleDateString("en-GB", {
+                                          day: "2-digit",
+                                          month: "short",
+                                          year: "numeric",
+                                        })
+                                      : "Recent"}
+                                  </span>
                                 </div>
-                                <div>
-                                  <p className="text-sm font-semibold text-gray-800">
-                                    {blog.author || "Anonymous"}
-                                  </p>
-                                  <p className="text-xs text-gray-500">
-                                    Content Creator
-                                  </p>
+                                <div className="inline-flex items-center gap-1.5">
+                                  <Clock className="w-3 h-3" />
+                                  <span>
+                                    {Math.ceil(blog.content.length / 500)} min
+                                    read
+                                  </span>
                                 </div>
                               </div>
 

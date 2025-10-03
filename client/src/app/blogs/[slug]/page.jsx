@@ -118,47 +118,42 @@ export default function BlogDetail({ params }) {
     <>
       <Header />
 
-      {/* Enhanced Hero Section */}
-      <section className="relative pt-24 pb-12 bg-gradient-to-br from-green-50 via-white to-blue-50 overflow-hidden">
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-20 right-20 w-32 h-32 bg-gradient-to-br from-green-100/20 to-blue-100/20 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-20 left-20 w-40 h-40 bg-gradient-to-br from-blue-100/20 to-green-100/20 rounded-full blur-3xl"></div>
-        </div>
-
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 md:px-8">
+      {/* Professional Blog Header */}
+      <section className="relative pt-32 pb-16 bg-white">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8">
           {/* Breadcrumb */}
           <motion.div
-            className="mb-8"
+            className="mb-6"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <nav className="flex items-center space-x-2 text-sm">
+            <nav className="flex items-center space-x-2 text-sm text-gray-500">
               <Link
                 href="/blogs"
-                className="text-gray-600 hover:text-green-600 transition-colors"
+                className="hover:text-green-600 transition-colors"
               >
                 Blog
               </Link>
-              <span className="text-gray-400">/</span>
-              <span className="text-gray-900 font-medium">{blog.title}</span>
+              <span>/</span>
+              <span>{blog.title}</span>
             </nav>
           </motion.div>
 
           {/* Article Meta */}
           <motion.div
-            className="mb-8"
+            className="mb-6"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
           >
-            <div className="flex flex-wrap items-center gap-4 mb-4">
-              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-green-500 to-blue-500 text-white text-xs font-semibold px-4 py-2 rounded-xl">
+            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+              <div className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 px-3 py-1.5 rounded-lg border border-green-200">
                 <Tag className="w-3 h-3" />
                 <span>{blog.category || "General"}</span>
               </div>
-              <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-md text-gray-700 text-xs font-semibold px-4 py-2 rounded-xl border border-gray-200">
-                <Calendar className="w-3 h-3 text-green-500" />
+              <div className="inline-flex items-center gap-1.5">
+                <Calendar className="w-3 h-3 text-gray-400" />
                 <span>
                   {blog.createdAt
                     ? new Date(blog.createdAt).toLocaleDateString("en-GB", {
@@ -169,8 +164,8 @@ export default function BlogDetail({ params }) {
                     : "Recent"}
                 </span>
               </div>
-              <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-md text-gray-700 text-xs font-semibold px-4 py-rigger>rounded-xl border border-gray-200">
-                <Clock className="w-3 h-3 text-blue-500" />
+              <div className="inline-flex items-center gap-1.5">
+                <Clock className="w-3 h-3 text-gray-400" />
                 <span>{Math.ceil(blog.content.length / 500)} min read</span>
               </div>
             </div>
@@ -178,55 +173,26 @@ export default function BlogDetail({ params }) {
 
           {/* Title */}
           <motion.h1
-            className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 leading-tight mb-6"
+            className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 leading-tight mb-8"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
             {blog.title}
           </motion.h1>
-
-          {/* Author Info */}
-          <motion.div
-            className="flex items-center gap-4 mb-8"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-          >
-            <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
-              {blog.author?.charAt(0) || "A"}
-            </div>
-            <div>
-              <p className="font-semibold text-gray-900">
-                {blog.author || "Anonymous Author"}
-              </p>
-              <p className="text-sm text-gray-600">
-                Content Creator at IICPA Institute
-              </p>
-            </div>
-            <div className="ml-auto flex items-center gap-3">
-              <button className="p-2 bg-white/80 backdrop-blur-md border border-gray-200 rounded-xl hover:bg-white hover:shadow-lg transition-all duration-200">
-                <Share2 className="w-5 h-5 text-gray-600" />
-              </button>
-              <button className="p-2 bg-white/80 backdrop-blur-md border border-gray-200 rounded-xl hover:bg-white hover:shadow-lg transition-all duration-200">
-                <Bookmark className="w-5 h-5 text-gray-600" />
-              </button>
-            </div>
-          </motion.div>
         </div>
       </section>
 
-      {/* Article Content */}
-      <section className="py-12 bg-white">
+      {/* Cover Image Section */}
+      <section className="pb-8 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8">
-          {/* Featured Image */}
           <motion.div
             className="mb-12"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
           >
-            <div className="relative overflow-hidden rounded-3xl shadow-2xl bg-gradient-to-br from-gray-100 to-gray-200">
+            <div className="relative overflow-hidden rounded-lg shadow-lg bg-gray-100">
               <img
                 src={imageUrl}
                 alt={blog.title}
@@ -235,65 +201,57 @@ export default function BlogDetail({ params }) {
                   e.target.src = getFallbackImage(blog.title);
                 }}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
             </div>
           </motion.div>
+        </div>
+      </section>
 
+      {/* Article Content */}
+      <section className="pb-16 bg-white">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8">
           {/* Article Content */}
           <motion.div
             className="article-content prose prose-lg prose-green max-w-none mx-auto"
             dangerouslySetInnerHTML={{ __html: blog.content }}
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
           />
 
-          {/* Article Footer */}
+          {/* Professional Article Footer */}
           <motion.div
-            className="mt-12 pt-8 border-t border-gray-200"
+            className="mt-16 pt-8 border-t border-gray-200"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
           >
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center text-white font-bold text-xl">
-                  {blog.author?.charAt(0) || "A"}
-                </div>
-                <div>
-                  <h4 className="font-semibold text-gray-900">
-                    {blog.author || "Anonymous Author"}
-                  </h4>
-                  <p className="text-sm text-gray-600">Content Creator</p>
-                </div>
-              </div>
-
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
               <div className="flex items-center gap-3">
-                <button className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-                  <Share2 className="w-5 h-5" />
+                <button className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-all duration-300">
+                  <Share2 className="w-4 h-4" />
                   Share Article
                 </button>
-                <button className="flex items-center gap-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:shadow-lg">
-                  <Bookmark className="w-5 h-5" />
-                  Save
+                <button className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-all duration-300">
+                  <Bookmark className="w-4 h-4" />
+                  Save Article
                 </button>
               </div>
             </div>
           </motion.div>
 
-          {/* Back to Blogs Button */}
+          {/* Back to Blogs Link */}
           <motion.div
-            className="mt-12 text-center"
+            className="mt-16 text-center"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.8 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
           >
             <Link
               href="/blogs"
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+              className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium transition-colors duration-200"
             >
-              <ArrowLeft className="w-6 h-6" />
-              Explore More Articles
+              <ArrowLeft className="w-4 h-4" />
+              Return to Blog
             </Link>
           </motion.div>
         </div>
