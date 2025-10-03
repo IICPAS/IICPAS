@@ -108,7 +108,7 @@ export default function BlogDetail({ params }) {
     return images[Math.abs(hash) % images.length];
   };
 
-  const arrayUrl = blog.imageUrl?.startsWith("http")
+  const imageUrl = blog.imageUrl?.startsWith("http")
     ? blog.imageUrl
     : blog.imageUrl
     ? `${API_BASE.replace("/api", "")}/${blog.imageUrl}`
