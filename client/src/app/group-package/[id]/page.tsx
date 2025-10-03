@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState, use, useEffect, useMemo } from "react";
+import React, { useState, use, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   ChevronDown,
@@ -82,7 +82,7 @@ export default function GroupPackageDetailPage({
   // Handle adding group package to cart
   const handleAddToCart = async (
     packageId: string,
-    sessionType: "recorded" | "live"
+    sessionType: "recorded" | "live" | "recordedCenter" | "liveCenter"
   ) => {
     if (!student) {
       setShowLoginModal(true);
@@ -656,6 +656,148 @@ export default function GroupPackageDetailPage({
                       >
                         {groupPackage?.pricing?.liveSession?.buttonText ||
                           "Add Digital Hub+"}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Center Options Cards - Side by Side */}
+                  <div className="grid grid-cols-2 gap-2 mb-4">
+                    {/* Recorded Session + Center Option */}
+                    <div className="border-2 border-[#3cd664] rounded-lg p-2">
+                      <div className="mb-2">
+                        <div className="text-center mb-1">
+                          {groupPackage?.pricing?.recordedSessionCenter?.title?.split(
+                            "+"
+                          ) ? (
+                            groupPackage.pricing.recordedSessionCenter.title
+                              .split("+")
+                              .map((part: string, index: number) => (
+                                <span
+                                  key={index}
+                                  className="text-xs font-bold text-[#3cd664] block"
+                                >
+                                  {part.trim()}
+                                </span>
+                              ))
+                          ) : (
+                            <>
+                              <span className="text-xs font-bold text-[#3cd664] block">
+                                DIGITAL HUB+
+                              </span>
+                              <span className="text-xs font-bold text-[#3cd664] block">
+                                RECORDED SESSION+
+                              </span>
+                              <span className="text-xs font-bold text-[#3cd664] block">
+                                CENTER
+                              </span>
+                            </>
+                          )}
+                        </div>
+                        <div className="text-center">
+                          <div className="text-sm font-bold text-[#3cd664]">
+                            ₹
+                            {groupPackage?.pricing?.recordedSessionCenter
+                              ?.finalPrice
+                              ? groupPackage.pricing.recordedSessionCenter.finalPrice.toLocaleString()
+                              : groupPackage?.pricing?.recordedSessionCenter
+                                  ?.price
+                              ? groupPackage.pricing.recordedSessionCenter.price.toLocaleString()
+                              : groupPackage?.pricing?.recordedSession
+                                  ?.finalPrice
+                              ? (
+                                  groupPackage.pricing.recordedSession
+                                    .finalPrice * 1.8
+                                ).toLocaleString()
+                              : "N/A"}
+                          </div>
+                          {groupPackage?.pricing?.recordedSessionCenter
+                            ?.discount &&
+                            groupPackage.pricing.recordedSessionCenter
+                              .discount > 0 && (
+                              <div className="text-xs text-gray-500 line-through">
+                                ₹
+                                {groupPackage.pricing.recordedSessionCenter.price.toLocaleString()}
+                              </div>
+                            )}
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() =>
+                          handleAddToCart(groupPackage._id, "recordedCenter")
+                        }
+                        className="w-full bg-[#3cd664] hover:bg-[#33bb58] text-white font-bold py-1 px-2 rounded text-xs"
+                      >
+                        {groupPackage?.pricing?.recordedSessionCenter
+                          ?.buttonText || "Add Digital Hub+ Center"}
+                      </button>
+                    </div>
+
+                    {/* Live Session + Center Option */}
+                    <div className="border-2 border-blue-500 rounded-lg p-2">
+                      <div className="mb-2">
+                        <div className="text-center mb-1">
+                          {groupPackage?.pricing?.liveSessionCenter?.title?.split(
+                            "+"
+                          ) ? (
+                            groupPackage.pricing.liveSessionCenter.title
+                              .split("+")
+                              .map((part: string, index: number) => (
+                                <span
+                                  key={index}
+                                  className="text-xs font-bold text-blue-500 block"
+                                >
+                                  {part.trim()}
+                                </span>
+                              ))
+                          ) : (
+                            <>
+                              <span className="text-xs font-bold text-blue-500 block">
+                                DIGITAL HUB+
+                              </span>
+                              <span className="text-xs font-bold text-blue-500 block">
+                                LIVE SESSION+
+                              </span>
+                              <span className="text-xs font-bold text-blue-500 block">
+                                CENTER
+                              </span>
+                            </>
+                          )}
+                        </div>
+                        <div className="text-center">
+                          <div className="text-sm font-bold text-blue-500">
+                            ₹
+                            {groupPackage?.pricing?.liveSessionCenter
+                              ?.finalPrice
+                              ? groupPackage.pricing.liveSessionCenter.finalPrice.toLocaleString()
+                              : groupPackage?.pricing?.liveSessionCenter?.price
+                              ? groupPackage.pricing.liveSessionCenter.price.toLocaleString()
+                              : groupPackage?.pricing?.liveSession?.finalPrice
+                              ? (
+                                  groupPackage.pricing.liveSession.finalPrice *
+                                  1.8
+                                ).toLocaleString()
+                              : "N/A"}
+                          </div>
+                          {groupPackage?.pricing?.liveSessionCenter?.discount &&
+                            groupPackage.pricing.liveSessionCenter.discount >
+                              0 && (
+                              <div className="text-xs text-gray-500 line-through">
+                                ₹
+                                {groupPackage.pricing.liveSessionCenter.price.toLocaleString()}
+                              </div>
+                            )}
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() =>
+                          handleAddToCart(groupPackage._id, "liveCenter")
+                        }
+                        className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-1 px-2 rounded text-xs"
+                      >
+                        {groupPackage?.pricing?.liveSessionCenter?.buttonText ||
+                          "Add Digital Hub+ Center"}
                       </button>
                     </div>
                   </div>

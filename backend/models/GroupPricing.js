@@ -81,6 +81,58 @@ const GroupPricingSchema = new Schema({
         default: "Add Digital Hub+",
       },
     },
+    recordedSessionCenter: {
+      price: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+      finalPrice: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+      discount: {
+        type: Number,
+        default: 0,
+        min: 0,
+        max: 100,
+      },
+      title: {
+        type: String,
+        default: "DIGITAL HUB+ RECORDED SESSION+ CENTER",
+      },
+      buttonText: {
+        type: String,
+        default: "Add Digital Hub+ Center",
+      },
+    },
+    liveSessionCenter: {
+      price: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+      finalPrice: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+      discount: {
+        type: Number,
+        default: 0,
+        min: 0,
+        max: 100,
+      },
+      title: {
+        type: String,
+        default: "DIGITAL HUB+ LIVE SESSION+ CENTER",
+      },
+      buttonText: {
+        type: String,
+        default: "Add Digital Hub+ Center",
+      },
+    },
   },
   // Rating will be calculated from included courses
   averageRating: {
