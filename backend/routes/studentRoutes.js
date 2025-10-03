@@ -473,13 +473,24 @@ router.post("/verify-session-buy/:id", async (req, res) => {
 
 router.get("/get-cart/:id", async (req, res) => {
   try {
-    const student = await Student.findById(req.params.id);
+    const student = await Student.findById(req.params.id).populate({
+      path: "cart.courseId",
+      model: "Course",
+    });
 
-    console.log(student);
     if (!student) return res.status(404).json({ message: "Student not found" });
 
-    res.json({ cart: student.cart || [] });
+    // Transform cart data to include course details
+    const cartWithCourseDetails = student.cart.map((cartItem) => ({
+      courseId: cartItem.courseId,
+      sessionType: cartItem.sessionType,
+      quantity: cartItem.quantity || 1,
+      course: cartItem.courseId, // This will contain the populated course data
+    }));
+
+    res.json({ cart: cartWithCourseDetails });
   } catch (err) {
+    console.error("Get cart error:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -668,7 +679,7 @@ router.post("/add-to-cart/:id", async (req, res) => {
     const student = await Student.findById(req.params.id);
     if (!student) return res.status(404).json({ message: "Student not found" });
 
-    const { courseId, sessionType } = req.body;
+    const { courseId, sessionType, quantity = 1 } = req.body;
     if (!courseId)
       return res.status(400).json({ message: "courseId is required" });
     if (!sessionType || !["recorded", "live"].includes(sessionType))
@@ -685,12 +696,19 @@ router.post("/add-to-cart/:id", async (req, res) => {
     );
 
     if (existingCartItem) {
-      return res.status(400).json({
-        message: "This course with this session type is already in cart",
+      // Increase quantity instead of returning error
+      existingCartItem.quantity = (existingCartItem.quantity || 1) + quantity;
+      await student.save();
+
+      return res.json({
+        message: "Cart quantity updated",
+        cart: student.cart,
+        updatedItem: existingCartItem,
       });
     }
 
-    student.cart.push({ courseId, sessionType });
+    // Add new item to cart
+    student.cart.push({ courseId, sessionType, quantity });
     await student.save();
 
     res.json({ message: "Course added to cart", cart: student.cart });
@@ -698,6 +716,52 @@ router.post("/add-to-cart/:id", async (req, res) => {
     res
       .status(500)
       .json({ message: "Failed to add to cart", error: err.message });
+  }
+});
+
+// Update cart item quantity
+router.post("/update-cart-quantity/:id", async (req, res) => {
+  try {
+    const student = await Student.findById(req.params.id);
+    if (!student) return res.status(404).json({ message: "Student not found" });
+
+    const { courseId, sessionType, quantity } = req.body;
+    if (!courseId || !sessionType || quantity === undefined) {
+      return res.status(400).json({
+        message: "courseId, sessionType, and quantity are required",
+      });
+    }
+
+    if (quantity < 1) {
+      return res.status(400).json({ message: "Quantity must be at least 1" });
+    }
+
+    // Find the cart item
+    const cartItem = student.cart.find(
+      (item) =>
+        item.courseId &&
+        item.courseId.toString() === courseId &&
+        item.sessionType === sessionType
+    );
+
+    if (!cartItem) {
+      return res.status(404).json({ message: "Item not found in cart" });
+    }
+
+    // Update quantity
+    cartItem.quantity = quantity;
+    await student.save();
+
+    res.json({
+      message: "Cart quantity updated",
+      cart: student.cart,
+      updatedItem: cartItem,
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: "Failed to update cart quantity",
+      error: err.message,
+    });
   }
 });
 
@@ -1151,7 +1215,7 @@ router.post("/enroll-recorded-session-center/:id", async (req, res) => {
     console.log("Center enrollment request received:", {
       studentId: req.params.id,
       courseId: req.body.courseId,
-      body: req.body
+      body: req.body,
     });
 
     // Validate student ID format
@@ -1186,9 +1250,17 @@ router.post("/enroll-recorded-session-center/:id", async (req, res) => {
     }
 
     // Check if student is already enrolled in recorded sessions + center
-    if (student.enrolledRecordedSessionsCenter && student.enrolledRecordedSessionsCenter.includes(courseId)) {
+    if (
+      student.enrolledRecordedSessionsCenter &&
+      student.enrolledRecordedSessionsCenter.includes(courseId)
+    ) {
       console.log("Student already enrolled in course + center:", courseId);
-      return res.status(400).json({ message: "Student is already enrolled in this recorded session + center" });
+      return res
+        .status(400)
+        .json({
+          message:
+            "Student is already enrolled in this recorded session + center",
+        });
     }
 
     // Add course to student's enrolled recorded sessions + center
@@ -1196,17 +1268,17 @@ router.post("/enroll-recorded-session-center/:id", async (req, res) => {
       student.enrolledRecordedSessionsCenter = [];
     }
     student.enrolledRecordedSessionsCenter.push(courseId);
-    
+
     // Also add to regular recorded sessions if not already enrolled
     if (!student.enrolledRecordedSessions.includes(courseId)) {
       student.enrolledRecordedSessions.push(courseId);
     }
-    
+
     await student.save();
 
     console.log("Center enrollment successful:", {
       studentId: student._id,
-      courseId: courseId
+      courseId: courseId,
     });
 
     res.json({
@@ -1230,7 +1302,7 @@ router.post("/enroll-live-session-center/:id", async (req, res) => {
     console.log("Live session + center enrollment request received:", {
       studentId: req.params.id,
       courseId: req.body.courseId,
-      body: req.body
+      body: req.body,
     });
 
     // Validate student ID format
@@ -1265,9 +1337,19 @@ router.post("/enroll-live-session-center/:id", async (req, res) => {
     }
 
     // Check if student is already enrolled in live sessions + center
-    if (student.enrolledLiveSessionsCenter && student.enrolledLiveSessionsCenter.includes(courseId)) {
-      console.log("Student already enrolled in live session + center:", courseId);
-      return res.status(400).json({ message: "Student is already enrolled in this live session + center" });
+    if (
+      student.enrolledLiveSessionsCenter &&
+      student.enrolledLiveSessionsCenter.includes(courseId)
+    ) {
+      console.log(
+        "Student already enrolled in live session + center:",
+        courseId
+      );
+      return res
+        .status(400)
+        .json({
+          message: "Student is already enrolled in this live session + center",
+        });
     }
 
     // Add course to student's enrolled live sessions + center
@@ -1275,17 +1357,17 @@ router.post("/enroll-live-session-center/:id", async (req, res) => {
       student.enrolledLiveSessionsCenter = [];
     }
     student.enrolledLiveSessionsCenter.push(courseId);
-    
+
     // Also add to regular live sessions if not already enrolled
     if (!student.enrolledLiveSessions.includes(courseId)) {
       student.enrolledLiveSessions.push(courseId);
     }
-    
+
     await student.save();
 
     console.log("Live session + center enrollment successful:", {
       studentId: student._id,
-      courseId: courseId
+      courseId: courseId,
     });
 
     res.json({
