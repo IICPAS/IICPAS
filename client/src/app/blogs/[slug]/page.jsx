@@ -145,8 +145,8 @@ export default function BlogDetail({ params }) {
       {/* Professional Blog Header */}
       <section className="relative pt-32 pb-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-          <div className="flex flex-col lg:flex-row gap-8">
-            <div className="flex-1 lg:max-w-3xl">
+          <div className="flex flex-col lg:flex-row gap-8 lg:items-start">
+            <div className="flex-1 lg:max-w-none">
               {/* Breadcrumb */}
               <motion.div
                 className="mb-6"
@@ -214,8 +214,8 @@ export default function BlogDetail({ params }) {
       {/* Cover Image Section */}
       <section className="pb-8 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-          <div className="flex flex-col lg:flex-row gap-8">
-            <div className="flex-1 lg:max-w-3xl">
+          <div className="flex flex-col lg:flex-row gap-8 lg:items-start">
+            <div className="flex-1 lg:max-w-none">
               <motion.div
                 className="mb-12"
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -241,12 +241,12 @@ export default function BlogDetail({ params }) {
       {/* Article Content */}
       <section className="pb-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-          <div className="flex flex-col lg:flex-row gap-8">
+          <div className="flex flex-col lg:flex-row gap-8 lg:items-start">
             {/* Main Article Content */}
-            <div className="flex-1 lg:max-w-3xl">
+            <div className="flex-1 lg:max-w-none">
               {/* Article Content */}
               <motion.div
-                className="article-content prose prose-lg prose-green max-w-none"
+                className="article-content prose prose-lg prose-green max-w-none text-left"
                 dangerouslySetInnerHTML={{ __html: blog.content }}
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -292,8 +292,8 @@ export default function BlogDetail({ params }) {
             </div>
 
             {/* Read More Articles Sidebar */}
-            <div className="lg:w-80 flex-shrink-0">
-              <div className="lg:sticky lg:top-24">
+            <div className="lg:w-96 lg:max-w-md flex-shrink-0">
+              <div className="lg:sticky lg:top-32">
                 <motion.div
                   className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6"
                   initial={{ opacity: 0, x: 30 }}
