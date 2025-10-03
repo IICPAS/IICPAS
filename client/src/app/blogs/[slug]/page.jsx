@@ -26,6 +26,7 @@ const API_BASE =
 export default function BlogDetail({ params }) {
   const slug = params.slug;
   const [blog, setBlog] = useState(null);
+  const [allBlogs, setAllBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -38,9 +39,17 @@ export default function BlogDetail({ params }) {
             b.title.replace(/\s+/g, "-").toLowerCase() === slug.toLowerCase()
         );
         setBlog(foundBlog);
+
+        // Store all active blogs for related articles
+        const activeBlogs = (res.data || []).filter(
+          (b) => b.status === "active"
+        );
+        setAllBlogs(activeBlogs);
+
         setLoading(false);
       } catch (e) {
         setBlog(null);
+        setAllBlogs([]);
         setLoading(false);
       }
     }
@@ -114,146 +123,287 @@ export default function BlogDetail({ params }) {
     ? `${API_BASE.replace("/api", "")}/${blog.imageUrl}`
     : getFallbackImage(blog.title);
 
+  // Get related articles (exclude current blog)
+  const getRelatedArticles = () => {
+    const currentBlogId = blog._id;
+    const sameCategoryBlogs = allBlogs.filter(
+      (b) => b._id !== currentBlogId && b.category === blog.category
+    );
+    const otherBlogs = allBlogs.filter(
+      (b) => b._id !== currentBlogId && b.category !== blog.category
+    );
+
+    // Return up to 5 related articles: prioritize same category, then others
+    const related = [...sameCategoryBlogs, ...otherBlogs].slice(0, 5);
+    return related;
+  };
+
   return (
     <>
       <Header />
 
       {/* Professional Blog Header */}
       <section className="relative pt-32 pb-16 bg-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8">
-          {/* Breadcrumb */}
-          <motion.div
-            className="mb-6"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <nav className="flex items-center space-x-2 text-sm text-gray-500">
-              <Link
-                href="/blogs"
-                className="hover:text-green-600 transition-colors"
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+          <div className="flex flex-col lg:flex-row gap-8">
+            <div className="flex-1 lg:max-w-3xl">
+              {/* Breadcrumb */}
+              <motion.div
+                className="mb-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
               >
-                Blog
-              </Link>
-              <span>/</span>
-              <span>{blog.title}</span>
-            </nav>
-          </motion.div>
+                <nav className="flex items-center space-x-2 text-sm text-gray-500">
+                  <Link
+                    href="/blogs"
+                    className="hover:text-green-600 transition-colors"
+                  >
+                    Blog
+                  </Link>
+                  <span>/</span>
+                  <span>{blog.title}</span>
+                </nav>
+              </motion.div>
 
-          {/* Article Meta */}
-          <motion.div
-            className="mb-6"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-          >
-            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-              <div className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 px-3 py-1.5 rounded-lg border border-green-200">
-                <Tag className="w-3 h-3" />
-                <span>{blog.category || "General"}</span>
-              </div>
-              <div className="inline-flex items-center gap-1.5">
-                <Calendar className="w-3 h-3 text-gray-400" />
-                <span>
-                  {blog.createdAt
-                    ? new Date(blog.createdAt).toLocaleDateString("en-GB", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      })
-                    : "Recent"}
-                </span>
-              </div>
-              <div className="inline-flex items-center gap-1.5">
-                <Clock className="w-3 h-3 text-gray-400" />
-                <span>{Math.ceil(blog.content.length / 500)} min read</span>
-              </div>
+              {/* Article Meta */}
+              <motion.div
+                className="mb-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+              >
+                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                  <div className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 px-3 py-1.5 rounded-lg border border-green-200">
+                    <Tag className="w-3 h-3" />
+                    <span>{blog.category || "General"}</span>
+                  </div>
+                  <div className="inline-flex items-center gap-1.5">
+                    <Calendar className="w-3 h-3 text-gray-400" />
+                    <span>
+                      {blog.createdAt
+                        ? new Date(blog.createdAt).toLocaleDateString("en-GB", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                          })
+                        : "Recent"}
+                    </span>
+                  </div>
+                  <div className="inline-flex items-center gap-1.5">
+                    <Clock className="w-3 h-3 text-gray-400" />
+                    <span>{Math.ceil(blog.content.length / 500)} min read</span>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Title */}
+              <motion.h1
+                className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 leading-tight mb-8"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+              >
+                {blog.title}
+              </motion.h1>
             </div>
-          </motion.div>
-
-          {/* Title */}
-          <motion.h1
-            className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 leading-tight mb-8"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-          >
-            {blog.title}
-          </motion.h1>
+          </div>
         </div>
       </section>
 
       {/* Cover Image Section */}
       <section className="pb-8 bg-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8">
-          <motion.div
-            className="mb-12"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-          >
-            <div className="relative overflow-hidden rounded-lg shadow-lg bg-gray-100">
-              <img
-                src={imageUrl}
-                alt={blog.title}
-                className="w-full h-80 md:h-96 object-cover transition-transform duration-500 hover:scale-105"
-                onError={(e) => {
-                  e.target.src = getFallbackImage(blog.title);
-                }}
-              />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+          <div className="flex flex-col lg:flex-row gap-8">
+            <div className="flex-1 lg:max-w-3xl">
+              <motion.div
+                className="mb-12"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+              >
+                <div className="relative overflow-hidden rounded-lg shadow-lg bg-gray-100">
+                  <img
+                    src={imageUrl}
+                    alt={blog.title}
+                    className="w-full h-80 md:h-96 object-cover transition-transform duration-500 hover:scale-105"
+                    onError={(e) => {
+                      e.target.src = getFallbackImage(blog.title);
+                    }}
+                  />
+                </div>
+              </motion.div>
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
 
       {/* Article Content */}
       <section className="pb-16 bg-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8">
-          {/* Article Content */}
-          <motion.div
-            className="article-content prose prose-lg prose-green max-w-none mx-auto"
-            dangerouslySetInnerHTML={{ __html: blog.content }}
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-          />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Main Article Content */}
+            <div className="flex-1 lg:max-w-3xl">
+              {/* Article Content */}
+              <motion.div
+                className="article-content prose prose-lg prose-green max-w-none"
+                dangerouslySetInnerHTML={{ __html: blog.content }}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+              />
 
-          {/* Professional Article Footer */}
-          <motion.div
-            className="mt-16 pt-8 border-t border-gray-200"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-          >
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-              <div className="flex items-center gap-3">
-                <button className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-all duration-300">
-                  <Share2 className="w-4 h-4" />
-                  Share Article
-                </button>
-                <button className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-all duration-300">
-                  <Bookmark className="w-4 h-4" />
-                  Save Article
-                </button>
+              {/* Professional Article Footer */}
+              <motion.div
+                className="mt-16 pt-8 border-t border-gray-200"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.5 }}
+              >
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+                  <div className="flex items-center gap-3">
+                    <button className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-all duration-300">
+                      <Share2 className="w-4 h-4" />
+                      Share Article
+                    </button>
+                    <button className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-all duration-300">
+                      <Bookmark className="w-4 h-4" />
+                      Save Article
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Back to Blogs Link */}
+              <motion.div
+                className="mt-16 text-center"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.6 }}
+              >
+                <Link
+                  href="/blogs"
+                  className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium transition-colors duration-200"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Return to Blog
+                </Link>
+              </motion.div>
+            </div>
+
+            {/* Read More Articles Sidebar */}
+            <div className="lg:w-80 flex-shrink-0">
+              <div className="lg:sticky lg:top-24">
+                <motion.div
+                  className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6"
+                  initial={{ opacity: 0, x: 30 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.8, delay: 0.6 }}
+                >
+                  <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                    <Eye className="w-5 h-5 text-green-500" />
+                    Read More Articles
+                  </h3>
+
+                  <div className="space-y-4">
+                    {getRelatedArticles().map((relatedBlog, index) => {
+                      const relatedImageUrl = relatedBlog.imageUrl?.startsWith(
+                        "http"
+                      )
+                        ? relatedBlog.imageUrl
+                        : relatedBlog.imageUrl
+                        ? `${API_BASE.replace("/api", "")}/${
+                            relatedBlog.imageUrl
+                          }`
+                        : getFallbackImage(relatedBlog.title);
+
+                      return (
+                        <motion.div
+                          key={relatedBlog._id}
+                          className="group"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{
+                            duration: 0.6,
+                            delay: 0.7 + index * 0.1,
+                          }}
+                        >
+                          <Link
+                            href={`/blogs/${encodeURIComponent(
+                              relatedBlog.title
+                                .replace(/\s+/g, "-")
+                                .toLowerCase()
+                            )}`}
+                          >
+                            <div className="flex gap-3 hover:bg-gray-50 rounded-xl p-3 transition-colors duration-200">
+                              <div className="w-16 h-16 rounded-xl overflow-hidden bg-gradient-to-br from-gray-200 to-gray-300 flex-shrink-0">
+                                <img
+                                  src={relatedImageUrl}
+                                  alt={relatedBlog.title}
+                                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                                  onError={(e) => {
+                                    e.target.src = getFallbackImage(
+                                      relatedBlog.title
+                                    );
+                                  }}
+                                />
+                              </div>
+
+                              <div className="flex-1 min-w-0">
+                                <h4 className="text-sm font-semibold text-gray-900 line-clamp-2 mb-1 group-hover:text-green-600 transition-colors duration-200">
+                                  {relatedBlog.title}
+                                </h4>
+                                <div className="flex items-center gap-2 text-xs text-gray-500">
+                                  <div className="flex items-center gap-1">
+                                    <Calendar className="w-3 h-3" />
+                                    <span>
+                                      {relatedBlog.createdAt
+                                        ? new Date(
+                                            relatedBlog.createdAt
+                                          ).toLocaleDateString("en-GB", {
+                                            day: "2-digit",
+                                            month: "short",
+                                          })
+                                        : "Recent"}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <Clock className="w-3 h-3" />
+                                    <span>
+                                      {Math.ceil(
+                                        relatedBlog.content.length / 500
+                                      )}{" "}
+                                      min
+                                    </span>
+                                  </div>
+                                </div>
+                                {relatedBlog.category && (
+                                  <div className="mt-2">
+                                    <span className="inline-flex items-center px-2 py-1 bg-green-50 text-green-700 text-xs font-medium rounded-md">
+                                      {relatedBlog.category}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </Link>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+
+                  {getRelatedArticles().length === 0 && (
+                    <div className="text-center py-8">
+                      <div className="text-gray-400 mb-2">📝</div>
+                      <p className="text-sm text-gray-600">
+                        No related articles found
+                      </p>
+                    </div>
+                  )}
+                </motion.div>
               </div>
             </div>
-          </motion.div>
-
-          {/* Back to Blogs Link */}
-          <motion.div
-            className="mt-16 text-center"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-          >
-            <Link
-              href="/blogs"
-              className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium transition-colors duration-200"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Return to Blog
-            </Link>
-          </motion.div>
+          </div>
         </div>
       </section>
 
@@ -403,6 +553,13 @@ export default function BlogDetail({ params }) {
             transparent
           );
           margin: 3rem 0;
+        }
+
+        .line-clamp-2 {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
         }
 
         @media (max-width: 768px) {
