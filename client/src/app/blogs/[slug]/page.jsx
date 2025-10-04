@@ -242,11 +242,93 @@ export default function BlogDetail({ params }) {
       <section className="pb-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
           <div className="flex flex-col lg:flex-row gap-8 lg:items-start">
+            {/* Read More Articles Sidebar - Moved to Left */}
+            <div className="lg:w-80 lg:max-w-sm flex-shrink-0 order-2 lg:order-1">
+              <div className="lg:sticky lg:top-32">
+                <motion.div
+                  className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6"
+                  initial={{ opacity: 0, x: -30 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.8, delay: 0.6 }}
+                >
+                  <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <Eye className="w-4 h-4 text-green-500" />
+                    Read More Articles
+                  </h3>
+
+                  <div className="space-y-3">
+                    {getRelatedArticles().map((relatedBlog, index) => {
+                      const relatedImageUrl = relatedBlog.imageUrl?.startsWith(
+                        "http"
+                      )
+                        ? relatedBlog.imageUrl
+                        : relatedBlog.imageUrl
+                        ? `${API_BASE.replace("/api", "")}/${
+                            relatedBlog.imageUrl
+                          }`
+                        : getFallbackImage(relatedBlog.title);
+
+                      return (
+                        <motion.div
+                          key={relatedBlog._id}
+                          className="group"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{
+                            duration: 0.6,
+                            delay: 0.7 + index * 0.1,
+                          }}
+                        >
+                          <Link
+                            href={`/blogs/${encodeURIComponent(
+                              relatedBlog.title
+                                .replace(/\s+/g, "-")
+                                .toLowerCase()
+                            )}`}
+                          >
+                            <div className="flex gap-3 hover:bg-gray-50 rounded-xl p-2 transition-colors duration-200">
+                              <div className="w-12 h-12 rounded-lg overflow-hidden bg-gradient-to-br from-gray-200 to-gray-300 flex-shrink-0">
+                                <img
+                                  src={relatedImageUrl}
+                                  alt={relatedBlog.title}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h4 className="text-sm font-semibold text-gray-900 group-hover:text-green-600 transition-colors duration-200 line-clamp-2">
+                                  {relatedBlog.title}
+                                </h4>
+                                <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
+                                  <Calendar className="w-3 h-3" />
+                                  <span>
+                                    {new Date(
+                                      relatedBlog.createdAt
+                                    ).toLocaleDateString()}
+                                  </span>
+                                  <Clock className="w-3 h-3 ml-2" />
+                                  <span>
+                                    {Math.ceil(
+                                      relatedBlog.content.length / 500
+                                    )}{" "}
+                                    min
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </Link>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              </div>
+            </div>
+
             {/* Main Article Content */}
-            <div className="flex-1 lg:max-w-none">
+            <div className="flex-1 lg:max-w-none order-1 lg:order-2">
               {/* Article Content */}
               <motion.div
-                className="article-content prose prose-lg prose-green max-w-none text-left"
+                className="article-content prose prose-base prose-green max-w-none text-left"
                 dangerouslySetInnerHTML={{ __html: blog.content }}
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -290,119 +372,6 @@ export default function BlogDetail({ params }) {
                 </Link>
               </motion.div>
             </div>
-
-            {/* Read More Articles Sidebar */}
-            <div className="lg:w-96 lg:max-w-md flex-shrink-0">
-              <div className="lg:sticky lg:top-32">
-                <motion.div
-                  className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6"
-                  initial={{ opacity: 0, x: 30 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.8, delay: 0.6 }}
-                >
-                  <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                    <Eye className="w-5 h-5 text-green-500" />
-                    Read More Articles
-                  </h3>
-
-                  <div className="space-y-4">
-                    {getRelatedArticles().map((relatedBlog, index) => {
-                      const relatedImageUrl = relatedBlog.imageUrl?.startsWith(
-                        "http"
-                      )
-                        ? relatedBlog.imageUrl
-                        : relatedBlog.imageUrl
-                        ? `${API_BASE.replace("/api", "")}/${
-                            relatedBlog.imageUrl
-                          }`
-                        : getFallbackImage(relatedBlog.title);
-
-                      return (
-                        <motion.div
-                          key={relatedBlog._id}
-                          className="group"
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{
-                            duration: 0.6,
-                            delay: 0.7 + index * 0.1,
-                          }}
-                        >
-                          <Link
-                            href={`/blogs/${encodeURIComponent(
-                              relatedBlog.title
-                                .replace(/\s+/g, "-")
-                                .toLowerCase()
-                            )}`}
-                          >
-                            <div className="flex gap-3 hover:bg-gray-50 rounded-xl p-3 transition-colors duration-200">
-                              <div className="w-16 h-16 rounded-xl overflow-hidden bg-gradient-to-br from-gray-200 to-gray-300 flex-shrink-0">
-                                <img
-                                  src={relatedImageUrl}
-                                  alt={relatedBlog.title}
-                                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                                  onError={(e) => {
-                                    e.target.src = getFallbackImage(
-                                      relatedBlog.title
-                                    );
-                                  }}
-                                />
-                              </div>
-
-                              <div className="flex-1 min-w-0">
-                                <h4 className="text-sm font-semibold text-gray-900 line-clamp-2 mb-1 group-hover:text-green-600 transition-colors duration-200">
-                                  {relatedBlog.title}
-                                </h4>
-                                <div className="flex items-center gap-2 text-xs text-gray-500">
-                                  <div className="flex items-center gap-1">
-                                    <Calendar className="w-3 h-3" />
-                                    <span>
-                                      {relatedBlog.createdAt
-                                        ? new Date(
-                                            relatedBlog.createdAt
-                                          ).toLocaleDateString("en-GB", {
-                                            day: "2-digit",
-                                            month: "short",
-                                          })
-                                        : "Recent"}
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center gap-1">
-                                    <Clock className="w-3 h-3" />
-                                    <span>
-                                      {Math.ceil(
-                                        relatedBlog.content.length / 500
-                                      )}{" "}
-                                      min
-                                    </span>
-                                  </div>
-                                </div>
-                                {relatedBlog.category && (
-                                  <div className="mt-2">
-                                    <span className="inline-flex items-center px-2 py-1 bg-green-50 text-green-700 text-xs font-medium rounded-md">
-                                      {relatedBlog.category}
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </Link>
-                        </motion.div>
-                      );
-                    })}
-                  </div>
-
-                  {getRelatedArticles().length === 0 && (
-                    <div className="text-center py-8">
-                      <div className="text-gray-400 mb-2">📝</div>
-                      <p className="text-sm text-gray-600">
-                        No related articles found
-                      </p>
-                    </div>
-                  )}
-                </motion.div>
-              </div>
-            </div>
           </div>
         </div>
       </section>
@@ -411,7 +380,15 @@ export default function BlogDetail({ params }) {
 
       <style jsx global>{`
         .article-content {
-          line-height: 1.8;
+          line-height: 1.6;
+          font-size: 16px;
+        }
+
+        .article-content img {
+          max-width: 100%;
+          height: auto;
+          border-radius: 8px;
+          margin: 1rem 0;
         }
 
         .article-content h1,
@@ -423,31 +400,37 @@ export default function BlogDetail({ params }) {
           color: #1f2937;
           font-family: "Inter", system-ui, sans-serif;
           font-weight: 700;
-          margin-top: 2rem;
-          margin-bottom: 1rem;
+          margin-top: 1.5rem;
+          margin-bottom: 0.75rem;
           line-height: 1.3;
         }
 
         .article-content h1 {
-          font-size: 2.25rem;
+          font-size: 1.875rem;
           border-bottom: 2px solid #e5e7eb;
           padding-bottom: 0.5rem;
         }
 
         .article-content h2 {
-          font-size: 1.875rem;
-          color: #059669;
-        }
-
-        .article-content h3 {
           font-size: 1.5rem;
           color: #059669;
         }
 
+        .article-content h3 {
+          font-size: 1.25rem;
+          color: #059669;
+        }
+
+        .article-content h4 {
+          font-size: 1.125rem;
+          color: #374151;
+        }
+
         .article-content p {
           color: #374151;
-          margin-bottom: 1.5rem;
-          font-size: 1.125rem;
+          margin-bottom: 1rem;
+          font-size: 1rem;
+          line-height: 1.6;
         }
 
         .article-content a {
