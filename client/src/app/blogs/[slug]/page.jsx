@@ -5,7 +5,7 @@
 import BlogHero from "./BlogHero";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
-import AccountingQuiz from "../../components/AccountingQuiz";
+import AccountingQuiz from "./AccountingQuiz";
 import axios from "axios";
 import {
   Calendar,
