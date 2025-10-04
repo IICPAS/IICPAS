@@ -9,6 +9,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import wishlistEventManager from "../../utils/wishlistEventManager";
 import GroupCourseCard from "../components/GroupCourseCard";
+import SimpleScrabbleGame from "./SimpleScrabbleGame";
 
 const skillLevels = ["Executive Level", "Professional Level"];
 
@@ -305,6 +306,9 @@ export default function CoursePage() {
               </label>
             ))}
           </div>
+
+          {/* Mini Scrabble Game */}
+          <SimpleScrabbleGame />
         </aside>
 
         {/* Course Cards */}
