@@ -27,23 +27,22 @@ export default function ContactBoxes() {
     // Use mock data directly instead of API call
     setContactInfo([
       {
-        title: "Our Address",
-        content:
-          "SHOP NO 712-A, SEVENTH FLOOR, <br />KASANA TOWER, ALPHA COMMERCIAL BELT, <br />Greater Noida, Gautam Buddha Nagar, <br />Uttar Pradesh, 201308",
+        title: "Address",
+        content: "123 Knowledge Park, <br />New Delhi, India",
         icon: "FaMapMarkerAlt",
         bg: "from-blue-50 to-blue-100",
         color: "text-blue-700",
       },
       {
-        title: "Phone Number",
-        content: "+91 95933 30999",
+        title: "Phone",
+        content: "+91 98765 43210",
         icon: "FaPhoneAlt",
         bg: "from-green-50 to-green-100",
         color: "text-green-700",
       },
       {
-        title: "Email Address",
-        content: "info@iicpa.in",
+        title: "Email",
+        content: "support@iicpa.org",
         icon: "FaEnvelope",
         bg: "from-purple-50 to-purple-100",
         color: "text-purple-700",
