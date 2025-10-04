@@ -150,9 +150,11 @@ app.use("/api/categories", categoryRoutes);
 import assignmentRoutes from "./routes/assignmentRoutes.js";
 import caseStudyRoutes from "./routes/caseStudyRoutes.js";
 import gstSimulationRoutes from "./routes/gstSimulationRoutes.js";
+import gstReturnRoutes from "./routes/gstReturnRoutes.js";
 app.use("/api/assignments", assignmentRoutes);
 app.use("/api/case-studies", caseStudyRoutes);
 app.use("/api/gst-simulations", gstSimulationRoutes);
+app.use("/api/gst-returns", gstReturnRoutes);
 
 app.use("/metatags", metaTagRoutes);
 app.use("/api/tickets", ticketRoutes);
