@@ -5,6 +5,7 @@
 import BlogHero from "./BlogHero";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
+import AccountingQuiz from "../../components/AccountingQuiz";
 import axios from "axios";
 import {
   Calendar,
@@ -328,12 +329,22 @@ export default function BlogDetail({ params }) {
             <div className="flex-1 lg:max-w-none order-1 lg:order-2">
               {/* Article Content */}
               <motion.div
-                className="article-content prose prose-base prose-green max-w-none text-left"
+                className="article-content prose prose-sm prose-green max-w-none text-left"
                 dangerouslySetInnerHTML={{ __html: blog.content }}
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.4 }}
               />
+
+              {/* Accounting Quiz Section */}
+              <motion.div
+                className="mt-12"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.5 }}
+              >
+                <AccountingQuiz />
+              </motion.div>
 
               {/* Professional Article Footer */}
               <motion.div
@@ -380,15 +391,15 @@ export default function BlogDetail({ params }) {
 
       <style jsx global>{`
         .article-content {
-          line-height: 1.6;
-          font-size: 16px;
+          line-height: 1.5;
+          font-size: 14px;
         }
 
         .article-content img {
-          max-width: 100%;
+          max-width: 80%;
           height: auto;
-          border-radius: 8px;
-          margin: 1rem 0;
+          border-radius: 6px;
+          margin: 0.75rem 0;
         }
 
         .article-content h1,
@@ -400,37 +411,37 @@ export default function BlogDetail({ params }) {
           color: #1f2937;
           font-family: "Inter", system-ui, sans-serif;
           font-weight: 700;
-          margin-top: 1.5rem;
-          margin-bottom: 0.75rem;
+          margin-top: 1rem;
+          margin-bottom: 0.5rem;
           line-height: 1.3;
         }
 
         .article-content h1 {
-          font-size: 1.875rem;
+          font-size: 1.5rem;
           border-bottom: 2px solid #e5e7eb;
           padding-bottom: 0.5rem;
         }
 
         .article-content h2 {
-          font-size: 1.5rem;
-          color: #059669;
-        }
-
-        .article-content h3 {
           font-size: 1.25rem;
           color: #059669;
         }
 
-        .article-content h4 {
+        .article-content h3 {
           font-size: 1.125rem;
+          color: #059669;
+        }
+
+        .article-content h4 {
+          font-size: 1rem;
           color: #374151;
         }
 
         .article-content p {
           color: #374151;
-          margin-bottom: 1rem;
-          font-size: 1rem;
-          line-height: 1.6;
+          margin-bottom: 0.75rem;
+          font-size: 0.875rem;
+          line-height: 1.5;
         }
 
         .article-content a {
