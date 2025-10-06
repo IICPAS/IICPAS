@@ -49,27 +49,30 @@ export default function SearchCenter() {
     const fetchCenters = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`${API_BASE}/api/v1/centers/public`);
+        const response = await axios.get(`${API_BASE}/v1/centers/public`);
         const centersData = response.data.data || [];
 
         // Transform API data to match component structure
-        const transformedCenters = centersData.map((center: any, index: number) => ({
-          id: center._id,
-          name: center.name,
-          city: center.city,
-          state: center.state,
-          location: `${center.address}, ${center.city}, ${center.state} - ${center.pincode}`,
-          phone: center.phone,
-          email: center.email,
-          rating: 4.5, // Default rating since API doesn't have ratings yet
-          students: center.capacity || 50, // Use capacity as student count
-          courses: center.courses?.length || 0,
-          image: "/images/college.jpg", // Default image
-          availableCourses: center.courses?.map((course: any) => course.title) || [],
-          status: center.status,
-          facilities: center.facilities || [],
-          description: center.description || "",
-        }));
+        const transformedCenters = centersData.map(
+          (center: any, index: number) => ({
+            id: center._id,
+            name: center.name,
+            city: center.city,
+            state: center.state,
+            location: `${center.address}, ${center.city}, ${center.state} - ${center.pincode}`,
+            phone: center.phone,
+            email: center.email,
+            rating: 4.5, // Default rating since API doesn't have ratings yet
+            students: center.capacity || 50, // Use capacity as student count
+            courses: center.courses?.length || 0,
+            image: "/images/college.jpg", // Default image
+            availableCourses:
+              center.courses?.map((course: any) => course.title) || [],
+            status: center.status,
+            facilities: center.facilities || [],
+            description: center.description || "",
+          })
+        );
 
         console.log("Transformed centers:", transformedCenters);
         console.log("Available cities:", [
@@ -221,7 +224,9 @@ export default function SearchCenter() {
     "All Courses",
     ...Array.from(
       new Set(
-        centers.flatMap((center: Center) => center.availableCourses).filter(Boolean)
+        centers
+          .flatMap((center: Center) => center.availableCourses)
+          .filter(Boolean)
       )
     ),
   ];
@@ -561,24 +566,26 @@ export default function SearchCenter() {
                           Available Courses
                         </h4>
                         <div className="space-y-2">
-                          {center.availableCourses.map((course: string, index: number) => (
-                            <div
-                              key={index}
-                              className="flex items-center justify-between bg-gray-50 rounded-lg p-3"
-                            >
-                              <span className="text-gray-700 font-medium">
-                                {course}
-                              </span>
-                              <button
-                                onClick={() =>
-                                  handleBookCourse(center.id, course)
-                                }
-                                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors duration-300"
+                          {center.availableCourses.map(
+                            (course: string, index: number) => (
+                              <div
+                                key={index}
+                                className="flex items-center justify-between bg-gray-50 rounded-lg p-3"
                               >
-                                Book Now
-                              </button>
-                            </div>
-                          ))}
+                                <span className="text-gray-700 font-medium">
+                                  {course}
+                                </span>
+                                <button
+                                  onClick={() =>
+                                    handleBookCourse(center.id, course)
+                                  }
+                                  className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors duration-300"
+                                >
+                                  Book Now
+                                </button>
+                              </div>
+                            )
+                          )}
                         </div>
                       </div>
 

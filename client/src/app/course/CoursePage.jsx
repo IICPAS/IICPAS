@@ -77,7 +77,7 @@ export default function CoursePage() {
     // Fetch data from API
     fetchData();
 
-    // Fetch wishlist state
+    // Fetch wishlist state (don't depend on student state)
     fetchWishlistState();
 
     // Subscribe to wishlist changes
@@ -97,17 +97,14 @@ export default function CoursePage() {
     return () => {
       unsubscribe();
     };
-  }, [student]);
+  }, []); // Remove student dependency to prevent loops
 
   // Fetch current wishlist state
   const fetchWishlistState = async () => {
     try {
-      const studentRes = await axios.get(
-        `${API_BASE}/api/v1/students/isstudent`,
-        {
-          withCredentials: true,
-        }
-      );
+      const studentRes = await axios.get(`${API_BASE}/v1/students/isstudent`, {
+        withCredentials: true,
+      });
 
       if (studentRes.data.student) {
         setStudent(studentRes.data.student);
@@ -115,16 +112,26 @@ export default function CoursePage() {
 
         // Fetch wishlist
         const wishlistRes = await axios.get(
-          `${API_BASE}/api/v1/students/get-wishlist/${studentId}`,
+          `${API_BASE}/v1/students/get-wishlist/${studentId}`,
           { withCredentials: true }
         );
         const wishlistIds = wishlistRes.data.wishlist || [];
         setWishlistCourseIds(wishlistIds);
+      } else {
+        // No student logged in, clear wishlist
+        setStudent(null);
+        setWishlistCourseIds([]);
       }
     } catch (error) {
       console.error("Error fetching wishlist state:", error);
+      // Handle 401 Unauthorized errors gracefully
+      if (error.response?.status === 401) {
+        console.log("User not authenticated, clearing student data");
+      }
       // Don't show error to user for background operations
       // Just log it and continue
+      setStudent(null);
+      setWishlistCourseIds([]);
     }
   };
 
@@ -195,7 +202,7 @@ export default function CoursePage() {
       if (isLiked) {
         // Remove from wishlist
         const response = await axios.post(
-          `${API_BASE}/api/v1/students/remove-wishlist/${studentId}`,
+          `${API_BASE}/v1/students/remove-wishlist/${studentId}`,
           { courseId },
           { withCredentials: true }
         );
@@ -204,7 +211,7 @@ export default function CoursePage() {
       } else {
         // Add to wishlist
         const response = await axios.post(
-          `${API_BASE}/api/v1/students/add-wishlist/${studentId}`,
+          `${API_BASE}/v1/students/add-wishlist/${studentId}`,
           { courseId },
           { withCredentials: true }
         );
@@ -463,15 +470,24 @@ export default function CoursePage() {
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-green-600 font-bold text-xl">
-                            ₹{discountedPrice.toLocaleString()}
+                            ₹
+                            {discountedPrice &&
+                            typeof discountedPrice === "number"
+                              ? discountedPrice.toLocaleString()
+                              : "0"}
                           </p>
                           {displayDiscount > 0 && (
                             <p className="text-gray-400 text-sm line-through">
                               ₹
-                              {(
-                                course.pricing?.recordedSession?.price ||
-                                course.price
-                              ).toLocaleString()}
+                              {(() => {
+                                const originalPrice =
+                                  course.pricing?.recordedSession?.price ||
+                                  course.price;
+                                return originalPrice &&
+                                  typeof originalPrice === "number"
+                                  ? originalPrice.toLocaleString()
+                                  : "0";
+                              })()}
                             </p>
                           )}
                         </div>

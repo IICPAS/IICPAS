@@ -91,7 +91,7 @@ export default function Header() {
         setIsAdmin(false);
       }
 
-      const res = await axios.get(`${API}/api/v1/students/isstudent`, {
+      const res = await axios.get(`${API}/v1/students/isstudent`, {
         withCredentials: true,
       });
       const studentData = res.data.student;
@@ -108,16 +108,15 @@ export default function Header() {
       setStudent(studentData);
 
       console.log("Making cart request for student ID:", studentData._id);
-      const cartRes = await axios.get(
-        `${API}/api/v1/cart/get/${studentData._id}`,
-        { withCredentials: true }
-      );
+      const cartRes = await axios.get(`${API}/v1/cart/get/${studentData._id}`, {
+        withCredentials: true,
+      });
       console.log("Header cart response:", cartRes.data);
       const cartItems = cartRes.data.cart || [];
       console.log("Cart items from API:", cartItems);
 
       const wishlistRes = await axios.get(
-        `${API}/api/v1/students/get-wishlist/${studentData._id}`,
+        `${API}/v1/students/get-wishlist/${studentData._id}`,
         { withCredentials: true }
       );
       const wishlistIDs = wishlistRes.data.wishlist || [];
@@ -236,7 +235,7 @@ export default function Header() {
 
   const handleLogout = async () => {
     try {
-      await axios.get(`${API}/api/v1/students/logout`, {
+      await axios.get(`${API}/v1/students/logout`, {
         withCredentials: true,
       });
     } catch (error) {
