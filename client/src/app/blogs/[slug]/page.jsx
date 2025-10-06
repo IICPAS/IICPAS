@@ -200,7 +200,7 @@ export default function BlogDetail({ params }) {
 
               {/* Title */}
               <motion.h1
-                className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 leading-tight mb-8"
+                className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 leading-tight mb-4 max-w-4xl mx-auto text-center"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
@@ -213,21 +213,21 @@ export default function BlogDetail({ params }) {
       </section>
 
       {/* Cover Image Section */}
-      <section className="pb-8 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-          <div className="flex flex-col lg:flex-row gap-8 lg:items-start">
+      <section className="pb-6 bg-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8">
+          <div className="flex flex-col lg:flex-row gap-6 lg:items-start">
             <div className="flex-1 lg:max-w-none">
               <motion.div
-                className="mb-12"
+                className="mb-8"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.8, delay: 0.3 }}
               >
-                <div className="relative overflow-hidden rounded-lg shadow-lg bg-gray-100">
+                <div className="relative overflow-hidden rounded-lg shadow-lg bg-gray-100 max-w-4xl mx-auto">
                   <img
                     src={imageUrl}
                     alt={blog.title}
-                    className="w-full h-80 md:h-96 object-cover transition-transform duration-500 hover:scale-105"
+                    className="w-full h-40 md:h-52 object-cover transition-transform duration-500 hover:scale-105"
                     onError={(e) => {
                       e.target.src = getFallbackImage(blog.title);
                     }}
@@ -240,24 +240,24 @@ export default function BlogDetail({ params }) {
       </section>
 
       {/* Article Content */}
-      <section className="pb-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-          <div className="flex flex-col lg:flex-row gap-8 lg:items-start">
+      <section className="pb-8 bg-white">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 md:px-8">
+          <div className="flex flex-col lg:flex-row gap-4 lg:items-start">
             {/* Read More Articles Sidebar - Moved to Left */}
-            <div className="lg:w-80 lg:max-w-sm flex-shrink-0 order-2 lg:order-1">
-              <div className="lg:sticky lg:top-32">
+            <div className="lg:w-64 lg:max-w-sm flex-shrink-0 order-2 lg:order-1">
+              <div className="lg:sticky lg:top-20">
                 <motion.div
-                  className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6"
+                  className="bg-white rounded-xl shadow-md border border-gray-100 p-3"
                   initial={{ opacity: 0, x: -30 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.8, delay: 0.6 }}
                 >
-                  <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <Eye className="w-4 h-4 text-green-500" />
+                  <h3 className="text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
+                    <Eye className="w-3 h-3 text-green-500" />
                     Read More Articles
                   </h3>
 
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     {getRelatedArticles().map((relatedBlog, index) => {
                       const relatedImageUrl = relatedBlog.imageUrl?.startsWith(
                         "http"
@@ -287,8 +287,8 @@ export default function BlogDetail({ params }) {
                                 .toLowerCase()
                             )}`}
                           >
-                            <div className="flex gap-3 hover:bg-gray-50 rounded-xl p-2 transition-colors duration-200">
-                              <div className="w-12 h-12 rounded-lg overflow-hidden bg-gradient-to-br from-gray-200 to-gray-300 flex-shrink-0">
+                            <div className="flex gap-2 hover:bg-gray-50 rounded-lg p-1.5 transition-colors duration-200">
+                              <div className="w-10 h-10 rounded-lg overflow-hidden bg-gradient-to-br from-gray-200 to-gray-300 flex-shrink-0">
                                 <img
                                   src={relatedImageUrl}
                                   alt={relatedBlog.title}
@@ -296,10 +296,10 @@ export default function BlogDetail({ params }) {
                                 />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <h4 className="text-sm font-semibold text-gray-900 group-hover:text-green-600 transition-colors duration-200 line-clamp-2">
+                                <h4 className="text-xs font-semibold text-gray-900 group-hover:text-green-600 transition-colors duration-200 line-clamp-2">
                                   {relatedBlog.title}
                                 </h4>
-                                <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
+                                <div className="flex items-center gap-1 mt-0.5 text-xs text-gray-500">
                                   <Calendar className="w-3 h-3" />
                                   <span>
                                     {new Date(
@@ -329,7 +329,7 @@ export default function BlogDetail({ params }) {
             <div className="flex-1 lg:max-w-none order-1 lg:order-2">
               {/* Article Content */}
               <motion.div
-                className="article-content prose prose-sm prose-green max-w-none text-left"
+                className="article-content prose prose-xs prose-green max-w-none text-left"
                 dangerouslySetInnerHTML={{ __html: blog.content }}
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -391,15 +391,37 @@ export default function BlogDetail({ params }) {
 
       <style jsx global>{`
         .article-content {
-          line-height: 1.5;
-          font-size: 14px;
+          line-height: 1.3;
+          font-size: 12px;
+        }
+
+        .article-content h1 {
+          font-size: 1.25rem;
+          margin-top: 1rem;
+          margin-bottom: 0.5rem;
+        }
+
+        .article-content h2 {
+          font-size: 1.125rem;
+          margin-top: 0.75rem;
+          margin-bottom: 0.375rem;
+        }
+
+        .article-content h3 {
+          font-size: 1rem;
+          margin-top: 0.75rem;
+          margin-bottom: 0.375rem;
+        }
+
+        .article-content p {
+          margin-bottom: 0.5rem;
         }
 
         .article-content img {
-          max-width: 80%;
+          max-width: 60%;
           height: auto;
           border-radius: 6px;
-          margin: 0.75rem 0;
+          margin: 0.5rem 0;
         }
 
         .article-content h1,
