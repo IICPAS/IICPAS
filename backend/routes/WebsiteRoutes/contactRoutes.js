@@ -1,5 +1,5 @@
 import express from "express";
-import Contact from "../../models/Website/Contact.js";
+import WebsiteContact from "../../models/Website/Contact.js";
 import ContactModel from "../../models/ContactModel.js";
 import Message from "../../models/Message.js";
 import { requireAuth } from "../../middleware/requireAuth.js";
@@ -10,7 +10,7 @@ const router = express.Router();
 // Get current Contact content (public endpoint)
 router.get("/", async (req, res) => {
   try {
-    const contact = await Contact.findOne({ isActive: true }).sort({
+    const contact = await WebsiteContact.findOne({ isActive: true }).sort({
       createdAt: -1,
     });
     if (!contact) {
@@ -56,7 +56,7 @@ router.get("/", async (req, res) => {
 // Get all Contact entries (admin only)
 router.get("/all", requireAuth, isAdmin, async (req, res) => {
   try {
-    const contacts = await Contact.find().sort({ createdAt: -1 });
+    const contacts = await WebsiteContact.find().sort({ createdAt: -1 });
     res.json(contacts);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -118,13 +118,13 @@ router.post("/", async (req, res) => {
 });
 
 // Create new Contact content (admin only)
-router.post("/", requireAuth, isAdmin, async (req, res) => {
+router.post("/admin", requireAuth, isAdmin, async (req, res) => {
   try {
     // Deactivate all existing entries
-    await Contact.updateMany({}, { isActive: false });
+    await WebsiteContact.updateMany({}, { isActive: false });
 
     // Create new entry
-    const contact = await Contact.create(req.body);
+    const contact = await WebsiteContact.create(req.body);
     res.status(201).json(contact);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -134,10 +134,14 @@ router.post("/", requireAuth, isAdmin, async (req, res) => {
 // Update Contact content (admin only)
 router.put("/:id", requireAuth, isAdmin, async (req, res) => {
   try {
-    const contact = await Contact.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    const contact = await WebsiteContact.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
 
     if (!contact) {
       return res.status(404).json({ error: "Contact content not found" });
@@ -153,10 +157,10 @@ router.put("/:id", requireAuth, isAdmin, async (req, res) => {
 router.put("/activate/:id", requireAuth, isAdmin, async (req, res) => {
   try {
     // Deactivate all entries first
-    await Contact.updateMany({}, { isActive: false });
+    await WebsiteContact.updateMany({}, { isActive: false });
 
     // Activate the selected entry
-    const contact = await Contact.findByIdAndUpdate(
+    const contact = await WebsiteContact.findByIdAndUpdate(
       req.params.id,
       { isActive: true },
       { new: true }
@@ -175,7 +179,7 @@ router.put("/activate/:id", requireAuth, isAdmin, async (req, res) => {
 // Delete Contact content (admin only)
 router.delete("/:id", requireAuth, isAdmin, async (req, res) => {
   try {
-    const contact = await Contact.findByIdAndDelete(req.params.id);
+    const contact = await WebsiteContact.findByIdAndDelete(req.params.id);
 
     if (!contact) {
       return res.status(404).json({ error: "Contact content not found" });
