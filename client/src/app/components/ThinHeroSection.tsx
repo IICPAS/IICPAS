@@ -15,6 +15,21 @@ const shimmerStyles = `
       background-position: 200% 0;
     }
   }
+  
+  @keyframes ribbonShine {
+    0% {
+      background-position: -100% 0;
+    }
+    100% {
+      background-position: 100% 0;
+    }
+  }
+  
+  .ribbon-shine {
+    background: linear-gradient(90deg, #2563eb, #3b82f6, #60a5fa, #3b82f6, #2563eb);
+    background-size: 200% 100%;
+    animation: ribbonShine 3s ease-in-out infinite;
+  }
 `;
 
 export default function ThinHeroSection({
@@ -28,12 +43,23 @@ export default function ThinHeroSection({
         {/* Ribbon-like container with < > edges */}
         <div className="relative w-[95vw] mx-auto px-4">
           <div
-            className="relative bg-blue-600 py-3 px-3 md:px-3 text-center"
+            className="relative py-3 px-3 md:px-3 text-center ribbon-shine"
             style={{
               clipPath:
                 "polygon(2% 0%, 98% 0%, 100% 50%, 98% 100%, 2% 100%, 0% 50%)",
             }}
           >
+            {/* Shiny overlay for entire ribbon */}
+            <div
+              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
+              style={{
+                animation: "shimmer 2s infinite",
+                background:
+                  "linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)",
+                backgroundSize: "200% 100%",
+              }}
+            ></div>
+
             {/* Content */}
             <div className="relative z-10 text-left pl-6">
               <h1 className="text-md md:text-xl font-bold text-white relative">
