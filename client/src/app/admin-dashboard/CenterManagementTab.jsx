@@ -163,7 +163,7 @@ export default function CenterManagementTab() {
 
       if (editingCenter) {
         await axios.put(
-          `${API_BASE}/api/v1/centers/${editingCenter._id}`,
+          `${API_BASE}/v1/centers/${editingCenter._id}`,
           formData,
           {
             headers: {
@@ -174,7 +174,7 @@ export default function CenterManagementTab() {
         );
         toast.success("Center updated successfully!");
       } else {
-        await axios.post(`${API_BASE}/api/v1/centers`, formData, {
+        await axios.post(`${API_BASE}/v1/centers`, formData, {
           headers: {
             Authorization: `Bearer ${adminToken}`,
             "Content-Type": "application/json",
@@ -209,7 +209,7 @@ export default function CenterManagementTab() {
     try {
       const adminToken = localStorage.getItem("adminToken");
 
-      await axios.delete(`${API_BASE}/api/v1/centers/${centerId}`, {
+      await axios.delete(`${API_BASE}/v1/centers/${centerId}`, {
         headers: {
           Authorization: `Bearer ${adminToken}`,
           "Content-Type": "application/json",

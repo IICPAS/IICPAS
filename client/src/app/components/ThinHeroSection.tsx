@@ -19,8 +19,8 @@ const shimmerStyles = `
   .full-ribbon-shine {
     background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), rgba(255,255,255,0.8), rgba(255,255,255,0.6), transparent);
     background-size: 300% 100%;
-    animation: shimmer 3s ease-in-out infinite;
-    animation-delay: 0.3s;
+    animation: shimmer 8s ease-in-out 2;
+    animation-delay: 2s;
   }
   
   .glare-overlay {
@@ -31,7 +31,7 @@ const shimmerStyles = `
     bottom: 0;
     background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.4) 50%, transparent 70%);
     background-size: 200% 200%;
-    animation: glare 4s ease-in-out infinite;
+    animation: glare 10s ease-in-out 2;
     pointer-events: none;
   }
   

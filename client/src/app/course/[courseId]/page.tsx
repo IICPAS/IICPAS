@@ -344,12 +344,9 @@ export default function CourseDetailPage({
   useEffect(() => {
     const checkStudentAuth = async () => {
       try {
-        const response = await axios.get(
-          `${API_BASE}/api/v1/students/isstudent`,
-          {
-            withCredentials: true,
-          }
-        );
+        const response = await axios.get(`${API_BASE}/v1/students/isstudent`, {
+          withCredentials: true,
+        });
         setStudent(response.data.student);
       } catch {
         setStudent(null);
@@ -404,7 +401,7 @@ export default function CourseDetailPage({
 
     setIsEnrollingRecordedCenter(true);
     try {
-      const enrollUrl = `${API_BASE}/api/v1/students/enroll-recorded-session-center/${student._id}`;
+      const enrollUrl = `${API_BASE}/v1/students/enroll-recorded-session-center/${student._id}`;
       console.log(
         "Enrolling in recorded session + center with URL:",
         enrollUrl
@@ -465,7 +462,7 @@ export default function CourseDetailPage({
 
     setIsEnrollingLiveCenter(true);
     try {
-      const enrollUrl = `${API_BASE}/api/v1/students/enroll-live-session-center/${student._id}`;
+      const enrollUrl = `${API_BASE}/v1/students/enroll-live-session-center/${student._id}`;
       console.log("Enrolling in live session + center with URL:", enrollUrl);
       console.log("Course ID:", course._id);
       console.log("Student ID:", student._id);
@@ -522,7 +519,7 @@ export default function CourseDetailPage({
         // Use the course ID from the fetched course data, not the slug
         const courseId = course?._id || resolvedParams.courseId;
         const response = await axios.get(
-          `${API_BASE}/api/v1/course-ratings/course/${courseId}`
+          `${API_BASE}/v1/course-ratings/course/${courseId}`
         );
         if (response.data.success) {
           setCourseRatings(response.data);
@@ -1302,7 +1299,7 @@ export default function CourseDetailPage({
             // Refresh student data first
             try {
               const response = await axios.get(
-                `${API_BASE}/api/v1/students/isstudent`,
+                `${API_BASE}/v1/students/isstudent`,
                 { withCredentials: true }
               );
               const loggedInStudent = response.data.student;

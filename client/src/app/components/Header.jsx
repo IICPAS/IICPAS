@@ -256,7 +256,7 @@ export default function Header() {
     }
     try {
       const response = await axios.post(
-        `${API}/api/v1/cart/add/${student._id}`,
+        `${API}/v1/cart/add/${student._id}`,
         { courseId, sessionType },
         { withCredentials: true }
       );
@@ -282,7 +282,7 @@ export default function Header() {
   const handleRemoveFromCart = async (courseId, sessionType = "recorded") => {
     try {
       const response = await axios.delete(
-        `${API}/api/v1/cart/remove/${student._id}`,
+        `${API}/v1/cart/remove/${student._id}`,
         {
           data: { courseId, sessionType },
           withCredentials: true,
@@ -310,7 +310,7 @@ export default function Header() {
   const handleRemoveFromWishlist = async (courseId) => {
     try {
       const response = await axios.delete(
-        `${API}/api/v1/students/remove-from-wishlist/${student._id}/${courseId}`,
+        `${API}/v1/students/remove-from-wishlist/${student._id}/${courseId}`,
         { withCredentials: true }
       );
       if (response.data.success) {
@@ -339,7 +339,7 @@ export default function Header() {
     }
     try {
       const response = await axios.post(
-        `${API}/api/v1/students/add-to-wishlist/${student._id}`,
+        `${API}/v1/students/add-to-wishlist/${student._id}`,
         { courseId },
         { withCredentials: true }
       );
