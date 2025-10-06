@@ -485,7 +485,7 @@ const CheckoutModal = ({
                                         ?.priceMultiplier || 1.5) ||
                                     0;
                                 }
-                                return displayPrice?.toLocaleString() || "0";
+                                return (displayPrice && typeof displayPrice === 'number') ? displayPrice.toLocaleString() : "0";
                               })()}{" "}
                               × {quantity}
                             </p>
@@ -509,10 +509,8 @@ const CheckoutModal = ({
                                         ?.priceMultiplier || 1.5) ||
                                     0;
                                 }
-                                return (
-                                  (displayPrice * quantity)?.toLocaleString() ||
-                                  "0"
-                                );
+                                const totalPrice = displayPrice * quantity;
+                                return (totalPrice && typeof totalPrice === 'number') ? totalPrice.toLocaleString() : "0";
                               })()}
                             </p>
                           </div>
@@ -621,10 +619,8 @@ const CheckoutModal = ({
                                       ?.priceMultiplier || 1.5) ||
                                   0;
                               }
-                              return (
-                                (displayPrice * quantity)?.toLocaleString() ||
-                                "0"
-                              );
+                              const totalPrice = displayPrice * quantity;
+                              return (totalPrice && typeof totalPrice === 'number') ? totalPrice.toLocaleString() : "0";
                             })()}
                           </span>
                         </div>
@@ -636,7 +632,7 @@ const CheckoutModal = ({
                     <div className="flex justify-between text-lg font-bold">
                       <span>Total</span>
                       <span className="text-green-600">
-                        ₹{totalAmount.toLocaleString()}
+                        ₹{(totalAmount && typeof totalAmount === 'number') ? totalAmount.toLocaleString() : "0"}
                       </span>
                     </div>
                   </div>

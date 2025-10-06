@@ -96,6 +96,15 @@ export default function Header() {
       });
       const studentData = res.data.student;
       console.log("Student data:", studentData);
+
+      // Check if student data exists before proceeding
+      if (!studentData) {
+        setStudent(null);
+        setCartCourses([]);
+        setWishlistCourses([]);
+        return;
+      }
+
       setStudent(studentData);
 
       console.log("Making cart request for student ID:", studentData._id);
@@ -172,6 +181,12 @@ export default function Header() {
     } catch (error) {
       console.error("Error in fetchStudentAndCart:", error);
       console.error("Error response:", error.response?.data);
+
+      // Handle 401 Unauthorized errors gracefully
+      if (error.response?.status === 401) {
+        console.log("User not authenticated, clearing student data");
+      }
+
       setStudent(null);
       setCartCourses([]);
       setWishlistCourses([]);
