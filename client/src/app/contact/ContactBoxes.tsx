@@ -28,14 +28,15 @@ export default function ContactBoxes() {
     setContactInfo([
       {
         title: "Address",
-        content: "123 Knowledge Park, <br />New Delhi, India",
+        content:
+          "SHOP NO 712-A, SEVENTH FLOOR, KASANA TOWER, ALPHA COMMERCIAL BELT, Greater Noida, Gautam Buddha Nagar,Uttar Pradesh, 201308",
         icon: "FaMapMarkerAlt",
         bg: "from-blue-50 to-blue-100",
         color: "text-blue-700",
       },
       {
         title: "Phone",
-        content: "+91 98765 43210",
+        content: "+91 9593330999",
         icon: "FaPhoneAlt",
         bg: "from-green-50 to-green-100",
         color: "text-green-700",
