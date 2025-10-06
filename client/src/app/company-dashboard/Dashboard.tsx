@@ -419,7 +419,7 @@ const CompanyDashboardOverview = () => {
     },
     {
       title: "Total Spent",
-      value: `₹${metrics.totalSpent.toLocaleString()}`,
+      value: `₹${(metrics.totalSpent && typeof metrics.totalSpent === 'number') ? metrics.totalSpent.toLocaleString() : "0"}`,
       icon: DollarSign,
       color: "bg-red-500",
       bgColor: "bg-red-50",
@@ -668,7 +668,7 @@ const CompanyDashboardOverview = () => {
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-bold text-green-600">
-                          ₹{transaction.amount?.toLocaleString()}
+                          ₹{(transaction.amount && typeof transaction.amount === 'number') ? transaction.amount.toLocaleString() : "0"}
                         </p>
                         <p className="text-xs text-gray-500 capitalize">
                           {transaction.status}

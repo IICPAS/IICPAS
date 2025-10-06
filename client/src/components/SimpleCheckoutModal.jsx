@@ -289,7 +289,7 @@ const SimpleCheckoutModal = ({ isOpen, onClose, student }) => {
                                     course?.price * 1.5 ||
                                     0;
                                 }
-                                return price.toLocaleString();
+                                return (price && typeof price === 'number') ? price.toLocaleString() : "0";
                               })()}{" "}
                               × {item.quantity}
                             </p>
@@ -311,7 +311,8 @@ const SimpleCheckoutModal = ({ isOpen, onClose, student }) => {
                                     course?.price * 1.5 ||
                                     0;
                                 }
-                                return (price * item.quantity).toLocaleString();
+                                const totalPrice = price * item.quantity;
+                                return (totalPrice && typeof totalPrice === 'number') ? totalPrice.toLocaleString() : "0";
                               })()}
                             </p>
                           </div>
@@ -393,7 +394,8 @@ const SimpleCheckoutModal = ({ isOpen, onClose, student }) => {
                                   course?.price * 1.5 ||
                                   0;
                               }
-                              return (price * item.quantity).toLocaleString();
+                              const totalPrice = price * item.quantity;
+                              return (totalPrice && typeof totalPrice === 'number') ? totalPrice.toLocaleString() : "0";
                             })()}
                           </span>
                         </div>
@@ -405,7 +407,7 @@ const SimpleCheckoutModal = ({ isOpen, onClose, student }) => {
                     <div className="flex justify-between text-lg font-bold">
                       <span>Total</span>
                       <span className="text-green-600">
-                        ₹{getTotalPrice().toLocaleString()}
+                        ₹{(getTotalPrice() && typeof getTotalPrice() === 'number') ? getTotalPrice().toLocaleString() : "0"}
                       </span>
                     </div>
                   </div>
@@ -459,7 +461,7 @@ const SimpleCheckoutModal = ({ isOpen, onClose, student }) => {
                         : "Live"}
                     </p>
                     <p className="text-lg font-bold text-green-600">
-                      ₹{selectedItem.price?.toLocaleString()}
+                      ₹{(selectedItem.price && typeof selectedItem.price === 'number') ? selectedItem.price.toLocaleString() : "0"}
                     </p>
                   </div>
 
@@ -573,7 +575,7 @@ const SimpleCheckoutModal = ({ isOpen, onClose, student }) => {
                       <li>• Scan the QR code with any UPI app</li>
                       <li>
                         • Pay the exact amount: ₹
-                        {selectedItem.price?.toLocaleString()}
+                        {(selectedItem.price && typeof selectedItem.price === 'number') ? selectedItem.price.toLocaleString() : "0"}
                       </li>
                       <li>• Save the UTR number from your payment receipt</li>
                       <li>• Take a screenshot of the payment confirmation</li>
