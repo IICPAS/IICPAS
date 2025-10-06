@@ -223,11 +223,11 @@ export default function BlogDetail({ params }) {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.8, delay: 0.3 }}
               >
-                <div className="relative overflow-hidden rounded-lg shadow-lg bg-gray-100 max-w-4xl mx-auto">
+                <div className="relative overflow-hidden rounded-lg shadow-lg bg-gray-100 max-w-5xl mx-auto">
                   <img
                     src={imageUrl}
                     alt={blog.title}
-                    className="w-full h-40 md:h-52 object-cover transition-transform duration-500 hover:scale-105"
+                    className="w-full h-48 md:h-60 object-cover transition-transform duration-500 hover:scale-105"
                     onError={(e) => {
                       e.target.src = getFallbackImage(blog.title);
                     }}
@@ -418,7 +418,7 @@ export default function BlogDetail({ params }) {
         }
 
         .article-content img {
-          max-width: 60%;
+          max-width: 65%;
           height: auto;
           border-radius: 6px;
           margin: 0.5rem 0;
