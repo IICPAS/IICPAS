@@ -179,6 +179,11 @@ const WEBSITE_SETTINGS_MODULES = [
     icon: <FaUserTie />,
   },
   { id: "contact", label: "Contact Section", icon: <FaEnvelope /> },
+  {
+    id: "contact-info",
+    label: "Contact Information",
+    icon: <FaMapMarkerAlt />,
+  },
   { id: "footer", label: "Footer Section", icon: <FaList /> },
   {
     id: "yellow-stats-strip",
@@ -198,7 +203,6 @@ const WEBSITE_SETTINGS_MODULES = [
   { id: "demo-digital-hub", label: "Demo Digital Hub", icon: <FaBook /> },
   { id: "faq", label: "FAQ", icon: <FaUserTie /> },
   { id: "bulk-email", label: "Bulk Email", icon: <FaEnvelope /> },
-  { id: "contact-info", label: "Contact Information", icon: <FaEnvelope /> },
 ];
 
 function AdminDashboardContent() {
