@@ -3,7 +3,10 @@ import ContactInfo from "../models/ContactInfo.js";
 // Get all contact information
 export const getAllContactInfo = async (req, res) => {
   try {
-    const contactInfo = await ContactInfo.find().sort({ order: 1, createdAt: 1 });
+    const contactInfo = await ContactInfo.find().sort({
+      order: 1,
+      createdAt: 1,
+    });
     res.status(200).json(contactInfo);
   } catch (error) {
     console.error("Error fetching contact info:", error);
@@ -14,7 +17,10 @@ export const getAllContactInfo = async (req, res) => {
 // Get active contact information (for public use)
 export const getActiveContactInfo = async (req, res) => {
   try {
-    const contactInfo = await ContactInfo.find({ isActive: true }).sort({ order: 1, createdAt: 1 });
+    const contactInfo = await ContactInfo.find({ isActive: true }).sort({
+      order: 1,
+      createdAt: 1,
+    });
     res.status(200).json(contactInfo);
   } catch (error) {
     console.error("Error fetching active contact info:", error);
@@ -27,11 +33,11 @@ export const getContactInfoById = async (req, res) => {
   try {
     const { id } = req.params;
     const contactInfo = await ContactInfo.findById(id);
-    
+
     if (!contactInfo) {
       return res.status(404).json({ error: "Contact information not found" });
     }
-    
+
     res.status(200).json(contactInfo);
   } catch (error) {
     console.error("Error fetching contact info by ID:", error);
@@ -43,12 +49,14 @@ export const getContactInfoById = async (req, res) => {
 export const createContactInfo = async (req, res) => {
   try {
     const { title, content, icon, bg, isActive, order } = req.body;
-    
+
     // Validate required fields
     if (!title || !content || !icon) {
-      return res.status(400).json({ error: "Title, content, and icon are required" });
+      return res
+        .status(400)
+        .json({ error: "Title, content, and icon are required" });
     }
-    
+
     const contactInfo = new ContactInfo({
       title,
       content,
@@ -57,7 +65,7 @@ export const createContactInfo = async (req, res) => {
       isActive: isActive !== undefined ? isActive : true,
       order: order || 0,
     });
-    
+
     await contactInfo.save();
     res.status(201).json(contactInfo);
   } catch (error) {
@@ -71,17 +79,16 @@ export const updateContactInfo = async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = req.body;
-    
-    const contactInfo = await ContactInfo.findByIdAndUpdate(
-      id,
-      updateData,
-      { new: true, runValidators: true }
-    );
-    
+
+    const contactInfo = await ContactInfo.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+    });
+
     if (!contactInfo) {
       return res.status(404).json({ error: "Contact information not found" });
     }
-    
+
     res.status(200).json(contactInfo);
   } catch (error) {
     console.error("Error updating contact info:", error);
@@ -93,22 +100,29 @@ export const updateContactInfo = async (req, res) => {
 export const toggleContactInfoStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const { isActive } = req.body;
-    
-    const contactInfo = await ContactInfo.findByIdAndUpdate(
-      id,
-      { isActive },
-      { new: true, runValidators: true }
-    );
-    
-    if (!contactInfo) {
+
+    // Find the current contact info to get the current status
+    const currentContactInfo = await ContactInfo.findById(id);
+
+    if (!currentContactInfo) {
       return res.status(404).json({ error: "Contact information not found" });
     }
-    
+
+    // Toggle the status
+    const newStatus = !currentContactInfo.isActive;
+
+    const contactInfo = await ContactInfo.findByIdAndUpdate(
+      id,
+      { isActive: newStatus },
+      { new: true, runValidators: true }
+    );
+
     res.status(200).json(contactInfo);
   } catch (error) {
     console.error("Error toggling contact info status:", error);
-    res.status(500).json({ error: "Failed to update contact information status" });
+    res
+      .status(500)
+      .json({ error: "Failed to update contact information status" });
   }
 };
 
@@ -116,14 +130,16 @@ export const toggleContactInfoStatus = async (req, res) => {
 export const deleteContactInfo = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const contactInfo = await ContactInfo.findByIdAndDelete(id);
-    
+
     if (!contactInfo) {
       return res.status(404).json({ error: "Contact information not found" });
     }
-    
-    res.status(200).json({ message: "Contact information deleted successfully" });
+
+    res
+      .status(200)
+      .json({ message: "Contact information deleted successfully" });
   } catch (error) {
     console.error("Error deleting contact info:", error);
     res.status(500).json({ error: "Failed to delete contact information" });
@@ -133,22 +149,64 @@ export const deleteContactInfo = async (req, res) => {
 // Update order of contact information
 export const updateContactInfoOrder = async (req, res) => {
   try {
-    const { contactInfoList } = req.body;
-    
-    if (!Array.isArray(contactInfoList)) {
-      return res.status(400).json({ error: "Contact info list must be an array" });
+    const { id } = req.params;
+    const { direction } = req.body;
+
+    if (!direction || !["up", "down"].includes(direction)) {
+      return res
+        .status(400)
+        .json({ error: "Direction must be 'up' or 'down'" });
     }
-    
-    const updatePromises = contactInfoList.map((item, index) =>
-      ContactInfo.findByIdAndUpdate(item.id, { order: index }, { new: true })
+
+    // Get all contact info items sorted by order
+    const allContactInfo = await ContactInfo.find().sort({
+      order: 1,
+      createdAt: 1,
+    });
+    const currentIndex = allContactInfo.findIndex(
+      (item) => item._id.toString() === id
     );
-    
-    await Promise.all(updatePromises);
-    
-    const updatedContactInfo = await ContactInfo.find().sort({ order: 1, createdAt: 1 });
+
+    if (currentIndex === -1) {
+      return res.status(404).json({ error: "Contact information not found" });
+    }
+
+    // Calculate new index based on direction
+    let newIndex;
+    if (direction === "up" && currentIndex > 0) {
+      newIndex = currentIndex - 1;
+    } else if (
+      direction === "down" &&
+      currentIndex < allContactInfo.length - 1
+    ) {
+      newIndex = currentIndex + 1;
+    } else {
+      return res
+        .status(400)
+        .json({ error: "Cannot move item in that direction" });
+    }
+
+    // Swap the orders
+    const currentItem = allContactInfo[currentIndex];
+    const targetItem = allContactInfo[newIndex];
+
+    await ContactInfo.findByIdAndUpdate(currentItem._id, {
+      order: targetItem.order,
+    });
+    await ContactInfo.findByIdAndUpdate(targetItem._id, {
+      order: currentItem.order,
+    });
+
+    // Return updated list
+    const updatedContactInfo = await ContactInfo.find().sort({
+      order: 1,
+      createdAt: 1,
+    });
     res.status(200).json(updatedContactInfo);
   } catch (error) {
     console.error("Error updating contact info order:", error);
-    res.status(500).json({ error: "Failed to update contact information order" });
+    res
+      .status(500)
+      .json({ error: "Failed to update contact information order" });
   }
 };

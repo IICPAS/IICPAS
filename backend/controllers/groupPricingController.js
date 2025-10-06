@@ -116,6 +116,7 @@ export const createGroupPricing = async (req, res) => {
     console.log("Create Group Pricing - Request file:", req.file);
 
     const {
+      groupName,
       level,
       courseIds,
       groupPrice,
@@ -155,6 +156,7 @@ export const createGroupPricing = async (req, res) => {
 
     // Validate required fields
     if (
+      !groupName ||
       !level ||
       !parsedCourseIds ||
       !Array.isArray(parsedCourseIds) ||
@@ -170,7 +172,9 @@ export const createGroupPricing = async (req, res) => {
       !liveFinalPriceCenter
     ) {
       console.log(
-        "Validation failed - level:",
+        "Validation failed - groupName:",
+        groupName,
+        "level:",
         level,
         "courseIds:",
         parsedCourseIds,
@@ -180,7 +184,7 @@ export const createGroupPricing = async (req, res) => {
       return res.status(400).json({
         success: false,
         message:
-          "Level, courseIds, groupPrice, and pricing details are required",
+          "Group name, level, courseIds, groupPrice, and pricing details are required",
       });
     }
 
@@ -227,6 +231,7 @@ export const createGroupPricing = async (req, res) => {
     }
 
     const newGroupPricing = new GroupPricing({
+      groupName,
       level,
       courseIds: parsedCourseIds,
       groupPrice: parseFloat(groupPrice),
@@ -295,6 +300,7 @@ export const updateGroupPricing = async (req, res) => {
   try {
     const { id } = req.params;
     const {
+      groupName,
       level,
       courseIds,
       groupPrice,
@@ -370,6 +376,7 @@ export const updateGroupPricing = async (req, res) => {
     }
 
     // Update fields
+    if (groupName) groupPricing.groupName = groupName;
     if (level) groupPricing.level = level;
     if (parsedCourseIds) groupPricing.courseIds = parsedCourseIds;
     if (groupPrice) groupPricing.groupPrice = parseFloat(groupPrice);

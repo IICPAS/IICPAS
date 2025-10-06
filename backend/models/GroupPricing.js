@@ -2,6 +2,11 @@ import mongoose from "mongoose";
 const { Schema, model } = mongoose;
 
 const GroupPricingSchema = new Schema({
+  groupName: {
+    type: String,
+    required: true,
+    trim: true,
+  },
   level: {
     type: String,
     required: true,
