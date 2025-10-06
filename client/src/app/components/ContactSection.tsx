@@ -15,15 +15,15 @@ export default function ContactSection() {
       "Ready to start your learning journey? Get in touch with us today!",
     contactInfo: {
       phone: {
-        number: "+91 98765 43210",
+        number: "+91 9593330999",
         label: "Phone",
       },
       email: {
-        address: "support@iicpa.org",
+        address: "contact@taxesquire.in",
         label: "Email",
       },
       address: {
-        text: "123 Knowledge Park, New Delhi, India",
+        text: "SHOP NO 712-A, SEVENTH FLOOR, KASANA TOWER, ALPHA COMMERCIAL BELT, Greater Noida, Gautam Buddha Nagar,Uttar Pradesh, 201308",
         label: "Address",
       },
     },
