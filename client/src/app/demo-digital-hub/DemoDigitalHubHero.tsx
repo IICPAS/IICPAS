@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import ThinHeroSection from "../components/ThinHeroSection";
 
 interface HeroData {
   title: string;
@@ -57,10 +58,10 @@ const DemoDigitalHubHero = () => {
 
   if (loading) {
     return (
-      <section className="relative bg-gradient-to-br from-[#afffe8] via-white to-[#b8e6ff] py-8 md:py-12 px-4 md:px-20 pl-8 mt-28">
+      <section className="relative bg-blue-600 py-4 px-4 md:px-20 pl-8 mt-16">
         <div className="animate-pulse">
-          <div className="h-12 bg-gray-300 rounded mb-4 max-w-md"></div>
-          <div className="h-4 bg-gray-300 rounded max-w-xs"></div>
+          <div className="h-8 bg-blue-400 rounded mb-2 max-w-md"></div>
+          <div className="h-4 bg-blue-400 rounded max-w-xs"></div>
         </div>
       </section>
     );
@@ -81,18 +82,7 @@ const DemoDigitalHubHero = () => {
   };
 
   return (
-    <section
-      className={`relative bg-gradient-to-br ${hero.backgroundGradient.from} ${hero.backgroundGradient.via} ${hero.backgroundGradient.to} py-6 md:py-8 px-4 md:px-20 pl-8 mt-28`}
-    >
-      <h1
-        className={`text-3xl md:text-4xl font-extrabold ${hero.textColor} mt-2`}
-      >
-        {hero.title}
-      </h1>
-      <p className="mt-1 text-sm text-gray-500 font-medium">
-        Home // Demo Digital Hub
-      </p>
-    </section>
+    <ThinHeroSection title={hero.title} breadcrumb="Home // Demo Digital Hub" />
   );
 };
 
