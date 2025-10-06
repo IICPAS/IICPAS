@@ -43,6 +43,7 @@ const GroupPricingTab = ({ onBack }) => {
   const [openDialog, setOpenDialog] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [formData, setFormData] = useState({
+    groupName: "",
     level: "",
     courseIds: [],
     groupPrice: "",
@@ -108,6 +109,7 @@ const GroupPricingTab = ({ onBack }) => {
   const handleAddNew = () => {
     setEditingItem(null);
     setFormData({
+      groupName: "",
       level: "",
       courseIds: [],
       groupPrice: "",
@@ -148,6 +150,7 @@ const GroupPricingTab = ({ onBack }) => {
     );
 
     setFormData({
+      groupName: item.groupName || "",
       level: item.level,
       courseIds: courseIds,
       groupPrice: item.groupPrice.toString(),
@@ -236,6 +239,7 @@ const GroupPricingTab = ({ onBack }) => {
 
   const handleSave = async () => {
     if (
+      !formData.groupName ||
       !formData.level ||
       !formData.courseIds.length ||
       !formData.groupPrice ||
@@ -249,7 +253,7 @@ const GroupPricingTab = ({ onBack }) => {
       formData.liveFinalPriceCenter === ""
     ) {
       toast.error(
-        "Please fill in all required fields including center session pricing",
+        "Please fill in all required fields including group name and center session pricing",
         {
           style: {
             zIndex: 9999,
@@ -262,6 +266,7 @@ const GroupPricingTab = ({ onBack }) => {
 
     try {
       const formDataToSend = new FormData();
+      formDataToSend.append("groupName", formData.groupName);
       formDataToSend.append("level", formData.level);
       formDataToSend.append("courseIds", JSON.stringify(formData.courseIds));
       formDataToSend.append("groupPrice", formData.groupPrice);
@@ -479,6 +484,15 @@ const GroupPricingTab = ({ onBack }) => {
                     </Stack>
                   </Stack>
 
+                  {item.groupName && (
+                    <Typography
+                      variant="h5"
+                      sx={{ mb: 1, color: "#1976d2", fontWeight: 700 }}
+                    >
+                      {item.groupName}
+                    </Typography>
+                  )}
+
                   <Typography
                     variant="h6"
                     sx={{ mb: 1, color: "#2e7d32", fontWeight: 600 }}
@@ -534,6 +548,17 @@ const GroupPricingTab = ({ onBack }) => {
         </DialogTitle>
         <DialogContent>
           <Stack spacing={3} sx={{ mt: 2 }}>
+            <TextField
+              fullWidth
+              label="Group Name"
+              value={formData.groupName}
+              onChange={(e) =>
+                setFormData({ ...formData, groupName: e.target.value })
+              }
+              required
+              placeholder="e.g., GST Pro, Accounting Master"
+            />
+
             <FormControl fullWidth required>
               <InputLabel>Course Level</InputLabel>
               <Select

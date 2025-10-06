@@ -28,6 +28,6 @@ router.post("/", createContactInfo);
 router.put("/:id", updateContactInfo);
 router.put("/:id/toggle", toggleContactInfoStatus);
 router.delete("/:id", deleteContactInfo);
-router.put("/order/update", updateContactInfoOrder);
+router.put("/:id/order", updateContactInfoOrder);
 
 export default router;
