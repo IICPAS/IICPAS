@@ -91,7 +91,7 @@ export default function Header() {
         setIsAdmin(false);
       }
 
-      const res = await axios.get(`${API}/api/v1/students/isstudent`, {
+      const res = await axios.get(`${API}/v1/students/isstudent`, {
         withCredentials: true,
       });
       const studentData = res.data.student;
@@ -108,16 +108,15 @@ export default function Header() {
       setStudent(studentData);
 
       console.log("Making cart request for student ID:", studentData._id);
-      const cartRes = await axios.get(
-        `${API}/api/v1/cart/get/${studentData._id}`,
-        { withCredentials: true }
-      );
+      const cartRes = await axios.get(`${API}/v1/cart/get/${studentData._id}`, {
+        withCredentials: true,
+      });
       console.log("Header cart response:", cartRes.data);
       const cartItems = cartRes.data.cart || [];
       console.log("Cart items from API:", cartItems);
 
       const wishlistRes = await axios.get(
-        `${API}/api/v1/students/get-wishlist/${studentData._id}`,
+        `${API}/v1/students/get-wishlist/${studentData._id}`,
         { withCredentials: true }
       );
       const wishlistIDs = wishlistRes.data.wishlist || [];
@@ -236,7 +235,7 @@ export default function Header() {
 
   const handleLogout = async () => {
     try {
-      await axios.get(`${API}/api/v1/students/logout`, {
+      await axios.get(`${API}/v1/students/logout`, {
         withCredentials: true,
       });
     } catch (error) {
@@ -257,7 +256,7 @@ export default function Header() {
     }
     try {
       const response = await axios.post(
-        `${API}/api/v1/cart/add/${student._id}`,
+        `${API}/v1/cart/add/${student._id}`,
         { courseId, sessionType },
         { withCredentials: true }
       );
@@ -283,7 +282,7 @@ export default function Header() {
   const handleRemoveFromCart = async (courseId, sessionType = "recorded") => {
     try {
       const response = await axios.delete(
-        `${API}/api/v1/cart/remove/${student._id}`,
+        `${API}/v1/cart/remove/${student._id}`,
         {
           data: { courseId, sessionType },
           withCredentials: true,
@@ -311,7 +310,7 @@ export default function Header() {
   const handleRemoveFromWishlist = async (courseId) => {
     try {
       const response = await axios.delete(
-        `${API}/api/v1/students/remove-from-wishlist/${student._id}/${courseId}`,
+        `${API}/v1/students/remove-from-wishlist/${student._id}/${courseId}`,
         { withCredentials: true }
       );
       if (response.data.success) {
@@ -340,7 +339,7 @@ export default function Header() {
     }
     try {
       const response = await axios.post(
-        `${API}/api/v1/students/add-to-wishlist/${student._id}`,
+        `${API}/v1/students/add-to-wishlist/${student._id}`,
         { courseId },
         { withCredentials: true }
       );

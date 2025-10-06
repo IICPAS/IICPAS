@@ -69,7 +69,7 @@ const CheckoutModal = ({
     try {
       setLoading(true);
       const response = await axios.post(
-        `${API_BASE}/api/v1/students/update-cart-quantity/${student._id}`,
+        `${API_BASE}/v1/students/update-cart-quantity/${student._id}`,
         { courseId, sessionType, quantity: newQuantity },
         { withCredentials: true }
       );
@@ -94,7 +94,7 @@ const CheckoutModal = ({
     try {
       setLoading(true);
       const response = await axios.post(
-        `${API_BASE}/api/v1/students/remove-cart/${student._id}`,
+        `${API_BASE}/v1/students/remove-cart/${student._id}`,
         { courseId, sessionType },
         { withCredentials: true }
       );
@@ -234,7 +234,7 @@ const CheckoutModal = ({
         formData.append("studentId", student._id);
 
         response = await axios.post(
-          `${API_BASE}/api/v1/transactions/submit-payment`,
+          `${API_BASE}/v1/transactions/submit-payment`,
           formData,
           {
             headers: {
@@ -485,7 +485,10 @@ const CheckoutModal = ({
                                         ?.priceMultiplier || 1.5) ||
                                     0;
                                 }
-                                return (displayPrice && typeof displayPrice === 'number') ? displayPrice.toLocaleString() : "0";
+                                return displayPrice &&
+                                  typeof displayPrice === "number"
+                                  ? displayPrice.toLocaleString()
+                                  : "0";
                               })()}{" "}
                               × {quantity}
                             </p>
@@ -510,7 +513,10 @@ const CheckoutModal = ({
                                     0;
                                 }
                                 const totalPrice = displayPrice * quantity;
-                                return (totalPrice && typeof totalPrice === 'number') ? totalPrice.toLocaleString() : "0";
+                                return totalPrice &&
+                                  typeof totalPrice === "number"
+                                  ? totalPrice.toLocaleString()
+                                  : "0";
                               })()}
                             </p>
                           </div>
@@ -620,7 +626,10 @@ const CheckoutModal = ({
                                   0;
                               }
                               const totalPrice = displayPrice * quantity;
-                              return (totalPrice && typeof totalPrice === 'number') ? totalPrice.toLocaleString() : "0";
+                              return totalPrice &&
+                                typeof totalPrice === "number"
+                                ? totalPrice.toLocaleString()
+                                : "0";
                             })()}
                           </span>
                         </div>
@@ -632,7 +641,10 @@ const CheckoutModal = ({
                     <div className="flex justify-between text-lg font-bold">
                       <span>Total</span>
                       <span className="text-green-600">
-                        ₹{(totalAmount && typeof totalAmount === 'number') ? totalAmount.toLocaleString() : "0"}
+                        ₹
+                        {totalAmount && typeof totalAmount === "number"
+                          ? totalAmount.toLocaleString()
+                          : "0"}
                       </span>
                     </div>
                   </div>

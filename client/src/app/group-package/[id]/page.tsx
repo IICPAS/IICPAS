@@ -65,12 +65,9 @@ export default function GroupPackageDetailPage({
   useEffect(() => {
     const checkStudentAuth = async () => {
       try {
-        const response = await axios.get(
-          `${API_BASE}/api/v1/students/isstudent`,
-          {
-            withCredentials: true,
-          }
-        );
+        const response = await axios.get(`${API_BASE}/v1/students/isstudent`, {
+          withCredentials: true,
+        });
         setStudent(response.data.student);
       } catch {
         setStudent(null);

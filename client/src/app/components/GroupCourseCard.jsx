@@ -103,7 +103,11 @@ export default function GroupCourseCard({ groupPricing, index }) {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-green-600 font-bold text-xl">
-              ₹{groupPricing.groupPrice?.toLocaleString()}
+              ₹
+              {groupPricing.groupPrice &&
+              typeof groupPricing.groupPrice === "number"
+                ? groupPricing.groupPrice.toLocaleString()
+                : "0"}
             </p>
             <p className="text-gray-400 text-xs">Complete package price</p>
           </div>

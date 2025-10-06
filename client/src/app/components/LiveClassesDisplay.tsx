@@ -44,7 +44,7 @@ export default function LiveClassesDisplay() {
 
   const getUser = useCallback(async () => {
     try {
-      const response = await axios.get(`${API}/api/v1/students/isstudent`, {
+      const response = await axios.get(`${API}/v1/students/isstudent`, {
         withCredentials: true,
       });
       if (response.data?.student) {

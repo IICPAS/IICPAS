@@ -96,7 +96,8 @@
   }
 }
 .animate-float {
-  animation: float 6s ease-in-out infinite;
+  animation: float 8s ease-in-out 2;
+  animation-delay: 2s;
 }
 
 /* Fix DataGrid auto-height issues */
@@ -198,7 +199,8 @@ body {
 }
 
 .animate-ping-slow {
-  animation: ping-slow 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+  animation: ping-slow 3s cubic-bezier(0, 0, 0.2, 1) 2;
+  animation-delay: 1s;
 }
 
 @keyframes fadeIn {
@@ -548,7 +550,7 @@ body::-webkit-scrollbar-thumb:hover {
     padding: 12px 16px;
     -webkit-tap-highlight-color: transparent;
   }
-  
+
   .mobile-nav-item:active {
     background-color: #f0fdf4; /* Light green background on tap */
     transform: scale(0.98);
@@ -590,7 +592,7 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 .sidebar-tooltip::before {
-  content: '';
+  content: "";
   position: absolute;
   left: -6px;
   top: 50%;
@@ -605,7 +607,7 @@ body::-webkit-scrollbar-thumb:hover {
     transform: translateX(-100%);
     transition: transform 0.3s ease-in-out;
   }
-  
+
   .mobile-drawer-collapsed {
     width: 60px !important;
     max-width: 60px !important;
@@ -665,7 +667,7 @@ body::-webkit-scrollbar-thumb:hover {
   .sidebar-layout.sidebar-collapsed .main-content {
     margin-left: 64px;
   }
-  
+
   .sidebar-layout.sidebar-expanded .main-content {
     margin-left: 256px;
   }
@@ -676,7 +678,7 @@ body::-webkit-scrollbar-thumb:hover {
   .sidebar-layout .main-content {
     margin-left: 0 !important;
   }
-  
+
   .sidebar-layout .main-content {
     width: 100%;
   }

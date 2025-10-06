@@ -18,7 +18,8 @@ const waveStyles = `
   .wave-effect {
     background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
     background-size: 200% 100%;
-    animation: wave 3s ease-in-out infinite;
+    animation: wave 12s ease-in-out 2;
+    animation-delay: 3s;
   }
   
   .thin-navbar {
