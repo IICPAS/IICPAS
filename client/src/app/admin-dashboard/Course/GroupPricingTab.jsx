@@ -55,12 +55,12 @@ const GroupPricingTab = ({ onBack }) => {
     livePrice: "",
     liveFinalPrice: "",
     liveDiscount: "",
-    recordedPriceCenter: "",
-    recordedFinalPriceCenter: "",
-    recordedDiscountCenter: "",
-    livePriceCenter: "",
-    liveFinalPriceCenter: "",
-    liveDiscountCenter: "",
+    recordedPriceCenter: "0",
+    recordedFinalPriceCenter: "0",
+    recordedDiscountCenter: "0",
+    livePriceCenter: "0",
+    liveFinalPriceCenter: "0",
+    liveDiscountCenter: "0",
   });
   const [imagePreview, setImagePreview] = useState(null);
 
@@ -121,12 +121,12 @@ const GroupPricingTab = ({ onBack }) => {
       livePrice: "",
       liveFinalPrice: "",
       liveDiscount: "",
-      recordedPriceCenter: "",
-      recordedFinalPriceCenter: "",
-      recordedDiscountCenter: "",
-      livePriceCenter: "",
-      liveFinalPriceCenter: "",
-      liveDiscountCenter: "",
+      recordedPriceCenter: "0",
+      recordedFinalPriceCenter: "0",
+      recordedDiscountCenter: "0",
+      livePriceCenter: "0",
+      liveFinalPriceCenter: "0",
+      liveDiscountCenter: "0",
     });
     setImagePreview(null);
     setOpenDialog(true);
@@ -247,10 +247,10 @@ const GroupPricingTab = ({ onBack }) => {
       !formData.recordedFinalPrice ||
       !formData.livePrice ||
       !formData.liveFinalPrice ||
-      formData.recordedPriceCenter === "" ||
-      formData.recordedFinalPriceCenter === "" ||
-      formData.livePriceCenter === "" ||
-      formData.liveFinalPriceCenter === ""
+      !formData.recordedPriceCenter ||
+      !formData.recordedFinalPriceCenter ||
+      !formData.livePriceCenter ||
+      !formData.liveFinalPriceCenter
     ) {
       toast.error(
         "Please fill in all required fields including group name and center session pricing",

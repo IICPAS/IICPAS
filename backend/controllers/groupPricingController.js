@@ -171,16 +171,20 @@ export const createGroupPricing = async (req, res) => {
       !livePriceCenter ||
       !liveFinalPriceCenter
     ) {
-      console.log(
-        "Validation failed - groupName:",
-        groupName,
-        "level:",
-        level,
-        "courseIds:",
-        parsedCourseIds,
-        "groupPrice:",
-        groupPrice
-      );
+      console.log("=== VALIDATION FAILED ===");
+      console.log("groupName:", groupName);
+      console.log("level:", level);
+      console.log("parsedCourseIds:", parsedCourseIds);
+      console.log("groupPrice:", groupPrice);
+      console.log("recordedPrice:", recordedPrice);
+      console.log("recordedFinalPrice:", recordedFinalPrice);
+      console.log("livePrice:", livePrice);
+      console.log("liveFinalPrice:", liveFinalPrice);
+      console.log("recordedPriceCenter:", recordedPriceCenter);
+      console.log("recordedFinalPriceCenter:", recordedFinalPriceCenter);
+      console.log("livePriceCenter:", livePriceCenter);
+      console.log("liveFinalPriceCenter:", liveFinalPriceCenter);
+      console.log("========================");
       return res.status(400).json({
         success: false,
         message:
@@ -188,16 +192,10 @@ export const createGroupPricing = async (req, res) => {
       });
     }
 
-    // Validate that all courses exist and belong to the specified level
-    console.log(
-      "Looking for courses with IDs:",
-      parsedCourseIds,
-      "and level:",
-      level
-    );
+    // Validate that all courses exist (removed level filter)
+    console.log("Looking for courses with IDs:", parsedCourseIds);
     const courses = await Course.find({
       _id: { $in: parsedCourseIds },
-      level: level,
       status: "Active",
     });
 
@@ -209,10 +207,18 @@ export const createGroupPricing = async (req, res) => {
     );
 
     if (courses.length !== parsedCourseIds.length) {
+      console.log("=== COURSE VALIDATION FAILED ===");
+      console.log("Requested course IDs:", parsedCourseIds);
+      console.log(
+        "Found courses:",
+        courses.map((c) => ({ id: c._id, title: c.title, level: c.level }))
+      );
+      console.log("Expected count:", parsedCourseIds.length);
+      console.log("Found count:", courses.length);
+      console.log("================================");
       return res.status(400).json({
         success: false,
-        message:
-          "Some courses not found or don't belong to the specified level",
+        message: "Some courses not found or are inactive",
       });
     }
 
@@ -223,10 +229,17 @@ export const createGroupPricing = async (req, res) => {
     });
 
     if (existingGroupPricing) {
+      console.log("=== DUPLICATE GROUP PRICING FOUND ===");
+      console.log("Existing group pricing for level:", level);
+      console.log("Existing ID:", existingGroupPricing._id);
+      console.log("Existing name:", existingGroupPricing.groupName);
+      console.log("====================================");
       return res.status(400).json({
         success: false,
-        message:
-          "Group pricing already exists for this level. Please update the existing one.",
+        message: `Group pricing already exists for ${level}. Please update the existing record (ID: ${existingGroupPricing._id}) or delete it first.`,
+        existingRecordId: existingGroupPricing._id,
+        existingRecordName: existingGroupPricing.groupName,
+        action: "update_or_delete_existing",
       });
     }
 
@@ -355,22 +368,19 @@ export const updateGroupPricing = async (req, res) => {
       });
     }
 
-    // If level or courseIds are being updated, validate courses
-    if (level || parsedCourseIds) {
-      const targetLevel = level || groupPricing.level;
-      const targetCourseIds = parsedCourseIds || groupPricing.courseIds;
+    // If courseIds are being updated, validate courses exist
+    if (parsedCourseIds) {
+      const targetCourseIds = parsedCourseIds;
 
       const courses = await Course.find({
         _id: { $in: targetCourseIds },
-        level: targetLevel,
         status: "Active",
       });
 
       if (courses.length !== targetCourseIds.length) {
         return res.status(400).json({
           success: false,
-          message:
-            "Some courses not found or don't belong to the specified level",
+          message: "Some courses not found or are inactive",
         });
       }
     }
