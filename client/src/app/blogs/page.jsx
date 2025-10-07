@@ -338,7 +338,7 @@ export default function BlogsPage() {
                   <div
                     className={`${
                       viewMode === "grid"
-                        ? "grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5"
+                        ? "grid gap-8 grid-cols-1 lg:grid-cols-2"
                         : "space-y-6"
                     }`}
                   >
@@ -394,7 +394,7 @@ export default function BlogsPage() {
 
                           {/* Image Container with Advanced Effects */}
                           <motion.div
-                            className="relative overflow-hidden h-48"
+                            className="relative overflow-hidden h-64"
                             whileHover={{ scale: 1.08 }}
                             transition={{ duration: 0.6, ease: "easeOut" }}
                           >
@@ -479,10 +479,10 @@ export default function BlogsPage() {
                           </motion.div>
 
                           {/* Enhanced Content Container */}
-                          <div className="relative p-6 flex flex-col justify-between flex-1 min-h-[200px]">
+                          <div className="relative p-8 flex flex-col justify-between flex-1 min-h-[240px]">
                             {/* Blog Meta */}
                             <motion.div
-                              className="mb-4"
+                              className="mb-6"
                               initial={{ opacity: 0, x: -30 }}
                               whileInView={{ opacity: 1, x: 0 }}
                               transition={{
@@ -490,7 +490,7 @@ export default function BlogsPage() {
                                 delay: 0.2 + index * 0.1,
                               }}
                             >
-                              <div className="flex items-center gap-3 text-xs text-gray-500 mb-3">
+                              <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
                                 <div className="inline-flex items-center gap-1.5">
                                   <Calendar className="w-3 h-3" />
                                   <span>
@@ -528,7 +528,7 @@ export default function BlogsPage() {
                                 href={`/blogs/${encodeURIComponent(
                                   blog.title.replace(/\s+/g, "-").toLowerCase()
                                 )}`}
-                                className="text-lg font-bold leading-tight mb-3 text-gray-900 hover:text-transparent hover:bg-gradient-to-r hover:from-green-600 hover:to-blue-600 hover:bg-clip-text transition-all duration-500 group-hover:underline decoration-2 underline-offset-4 line-clamp-2"
+                                className="text-xl font-bold leading-tight mb-4 text-gray-900 hover:text-transparent hover:bg-gradient-to-r hover:from-green-600 hover:to-blue-600 hover:bg-clip-text transition-all duration-500 group-hover:underline decoration-2 underline-offset-4 line-clamp-2"
                               >
                                 {blog.title}
                               </Link>
@@ -536,7 +536,7 @@ export default function BlogsPage() {
 
                             {/* Enhanced Content Preview */}
                             <motion.p
-                              className="text-gray-600 text-xs leading-relaxed mb-4 flex-1 line-clamp-2"
+                              className="text-gray-600 text-sm leading-relaxed mb-6 flex-1 line-clamp-3"
                               initial={{ opacity: 0, y: 30 }}
                               whileInView={{ opacity: 1, y: 0 }}
                               transition={{
@@ -546,8 +546,8 @@ export default function BlogsPage() {
                             >
                               {blog.content
                                 .replace(/<[^>]+>/g, "")
-                                .slice(0, 100)}
-                              {blog.content.length > 100 && "..."}
+                                .slice(0, 150)}
+                              {blog.content.length > 150 && "..."}
                             </motion.p>
 
                             {/* Enhanced Read More Button */}
@@ -563,14 +563,14 @@ export default function BlogsPage() {
                                 href={`/blogs/${encodeURIComponent(
                                   blog.title.replace(/\s+/g, "-").toLowerCase()
                                 )}`}
-                                className="group/btn inline-flex items-center gap-2 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-4 py-2 rounded-xl font-semibold text-xs transition-all duration-300 hover:shadow-xl hover:shadow-green-500/25 hover:-translate-y-1"
+                                className="group/btn inline-flex items-center gap-3 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-6 py-3 rounded-2xl font-semibold text-sm transition-all duration-300 hover:shadow-xl hover:shadow-green-500/25 hover:-translate-y-1"
                               >
-                                <span>Read More</span>
+                                <span>Read Full Article</span>
                                 <motion.div
-                                  whileHover={{ x: 3, rotate: 5 }}
+                                  whileHover={{ x: 5, rotate: 5 }}
                                   transition={{ duration: 0.3 }}
                                 >
-                                  <ArrowRight size={14} />
+                                  <ArrowRight size={18} />
                                 </motion.div>
                               </Link>
                             </motion.div>
