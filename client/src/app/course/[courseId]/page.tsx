@@ -651,8 +651,6 @@ export default function CourseDetailPage({
     doc.text(`Level: ${course.level || "N/A"}`, 20, yPosition);
     yPosition += 6;
     doc.text(`Price: Rs. ${course.price || "N/A"}`, 20, yPosition);
-    yPosition += 6;
-    doc.text(`Rating: ${course.rating || "N/A"}/5`, 20, yPosition);
     yPosition += 15;
 
     // Add syllabus content
