@@ -322,7 +322,7 @@ export default function BlogSection() {
               className="relative"
             >
               <Link
-                href="/blog"
+                href="/blogs"
                 className="group relative inline-flex items-center gap-4 bg-gradient-to-r from-green-500 via-green-600 to-blue-600 hover:from-green-600 hover:via-green-700 hover:to-blue-700 text-white px-10 py-5 rounded-3xl font-bold text-lg shadow-2xl transition-all duration-500 hover:shadow-green-500/30 hover:-translate-y-2 overflow-hidden"
               >
                 {/* Animated Background */}
