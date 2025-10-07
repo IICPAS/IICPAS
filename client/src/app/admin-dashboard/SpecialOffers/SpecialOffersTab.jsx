@@ -41,7 +41,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080";
-
+console.log("API_BASE", API_BASE);
 const SpecialOffersTab = ({ onBack }) => {
   const [offers, setOffers] = useState([]);
   const [loading, setLoading] = useState(false);
