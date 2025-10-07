@@ -258,265 +258,272 @@ export default function CoursePage() {
 
   return (
     <section className="bg-gradient-to-br from-[#f5fcfa] via-white to-[#eef7fc] min-h-screen text-[#0b1224]">
-      <div className="max-w-7xl mx-auto px-4 py-16 flex flex-col md:flex-row gap-10">
-        {/* Sidebar */}
-        <aside className="w-full md:w-1/4">
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold mb-4">Find by Course Name</h2>
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search courses..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full border rounded-lg px-4 py-2 focus:outline-none shadow"
-              />
-              <FaSearch className="absolute right-3 top-3 text-gray-400" />
+      <div className="max-w-7xl mx-auto px-4 py-16">
+        <div className="flex flex-col lg:flex-row gap-8 items-start">
+          {/* Sidebar */}
+          <aside className="w-full lg:w-1/4 lg:sticky lg:top-24 lg:max-h-screen lg:overflow-y-auto lg:pr-2">
+            <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+              <h2 className="text-xl font-bold mb-4">Find by Course Name</h2>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search courses..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full border rounded-lg px-4 py-2 focus:outline-none shadow"
+                />
+                <FaSearch className="absolute right-3 top-3 text-gray-400" />
+              </div>
             </div>
-          </div>
 
-          <div className="mb-6">
-            <h3 className="text-xl font-semibold mb-3">Categories</h3>
-            {categories.length === 0 && (
-              <div className="text-gray-400 text-sm">No categories</div>
-            )}
-            {categories.map((cat) => (
-              <label
-                key={cat._id}
-                className="flex items-center space-x-2 text-sm mb-2"
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedCategories.includes(cat.category)}
-                  onChange={() => toggleCategory(cat.category)}
-                  className="accent-green-600"
-                />
-                <span>{cat.category}</span>
-              </label>
-            ))}
-          </div>
-
-          <div className="mb-6">
-            <h3 className="text-xl font-semibold mb-3">Skills Level</h3>
-            {skillLevels.map((level) => (
-              <label
-                key={level}
-                className="flex items-center space-x-2 text-sm mb-2"
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedLevels.includes(level)}
-                  onChange={() => toggleLevel(level)}
-                  className="accent-green-600"
-                />
-                <span>{level}</span>
-              </label>
-            ))}
-          </div>
-
-          {/* Mini Scrabble Game */}
-          <SimpleScrabbleGame />
-        </aside>
-
-        {/* Course Cards */}
-        <main className="w-full md:w-3/4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Group Pricing Cards */}
-          {filteredGroupPricing.map((group, index) => (
-            <GroupCourseCard
-              key={group._id || `group-${index}`}
-              groupPricing={group}
-              index={index}
-            />
-          ))}
-
-          {/* Individual Course Cards - Show initially, hide when level filter is selected */}
-          {selectedLevels.length === 0 && (
-            <>
-              {filteredCourses.length === 0 && (
-                <div className="col-span-3 text-gray-500 text-center py-12">
-                  No courses found.
-                </div>
+            <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+              <h3 className="text-lg font-semibold mb-3">Categories</h3>
+              {categories.length === 0 && (
+                <div className="text-gray-400 text-sm">No categories</div>
               )}
-              {filteredCourses.map((course, index) => {
-                // Use recorded session pricing if available, otherwise fall back to legacy pricing
-                const recordedPrice =
-                  course.pricing?.recordedSession?.finalPrice ||
-                  course.pricing?.recordedSession?.price;
-                const recordedDiscount =
-                  course.pricing?.recordedSession?.discount;
-                const legacyPrice = course.price;
-                const legacyDiscount = course.discount;
+              {categories.map((cat) => (
+                <label
+                  key={cat._id}
+                  className="flex items-center space-x-2 text-sm mb-2"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedCategories.includes(cat.category)}
+                    onChange={() => toggleCategory(cat.category)}
+                    className="accent-green-600"
+                  />
+                  <span>{cat.category}</span>
+                </label>
+              ))}
+            </div>
 
-                // Determine which pricing to use
-                const displayPrice = recordedPrice || legacyPrice;
-                const displayDiscount = recordedDiscount || legacyDiscount;
+            <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+              <h3 className="text-lg font-semibold mb-3">Skills Level</h3>
+              {skillLevels.map((level) => (
+                <label
+                  key={level}
+                  className="flex items-center space-x-2 text-sm mb-2"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedLevels.includes(level)}
+                    onChange={() => toggleLevel(level)}
+                    className="accent-green-600"
+                  />
+                  <span>{level}</span>
+                </label>
+              ))}
+            </div>
 
-                const discountedPrice =
-                  displayDiscount && displayDiscount > 0
-                    ? displayPrice
-                    : displayPrice;
+            {/* Mini Scrabble Game */}
+            <SimpleScrabbleGame />
+          </aside>
 
-                return (
-                  <motion.div
-                    key={course._id || index}
-                    whileHover={{ scale: 1.02 }}
-                    className="bg-white rounded-xl shadow-lg hover:shadow-xl transition duration-300 ease-in-out group cursor-pointer"
-                    onClick={() => {
-                      // Use course slug if available, otherwise generate from title
-                      const courseId =
-                        course.slug ||
-                        course.title
-                          .toLowerCase()
-                          .replace(/\s+/g, "-")
-                          .replace(/[^\w-]/g, "");
-                      router.push(`/course/${courseId}`);
-                    }}
-                  >
-                    {/* Image Section */}
-                    <div className="relative h-48 w-full rounded-t-xl overflow-hidden">
-                      {course.image ? (
-                        <Image
-                          src={
-                            course.image.startsWith("http")
-                              ? course.image
-                              : course.image.startsWith("/uploads/")
-                              ? `${API_BASE}${course.image}`
-                              : course.image.startsWith("/")
-                              ? course.image
-                              : `${API_BASE}${course.image}`
-                          }
-                          alt={course.title}
-                          fill
-                          className="object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
-                          sizes="(max-width: 768px) 100vw, 33vw"
-                          priority={index < 2}
-                          onError={(e) => {
-                            console.log("Image failed to load:", e);
-                            console.log("Image src was:", e.currentTarget.src);
-                            // Fallback to placeholder
-                            e.currentTarget.style.display = "none";
-                            const placeholder =
-                              e.currentTarget.nextElementSibling;
-                            if (placeholder) {
-                              placeholder.style.display = "flex";
-                            }
-                          }}
-                        />
-                      ) : null}
+          {/* Course Cards */}
+          <main className="w-full lg:w-3/4">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 auto-rows-max">
+              {/* Group Pricing Cards */}
+              {filteredGroupPricing.map((group, index) => (
+                <GroupCourseCard
+                  key={group._id || `group-${index}`}
+                  groupPricing={group}
+                  index={index}
+                />
+              ))}
 
-                      {/* Fallback placeholder - always present but hidden when image loads */}
-                      <div
-                        className={`w-full h-full flex items-center justify-center text-gray-400 bg-gray-200 ${
-                          course.image ? "hidden" : ""
-                        }`}
-                        style={{ display: course.image ? "none" : "flex" }}
-                      >
-                        <div className="text-center">
-                          <div className="text-4xl mb-2">📚</div>
-                          <div className="text-sm">Course Image</div>
-                        </div>
-                      </div>
+              {/* Individual Course Cards - Show initially, hide when level filter is selected */}
+              {selectedLevels.length === 0 && (
+                <>
+                  {filteredCourses.length === 0 && (
+                    <div className="col-span-3 text-gray-500 text-center py-12">
+                      No courses found.
                     </div>
+                  )}
+                  {filteredCourses.map((course, index) => {
+                    // Use recorded session pricing if available, otherwise fall back to legacy pricing
+                    const recordedPrice =
+                      course.pricing?.recordedSession?.finalPrice ||
+                      course.pricing?.recordedSession?.price;
+                    const recordedDiscount =
+                      course.pricing?.recordedSession?.discount;
+                    const legacyPrice = course.price;
+                    const legacyDiscount = course.discount;
 
-                    {/* Content Section */}
-                    <div className="p-5 space-y-3 relative">
-                      {/* Wishlist Star */}
-                      <div
-                        className="absolute top-3 right-3 cursor-pointer z-10"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleLike(course._id);
+                    // Determine which pricing to use
+                    const displayPrice = recordedPrice || legacyPrice;
+                    const displayDiscount = recordedDiscount || legacyDiscount;
+
+                    const discountedPrice =
+                      displayDiscount && displayDiscount > 0
+                        ? displayPrice
+                        : displayPrice;
+
+                    return (
+                      <motion.div
+                        key={course._id || index}
+                        whileHover={{ scale: 1.02 }}
+                        className="bg-white rounded-xl shadow-lg hover:shadow-xl transition duration-300 ease-in-out group cursor-pointer"
+                        onClick={() => {
+                          // Use course slug if available, otherwise generate from title
+                          const courseId =
+                            course.slug ||
+                            course.title
+                              .toLowerCase()
+                              .replace(/\s+/g, "-")
+                              .replace(/[^\w-]/g, "");
+                          router.push(`/course/${courseId}`);
                         }}
                       >
-                        <button
-                          className={`w-8 h-8 flex items-center justify-center transition-all duration-300 hover:scale-110 ${
-                            wishlistCourseIds.includes(course._id)
-                              ? "text-yellow-500"
-                              : "text-yellow-500 hover:text-yellow-600"
-                          }`}
-                          title={
-                            wishlistCourseIds.includes(course._id)
-                              ? "Remove from Wishlist"
-                              : "Add to Wishlist"
-                          }
-                        >
-                          <svg
-                            className="w-5 h-5"
-                            fill={
-                              wishlistCourseIds.includes(course._id)
-                                ? "currentColor"
-                                : "none"
-                            }
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg"
+                        {/* Image Section */}
+                        <div className="relative h-48 w-full rounded-t-xl overflow-hidden">
+                          {course.image ? (
+                            <Image
+                              src={
+                                course.image.startsWith("http")
+                                  ? course.image
+                                  : course.image.startsWith("/uploads/")
+                                  ? `${API_BASE}${course.image}`
+                                  : course.image.startsWith("/")
+                                  ? course.image
+                                  : `${API_BASE}${course.image}`
+                              }
+                              alt={course.title}
+                              fill
+                              className="object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
+                              sizes="(max-width: 768px) 100vw, 33vw"
+                              priority={index < 2}
+                              onError={(e) => {
+                                console.log("Image failed to load:", e);
+                                console.log(
+                                  "Image src was:",
+                                  e.currentTarget.src
+                                );
+                                // Fallback to placeholder
+                                e.currentTarget.style.display = "none";
+                                const placeholder =
+                                  e.currentTarget.nextElementSibling;
+                                if (placeholder) {
+                                  placeholder.style.display = "flex";
+                                }
+                              }}
+                            />
+                          ) : null}
+
+                          {/* Fallback placeholder - always present but hidden when image loads */}
+                          <div
+                            className={`w-full h-full flex items-center justify-center text-gray-400 bg-gray-200 ${
+                              course.image ? "hidden" : ""
+                            }`}
+                            style={{ display: course.image ? "none" : "flex" }}
                           >
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                          </svg>
-                        </button>
-                      </div>
-                      {/* Category */}
-                      <p className="text-sm text-gray-500 font-medium">
-                        {course.category}
-                      </p>
-
-                      {/* Title */}
-                      <h3 className="text-lg font-bold text-gray-900 group-hover:text-green-600 transition-colors line-clamp-2">
-                        {course.title}
-                      </h3>
-
-                      {/* Price Section */}
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-green-600 font-bold text-xl">
-                            ₹
-                            {discountedPrice &&
-                            typeof discountedPrice === "number"
-                              ? discountedPrice.toLocaleString()
-                              : "0"}
-                          </p>
-                          {displayDiscount > 0 && (
-                            <p className="text-gray-400 text-sm line-through">
-                              ₹
-                              {(() => {
-                                const originalPrice =
-                                  course.pricing?.recordedSession?.price ||
-                                  course.price;
-                                return originalPrice &&
-                                  typeof originalPrice === "number"
-                                  ? originalPrice.toLocaleString()
-                                  : "0";
-                              })()}
-                            </p>
-                          )}
+                            <div className="text-center">
+                              <div className="text-4xl mb-2">📚</div>
+                              <div className="text-sm">Course Image</div>
+                            </div>
+                          </div>
                         </div>
 
-                        {/* Enroll Button */}
-                        <button
-                          className="bg-gray-900 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            // Use course slug if available, otherwise generate from title
-                            const courseId =
-                              course.slug ||
-                              course.title
-                                .toLowerCase()
-                                .replace(/\s+/g, "-")
-                                .replace(/[^\w-]/g, "");
-                            router.push(`/course/${courseId}`);
-                          }}
-                        >
-                          Enroll Now →
-                        </button>
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </>
-          )}
-        </main>
+                        {/* Content Section */}
+                        <div className="p-5 space-y-3 relative">
+                          {/* Wishlist Star */}
+                          <div
+                            className="absolute top-3 right-3 cursor-pointer z-10"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleLike(course._id);
+                            }}
+                          >
+                            <button
+                              className={`w-8 h-8 flex items-center justify-center transition-all duration-300 hover:scale-110 ${
+                                wishlistCourseIds.includes(course._id)
+                                  ? "text-yellow-500"
+                                  : "text-yellow-500 hover:text-yellow-600"
+                              }`}
+                              title={
+                                wishlistCourseIds.includes(course._id)
+                                  ? "Remove from Wishlist"
+                                  : "Add to Wishlist"
+                              }
+                            >
+                              <svg
+                                className="w-5 h-5"
+                                fill={
+                                  wishlistCourseIds.includes(course._id)
+                                    ? "currentColor"
+                                    : "none"
+                                }
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                              </svg>
+                            </button>
+                          </div>
+                          {/* Category */}
+                          <p className="text-sm text-gray-500 font-medium">
+                            {course.category}
+                          </p>
+
+                          {/* Title */}
+                          <h3 className="text-lg font-bold text-gray-900 group-hover:text-green-600 transition-colors line-clamp-2">
+                            {course.title}
+                          </h3>
+
+                          {/* Price Section */}
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-green-600 font-bold text-xl">
+                                ₹
+                                {discountedPrice &&
+                                typeof discountedPrice === "number"
+                                  ? discountedPrice.toLocaleString()
+                                  : "0"}
+                              </p>
+                              {displayDiscount > 0 && (
+                                <p className="text-gray-400 text-sm line-through">
+                                  ₹
+                                  {(() => {
+                                    const originalPrice =
+                                      course.pricing?.recordedSession?.price ||
+                                      course.price;
+                                    return originalPrice &&
+                                      typeof originalPrice === "number"
+                                      ? originalPrice.toLocaleString()
+                                      : "0";
+                                  })()}
+                                </p>
+                              )}
+                            </div>
+
+                            {/* Enroll Button */}
+                            <button
+                              className="bg-gray-900 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                // Use course slug if available, otherwise generate from title
+                                const courseId =
+                                  course.slug ||
+                                  course.title
+                                    .toLowerCase()
+                                    .replace(/\s+/g, "-")
+                                    .replace(/[^\w-]/g, "");
+                                router.push(`/course/${courseId}`);
+                              }}
+                            >
+                              Enroll Now →
+                            </button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </>
+              )}
+            </div>
+          </main>
+        </div>
       </div>
     </section>
   );
