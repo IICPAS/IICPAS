@@ -1,5 +1,5 @@
 import React from "react";
-import SpecialOffersTab from "./SpecialOffers/SpecialOffersTab";
+import SpecialOffersTab from "./SpecialOffersTab";
 
 const SpecialOffersPage = () => {
   const handleBack = () => {
