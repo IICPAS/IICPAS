@@ -11,8 +11,6 @@ import wishlistEventManager from "../../utils/wishlistEventManager";
 import GroupCourseCard from "../components/GroupCourseCard";
 import SimpleScrabbleGame from "./SimpleScrabbleGame";
 
-const skillLevels = ["Executive Level", "Professional Level"];
-
 export default function CoursePage() {
   const router = useRouter();
   const [allCourses, setAllCourses] = useState([]);
@@ -20,7 +18,7 @@ export default function CoursePage() {
   const [groupPricing, setGroupPricing] = useState([]);
   const [search, setSearch] = useState("");
   const [selectedCategories, setSelectedCategories] = useState([]);
-  const [selectedLevels, setSelectedLevels] = useState([]);
+  const [selectedGroupNames, setSelectedGroupNames] = useState([]);
   const [student, setStudent] = useState(null);
   const [wishlistCourseIds, setWishlistCourseIds] = useState([]);
   const [loading, setLoading] = useState(false); // Initialize as false to prevent initial blinking
@@ -152,16 +150,16 @@ export default function CoursePage() {
     const matchesCategory =
       selectedCategories.length === 0 ||
       selectedCategories.includes(course.category);
-    const matchesLevel =
-      selectedLevels.length === 0 || selectedLevels.includes(course.level);
-    return matchesSearch && matchesCategory && matchesLevel;
+    return matchesSearch && matchesCategory;
   });
 
-  // Filter group pricing based on selected levels
+  // Filter group pricing based on selected group names
   const filteredGroupPricing = groupPricing.filter((group) => {
-    // Group pricing should only be shown if a level filter is explicitly selected
-    // AND the group's level matches one of the selected levels
-    return selectedLevels.length > 0 && selectedLevels.includes(group.level);
+    // Show all groups if no group name filter is selected, otherwise filter by selected group names
+    return (
+      selectedGroupNames.length === 0 ||
+      selectedGroupNames.includes(group.groupName)
+    );
   });
 
   // Handlers
@@ -172,9 +170,11 @@ export default function CoursePage() {
         : [...prev, categoryName]
     );
 
-  const toggleLevel = (lvl) =>
-    setSelectedLevels((prev) =>
-      prev.includes(lvl) ? prev.filter((l) => l !== lvl) : [...prev, lvl]
+  const toggleGroupName = (groupName) =>
+    setSelectedGroupNames((prev) =>
+      prev.includes(groupName)
+        ? prev.filter((g) => g !== groupName)
+        : [...prev, groupName]
     );
 
   const toggleLike = async (courseId) => {
@@ -268,10 +268,10 @@ export default function CoursePage() {
 
   return (
     <section className="bg-gradient-to-br from-[#f5fcfa] via-white to-[#eef7fc] min-h-screen text-[#0b1224]">
-      <div className="max-w-7xl mx-auto px-4 py-16">
-        <div className="flex flex-col lg:flex-row gap-8 items-start">
+      <div className="max-w-7xl mx-auto px-2 py-16">
+        <div className="flex flex-col lg:flex-row gap-6 items-start">
           {/* Sidebar */}
-          <aside className="w-full lg:w-1/5 lg:sticky lg:top-24 lg:max-h-screen lg:overflow-y-auto lg:pr-2">
+          <aside className="w-full lg:w-1/3 lg:sticky lg:top-24 lg:max-h-screen lg:overflow-y-auto">
             <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
               <h2 className="text-xl font-bold mb-4">Find by Course Name</h2>
               <div className="relative">
@@ -308,21 +308,25 @@ export default function CoursePage() {
             </div>
 
             <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-              <h3 className="text-lg font-semibold mb-3">Skills Level</h3>
-              {skillLevels.map((level) => (
-                <label
-                  key={level}
-                  className="flex items-center space-x-2 text-sm mb-2"
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedLevels.includes(level)}
-                    onChange={() => toggleLevel(level)}
-                    className="accent-green-600"
-                  />
-                  <span>{level}</span>
-                </label>
-              ))}
+              <h3 className="text-lg font-semibold mb-3">Group Names</h3>
+              {groupPricing.length === 0 ? (
+                <div className="text-gray-400 text-sm">No groups available</div>
+              ) : (
+                groupPricing.map((group) => (
+                  <label
+                    key={group._id}
+                    className="flex items-center space-x-2 text-sm mb-2"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedGroupNames.includes(group.groupName)}
+                      onChange={() => toggleGroupName(group.groupName)}
+                      className="accent-green-600"
+                    />
+                    <span>{group.groupName}</span>
+                  </label>
+                ))
+              )}
             </div>
 
             {/* Mini Scrabble Game */}
@@ -330,19 +334,28 @@ export default function CoursePage() {
           </aside>
 
           {/* Course Cards */}
-          <main className="w-full lg:w-4/5">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 auto-rows-max">
-              {/* Group Pricing Cards */}
-              {filteredGroupPricing.map((group, index) => (
-                <GroupCourseCard
-                  key={group._id || `group-${index}`}
-                  groupPricing={group}
-                  index={index}
-                />
-              ))}
+          <main className="w-full lg:w-2/3">
+            {/* Group Pricing Cards - Show only when group names are selected */}
+            {selectedGroupNames.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-2 gap-6 auto-rows-max">
+                {filteredGroupPricing.length === 0 && (
+                  <div className="col-span-2 text-gray-500 text-center py-12">
+                    No groups found for selected group names.
+                  </div>
+                )}
+                {filteredGroupPricing.map((group, index) => (
+                  <GroupCourseCard
+                    key={group._id || `group-${index}`}
+                    groupPricing={group}
+                    index={index}
+                  />
+                ))}
+              </div>
+            )}
 
-              {/* Individual Course Cards - Show initially, hide when level filter is selected */}
-              {selectedLevels.length === 0 && (
+            {/* Individual Course Cards - Show when no group names are selected */}
+            {selectedGroupNames.length === 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 auto-rows-max">
                 <>
                   {filteredCourses.length === 0 && (
                     <div className="col-span-3 text-gray-500 text-center py-12">
@@ -530,8 +543,8 @@ export default function CoursePage() {
                     );
                   })}
                 </>
-              )}
-            </div>
+              </div>
+            )}
           </main>
         </div>
       </div>

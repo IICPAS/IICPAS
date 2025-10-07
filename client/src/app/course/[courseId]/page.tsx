@@ -650,7 +650,7 @@ export default function CourseDetailPage({
     yPosition += 6;
     doc.text(`Level: ${course.level || "N/A"}`, 20, yPosition);
     yPosition += 6;
-    doc.text(`Price: ₹${course.price || "N/A"}`, 20, yPosition);
+    doc.text(`Price: Rs. ${course.price || "N/A"}`, 20, yPosition);
     yPosition += 6;
     doc.text(`Rating: ${course.rating || "N/A"}/5`, 20, yPosition);
     yPosition += 15;
