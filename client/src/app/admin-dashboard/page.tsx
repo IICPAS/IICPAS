@@ -30,6 +30,7 @@ import "react-modern-drawer/dist/index.css";
 import TopicsManager from "./Topic/TopicsManager";
 import GuidesTab from "./GuidesTab";
 import KitsTab from "./KitsTab";
+import SpecialOffersTab from "./SpecialOffers/SpecialOffersTab";
 
 import {
   FaBars,
@@ -165,6 +166,11 @@ const ALL_MODULES = [
     id: "center-location",
     label: "Center Locations",
     icon: <FaMapMarkerAlt />,
+  },
+  {
+    id: "special-offers",
+    label: "Special Offers",
+    icon: <FaStar />,
   },
 ];
 
@@ -715,6 +721,8 @@ function AdminDashboardContent() {
               Center location management functionality will be implemented here.
             </p>
           </div>
+        ) : activeTab === "special-offers" ? (
+          <SpecialOffersTab onBack={handleBack} />
         ) : activeTab === "messages" ? (
           <MessagesTab />
         ) : activeTab === "chat-conversations" ? (
@@ -816,13 +824,16 @@ function AdminDashboardContent() {
         ) : activeTab === "profile" ? (
           <AdminProfileTab />
         ) : activeTab === "" ? (
-          <div className="text-center py-20">
-            <h2 className="text-2xl font-bold text-gray-600 mb-4">
-              Welcome to Admin Dashboard
-            </h2>
-            <p className="text-gray-500">
-              Please select a module from the sidebar to get started.
-            </p>
+          <div>
+            {/* Welcome Message */}
+            <div className="text-center py-20">
+              <h2 className="text-2xl font-bold text-gray-600 mb-4">
+                Welcome to Admin Dashboard
+              </h2>
+              <p className="text-gray-500">
+                Please select a module from the sidebar to get started.
+              </p>
+            </div>
           </div>
         ) : (
           <div className="text-center py-20">

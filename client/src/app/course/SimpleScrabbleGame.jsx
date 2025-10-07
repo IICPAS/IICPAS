@@ -178,28 +178,28 @@ const SimpleScrabbleGame = () => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 mb-6"
+      className="bg-white rounded-xl shadow-lg border border-gray-100 p-3 mb-4"
     >
       {/* Game Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Zap className="w-4 h-4 text-blue-500" />
-          <h3 className="text-lg font-bold text-gray-900">Mini Scrabble</h3>
+          <h3 className="text-base font-bold text-gray-900">Mini Scrabble</h3>
         </div>
-        <div className="text-sm text-gray-600">
+        <div className="text-xs text-gray-600">
           Score: <span className="font-bold text-green-600">{score}</span>
         </div>
       </div>
 
       {/* Game Board */}
-      <div className="mb-4">
+      <div className="mb-3">
         <div className="grid grid-cols-5 gap-1 mb-2">
           {board.map((row, rowIndex) =>
             row.map((cell, colIndex) => (
               <motion.button
                 key={`${rowIndex}-${colIndex}`}
                 onClick={() => handleBoardClick(rowIndex, colIndex)}
-                className={`w-8 h-8 text-xs font-bold rounded border-2 transition-all duration-200 ${
+                className={`w-6 h-6 text-xs font-bold rounded border-2 transition-all duration-200 ${
                   cell === ""
                     ? "bg-gray-100 border-gray-300 hover:border-blue-400 hover:bg-blue-50"
                     : "bg-green-100 border-green-400 text-green-800"
@@ -224,10 +224,10 @@ const SimpleScrabbleGame = () => {
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: "auto" }}
-          className="bg-blue-50 border border-blue-200 rounded-lg p-2 mb-3"
+          className="bg-blue-50 border border-blue-200 rounded-lg p-2 mb-2"
         >
           <div className="text-center">
-            <div className="text-sm text-blue-800">
+            <div className="text-xs text-blue-800">
               Word: <span className="font-bold">{currentWord}</span>
             </div>
             <div className="text-xs text-blue-600">Points: {wordScore}</div>
@@ -236,9 +236,9 @@ const SimpleScrabbleGame = () => {
       )}
 
       {/* Player Tiles */}
-      <div className="mb-4">
+      <div className="mb-3">
         <div className="flex items-center justify-between mb-2">
-          <h4 className="text-sm font-semibold text-gray-700">Your Tiles</h4>
+          <h4 className="text-xs font-semibold text-gray-700">Your Tiles</h4>
           <button
             onClick={shuffleTiles}
             className="text-xs text-gray-500 hover:text-gray-700 transition-colors"
@@ -252,7 +252,7 @@ const SimpleScrabbleGame = () => {
             <motion.button
               key={index}
               onClick={() => handleTileClick(index)}
-              className={`w-6 h-6 text-xs font-bold rounded border-2 transition-all duration-200 ${
+              className={`w-5 h-5 text-xs font-bold rounded border-2 transition-all duration-200 ${
                 selectedTile === index
                   ? "bg-blue-500 border-blue-600 text-white"
                   : "bg-yellow-100 border-yellow-400 text-yellow-800 hover:bg-yellow-200"
@@ -267,11 +267,11 @@ const SimpleScrabbleGame = () => {
       </div>
 
       {/* Game Controls */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center mb-2">
         <div className="text-xs text-gray-500">Click tile → Click board</div>
         <button
           onClick={resetGame}
-          className="inline-flex items-center gap-1 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-300 hover:shadow-md"
+          className="inline-flex items-center gap-1 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-2 py-1 rounded-lg text-xs font-semibold transition-all duration-300 hover:shadow-md"
         >
           <RotateCcw className="w-3 h-3" />
           New Game
@@ -279,7 +279,7 @@ const SimpleScrabbleGame = () => {
       </div>
 
       {/* Instructions */}
-      <div className="mt-3 text-xs text-gray-500 bg-gray-50 rounded-lg p-2">
+      <div className="text-xs text-gray-500 bg-gray-50 rounded-lg p-2">
         <div className="font-semibold mb-1">How to Play:</div>
         <div>1. Click a tile from your rack</div>
         <div>2. Click an empty board space to place it</div>
