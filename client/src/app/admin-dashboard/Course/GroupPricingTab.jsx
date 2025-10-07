@@ -345,10 +345,6 @@ const GroupPricingTab = ({ onBack }) => {
     }
   };
 
-  const getCoursesForLevel = (level) => {
-    return courses.filter((course) => course.level === level);
-  };
-
   const getSelectedCourseNames = (courseIds) => {
     if (!courseIds || !Array.isArray(courseIds)) return [];
 
@@ -600,12 +596,11 @@ const GroupPricingTab = ({ onBack }) => {
                   </Box>
                 )}
               >
-                {formData.level &&
-                  getCoursesForLevel(formData.level).map((course) => (
-                    <MenuItem key={course._id} value={course._id}>
-                      {course.title}
-                    </MenuItem>
-                  ))}
+                {courses.map((course) => (
+                  <MenuItem key={course._id} value={course._id}>
+                    {course.title}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
 
