@@ -7,7 +7,7 @@ import Chatbot from "@/components/Chatbot";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import CookiePolicyPopup from "@/components/CookiePolicyPopup";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
-import SpecialOfferFlashCard from "@/components/SpecialOfferFlashCard";
+import SpecialOfferWrapper from "@/components/SpecialOfferWrapper";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -27,7 +27,7 @@ export default function RootLayout({
       <body className={inter.className} suppressHydrationWarning={true}>
         <AuthProvider>
           {/* Special Offers Flash Cards - Show on all pages as modal */}
-          <SpecialOfferFlashCard location="all" maxCards={1} />
+          <SpecialOfferWrapper location="all" maxCards={1} />
           {children}
         </AuthProvider>
         <Toaster
