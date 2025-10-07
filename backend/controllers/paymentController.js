@@ -152,7 +152,7 @@ export const sendInvoiceEmail = async (req, res) => {
             <p style="margin: 5px 0;"><strong>Course:</strong> ${
               payment.course.title
             }</p>
-            <p style="margin: 5px 0;"><strong>Amount:</strong> ₹${
+            <p style="margin: 5px 0;"><strong>Amount:</strong> Rs. ${
               payment.amount
             }</p>
             <p style="margin: 5px 0;"><strong>Transaction ID:</strong> ${

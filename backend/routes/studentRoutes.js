@@ -152,7 +152,7 @@ const generateReceiptPDF = async (student, course, receiptId) => {
   doc.text(`Name: ${student.name}`);
   doc.text(`Email: ${student.email}`);
   doc.text(`Course: ${course.title}`);
-  doc.text(`Amount Paid: ₹${course.price}`);
+  doc.text(`Amount Paid: Rs. ${course.price}`);
   doc.text(`Date: ${new Date().toLocaleString()}`);
 
   doc.end();
@@ -1255,12 +1255,10 @@ router.post("/enroll-recorded-session-center/:id", async (req, res) => {
       student.enrolledRecordedSessionsCenter.includes(courseId)
     ) {
       console.log("Student already enrolled in course + center:", courseId);
-      return res
-        .status(400)
-        .json({
-          message:
-            "Student is already enrolled in this recorded session + center",
-        });
+      return res.status(400).json({
+        message:
+          "Student is already enrolled in this recorded session + center",
+      });
     }
 
     // Add course to student's enrolled recorded sessions + center
@@ -1345,11 +1343,9 @@ router.post("/enroll-live-session-center/:id", async (req, res) => {
         "Student already enrolled in live session + center:",
         courseId
       );
-      return res
-        .status(400)
-        .json({
-          message: "Student is already enrolled in this live session + center",
-        });
+      return res.status(400).json({
+        message: "Student is already enrolled in this live session + center",
+      });
     }
 
     // Add course to student's enrolled live sessions + center

@@ -216,7 +216,7 @@ export default function GroupPackageDetailPage({
     yPosition += 6;
     doc.text(`Courses: ${groupPackage.courseIds?.length || 0}`, 20, yPosition);
     yPosition += 6;
-    doc.text(`Price: ₹${groupPackage.groupPrice || "N/A"}`, 20, yPosition);
+    doc.text(`Price: Rs. ${groupPackage.groupPrice || "N/A"}`, 20, yPosition);
     yPosition += 6;
     doc.text(`Rating: ${groupPackage.averageRating || "N/A"}/5`, 20, yPosition);
     yPosition += 15;
@@ -248,7 +248,7 @@ export default function GroupPackageDetailPage({
         yPosition += 5;
         doc.text(`Level: ${course.level}`, 30, yPosition);
         yPosition += 5;
-        doc.text(`Price: ₹${course.price}`, 30, yPosition);
+        doc.text(`Price: Rs. ${course.price}`, 30, yPosition);
         yPosition += 10;
       });
     }

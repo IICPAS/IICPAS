@@ -268,10 +268,10 @@ export default function CoursePage() {
 
   return (
     <section className="bg-gradient-to-br from-[#f5fcfa] via-white to-[#eef7fc] min-h-screen text-[#0b1224]">
-      <div className="max-w-7xl mx-auto px-4 py-16">
-        <div className="flex flex-col lg:flex-row gap-8 items-start">
+      <div className="max-w-7xl mx-auto px-2 py-16">
+        <div className="flex flex-col lg:flex-row gap-6 items-start">
           {/* Sidebar */}
-          <aside className="w-full lg:w-1/3 lg:sticky lg:top-24 lg:max-h-screen lg:overflow-y-auto lg:pr-2">
+          <aside className="w-full lg:w-1/3 lg:sticky lg:top-24 lg:max-h-screen lg:overflow-y-auto">
             <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
               <h2 className="text-xl font-bold mb-4">Find by Course Name</h2>
               <div className="relative">
@@ -335,18 +335,27 @@ export default function CoursePage() {
 
           {/* Course Cards */}
           <main className="w-full lg:w-2/3">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 auto-rows-max">
-              {/* Group Pricing Cards */}
-              {filteredGroupPricing.map((group, index) => (
-                <GroupCourseCard
-                  key={group._id || `group-${index}`}
-                  groupPricing={group}
-                  index={index}
-                />
-              ))}
+            {/* Group Pricing Cards - Show only when group names are selected */}
+            {selectedGroupNames.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-2 gap-6 auto-rows-max">
+                {filteredGroupPricing.length === 0 && (
+                  <div className="col-span-2 text-gray-500 text-center py-12">
+                    No groups found for selected group names.
+                  </div>
+                )}
+                {filteredGroupPricing.map((group, index) => (
+                  <GroupCourseCard
+                    key={group._id || `group-${index}`}
+                    groupPricing={group}
+                    index={index}
+                  />
+                ))}
+              </div>
+            )}
 
-              {/* Individual Course Cards - Show initially, hide when group name filter is selected */}
-              {selectedGroupNames.length === 0 && (
+            {/* Individual Course Cards - Show when no group names are selected */}
+            {selectedGroupNames.length === 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 auto-rows-max">
                 <>
                   {filteredCourses.length === 0 && (
                     <div className="col-span-3 text-gray-500 text-center py-12">
@@ -534,8 +543,8 @@ export default function CoursePage() {
                     );
                   })}
                 </>
-              )}
-            </div>
+              </div>
+            )}
           </main>
         </div>
       </div>

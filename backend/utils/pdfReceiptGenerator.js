@@ -150,7 +150,7 @@ export const generateReceiptPDF = async (transaction) => {
           </div>
           <div class="info-row">
             <span class="label">Payment Amount:</span>
-            <span class="value amount">₹${
+            <span class="value amount">Rs. ${
               transaction.amount?.toLocaleString("en-IN") || "N/A"
             }</span>
           </div>

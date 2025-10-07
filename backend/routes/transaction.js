@@ -284,7 +284,7 @@ async function sendPaymentNotificationEmail(transaction, status) {
           Your payment for the course "${transaction.course.title}" has been verified successfully.
           
           Transaction Details:
-          - Amount: ₹${transaction.amount}
+          - Amount: Rs. ${transaction.amount}
           - UTR Number: ${transaction.utrNumber}
           - Course: ${transaction.course.title}
           - Status: Verified
@@ -302,7 +302,7 @@ async function sendPaymentNotificationEmail(transaction, status) {
           Unfortunately, your payment for the course "${transaction.course.title}" could not be verified.
           
           Transaction Details:
-          - Amount: ₹${transaction.amount}
+          - Amount: Rs. ${transaction.amount}
           - UTR Number: ${transaction.utrNumber}
           - Course: ${transaction.course.title}
           - Status: Rejected
