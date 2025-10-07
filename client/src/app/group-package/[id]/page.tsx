@@ -312,6 +312,72 @@ export default function GroupPackageDetailPage({
                   </span>
                 </div>
 
+                {/* Prominent Pricing Highlight */}
+                {(() => {
+                  const prices = [
+                    groupPackage.pricing?.recordedSession?.finalPrice,
+                    groupPackage.pricing?.liveSession?.finalPrice,
+                    groupPackage.pricing?.recordedSessionCenter?.finalPrice,
+                    groupPackage.pricing?.liveSessionCenter?.finalPrice,
+                  ].filter((price) => price && typeof price === "number");
+
+                  const smallestPrice =
+                    prices.length > 0
+                      ? Math.min(...prices)
+                      : groupPackage.groupPrice;
+                  const originalPrice = groupPackage.groupPrice;
+                  const hasDiscount = smallestPrice < originalPrice;
+
+                  return (
+                    <div className="bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-200 rounded-lg p-4 mb-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="flex items-center gap-3">
+                            <span className="text-sm text-gray-600">
+                              Starting from:
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-3xl font-bold text-green-600">
+                                ₹{smallestPrice?.toLocaleString() || "0"}
+                              </span>
+                              {hasDiscount && (
+                                <span className="bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full">
+                                  SAVE ₹
+                                  {(
+                                    originalPrice - smallestPrice
+                                  ).toLocaleString()}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          {hasDiscount && (
+                            <div className="mt-1">
+                              <span className="text-lg text-gray-500 line-through">
+                                ₹{originalPrice?.toLocaleString() || "0"}
+                              </span>
+                              <span className="text-sm text-gray-600 ml-2">
+                                Original Price
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="text-right">
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <span>📚</span>
+                            <span>
+                              {groupPackage.courseIds?.length || 0} courses
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
+                            <span>📅</span>
+                            <span>3 weeks</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 {/* Description */}
                 <div
                   className="text-sm text-gray-700 leading-relaxed mb-8"

@@ -71,8 +71,9 @@ export default function GroupCourseCard({ groupPricing, index }) {
         </div>
 
         {/* Course Count Badge */}
-        <div className="absolute top-3 right-3 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-          Courses: {groupPricing.courseIds?.length || 0}
+        <div className="absolute top-3 right-3 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
+          <span>📚</span>
+          <span>{groupPricing.courseIds?.length || 0}</span>
         </div>
       </div>
 
@@ -94,27 +95,70 @@ export default function GroupCourseCard({ groupPricing, index }) {
         )}
 
         {/* Course Count Display */}
-        <div className="flex items-center space-x-2 text-sm text-gray-600">
-          <span className="font-medium">Courses:</span>
-          <span>{groupPricing.courseIds?.length || 0}</span>
+        <div className="flex items-center justify-between text-sm text-gray-600">
+          <div className="flex items-center gap-2">
+            <span className="flex items-center gap-1">
+              <span>📚</span>
+              <span className="font-medium">
+                {groupPricing.courseIds?.length || 0} courses
+              </span>
+            </span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span>📅</span>
+            <span className="font-medium">3 weeks</span>
+          </div>
         </div>
 
         {/* Price Section */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-4">
           <div>
-            <p className="text-green-600 font-bold text-xl">
-              ₹
-              {groupPricing.groupPrice &&
-              typeof groupPricing.groupPrice === "number"
-                ? groupPricing.groupPrice.toLocaleString()
-                : "0"}
-            </p>
-            <p className="text-gray-400 text-xs">Complete package price</p>
+            {/* Calculate smallest price from all pricing options */}
+            {(() => {
+              const prices = [
+                groupPricing.pricing?.recordedSession?.finalPrice,
+                groupPricing.pricing?.liveSession?.finalPrice,
+                groupPricing.pricing?.recordedSessionCenter?.finalPrice,
+                groupPricing.pricing?.liveSessionCenter?.finalPrice,
+              ].filter((price) => price && typeof price === "number");
+
+              const smallestPrice =
+                prices.length > 0
+                  ? Math.min(...prices)
+                  : groupPricing.groupPrice;
+              const originalPrice = groupPricing.groupPrice;
+              const hasDiscount = smallestPrice < originalPrice;
+
+              return (
+                <div>
+                  <div className="flex items-center gap-2">
+                    <p className="text-green-600 font-bold text-xl">
+                      ₹{smallestPrice?.toLocaleString() || "0"}
+                    </p>
+                    {hasDiscount && (
+                      <span className="bg-red-100 text-red-600 text-xs font-bold px-2 py-1 rounded">
+                        SAVE ₹{(originalPrice - smallestPrice).toLocaleString()}
+                      </span>
+                    )}
+                  </div>
+                  {hasDiscount && (
+                    <p className="text-gray-400 text-sm line-through">
+                      ₹{originalPrice?.toLocaleString() || "0"}
+                    </p>
+                  )}
+                  <p className="text-gray-400 text-xs">
+                    {hasDiscount
+                      ? "Limited time offer!"
+                      : "Complete package price"}
+                  </p>
+                </div>
+              );
+            })()}
           </div>
 
           {/* Enroll Button */}
           <button
-            className="bg-gray-900 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+            className="bg-gray-900 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex-shrink-0"
             onClick={(e) => {
               e.stopPropagation();
               // Navigate to group package detail page for enrollment

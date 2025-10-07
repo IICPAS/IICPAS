@@ -26,8 +26,8 @@ export default function CoursePage() {
   const [loading, setLoading] = useState(false); // Initialize as false to prevent initial blinking
 
   // Define API_BASE at component level
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
-
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080";
+  console.log("API_BASE", process.env.NEXT_PUBLIC_API_URL);
   // Fetch data
   useEffect(() => {
     const fetchData = async () => {
@@ -37,9 +37,9 @@ export default function CoursePage() {
         // Fetch courses, categories, and group pricing in parallel
         const [coursesResponse, categoriesResponse, groupPricingResponse] =
           await Promise.allSettled([
-            axios.get(`${API_BASE}/api/courses`),
-            axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/categories`),
-            axios.get(`${API_BASE}/api/group-pricing`),
+            axios.get(`${API_BASE}/courses`),
+            axios.get(`${API_BASE}/categories`),
+            axios.get(`${API_BASE}/group-pricing`),
           ]);
 
         // Update courses if API call succeeded
@@ -61,11 +61,21 @@ export default function CoursePage() {
         }
 
         // Update group pricing if API call succeeded
+        console.log("Group pricing response:", groupPricingResponse);
         if (
           groupPricingResponse.status === "fulfilled" &&
           groupPricingResponse.value.data?.length > 0
         ) {
+          console.log(
+            "Setting group pricing data:",
+            groupPricingResponse.value.data
+          );
           setGroupPricing(groupPricingResponse.value.data);
+        } else {
+          console.log(
+            "Group pricing response failed or empty:",
+            groupPricingResponse
+          );
         }
       } catch (error) {
         console.log("API calls failed:", error);
@@ -261,7 +271,7 @@ export default function CoursePage() {
       <div className="max-w-7xl mx-auto px-4 py-16">
         <div className="flex flex-col lg:flex-row gap-8 items-start">
           {/* Sidebar */}
-          <aside className="w-full lg:w-1/4 lg:sticky lg:top-24 lg:max-h-screen lg:overflow-y-auto lg:pr-2">
+          <aside className="w-full lg:w-1/5 lg:sticky lg:top-24 lg:max-h-screen lg:overflow-y-auto lg:pr-2">
             <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
               <h2 className="text-xl font-bold mb-4">Find by Course Name</h2>
               <div className="relative">
@@ -320,8 +330,8 @@ export default function CoursePage() {
           </aside>
 
           {/* Course Cards */}
-          <main className="w-full lg:w-3/4">
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 auto-rows-max">
+          <main className="w-full lg:w-4/5">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-6 auto-rows-max">
               {/* Group Pricing Cards */}
               {filteredGroupPricing.map((group, index) => (
                 <GroupCourseCard
@@ -335,7 +345,7 @@ export default function CoursePage() {
               {selectedLevels.length === 0 && (
                 <>
                   {filteredCourses.length === 0 && (
-                    <div className="col-span-3 text-gray-500 text-center py-12">
+                    <div className="col-span-2 text-gray-500 text-center py-12">
                       No courses found.
                     </div>
                   )}
@@ -382,10 +392,10 @@ export default function CoursePage() {
                                 course.image.startsWith("http")
                                   ? course.image
                                   : course.image.startsWith("/uploads/")
-                                  ? `${API_BASE}${course.image}`
+                                  ? `${process.env.NEXT_PUBLIC_API_URL}${course.image}`
                                   : course.image.startsWith("/")
                                   ? course.image
-                                  : `${API_BASE}${course.image}`
+                                  : `${process.env.NEXT_PUBLIC_API_URL}${course.image}`
                               }
                               alt={course.title}
                               fill

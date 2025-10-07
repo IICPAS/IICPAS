@@ -91,7 +91,7 @@ export default function Header() {
         setIsAdmin(false);
       }
 
-      const res = await axios.get(`${API}/v1/students/isstudent`, {
+      const res = await axios.get(`${API}/api/v1/students/isstudent`, {
         withCredentials: true,
       });
       const studentData = res.data.student;
@@ -108,15 +108,18 @@ export default function Header() {
       setStudent(studentData);
 
       console.log("Making cart request for student ID:", studentData._id);
-      const cartRes = await axios.get(`${API}/v1/cart/get/${studentData._id}`, {
-        withCredentials: true,
-      });
+      const cartRes = await axios.get(
+        `${API}/api/v1/cart/get/${studentData._id}`,
+        {
+          withCredentials: true,
+        }
+      );
       console.log("Header cart response:", cartRes.data);
       const cartItems = cartRes.data.cart || [];
       console.log("Cart items from API:", cartItems);
 
       const wishlistRes = await axios.get(
-        `${API}/v1/students/get-wishlist/${studentData._id}`,
+        `${API}/api/v1/students/get-wishlist/${studentData._id}`,
         { withCredentials: true }
       );
       const wishlistIDs = wishlistRes.data.wishlist || [];
@@ -235,7 +238,7 @@ export default function Header() {
 
   const handleLogout = async () => {
     try {
-      await axios.get(`${API}/v1/students/logout`, {
+      await axios.get(`${API}/api/v1/students/logout`, {
         withCredentials: true,
       });
     } catch (error) {
@@ -256,7 +259,7 @@ export default function Header() {
     }
     try {
       const response = await axios.post(
-        `${API}/v1/cart/add/${student._id}`,
+        `${API}/api/v1/cart/add/${student._id}`,
         { courseId, sessionType },
         { withCredentials: true }
       );
@@ -282,7 +285,7 @@ export default function Header() {
   const handleRemoveFromCart = async (courseId, sessionType = "recorded") => {
     try {
       const response = await axios.delete(
-        `${API}/v1/cart/remove/${student._id}`,
+        `${API}/api/v1/cart/remove/${student._id}`,
         {
           data: { courseId, sessionType },
           withCredentials: true,
@@ -310,7 +313,7 @@ export default function Header() {
   const handleRemoveFromWishlist = async (courseId) => {
     try {
       const response = await axios.delete(
-        `${API}/v1/students/remove-from-wishlist/${student._id}/${courseId}`,
+        `${API}/api/v1/students/remove-from-wishlist/${student._id}/${courseId}`,
         { withCredentials: true }
       );
       if (response.data.success) {
@@ -339,7 +342,7 @@ export default function Header() {
     }
     try {
       const response = await axios.post(
-        `${API}/v1/students/add-to-wishlist/${student._id}`,
+        `${API}/api/v1/students/add-to-wishlist/${student._id}`,
         { courseId },
         { withCredentials: true }
       );
@@ -386,9 +389,9 @@ export default function Header() {
           {/* Logo */}
           <Link
             href="/"
-            className="text-xl font-bold text-[#003057] flex-shrink-0"
+            className="text-sm font-bold text-[#003057] flex-shrink-0"
           >
-            <img src="/images/logo.png" alt="IICPA Logo" className="h-12" />
+            <img src="/images/logo.png" alt="IICPA Logo" className="h-10" />
           </Link>
 
           {/* Navigation - Desktop Only */}
@@ -396,10 +399,10 @@ export default function Header() {
             {navLinks.map((item) =>
               item.children ? (
                 <div key={item.name} className="relative group">
-                  <button className="flex items-center gap-1 py-1.5 px-2 hover:text-green-600 hover:bg-green-50 rounded-md">
+                  <button className="flex items-center gap-1 py-1.5 px-2 hover:text-green-600 hover:bg-green-50 rounded-md text-sm">
                     {item.name}
                     <svg
-                      className="w-3 h-3 transition-transform group-hover:rotate-180"
+                      className="w-2.5 h-2.5 transition-transform group-hover:rotate-180"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -417,7 +420,7 @@ export default function Header() {
                       <Link
                         key={child.name}
                         href={child.href}
-                        className="block px-3 py-2 text-sm hover:bg-green-50"
+                        className="block px-3 py-2 text-xs hover:bg-green-50"
                       >
                         {child.name}
                       </Link>
@@ -428,7 +431,7 @@ export default function Header() {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`py-1.5 px-2 hover:text-green-600 hover:bg-green-50 rounded-md ${
+                  className={`py-1.5 px-2 hover:text-green-600 hover:bg-green-50 rounded-md text-sm ${
                     pathname === item.href ? "text-green-600 bg-green-50" : ""
                   }`}
                 >
@@ -445,9 +448,9 @@ export default function Header() {
               onClick={() => setCartDrawer(true)}
               className="relative p-2 text-gray-700 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors"
             >
-              <ShoppingCart size={20} />
+              <ShoppingCart size={18} />
               {cartCourses.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-green-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                <span className="absolute -top-1 -right-1 bg-green-600 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center font-medium">
                   {(() => {
                     const count = cartCourses.reduce(
                       (total, item) => total + (item.quantity || 1),
@@ -468,7 +471,7 @@ export default function Header() {
             {isAdmin ? (
               <Link
                 href="/admin-dashboard"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-sm"
               >
                 Admin Dashboard
               </Link>
@@ -476,33 +479,33 @@ export default function Header() {
               <div className="relative profile-dropdown">
                 <button
                   onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-                  className="flex items-center gap-2 px-3 py-2 text-gray-700 hover:text-green-600 hover:bg-green-50 rounded-md"
+                  className="flex items-center gap-2 px-3 py-2 text-gray-700 hover:text-green-600 hover:bg-green-50 rounded-md text-sm"
                 >
-                  <User size={20} />
+                  <User size={18} />
                   <span>{student.name}</span>
-                  <ChevronDown size={16} />
+                  <ChevronDown size={14} />
                 </button>
                 {showProfileDropdown && (
                   <div className="absolute right-0 mt-2 w-48 bg-white shadow-xl rounded-lg border">
                     <Link
                       href="/student-dashboard"
-                      className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-green-50"
+                      className="flex items-center gap-2 px-4 py-2 text-xs hover:bg-green-50"
                     >
-                      <Settings size={16} />
+                      <Settings size={14} />
                       Dashboard
                     </Link>
                     <Link
                       href="/student-dashboard"
-                      className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-green-50"
+                      className="flex items-center gap-2 px-4 py-2 text-xs hover:bg-green-50"
                     >
-                      <BookOpen size={16} />
+                      <BookOpen size={14} />
                       My Courses
                     </Link>
                     <button
                       onClick={handleLogout}
-                      className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left"
+                      className="flex items-center gap-2 px-4 py-2 text-xs text-red-600 hover:bg-red-50 w-full text-left"
                     >
-                      <LogOut size={16} />
+                      <LogOut size={14} />
                       Logout
                     </button>
                   </div>
@@ -511,7 +514,7 @@ export default function Header() {
             ) : (
               <Link
                 href="/student-login"
-                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
+                className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-sm"
               >
                 Digital Hub
               </Link>
@@ -523,7 +526,7 @@ export default function Header() {
             className="lg:hidden text-gray-800 p-1.5 hover:bg-gray-100 rounded-md flex-shrink-0 ml-2"
             onClick={() => setDrawerOpen(true)}
           >
-            <Menu size={22} />
+            <Menu size={20} />
           </button>
         </div>
       </header>
@@ -539,12 +542,12 @@ export default function Header() {
         <div className="h-full bg-white flex flex-col">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b">
-            <img src="/images/logo.png" alt="IICPA Logo" className="h-8" />
+            <img src="/images/logo.png" alt="IICPA Logo" className="h-6" />
             <button
               onClick={() => setDrawerOpen(false)}
               className="p-2 hover:bg-gray-100 rounded-md"
             >
-              <X size={20} />
+              <X size={18} />
             </button>
           </div>
 
@@ -553,7 +556,7 @@ export default function Header() {
             {navLinks.map((item) =>
               item.children ? (
                 <div key={item.name} className="mb-2">
-                  <div className="font-medium text-gray-700 py-2 px-3 bg-gray-50 rounded-md mb-1">
+                  <div className="font-medium text-gray-700 py-2 px-3 bg-gray-50 rounded-md mb-1 text-sm">
                     {item.name}
                   </div>
                   <div className="ml-4 space-y-1">
@@ -562,7 +565,7 @@ export default function Header() {
                         key={child.name}
                         href={child.href}
                         onClick={() => setDrawerOpen(false)}
-                        className="mobile-nav-item block text-sm text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-md"
+                        className="mobile-nav-item block text-xs text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-md"
                       >
                         {child.name}
                       </Link>
@@ -574,7 +577,7 @@ export default function Header() {
                   key={item.name}
                   href={item.href}
                   onClick={() => setDrawerOpen(false)}
-                  className={`mobile-nav-item block text-sm rounded-md mb-1 ${
+                  className={`mobile-nav-item block text-xs rounded-md mb-1 ${
                     pathname === item.href
                       ? "text-green-600 bg-green-50 font-medium"
                       : "text-gray-600 hover:text-green-600 hover:bg-green-50"
@@ -592,7 +595,7 @@ export default function Header() {
               <Link
                 href="/admin-dashboard"
                 onClick={() => setDrawerOpen(false)}
-                className="block w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-center"
+                className="block w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-center text-sm"
               >
                 Admin Dashboard
               </Link>
@@ -601,9 +604,9 @@ export default function Header() {
                 <Link
                   href="/student-dashboard"
                   onClick={() => setDrawerOpen(false)}
-                  className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md"
+                  className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md text-sm"
                 >
-                  <User size={18} />
+                  <User size={16} />
                   <span>{student.name}</span>
                 </Link>
                 <button
@@ -611,9 +614,9 @@ export default function Header() {
                     handleLogout();
                     setDrawerOpen(false);
                   }}
-                  className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-md w-full text-left"
+                  className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-md w-full text-left text-sm"
                 >
-                  <LogOut size={18} />
+                  <LogOut size={16} />
                   Logout
                 </button>
               </>
@@ -621,7 +624,7 @@ export default function Header() {
               <Link
                 href="/student-login"
                 onClick={() => setDrawerOpen(false)}
-                className="block w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-center"
+                className="block w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-center text-sm"
               >
                 Digital Hub
               </Link>
@@ -640,12 +643,12 @@ export default function Header() {
         <div className="h-full bg-white flex flex-col">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b">
-            <h2 className="text-lg font-semibold">Shopping Cart</h2>
+            <h2 className="text-base font-semibold">Shopping Cart</h2>
             <button
               onClick={() => setCartDrawer(false)}
               className="p-2 hover:bg-gray-100 rounded-md"
             >
-              <X size={20} />
+              <X size={18} />
             </button>
           </div>
 
@@ -654,10 +657,10 @@ export default function Header() {
             {cartCourses.length === 0 ? (
               <div className="text-center py-8">
                 <ShoppingCart
-                  size={48}
+                  size={40}
                   className="mx-auto text-gray-400 mb-4"
                 />
-                <p className="text-gray-500">Your cart is empty</p>
+                <p className="text-gray-500 text-sm">Your cart is empty</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -684,7 +687,7 @@ export default function Header() {
                         }}
                       />
                       <div className="flex-1">
-                        <h3 className="font-medium text-sm line-clamp-2">
+                        <h3 className="font-medium text-xs line-clamp-2">
                           {course.title}
                         </h3>
                         <p className="text-xs text-gray-500 mb-1">
@@ -693,11 +696,11 @@ export default function Header() {
                             : "Live Session"}
                         </p>
                         <div className="flex items-center gap-2">
-                          <p className="text-green-600 font-semibold text-sm">
+                          <p className="text-green-600 font-semibold text-xs">
                             ₹{course.price}
                           </p>
                           {course.quantity > 1 && (
-                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                            <span className="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded">
                               Qty: {course.quantity}
                             </span>
                           )}
@@ -709,7 +712,7 @@ export default function Header() {
                         }
                         className="p-1 hover:bg-gray-100 rounded"
                       >
-                        <Trash2 size={16} className="text-red-500" />
+                        <Trash2 size={14} className="text-red-500" />
                       </button>
                     </div>
                   </div>
@@ -722,8 +725,8 @@ export default function Header() {
           {cartCourses.length > 0 && (
             <div className="border-t p-4 space-y-3">
               <div className="flex justify-between items-center">
-                <span className="font-semibold">Total:</span>
-                <span className="text-green-600 font-bold">
+                <span className="font-semibold text-sm">Total:</span>
+                <span className="text-green-600 font-bold text-sm">
                   ₹
                   {cartCourses.reduce(
                     (sum, course) =>
@@ -734,7 +737,7 @@ export default function Header() {
               </div>
               <button
                 onClick={handleBuyNowFromCart}
-                className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-medium"
+                className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-medium text-sm"
               >
                 Proceed to Checkout
               </button>
