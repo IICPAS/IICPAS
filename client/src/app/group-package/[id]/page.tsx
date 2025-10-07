@@ -217,8 +217,6 @@ export default function GroupPackageDetailPage({
     doc.text(`Courses: ${groupPackage.courseIds?.length || 0}`, 20, yPosition);
     yPosition += 6;
     doc.text(`Price: Rs. ${groupPackage.groupPrice || "N/A"}`, 20, yPosition);
-    yPosition += 6;
-    doc.text(`Rating: ${groupPackage.averageRating || "N/A"}/5`, 20, yPosition);
     yPosition += 15;
 
     // Add courses content
