@@ -12,32 +12,33 @@ export default function NewsletterSection() {
   const [newsletterData, setNewsletterData] = useState({
     badge: {
       text: "Stay Updated",
-      icon: "FaEnvelope"
+      icon: "FaEnvelope",
     },
     title: {
       part1: "Never Miss Our",
-      part2: "Latest Updates"
+      part2: "Latest Updates",
     },
-    description: "Get exclusive access to new courses, special offers, and educational content delivered straight to your inbox. Join thousands of learners who stay ahead.",
+    description:
+      "Get exclusive access to new courses, special offers, and educational content delivered straight to your inbox. Join thousands of learners who stay ahead.",
     features: [
       { text: "Weekly Updates", icon: "FaCheckCircle" },
       { text: "Exclusive Content", icon: "FaCheckCircle" },
-      { text: "No Spam", icon: "FaCheckCircle" }
+      { text: "No Spam", icon: "FaCheckCircle" },
     ],
     form: {
       placeholder: "Enter your email address",
       buttonText: "Subscribe",
       successText: "Done!",
       buttonIcon: "FaRocket",
-      successIcon: "FaCheckCircle"
+      successIcon: "FaCheckCircle",
     },
     stats: {
       rating: "4.9/5 Rating",
-      subscribers: "10,000+ Subscribers"
+      subscribers: "10,000+ Subscribers",
     },
     image: {
       src: "/images/student.png",
-      alt: "Newsletter Student"
+      alt: "Newsletter Student",
     },
     colors: {
       badge: "text-[#3cd664]",
@@ -47,8 +48,8 @@ export default function NewsletterSection() {
       description: "text-gray-600",
       background: "bg-gradient-to-br from-[#f8fffe] via-[#f0fdf4] to-[#ecfdf5]",
       button: "from-[#3cd664] to-[#22c55e]",
-      buttonHover: "from-[#22c55e] to-[#16a34a]"
-    }
+      buttonHover: "from-[#22c55e] to-[#16a34a]",
+    },
   });
 
   useEffect(() => {
@@ -57,7 +58,8 @@ export default function NewsletterSection() {
 
   const fetchNewsletterData = async () => {
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const API_BASE =
+        process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
       const response = await fetch(`${API_BASE}/newsletter-section`);
       if (response.ok) {
         const data = await response.json();
@@ -71,11 +73,13 @@ export default function NewsletterSection() {
   };
 
   const getIconComponent = (iconName: string) => {
-    const iconMap: { [key: string]: React.ComponentType<{ className?: string }> } = {
+    const iconMap: {
+      [key: string]: React.ComponentType<{ className?: string }>;
+    } = {
       FaEnvelope: FaEnvelope,
       FaRocket: FaRocket,
       FaCheckCircle: FaCheckCircle,
-      FaStar: FaStar
+      FaStar: FaStar,
     };
     return iconMap[iconName] || FaEnvelope;
   };
@@ -85,20 +89,24 @@ export default function NewsletterSection() {
     if (email) {
       try {
         // API call to subscribe to newsletter
-        const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
-        const response = await fetch(`${API_BASE}/newsletter-subscriptions/subscribe`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ 
-            email,
-            source: "newsletter"
-          }),
-        });
-        
+        const API_BASE =
+          process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+        const response = await fetch(
+          `${API_BASE}/newsletter-subscriptions/subscribe`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email,
+              source: "newsletter",
+            }),
+          }
+        );
+
         const data = await response.json();
-        
+
         if (response.ok && data.success) {
           setIsSubscribed(true);
           setTimeout(() => {
@@ -125,14 +133,15 @@ export default function NewsletterSection() {
     );
   }
 
-
   return (
     <section className="relative py-12 px-4 md:px-8 lg:px-12 xl:px-16 mt-12">
       {/* Background Elements */}
-      <div className={`absolute inset-0 ${newsletterData.colors.background}`}></div>
+      <div
+        className={`absolute inset-0 ${newsletterData.colors.background}`}
+      ></div>
       <div className="absolute top-6 left-6 w-24 h-24 bg-[#3cd664]/10 rounded-full blur-2xl"></div>
       <div className="absolute bottom-6 right-6 w-32 h-32 bg-[#162955]/10 rounded-full blur-2xl"></div>
-      
+
       <div className="max-w-6xl mx-auto relative z-10">
         <motion.div
           className="relative bg-gradient-to-br from-white via-white to-[#f8fffe] rounded-2xl shadow-xl border border-gray-100 overflow-hidden"
@@ -143,7 +152,7 @@ export default function NewsletterSection() {
           {/* Decorative Elements */}
           <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-[#3cd664] via-[#22c55e] to-[#16a34a]"></div>
           <div className="absolute top-4 right-4 w-16 h-16 bg-gradient-to-br from-[#3cd664]/20 to-[#162955]/20 rounded-full blur-lg"></div>
-          
+
           <div className="flex flex-col lg:flex-row items-center justify-between gap-8 p-6 md:p-8 lg:p-10">
             {/* Left Content */}
             <div className="w-full lg:w-1/2 space-y-6">
@@ -154,7 +163,10 @@ export default function NewsletterSection() {
                 whileInView={{ x: 0, opacity: 1 }}
                 transition={{ delay: 0.01 }}
               >
-                {React.createElement(getIconComponent(newsletterData.badge.icon), { className: "w-3.5 h-3.5" })}
+                {React.createElement(
+                  getIconComponent(newsletterData.badge.icon),
+                  { className: "w-3.5 h-3.5" }
+                )}
                 {newsletterData.badge.text}
               </motion.div>
 
@@ -164,9 +176,13 @@ export default function NewsletterSection() {
                 whileInView={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.01 }}
               >
-                <h2 className={`text-3xl md:text-4xl lg:text-5xl font-bold ${newsletterData.colors.title} leading-tight`}>
+                <h2
+                  className={`text-3xl md:text-4xl lg:text-5xl font-bold ${newsletterData.colors.title} leading-tight`}
+                >
                   {newsletterData.title.part1}
-                  <span className={`block bg-gradient-to-r ${newsletterData.colors.titleAccent} bg-clip-text text-transparent`}>
+                  <span
+                    className={`block bg-gradient-to-r ${newsletterData.colors.titleAccent} bg-clip-text text-transparent`}
+                  >
                     {newsletterData.title.part2}
                   </span>
                 </h2>
@@ -190,8 +206,13 @@ export default function NewsletterSection() {
                 transition={{ delay: 0.01 }}
               >
                 {newsletterData.features.map((feature, index) => (
-                  <div key={index} className="flex items-center gap-2 bg-white/60 px-2.5 py-1.5 rounded-full text-xs font-medium text-gray-700">
-                    {React.createElement(getIconComponent(feature.icon), { className: "w-3 h-3 text-[#3cd664]" })}
+                  <div
+                    key={index}
+                    className="flex items-center gap-2 bg-white/60 px-2.5 py-1.5 rounded-full text-xs font-medium text-gray-700"
+                  >
+                    {React.createElement(getIconComponent(feature.icon), {
+                      className: "w-3 h-3 text-[#3cd664]",
+                    })}
                     {feature.text}
                   </div>
                 ))}
@@ -222,12 +243,18 @@ export default function NewsletterSection() {
                   >
                     {isSubscribed ? (
                       <>
-                        {React.createElement(getIconComponent(newsletterData.form.successIcon), { className: "w-3.5 h-3.5" })}
+                        {React.createElement(
+                          getIconComponent(newsletterData.form.successIcon),
+                          { className: "w-3.5 h-3.5" }
+                        )}
                         {newsletterData.form.successText}
                       </>
                     ) : (
                       <>
-                        {React.createElement(getIconComponent(newsletterData.form.buttonIcon), { className: "w-3.5 h-3.5" })}
+                        {React.createElement(
+                          getIconComponent(newsletterData.form.buttonIcon),
+                          { className: "w-3.5 h-3.5" }
+                        )}
                         {newsletterData.form.buttonText}
                       </>
                     )}
@@ -260,47 +287,49 @@ export default function NewsletterSection() {
               <div className="relative">
                 <motion.div
                   className="relative w-64 h-64 lg:w-80 lg:h-80"
-                  animate={{ 
+                  animate={{
                     y: [0, -8, 0],
-                    rotate: [0, 1.5, 0, -1.5, 0]
+                    rotate: [0, 1.5, 0, -1.5, 0],
                   }}
-                  transition={{ 
+                  transition={{
                     duration: 6,
-                    ease: "easeInOut"
+                    ease: "easeInOut",
                   }}
                 >
                   <Image
-                    src={newsletterData.image.src}
+                    src={
+                      "https://media.istockphoto.com/id/2105516746/photo/confident-student-holding-books-in-library.jpg?s=612x612&w=0&k=20&c=fOsYfzTKXdcLbaup4KEuOVWYeL7T6JTWjSG7QNE2VuE="
+                    }
                     alt={newsletterData.image.alt}
                     fill
                     className="object-contain drop-shadow-xl"
                   />
-                  
+
                   {/* Floating Elements */}
                   <motion.div
                     className="absolute -top-3 -right-3 w-12 h-12 bg-gradient-to-br from-[#3cd664] to-[#22c55e] rounded-full flex items-center justify-center text-white text-lg shadow-lg"
-                    animate={{ 
+                    animate={{
                       scale: [1, 1.1, 1],
-                      rotate: [0, 10, 0]
+                      rotate: [0, 10, 0],
                     }}
-                    transition={{ 
+                    transition={{
                       duration: 3,
-                      ease: "easeInOut"
+                      ease: "easeInOut",
                     }}
                   >
                     📚
                   </motion.div>
-                  
+
                   <motion.div
                     className="absolute -bottom-3 -left-3 w-10 h-10 bg-gradient-to-br from-[#162955] to-[#1e40af] rounded-full flex items-center justify-center text-white text-sm shadow-lg"
-                    animate={{ 
+                    animate={{
                       scale: [1, 1.2, 1],
-                      rotate: [0, -15, 0]
+                      rotate: [0, -15, 0],
                     }}
-                    transition={{ 
+                    transition={{
                       duration: 4,
                       ease: "easeInOut",
-                      delay: 1
+                      delay: 1,
                     }}
                   >
                     ✨

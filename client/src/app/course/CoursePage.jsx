@@ -308,7 +308,9 @@ export default function CoursePage() {
             </div>
 
             <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-              <h3 className="text-lg font-semibold mb-3">Group Names</h3>
+              <h3 className="text-lg font-semibold mb-3">
+                Course Combinations
+              </h3>
               {groupPricing.length === 0 ? (
                 <div className="text-gray-400 text-sm">No groups available</div>
               ) : (

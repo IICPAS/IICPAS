@@ -23,6 +23,7 @@ import {
   EmojiEvents as TrophyIcon,
   Diamond as DiamondIcon,
 } from "@mui/icons-material";
+import { useRouter } from "next/navigation";
 import axios from "axios";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080";
@@ -32,6 +33,7 @@ const SpecialOfferFlashCard = ({
   maxCards = 3,
   onClose,
 }) => {
+  const router = useRouter();
   const [offers, setOffers] = useState([]);
   const [expandedCards, setExpandedCards] = useState({});
   const [loading, setLoading] = useState(true);
@@ -80,6 +82,13 @@ const SpecialOfferFlashCard = ({
     if (onClose) {
       onClose(offerId);
     }
+  };
+
+  const handleGetNowClick = (offerId) => {
+    // Close the modal first
+    handleCloseCard(offerId);
+    // Then navigate to courses page
+    router.push("/course");
   };
 
   const formatTimeRemaining = (expiryDate) => {
@@ -238,6 +247,7 @@ const SpecialOfferFlashCard = ({
 
                 {/* Get Now Button */}
                 <Box
+                  onClick={() => handleGetNowClick(offer._id)}
                   sx={{
                     backgroundColor: "#FF6B6B",
                     color: "white",

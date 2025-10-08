@@ -106,7 +106,8 @@ import EditDisclaimerPolicyTab from "./EditDisclaimerPolicyTab";
 import EditIICPAReviewTab from "./EditIICPAReviewTab";
 import TransactionsTab from "./TransactionsTab";
 
-// All available modules with their permissions
+// All available modules with their permissions (unused - replaced by NAVIGATION_GROUPS)
+/*
 const ALL_MODULES = [
   { id: "course-category", label: "Course Category", icon: <FaBook /> },
   { id: "course", label: "Course", icon: <FaLayerGroup /> },
@@ -173,8 +174,10 @@ const ALL_MODULES = [
     icon: <FaStar />,
   },
 ];
+*/
 
-// Website Settings modules
+// Website Settings modules (unused - replaced by NAVIGATION_GROUPS)
+/*
 const WEBSITE_SETTINGS_MODULES = [
   { id: "hero", label: "Hero Section", icon: <FaHome /> },
   { id: "why-iicpa", label: "WhyIICPA Section", icon: <FaStar /> },
@@ -210,48 +213,178 @@ const WEBSITE_SETTINGS_MODULES = [
   { id: "faq", label: "FAQ", icon: <FaUserTie /> },
   { id: "bulk-email", label: "Bulk Email", icon: <FaEnvelope /> },
 ];
+*/
+
+// Grouped navigation structure
+const NAVIGATION_GROUPS = [
+  {
+    id: "course-management",
+    label: "Course Management",
+    icon: <FaBook />,
+    items: [
+      {
+        id: "course-category",
+        label: "Course Category",
+        icon: <FaLayerGroup />,
+      },
+      { id: "course", label: "Course", icon: <FaBook /> },
+      { id: "course-display", label: "Course Display", icon: <FaEye /> },
+      { id: "topics", label: "Training Topics", icon: <FaBook /> },
+      { id: "guides", label: "Guides & Resources", icon: <FaFileAlt /> },
+      { id: "kits", label: "Kit Stock", icon: <FaBoxes /> },
+      {
+        id: "course-ratings",
+        label: "Course Rating Approval",
+        icon: <FaStar />,
+      },
+    ],
+  },
+  {
+    id: "session-management",
+    label: "Session Management",
+    icon: <FaCalendarAlt />,
+    items: [
+      { id: "live-session", label: "Live Session", icon: <FaCalendarAlt /> },
+      { id: "revision-tests", label: "Revision Tests", icon: <FaSyncAlt /> },
+      { id: "calendar", label: "Calendar", icon: <FaCalendarAlt /> },
+    ],
+  },
+  {
+    id: "user-management",
+    label: "User Management",
+    icon: <FaUsers />,
+    items: [
+      { id: "students", label: "Students", icon: <FaUserGraduate /> },
+      { id: "staff", label: "Staff Management", icon: <FaUsers /> },
+      { id: "colleges", label: "Colleges", icon: <FaUniversity /> },
+      { id: "companies", label: "Companies", icon: <FaStarOfDavid /> },
+      { id: "team", label: "Our Team", icon: <FaUsers /> },
+    ],
+  },
+  {
+    id: "content-management",
+    label: "Content Management",
+    icon: <FaFileAlt />,
+    items: [
+      { id: "blogs", label: "Blogs", icon: <FaBlogger /> },
+      { id: "testimonials", label: "Testimonials", icon: <FaQuoteRight /> },
+      { id: "faq", label: "FAQ", icon: <FaUserTie /> },
+      { id: "about-us", label: "About Us Section", icon: <FaBook /> },
+      {
+        id: "about-us-section",
+        label: "About Us Section Management",
+        icon: <FaUserTie />,
+      },
+      { id: "why-iicpa", label: "WhyIICPA Section", icon: <FaStar /> },
+    ],
+  },
+  {
+    id: "website-settings",
+    label: "Website Settings",
+    icon: <FaCog />,
+    items: [
+      { id: "hero", label: "Hero Section", icon: <FaHome /> },
+      { id: "contact", label: "Contact Section", icon: <FaEnvelope /> },
+      {
+        id: "contact-info",
+        label: "Contact Information",
+        icon: <FaMapMarkerAlt />,
+      },
+      { id: "footer", label: "Footer Section", icon: <FaList /> },
+      {
+        id: "yellow-stats-strip",
+        label: "Stats Strip Section",
+        icon: <FaChartBar />,
+      },
+      {
+        id: "newsletter-section",
+        label: "Newsletter Section",
+        icon: <FaEnvelope />,
+      },
+      { id: "alert", label: "Alert", icon: <FaBell /> },
+      { id: "demo-digital-hub", label: "Demo Digital Hub", icon: <FaBook /> },
+      {
+        id: "center-location",
+        label: "Center Locations",
+        icon: <FaMapMarkerAlt />,
+      },
+    ],
+  },
+  {
+    id: "communication",
+    label: "Communication",
+    icon: <FaEnvelope />,
+    items: [
+      { id: "enquiries", label: "Enquiries", icon: <FaEnvelope /> },
+      { id: "messages", label: "Messages", icon: <FaComments /> },
+      { id: "bulk-email", label: "Bulk Email", icon: <FaEnvelope /> },
+      {
+        id: "newsletter-subscriptions",
+        label: "Newsletter Subscriptions",
+        icon: <FaEnvelope />,
+      },
+      {
+        id: "chat-conversations",
+        label: "Chat Conversations",
+        icon: <FaComments />,
+      },
+      { id: "chatbot-settings", label: "Chatbot Settings", icon: <FaRobot /> },
+    ],
+  },
+  {
+    id: "system-management",
+    label: "System Management",
+    icon: <FaShieldAlt />,
+    items: [
+      { id: "payments", label: "Payments", icon: <FaCreditCard /> },
+      { id: "transactions", label: "Transactions", icon: <FaCreditCard /> },
+      { id: "tickets", label: "Tickets", icon: <FaComments /> },
+      { id: "audit", label: "IP Logs", icon: <FaShieldAlt /> },
+      { id: "ip-whitelist", label: "IP Whitelisting", icon: <FaShieldAlt /> },
+      { id: "meta", label: "Manage Metatags", icon: <FaTags /> },
+      { id: "special-offers", label: "Special Offers", icon: <FaStar /> },
+      { id: "support", label: "Support Requests", icon: <FaEnvelope /> },
+    ],
+  },
+];
 
 function AdminDashboardContent() {
   const { user, canAccess, logout } = useAuth();
   const [activeTab, setActiveTab] = useState("");
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [websiteSettingsOpen, setWebsiteSettingsOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [hoveredTab, setHoveredTab] = useState<string | null>(null);
-  const [hoveredPosition, setHoveredPosition] = useState({ x: 0, y: 0 });
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(
+    {
+      "course-management": true,
+      "session-management": false,
+      "user-management": false,
+      "content-management": false,
+      "website-settings": false,
+      communication: false,
+      "system-management": false,
+    }
+  );
   const router = useRouter();
-
-  // Filter modules based on user permissions
-  const getAccessibleModules = () => {
-    if (!user) return [];
-
-    // Admin has access to all modules
-    if (user.role === "Admin") return ALL_MODULES;
-
-    // For other users, filter based on permissions
-    return ALL_MODULES.filter((module) => canAccess(module.id));
-  };
-
-  // Filter website settings modules based on permissions
-  const getAccessibleWebsiteSettings = () => {
-    if (!user) return [];
-
-    // Admin has access to all website settings
-    if (user.role === "Admin") return WEBSITE_SETTINGS_MODULES;
-
-    // Filter based on permissions
-    return WEBSITE_SETTINGS_MODULES.filter((module) => canAccess(module.id));
-  };
-
-  const accessibleModules = getAccessibleModules();
-  const accessibleWebsiteSettings = getAccessibleWebsiteSettings();
 
   // Set default active tab to first accessible module only if no tab is selected
   useEffect(() => {
-    if (activeTab === "" && accessibleModules.length > 0) {
-      setActiveTab(accessibleModules[0].id);
+    if (activeTab === "") {
+      // Find the first accessible item from the first expanded group
+      const firstExpandedGroup = NAVIGATION_GROUPS.find(
+        (group) => expandedGroups[group.id]
+      );
+      if (firstExpandedGroup) {
+        const firstAccessibleItem = firstExpandedGroup.items.find((item) => {
+          if (!user) return false;
+          if (user.role === "Admin") return true;
+          return canAccess(item.id);
+        });
+        if (firstAccessibleItem) {
+          setActiveTab(firstAccessibleItem.id);
+        }
+      }
     }
-  }, [accessibleModules, activeTab]);
+  }, [activeTab, user, expandedGroups, canAccess]);
 
   const handleLogout = async () => {
     await logout();
@@ -262,18 +395,11 @@ function AdminDashboardContent() {
     setActiveTab("");
   };
 
-  const handleTabClick = (tabId: string) => {
-    setActiveTab(tabId);
-    setHoveredTab(null);
-  };
-
-  const handleTabHover = (tabId: string, event: React.MouseEvent) => {
-    setHoveredTab(tabId);
-    const rect = event.currentTarget.getBoundingClientRect();
-    setHoveredPosition({
-      x: rect.right + 10,
-      y: rect.top + rect.height / 2,
-    });
+  const toggleGroup = (groupId: string) => {
+    setExpandedGroups((prev) => ({
+      ...prev,
+      [groupId]: !prev[groupId],
+    }));
   };
 
   // SIDEBAR: scrollable, hidden scrollbar
@@ -354,46 +480,31 @@ function AdminDashboardContent() {
         )}
       </div>
       <nav className="flex-1 overflow-y-auto px-3 custom-scrollbar">
-        {/* Accessible main modules */}
-        {accessibleModules.slice(0, 3).map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => !isMobile && handleTabClick(tab.id)}
-            onMouseEnter={(e) => (isMobile ? null : handleTabHover(tab.id, e))}
-            onMouseLeave={() => (isMobile ? null : setHoveredTab(null))}
-            className={`flex items-center ${
-              sidebarCollapsed && !isMobile
-                ? "justify-center px-2"
-                : "gap-3 px-4"
-            } py-3 rounded-lg w-full text-left mb-2 transition-all duration-200 ${
-              activeTab === tab.id
-                ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-md"
-                : "hover:bg-blue-50 text-gray-700 hover:text-blue-700"
-            }`}
-            title={sidebarCollapsed && !isMobile ? tab.label : ""}
-          >
-            <span
-              className={`text-lg ${
-                activeTab === tab.id ? "text-white" : "text-blue-500"
-              }`}
-            >
-              {tab.icon}
-            </span>
-            {(!sidebarCollapsed || isMobile) && (
-              <span className="font-medium">{tab.label}</span>
-            )}
-          </button>
-        ))}
+        {/* Grouped Navigation */}
+        {NAVIGATION_GROUPS.map((group) => {
+          // Filter group items based on user permissions
+          const accessibleGroupItems = group.items.filter((item) => {
+            if (!user) return false;
+            if (user.role === "Admin") return true;
+            return canAccess(item.id);
+          });
 
-        {/* Website Settings Dropdown - Position 4 */}
-        {accessibleWebsiteSettings.length > 0 &&
-          (!sidebarCollapsed || isMobile) && (
-            <div className="mb-2">
+          // Skip group if no accessible items
+          if (accessibleGroupItems.length === 0) return null;
+
+          const isGroupExpanded = expandedGroups[group.id];
+          const hasActiveItem = accessibleGroupItems.some(
+            (item) => activeTab === item.id
+          );
+
+          return (
+            <div key={group.id} className="mb-2">
+              {/* Group Header */}
               <button
                 onClick={() => {
-                  if (!isMobile) setWebsiteSettingsOpen(!websiteSettingsOpen);
+                  if (!isMobile) toggleGroup(group.id);
                   if (isMobile) {
-                    setActiveTab("website-settings");
+                    setActiveTab(group.items[0].id);
                     setDrawerOpen(false);
                   }
                 }}
@@ -402,11 +513,11 @@ function AdminDashboardContent() {
                     ? "justify-center px-2"
                     : "justify-between gap-3 px-4"
                 } py-3 rounded-lg w-full text-left transition-all duration-200 ${
-                  accessibleWebsiteSettings.some((tab) => activeTab === tab.id)
+                  hasActiveItem
                     ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-md"
                     : "hover:bg-blue-50 text-gray-700 hover:text-blue-700"
                 }`}
-                title={sidebarCollapsed && !isMobile ? "Website Settings" : ""}
+                title={sidebarCollapsed && !isMobile ? group.label : ""}
               >
                 <div
                   className={`flex items-center ${
@@ -415,153 +526,63 @@ function AdminDashboardContent() {
                 >
                   <span
                     className={`text-lg ${
-                      accessibleWebsiteSettings.some(
-                        (tab) => activeTab === tab.id
-                      )
-                        ? "text-white"
-                        : "text-blue-500"
+                      hasActiveItem ? "text-white" : "text-blue-500"
                     }`}
                   >
-                    <FaCog />
+                    {group.icon}
                   </span>
-                  {!sidebarCollapsed && (
-                    <span className="font-medium">Website Settings</span>
+                  {(!sidebarCollapsed || isMobile) && (
+                    <span className="font-medium">{group.label}</span>
                   )}
                 </div>
-                {!sidebarCollapsed && (
+                {(!sidebarCollapsed || isMobile) && (
                   <span
                     className={`text-sm transition-transform duration-200 ${
-                      accessibleWebsiteSettings.some(
-                        (tab) => activeTab === tab.id
-                      )
-                        ? "text-white"
-                        : "text-blue-500"
+                      hasActiveItem ? "text-white" : "text-blue-500"
                     }`}
                   >
-                    {websiteSettingsOpen ? (
-                      <FaChevronDown />
-                    ) : (
-                      <FaChevronRight />
-                    )}
+                    {isGroupExpanded ? <FaChevronDown /> : <FaChevronRight />}
                   </span>
                 )}
               </button>
 
-              {/* Dropdown content */}
-              {(!sidebarCollapsed || isMobile) && websiteSettingsOpen && (
+              {/* Group Items */}
+              {(!sidebarCollapsed || isMobile) && isGroupExpanded && (
                 <div className="ml-6 mt-2 space-y-1">
-                  {accessibleWebsiteSettings.map((tab) => (
+                  {accessibleGroupItems.map((item) => (
                     <button
-                      key={tab.id}
+                      key={item.id}
                       onClick={() => {
-                        setActiveTab(tab.id);
+                        setActiveTab(item.id);
                         if (isMobile) setDrawerOpen(false);
                       }}
                       className={`flex items-center gap-3 px-4 py-2 rounded-lg w-full text-left transition-all duration-200 ${
-                        activeTab === tab.id
+                        activeTab === item.id
                           ? "bg-gradient-to-r from-blue-400 to-blue-500 text-white font-semibold shadow-md"
                           : "hover:bg-blue-50 text-gray-600 hover:text-blue-600"
                       }`}
                     >
                       <span
                         className={`text-sm ${
-                          activeTab === tab.id ? "text-white" : "text-blue-400"
+                          activeTab === item.id ? "text-white" : "text-blue-400"
                         }`}
                       >
-                        {tab.icon}
+                        {item.icon}
                       </span>
-                      <span className="font-medium text-sm">{tab.label}</span>
+                      <span className="font-medium text-sm">{item.label}</span>
                     </button>
                   ))}
                 </div>
               )}
             </div>
-          )}
-
-        {/* Website Settings Icon Only when collapsed */}
-        {accessibleWebsiteSettings.length > 0 &&
-          sidebarCollapsed &&
-          !isMobile && (
-            <button
-              onClick={() => setActiveTab("website-settings")}
-              className={`flex items-center justify-center px-2 py-3 rounded-lg w-full mb-2 transition-all duration-200 ${
-                accessibleWebsiteSettings.some((tab) => activeTab === tab.id)
-                  ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-md"
-                  : "hover:bg-blue-50 text-gray-700 hover:text-blue-700"
-              }`}
-              title="Website Settings"
-            >
-              <span
-                className={`text-lg ${
-                  accessibleWebsiteSettings.some((tab) => activeTab === tab.id)
-                    ? "text-white"
-                    : "text-blue-500"
-                }`}
-              >
-                <FaCog />
-              </span>
-            </button>
-          )}
-
-        {/* Remaining accessible modules */}
-        {accessibleModules.slice(3).map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() =>
-              !isMobile
-                ? handleTabClick(tab.id)
-                : (() => {
-                    setActiveTab(tab.id);
-                    setDrawerOpen(false);
-                  })()
-            }
-            onMouseEnter={(e) => (isMobile ? null : handleTabHover(tab.id, e))}
-            onMouseLeave={() => (isMobile ? null : setHoveredTab(null))}
-            className={`flex items-center ${
-              sidebarCollapsed && !isMobile
-                ? "justify-center px-2"
-                : "gap-3 px-4"
-            } py-3 rounded-lg w-full text-left mb-2 transition-all duration-200 ${
-              activeTab === tab.id
-                ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-md"
-                : "hover:bg-blue-50 text-gray-700 hover:text-blue-700"
-            }`}
-            title={sidebarCollapsed && !isMobile ? tab.label : ""}
-          >
-            <span
-              className={`text-lg ${
-                activeTab === tab.id ? "text-white" : "text-blue-500"
-              }`}
-            >
-              {tab.icon}
-            </span>
-            {(!sidebarCollapsed || isMobile) && (
-              <span className="font-medium">{tab.label}</span>
-            )}
-          </button>
-        ))}
+          );
+        })}
       </nav>
     </div>
   );
 
   return (
     <div className="bg-gray-50">
-      {/* Tooltip for collapsed sidebar items */}
-      {hoveredTab && sidebarCollapsed && (
-        <div
-          className="fixed bg-gray-800 text-white px-3 py-2 rounded-lg shadow-lg z-50 text-sm"
-          style={{
-            left: `${hoveredPosition.x}px`,
-            top: `${hoveredPosition.y - 20}px`,
-          }}
-        >
-          {ALL_MODULES.find((module) => module.id === hoveredTab)?.label ||
-            WEBSITE_SETTINGS_MODULES.find((module) => module.id === hoveredTab)
-              ?.label ||
-            hoveredTab}
-          <div className="absolute -left-1 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-gray-800 rotate-45"></div>
-        </div>
-      )}
       {/* Sidebar - Desktop: fixed position, scrollable, hidden scrollbar */}
       <aside
         className={`hidden lg:block ${

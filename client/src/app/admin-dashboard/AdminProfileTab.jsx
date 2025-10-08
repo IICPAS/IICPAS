@@ -2,7 +2,29 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Upload, User, Save, Edit3, X, ChevronDown, ChevronRight, Eye, EyeOff, Globe, Linkedin, Twitter, Facebook, Instagram, MapPin, Calendar, Briefcase, GraduationCap, Phone, Mail, User as UserIcon } from "lucide-react";
+import {
+  Upload,
+  User,
+  Save,
+  Edit3,
+  X,
+  ChevronDown,
+  ChevronRight,
+  Eye,
+  EyeOff,
+  Globe,
+  Linkedin,
+  Twitter,
+  Facebook,
+  Instagram,
+  MapPin,
+  Calendar,
+  Briefcase,
+  GraduationCap,
+  Phone,
+  Mail,
+  User as UserIcon,
+} from "lucide-react";
 import { toast } from "react-hot-toast";
 
 export default function AdminProfileTab() {
@@ -13,16 +35,16 @@ export default function AdminProfileTab() {
   const [profileImage, setProfileImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [imageLoading, setImageLoading] = useState(false);
-  
+
   // Collapsible sections state
   const [expandedSections, setExpandedSections] = useState({
     personal: true,
     professional: true,
     social: false,
     preferences: false,
-    visibility: false
+    visibility: false,
   });
-  
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -35,7 +57,7 @@ export default function AdminProfileTab() {
       city: "",
       state: "",
       pincode: "",
-      country: "India"
+      country: "India",
     },
     dateOfBirth: "",
     gender: "",
@@ -50,7 +72,7 @@ export default function AdminProfileTab() {
       twitter: "",
       facebook: "",
       instagram: "",
-      website: ""
+      website: "",
     },
     preferences: {
       theme: "light",
@@ -59,8 +81,8 @@ export default function AdminProfileTab() {
       notifications: {
         email: true,
         sms: true,
-        push: true
-      }
+        push: true,
+      },
     },
     fieldVisibility: {
       phone: true,
@@ -74,8 +96,8 @@ export default function AdminProfileTab() {
       experience: true,
       qualifications: true,
       socialLinks: true,
-      bio: true
-    }
+      bio: true,
+    },
   });
 
   const [originalData, setOriginalData] = useState({});
@@ -95,7 +117,7 @@ export default function AdminProfileTab() {
           city: "",
           state: "",
           pincode: "",
-          country: "India"
+          country: "India",
         },
         dateOfBirth: user.dateOfBirth || "",
         gender: user.gender || "",
@@ -110,7 +132,7 @@ export default function AdminProfileTab() {
           twitter: "",
           facebook: "",
           instagram: "",
-          website: ""
+          website: "",
         },
         preferences: user.preferences || {
           theme: "light",
@@ -119,8 +141,8 @@ export default function AdminProfileTab() {
           notifications: {
             email: true,
             sms: true,
-            push: true
-          }
+            push: true,
+          },
         },
         fieldVisibility: user.fieldVisibility || {
           phone: true,
@@ -134,10 +156,10 @@ export default function AdminProfileTab() {
           experience: true,
           qualifications: true,
           socialLinks: true,
-          bio: true
-        }
+          bio: true,
+        },
       };
-      
+
       setFormData(userData);
       setOriginalData(userData);
       setLoading(false);
@@ -145,17 +167,17 @@ export default function AdminProfileTab() {
   }, [user]);
 
   const handleInputChange = useCallback((field, value) => {
-    setFormData(prev => {
-      if (field.includes('.')) {
-        const parts = field.split('.');
+    setFormData((prev) => {
+      if (field.includes(".")) {
+        const parts = field.split(".");
         if (parts.length === 2) {
           const [parent, child] = parts;
           return {
             ...prev,
             [parent]: {
               ...prev[parent],
-              [child]: value
-            }
+              [child]: value,
+            },
           };
         } else if (parts.length === 3) {
           const [parent, child, grandchild] = parts;
@@ -165,23 +187,23 @@ export default function AdminProfileTab() {
               ...prev[parent],
               [child]: {
                 ...prev[parent][child],
-                [grandchild]: value
-              }
-            }
+                [grandchild]: value,
+              },
+            },
           };
         }
       }
       return {
         ...prev,
-        [field]: value
+        [field]: value,
       };
     });
   }, []);
 
   const toggleSection = (section) => {
-    setExpandedSections(prev => ({
+    setExpandedSections((prev) => ({
       ...prev,
-      [section]: !prev[section]
+      [section]: !prev[section],
     }));
   };
 
@@ -211,16 +233,17 @@ export default function AdminProfileTab() {
       const uploadFormData = new FormData();
       uploadFormData.append("image", profileImage);
 
-      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const API_BASE =
+        process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
       const token = localStorage.getItem("adminToken");
-      
+
       if (!token) {
         toast.error("Authentication token not found. Please log in again.");
         return;
       }
 
       const response = await fetch(`${API_BASE}/upload/image`, {
-        method: 'POST',
+        method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -238,7 +261,7 @@ export default function AdminProfileTab() {
         toast.error("Failed to upload image");
       }
     } catch (error) {
-      console.error('Image upload error:', error);
+      console.error("Image upload error:", error);
       toast.error("Error uploading image");
     } finally {
       setImageLoading(false);
@@ -247,11 +270,12 @@ export default function AdminProfileTab() {
 
   const handleSave = async () => {
     setSaving(true);
-    
+
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const API_BASE =
+        process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
       const token = localStorage.getItem("adminToken");
-      
+
       if (!token) {
         toast.error("Authentication token not found. Please log in again.");
         return;
@@ -300,12 +324,12 @@ export default function AdminProfileTab() {
   };
 
   const toggleFieldVisibility = (field) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       fieldVisibility: {
         ...prev.fieldVisibility,
-        [field]: !prev.fieldVisibility[field]
-      }
+        [field]: !prev.fieldVisibility[field],
+      },
     }));
   };
 
@@ -317,7 +341,13 @@ export default function AdminProfileTab() {
     );
   }
 
-  const SectionHeader = ({ title, icon: Icon, isExpanded, onToggle, count }) => (
+  const SectionHeader = ({
+    title,
+    icon: Icon,
+    isExpanded,
+    onToggle,
+    count,
+  }) => (
     <button
       onClick={onToggle}
       className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
@@ -335,7 +365,13 @@ export default function AdminProfileTab() {
     </button>
   );
 
-  const FormField = ({ label, children, icon: Icon, visibilityField, isVisible }) => (
+  const FormField = ({
+    label,
+    children,
+    icon: Icon,
+    visibilityField,
+    isVisible,
+  }) => (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <label className="flex items-center gap-2 text-sm font-semibold text-gray-600">
@@ -346,9 +382,11 @@ export default function AdminProfileTab() {
           <button
             onClick={() => toggleFieldVisibility(visibilityField)}
             className={`p-1 rounded ${
-              isVisible ? 'text-green-600 bg-green-100' : 'text-gray-400 bg-gray-100'
+              isVisible
+                ? "text-green-600 bg-green-100"
+                : "text-gray-400 bg-gray-100"
             }`}
-            title={isVisible ? 'Visible to others' : 'Hidden from others'}
+            title={isVisible ? "Visible to others" : "Hidden from others"}
           >
             {isVisible ? <Eye size={14} /> : <EyeOff size={14} />}
           </button>
@@ -374,7 +412,9 @@ export default function AdminProfileTab() {
                 />
               ) : formData.image ? (
                 <img
-                  src={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}${formData.image}`}
+                  src={`${
+                    process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"
+                  }${formData.image}`}
                   alt="Profile"
                   className="w-full h-full object-cover"
                 />
@@ -417,10 +457,12 @@ export default function AdminProfileTab() {
               {formData.role}
             </p>
             {formData.department && (
-              <p className="text-xs text-gray-600 mt-1">{formData.department}</p>
+              <p className="text-xs text-gray-600 mt-1">
+                {formData.department}
+              </p>
             )}
           </div>
-          
+
           <button
             onClick={handleLogout}
             className="text-red-600 mt-4 border px-4 py-2 rounded-lg hover:bg-red-50"
@@ -435,12 +477,15 @@ export default function AdminProfileTab() {
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h3 className="text-2xl font-semibold text-blue-800 mb-2">Profile Information</h3>
+              <h3 className="text-2xl font-semibold text-blue-800 mb-2">
+                Profile Information
+              </h3>
               <p className="text-sm text-blue-600">
-                Manage your admin profile information. You can update all your details and control what others can see.
+                Manage your admin profile information. You can update all your
+                details and control what others can see.
               </p>
             </div>
-            
+
             <div className="flex gap-2">
               {editing ? (
                 <>
@@ -479,7 +524,7 @@ export default function AdminProfileTab() {
                 title="Personal Information"
                 icon={UserIcon}
                 isExpanded={expandedSections.personal}
-                onToggle={() => toggleSection('personal')}
+                onToggle={() => toggleSection("personal")}
                 count={6}
               />
               {expandedSections.personal && (
@@ -491,7 +536,9 @@ export default function AdminProfileTab() {
                           key="name-input"
                           type="text"
                           value={formData.name}
-                          onChange={(e) => handleInputChange("name", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("name", e.target.value)
+                          }
                           className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="Enter your full name"
                         />
@@ -508,7 +555,9 @@ export default function AdminProfileTab() {
                           key="email-input"
                           type="email"
                           value={formData.email}
-                          onChange={(e) => handleInputChange("email", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("email", e.target.value)
+                          }
                           className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="Enter your email"
                         />
@@ -519,8 +568,8 @@ export default function AdminProfileTab() {
                       )}
                     </FormField>
 
-                    <FormField 
-                      label="Phone Number" 
+                    <FormField
+                      label="Phone Number"
                       icon={Phone}
                       visibilityField="phone"
                       isVisible={formData.fieldVisibility.phone}
@@ -530,7 +579,9 @@ export default function AdminProfileTab() {
                           key="phone-input"
                           type="tel"
                           value={formData.phone}
-                          onChange={(e) => handleInputChange("phone", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("phone", e.target.value)
+                          }
                           className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="Enter your phone number"
                         />
@@ -546,7 +597,9 @@ export default function AdminProfileTab() {
                         <select
                           key="gender-select"
                           value={formData.gender}
-                          onChange={(e) => handleInputChange("gender", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("gender", e.target.value)
+                          }
                           className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
                           <option value="">Select Gender</option>
@@ -567,7 +620,9 @@ export default function AdminProfileTab() {
                           key="dateOfBirth-input"
                           type="date"
                           value={formData.dateOfBirth}
-                          onChange={(e) => handleInputChange("dateOfBirth", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("dateOfBirth", e.target.value)
+                          }
                           className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       ) : (
@@ -582,7 +637,9 @@ export default function AdminProfileTab() {
                         <select
                           key="role-select"
                           value={formData.role}
-                          onChange={(e) => handleInputChange("role", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("role", e.target.value)
+                          }
                           className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
                           <option value="superadmin">Super Admin</option>
@@ -602,7 +659,9 @@ export default function AdminProfileTab() {
                       <textarea
                         key="bio-textarea"
                         value={formData.bio}
-                        onChange={(e) => handleInputChange("bio", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("bio", e.target.value)
+                        }
                         className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="Tell us about yourself..."
                         rows={3}
@@ -627,7 +686,12 @@ export default function AdminProfileTab() {
                             key="address-street-input"
                             type="text"
                             value={formData.address.street}
-                            onChange={(e) => handleInputChange("address.street", e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange(
+                                "address.street",
+                                e.target.value
+                              )
+                            }
                             className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="Enter street address"
                           />
@@ -644,7 +708,9 @@ export default function AdminProfileTab() {
                             key="address-city-input"
                             type="text"
                             value={formData.address.city}
-                            onChange={(e) => handleInputChange("address.city", e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange("address.city", e.target.value)
+                            }
                             className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="Enter city"
                           />
@@ -661,7 +727,9 @@ export default function AdminProfileTab() {
                             key="address-state-input"
                             type="text"
                             value={formData.address.state}
-                            onChange={(e) => handleInputChange("address.state", e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange("address.state", e.target.value)
+                            }
                             className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="Enter state"
                           />
@@ -678,7 +746,12 @@ export default function AdminProfileTab() {
                             key="address-pincode-input"
                             type="text"
                             value={formData.address.pincode}
-                            onChange={(e) => handleInputChange("address.pincode", e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange(
+                                "address.pincode",
+                                e.target.value
+                              )
+                            }
                             className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="Enter pincode"
                           />
@@ -700,14 +773,14 @@ export default function AdminProfileTab() {
                 title="Professional Information"
                 icon={Briefcase}
                 isExpanded={expandedSections.professional}
-                onToggle={() => toggleSection('professional')}
+                onToggle={() => toggleSection("professional")}
                 count={6}
               />
               {expandedSections.professional && (
                 <div className="p-6 space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField 
-                      label="Department" 
+                    <FormField
+                      label="Department"
                       icon={Briefcase}
                       visibilityField="department"
                       isVisible={formData.fieldVisibility.department}
@@ -717,7 +790,9 @@ export default function AdminProfileTab() {
                           key="department-input"
                           type="text"
                           value={formData.department}
-                          onChange={(e) => handleInputChange("department", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("department", e.target.value)
+                          }
                           className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="Enter department"
                         />
@@ -728,8 +803,8 @@ export default function AdminProfileTab() {
                       )}
                     </FormField>
 
-                    <FormField 
-                      label="Designation" 
+                    <FormField
+                      label="Designation"
                       icon={Briefcase}
                       visibilityField="designation"
                       isVisible={formData.fieldVisibility.designation}
@@ -739,7 +814,9 @@ export default function AdminProfileTab() {
                           key="designation-input"
                           type="text"
                           value={formData.designation}
-                          onChange={(e) => handleInputChange("designation", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("designation", e.target.value)
+                          }
                           className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="Enter designation"
                         />
@@ -750,8 +827,8 @@ export default function AdminProfileTab() {
                       )}
                     </FormField>
 
-                    <FormField 
-                      label="Employee ID" 
+                    <FormField
+                      label="Employee ID"
                       icon={UserIcon}
                       visibilityField="employeeId"
                       isVisible={formData.fieldVisibility.employeeId}
@@ -760,7 +837,9 @@ export default function AdminProfileTab() {
                         <input
                           type="text"
                           value={formData.employeeId}
-                          onChange={(e) => handleInputChange("employeeId", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("employeeId", e.target.value)
+                          }
                           className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="Enter employee ID"
                         />
@@ -771,8 +850,8 @@ export default function AdminProfileTab() {
                       )}
                     </FormField>
 
-                    <FormField 
-                      label="Joining Date" 
+                    <FormField
+                      label="Joining Date"
                       icon={Calendar}
                       visibilityField="joiningDate"
                       isVisible={formData.fieldVisibility.joiningDate}
@@ -781,7 +860,9 @@ export default function AdminProfileTab() {
                         <input
                           type="date"
                           value={formData.joiningDate}
-                          onChange={(e) => handleInputChange("joiningDate", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("joiningDate", e.target.value)
+                          }
                           className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       ) : (
@@ -791,8 +872,8 @@ export default function AdminProfileTab() {
                       )}
                     </FormField>
 
-                    <FormField 
-                      label="Experience" 
+                    <FormField
+                      label="Experience"
                       icon={Briefcase}
                       visibilityField="experience"
                       isVisible={formData.fieldVisibility.experience}
@@ -801,7 +882,9 @@ export default function AdminProfileTab() {
                         <input
                           type="text"
                           value={formData.experience}
-                          onChange={(e) => handleInputChange("experience", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("experience", e.target.value)
+                          }
                           className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="e.g., 5 years in IT"
                         />
@@ -812,8 +895,8 @@ export default function AdminProfileTab() {
                       )}
                     </FormField>
 
-                    <FormField 
-                      label="Qualifications" 
+                    <FormField
+                      label="Qualifications"
                       icon={GraduationCap}
                       visibilityField="qualifications"
                       isVisible={formData.fieldVisibility.qualifications}
@@ -822,7 +905,9 @@ export default function AdminProfileTab() {
                         <input
                           type="text"
                           value={formData.qualifications}
-                          onChange={(e) => handleInputChange("qualifications", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("qualifications", e.target.value)
+                          }
                           className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="e.g., B.Tech, MBA"
                         />
@@ -843,7 +928,7 @@ export default function AdminProfileTab() {
                 title="Social Links"
                 icon={Globe}
                 isExpanded={expandedSections.social}
-                onToggle={() => toggleSection('social')}
+                onToggle={() => toggleSection("social")}
                 count={5}
               />
               {expandedSections.social && (
@@ -854,7 +939,12 @@ export default function AdminProfileTab() {
                         <input
                           type="url"
                           value={formData.socialLinks.linkedin}
-                          onChange={(e) => handleInputChange("socialLinks.linkedin", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange(
+                              "socialLinks.linkedin",
+                              e.target.value
+                            )
+                          }
                           className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="https://linkedin.com/in/yourprofile"
                         />
@@ -870,7 +960,12 @@ export default function AdminProfileTab() {
                         <input
                           type="url"
                           value={formData.socialLinks.twitter}
-                          onChange={(e) => handleInputChange("socialLinks.twitter", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange(
+                              "socialLinks.twitter",
+                              e.target.value
+                            )
+                          }
                           className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="https://twitter.com/yourprofile"
                         />
@@ -886,7 +981,12 @@ export default function AdminProfileTab() {
                         <input
                           type="url"
                           value={formData.socialLinks.facebook}
-                          onChange={(e) => handleInputChange("socialLinks.facebook", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange(
+                              "socialLinks.facebook",
+                              e.target.value
+                            )
+                          }
                           className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="https://facebook.com/yourprofile"
                         />
@@ -902,7 +1002,12 @@ export default function AdminProfileTab() {
                         <input
                           type="url"
                           value={formData.socialLinks.instagram}
-                          onChange={(e) => handleInputChange("socialLinks.instagram", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange(
+                              "socialLinks.instagram",
+                              e.target.value
+                            )
+                          }
                           className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="https://instagram.com/yourprofile"
                         />
@@ -918,7 +1023,12 @@ export default function AdminProfileTab() {
                         <input
                           type="url"
                           value={formData.socialLinks.website}
-                          onChange={(e) => handleInputChange("socialLinks.website", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange(
+                              "socialLinks.website",
+                              e.target.value
+                            )
+                          }
                           className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="https://yourwebsite.com"
                         />
@@ -939,7 +1049,7 @@ export default function AdminProfileTab() {
                 title="Preferences & Settings"
                 icon={UserIcon}
                 isExpanded={expandedSections.preferences}
-                onToggle={() => toggleSection('preferences')}
+                onToggle={() => toggleSection("preferences")}
                 count={4}
               />
               {expandedSections.preferences && (
@@ -949,7 +1059,12 @@ export default function AdminProfileTab() {
                       {editing ? (
                         <select
                           value={formData.preferences.theme}
-                          onChange={(e) => handleInputChange("preferences.theme", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange(
+                              "preferences.theme",
+                              e.target.value
+                            )
+                          }
                           className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
                           <option value="light">Light</option>
@@ -967,7 +1082,12 @@ export default function AdminProfileTab() {
                       {editing ? (
                         <select
                           value={formData.preferences.language}
-                          onChange={(e) => handleInputChange("preferences.language", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange(
+                              "preferences.language",
+                              e.target.value
+                            )
+                          }
                           className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
                           <option value="en">English</option>
@@ -975,7 +1095,9 @@ export default function AdminProfileTab() {
                         </select>
                       ) : (
                         <div className="w-full p-3 border rounded-lg bg-gray-50 text-gray-700">
-                          {formData.preferences.language === 'en' ? 'English' : 'Hindi'}
+                          {formData.preferences.language === "en"
+                            ? "English"
+                            : "Hindi"}
                         </div>
                       )}
                     </FormField>
@@ -984,12 +1106,21 @@ export default function AdminProfileTab() {
                       {editing ? (
                         <select
                           value={formData.preferences.timezone}
-                          onChange={(e) => handleInputChange("preferences.timezone", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange(
+                              "preferences.timezone",
+                              e.target.value
+                            )
+                          }
                           className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
-                          <option value="Asia/Kolkata">Asia/Kolkata (IST)</option>
+                          <option value="Asia/Kolkata">
+                            Asia/Kolkata (IST)
+                          </option>
                           <option value="UTC">UTC</option>
-                          <option value="America/New_York">America/New_York (EST)</option>
+                          <option value="America/New_York">
+                            America/New_York (EST)
+                          </option>
                         </select>
                       ) : (
                         <div className="w-full p-3 border rounded-lg bg-gray-50 text-gray-700">
@@ -1001,58 +1132,99 @@ export default function AdminProfileTab() {
 
                   {/* Notification Preferences */}
                   <div className="space-y-4">
-                    <h4 className="text-md font-semibold text-gray-700">Notification Preferences</h4>
+                    <h4 className="text-md font-semibold text-gray-700">
+                      Notification Preferences
+                    </h4>
                     <div className="space-y-3">
                       <div className="flex items-center justify-between p-3 border rounded-lg">
-                        <span className="text-sm font-medium">Email Notifications</span>
+                        <span className="text-sm font-medium">
+                          Email Notifications
+                        </span>
                         {editing ? (
                           <input
                             type="checkbox"
                             checked={formData.preferences.notifications.email}
-                            onChange={(e) => handleInputChange("preferences.notifications.email", e.target.checked)}
+                            onChange={(e) =>
+                              handleInputChange(
+                                "preferences.notifications.email",
+                                e.target.checked
+                              )
+                            }
                             className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
                           />
                         ) : (
-                          <span className={`px-2 py-1 rounded text-xs ${
-                            formData.preferences.notifications.email ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                          }`}>
-                            {formData.preferences.notifications.email ? 'Enabled' : 'Disabled'}
+                          <span
+                            className={`px-2 py-1 rounded text-xs ${
+                              formData.preferences.notifications.email
+                                ? "bg-green-100 text-green-800"
+                                : "bg-red-100 text-red-800"
+                            }`}
+                          >
+                            {formData.preferences.notifications.email
+                              ? "Enabled"
+                              : "Disabled"}
                           </span>
                         )}
                       </div>
 
                       <div className="flex items-center justify-between p-3 border rounded-lg">
-                        <span className="text-sm font-medium">SMS Notifications</span>
+                        <span className="text-sm font-medium">
+                          SMS Notifications
+                        </span>
                         {editing ? (
                           <input
                             type="checkbox"
                             checked={formData.preferences.notifications.sms}
-                            onChange={(e) => handleInputChange("preferences.notifications.sms", e.target.checked)}
+                            onChange={(e) =>
+                              handleInputChange(
+                                "preferences.notifications.sms",
+                                e.target.checked
+                              )
+                            }
                             className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
                           />
                         ) : (
-                          <span className={`px-2 py-1 rounded text-xs ${
-                            formData.preferences.notifications.sms ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                          }`}>
-                            {formData.preferences.notifications.sms ? 'Enabled' : 'Disabled'}
+                          <span
+                            className={`px-2 py-1 rounded text-xs ${
+                              formData.preferences.notifications.sms
+                                ? "bg-green-100 text-green-800"
+                                : "bg-red-100 text-red-800"
+                            }`}
+                          >
+                            {formData.preferences.notifications.sms
+                              ? "Enabled"
+                              : "Disabled"}
                           </span>
                         )}
                       </div>
 
                       <div className="flex items-center justify-between p-3 border rounded-lg">
-                        <span className="text-sm font-medium">Push Notifications</span>
+                        <span className="text-sm font-medium">
+                          Push Notifications
+                        </span>
                         {editing ? (
                           <input
                             type="checkbox"
                             checked={formData.preferences.notifications.push}
-                            onChange={(e) => handleInputChange("preferences.notifications.push", e.target.checked)}
+                            onChange={(e) =>
+                              handleInputChange(
+                                "preferences.notifications.push",
+                                e.target.checked
+                              )
+                            }
                             className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
                           />
                         ) : (
-                          <span className={`px-2 py-1 rounded text-xs ${
-                            formData.preferences.notifications.push ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                          }`}>
-                            {formData.preferences.notifications.push ? 'Enabled' : 'Disabled'}
+                          <span
+                            className={`px-2 py-1 rounded text-xs ${
+                              formData.preferences.notifications.push
+                                ? "bg-green-100 text-green-800"
+                                : "bg-red-100 text-red-800"
+                            }`}
+                          >
+                            {formData.preferences.notifications.push
+                              ? "Enabled"
+                              : "Disabled"}
                           </span>
                         )}
                       </div>
@@ -1068,31 +1240,47 @@ export default function AdminProfileTab() {
                 title="Field Visibility Settings"
                 icon={Eye}
                 isExpanded={expandedSections.visibility}
-                onToggle={() => toggleSection('visibility')}
+                onToggle={() => toggleSection("visibility")}
                 count={Object.keys(formData.fieldVisibility).length}
               />
               {expandedSections.visibility && (
                 <div className="p-6 space-y-4">
                   <p className="text-sm text-gray-600 mb-4">
-                    Control which information is visible to other users. Toggle the eye icon to show/hide fields.
+                    Control which information is visible to other users. Toggle
+                    the eye icon to show/hide fields.
                   </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {Object.entries(formData.fieldVisibility).map(([field, isVisible]) => (
-                      <div key={field} className="flex items-center justify-between p-3 border rounded-lg">
-                        <span className="text-sm font-medium capitalize">
-                          {field.replace(/([A-Z])/g, ' $1').trim()}
-                        </span>
-                        <button
-                          onClick={() => toggleFieldVisibility(field)}
-                          className={`p-2 rounded-full transition-colors ${
-                            isVisible ? 'text-green-600 bg-green-100 hover:bg-green-200' : 'text-gray-400 bg-gray-100 hover:bg-gray-200'
-                          }`}
-                          title={isVisible ? 'Visible to others' : 'Hidden from others'}
+                    {Object.entries(formData.fieldVisibility).map(
+                      ([field, isVisible]) => (
+                        <div
+                          key={field}
+                          className="flex items-center justify-between p-3 border rounded-lg"
                         >
-                          {isVisible ? <Eye size={16} /> : <EyeOff size={16} />}
-                        </button>
-                      </div>
-                    ))}
+                          <span className="text-sm font-medium capitalize">
+                            {field.replace(/([A-Z])/g, " $1").trim()}
+                          </span>
+                          <button
+                            onClick={() => toggleFieldVisibility(field)}
+                            className={`p-2 rounded-full transition-colors ${
+                              isVisible
+                                ? "text-green-600 bg-green-100 hover:bg-green-200"
+                                : "text-gray-400 bg-gray-100 hover:bg-gray-200"
+                            }`}
+                            title={
+                              isVisible
+                                ? "Visible to others"
+                                : "Hidden from others"
+                            }
+                          >
+                            {isVisible ? (
+                              <Eye size={16} />
+                            ) : (
+                              <EyeOff size={16} />
+                            )}
+                          </button>
+                        </div>
+                      )
+                    )}
                   </div>
                 </div>
               )}
@@ -1100,11 +1288,15 @@ export default function AdminProfileTab() {
           </div>
 
           <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h4 className="text-sm font-semibold text-blue-800 mb-1">Profile Management</h4>
+            <h4 className="text-sm font-semibold text-blue-800 mb-1">
+              Profile Management
+            </h4>
             <p className="text-sm text-blue-700">
-              As a super admin, you have full control over your profile information. You can update all your details, 
-              manage social links, set preferences, and control what information is visible to others. 
-              Changes will be saved immediately and reflected across the system.
+              As a super admin, you have full control over your profile
+              information. You can update all your details, manage social links,
+              set preferences, and control what information is visible to
+              others. Changes will be saved immediately and reflected across the
+              system.
             </p>
           </div>
         </div>
