@@ -36,7 +36,9 @@ export default function GroupCourseCard({ groupPricing, index }) {
                     process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"
                   }${groupPricing.image}`
             }
-            alt={`${groupPricing.level} Group Package`}
+            alt={`${
+              groupPricing.groupName || groupPricing.level
+            } Group Package`}
             fill
             className="object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
             sizes="(max-width: 768px) 100vw, 33vw"
@@ -67,7 +69,7 @@ export default function GroupCourseCard({ groupPricing, index }) {
 
         {/* Group Badge */}
         <div className="absolute top-3 left-3 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-          {groupPricing.level}
+          {groupPricing.groupName || groupPricing.level}
         </div>
 
         {/* Course Count Badge */}
@@ -84,7 +86,7 @@ export default function GroupCourseCard({ groupPricing, index }) {
 
         {/* Title */}
         <h3 className="text-lg font-bold text-gray-900 group-hover:text-green-600 transition-colors line-clamp-2">
-          {groupPricing.level} Course Package
+          {groupPricing.groupName || groupPricing.level}
         </h3>
 
         {/* Description */}
