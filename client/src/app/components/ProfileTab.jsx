@@ -8,9 +8,7 @@ import { Upload, User } from "lucide-react";
 export default function ProfileTab() {
   const router = useRouter();
 
-  const tabs = [
-    "Basic Profile",
-  ];
+  const tabs = ["Basic Profile"];
 
   const [activeTab, setActiveTab] = useState("Basic Profile");
   const [loading, setLoading] = useState(true);
@@ -55,9 +53,12 @@ export default function ProfileTab() {
 
   const handleLogout = async () => {
     try {
-      await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/students/logout`, {
-        withCredentials: true,
-      });
+      await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/students/logout`,
+        {
+          withCredentials: true,
+        }
+      );
       router.push("/student-login");
     } catch (err) {
       console.error("Logout error", err);
@@ -98,21 +99,17 @@ export default function ProfileTab() {
       console.log("FormData:", formData);
       console.log("Profile image file:", profileImage);
 
-      const res = await axios.put(
-        apiUrl,
-        formData,
-        {
-          withCredentials: true,
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      const res = await axios.put(apiUrl, formData, {
+        withCredentials: true,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       console.log("Upload response:", res.data);
 
       if (res.data.student.image) {
-        setStudent(prev => ({ ...prev, image: res.data.student.image }));
+        setStudent((prev) => ({ ...prev, image: res.data.student.image }));
         setImagePreview(null);
         setProfileImage(null);
         setMessage("Profile image updated successfully!");
@@ -122,12 +119,13 @@ export default function ProfileTab() {
       console.error("Image upload error:", err);
       console.error("Error response:", err.response?.data);
       console.error("Error status:", err.response?.status);
-      setError(`Failed to upload image: ${err.response?.data?.message || err.message}`);
+      setError(
+        `Failed to upload image: ${err.response?.data?.message || err.message}`
+      );
     } finally {
       setImageLoading(false);
     }
   };
-
 
   if (loading) {
     return (
@@ -195,7 +193,7 @@ export default function ProfileTab() {
           {error && (
             <div className="w-full p-2 bg-red-100 text-red-800 text-sm rounded-lg">
               {error}
-          </div>
+            </div>
           )}
 
           <div>
@@ -221,21 +219,24 @@ export default function ProfileTab() {
           <div className="space-y-6">
             <div className="space-y-6">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-blue-800 mb-2">Profile Information</h3>
+                <h3 className="text-lg font-semibold text-blue-800 mb-2">
+                  Profile Information
+                </h3>
                 <p className="text-sm text-blue-600">
-                  Your profile information is managed by the system. Only your profile image can be changed.
+                  Your profile information is managed by the system. Only your
+                  profile image can be changed.
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
+                <div>
                   <label className="block text-sm font-semibold text-gray-600 mb-2">
                     Full Name
                   </label>
                   <div className="w-full p-3 border rounded-lg bg-gray-50 text-gray-700">
                     {student.name}
-                    </div>
                   </div>
+                </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-600 mb-2">
                     Email Address
@@ -244,7 +245,7 @@ export default function ProfileTab() {
                     {student.email}
                   </div>
                 </div>
-                    <div>
+                <div>
                   <label className="block text-sm font-semibold text-gray-600 mb-2">
                     Phone Number
                   </label>
@@ -252,24 +253,27 @@ export default function ProfileTab() {
                     {student.phone || "Not provided"}
                   </div>
                 </div>
-                    <div>
+                <div>
                   <label className="block text-sm font-semibold text-gray-600 mb-2">
                     Student ID
                   </label>
                   <div className="w-full p-3 border rounded-lg bg-gray-50 text-gray-700">
                     {student.id || "Not available"}
-                    </div>
                   </div>
                 </div>
+              </div>
 
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <h4 className="text-sm font-semibold text-yellow-800 mb-1">Need to update your information?</h4>
+                <h4 className="text-sm font-semibold text-yellow-800 mb-1">
+                  Need to update your information?
+                </h4>
                 <p className="text-sm text-yellow-700">
-                  Contact the administration team to update your name, email, or phone number.
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                  Contact the administration team to update your name, email, or
+                  phone number.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

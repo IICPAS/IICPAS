@@ -121,7 +121,9 @@ export default function BlogDetail({ params }) {
   const imageUrl = blog.imageUrl?.startsWith("http")
     ? blog.imageUrl
     : blog.imageUrl
-    ? `${API_BASE.replace("/api", "")}/${blog.imageUrl}`
+    ? `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}${
+        blog.imageUrl.startsWith("/") ? blog.imageUrl : "/" + blog.imageUrl
+      }`
     : getFallbackImage(blog.title);
 
   // Get related articles (exclude current blog)
@@ -264,8 +266,13 @@ export default function BlogDetail({ params }) {
                       )
                         ? relatedBlog.imageUrl
                         : relatedBlog.imageUrl
-                        ? `${API_BASE.replace("/api", "")}/${
-                            relatedBlog.imageUrl
+                        ? `${
+                            process.env.NEXT_PUBLIC_API_URL ||
+                            "http://localhost:8080"
+                          }${
+                            relatedBlog.imageUrl.startsWith("/")
+                              ? relatedBlog.imageUrl
+                              : "/" + relatedBlog.imageUrl
                           }`
                         : getFallbackImage(relatedBlog.title);
 

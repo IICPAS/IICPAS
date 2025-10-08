@@ -363,7 +363,14 @@ export default function BlogsPage() {
                       const imageUrl = blog.imageUrl?.startsWith("http")
                         ? blog.imageUrl
                         : blog.imageUrl
-                        ? `${API_BASE.replace("/api", "")}/${blog.imageUrl}`
+                        ? `${
+                            process.env.NEXT_PUBLIC_API_URL ||
+                            "http://localhost:8080"
+                          }${
+                            blog.imageUrl.startsWith("/")
+                              ? blog.imageUrl
+                              : "/" + blog.imageUrl
+                          }`
                         : getFallbackImage(blog.title);
 
                       return viewMode === "grid" ? (

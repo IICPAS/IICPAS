@@ -1,7 +1,14 @@
 // next.config.js
 const nextConfig = {
   images: {
-    domains: ["randomuser.me", "localhost", "iicpa.in", "api.iicpa.in"],
+    domains: [
+      "randomuser.me",
+      "localhost",
+      "iicpa.in",
+      "api.iicpa.in",
+      "media.istockphoto.com",
+      "images.unsplash.com",
+    ],
   },
   eslint: {
     ignoreDuringBuilds: true,
