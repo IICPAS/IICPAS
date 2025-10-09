@@ -93,7 +93,7 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
 
       {/* Professional Blog Header */}
       <section className="relative pt-32 pb-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+        <div className="max-w-7xl mx-auto px-0">
           <div className="flex flex-col lg:flex-row gap-8 lg:items-start">
             <div className="flex-1 lg:max-w-none">
               {/* Breadcrumb */}
@@ -162,7 +162,7 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
 
       {/* Cover Image Section */}
       <section className="pb-6 bg-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8">
+        <div className="max-w-4xl mx-auto px-0">
           <motion.div
             className="relative overflow-hidden rounded-2xl shadow-lg"
             initial={{ opacity: 0, scale: 0.95 }}
@@ -182,7 +182,7 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
 
       {/* Main Content */}
       <section className="pb-16 bg-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8">
+        <div className="max-w-4xl mx-auto px-0">
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Article Content */}
             <article className="flex-1 lg:max-w-none">
