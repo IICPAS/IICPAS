@@ -162,7 +162,7 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
 
       {/* Cover Image Section */}
       <section className="pb-6 bg-white">
-        <div className="max-w-full mx-auto px-4">
+        <div className="max-w-4xl mx-auto px-4">
           <motion.div
             className="relative overflow-hidden rounded-2xl shadow-lg"
             initial={{ opacity: 0, scale: 0.95 }}
@@ -172,7 +172,7 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
             <img
               src={imageUrl}
               alt={blog.title}
-              className="w-full h-64 sm:h-80 md:h-96 object-cover"
+              className="w-full h-48 sm:h-56 md:h-64 object-cover"
               loading="eager"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
