@@ -132,46 +132,52 @@ const GSTR3BSimulation: React.FC = () => {
             </div>
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
-                <span className="text-sm">Progress: 75%</span>
+                <span className="text-sm">88%</span>
                 <div className="w-24 bg-gray-700 rounded-full h-2">
                   <div
                     className="bg-green-400 h-2 rounded-full"
-                    style={{ width: "75%" }}
+                    style={{ width: "88%" }}
                   ></div>
                 </div>
               </div>
               <select className="bg-blue-800 text-white border-none rounded px-2 py-1 text-sm">
                 <option>Language</option>
               </select>
+              <div className="flex items-center space-x-2">
+                <span className="text-sm">GSTR - 3B Return</span>
+                <div className="w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center">
+                  <span className="text-yellow-800 font-bold text-sm">150</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Main Header */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-blue-900 text-white">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
-                <span className="text-blue-600 font-bold text-lg">GST</span>
+              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mr-4">
+                <img
+                  src="/images/logo.jpg"
+                  alt="Indian Emblem"
+                  className="w-8 h-8 object-contain"
+                />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-gray-800">
+                <h2 className="text-2xl font-bold text-white">
                   Goods and Services Tax
                 </h2>
-                <p className="text-sm text-gray-600">GSTR-3B Return</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
               <div className="text-right">
-                <p className="text-sm font-medium text-gray-800">
+                <p className="text-sm font-medium text-white">
                   Fincurious Cements Private Limited
                 </p>
-                <p className="text-xs text-gray-600">GSTIN: 07GDLCF7228G1YK</p>
-              </div>
-              <div className="w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center">
-                <span className="text-yellow-800 font-bold text-sm">150</span>
+                <p className="text-xs text-blue-200">GSTIN: 07GDLCF7228G1YK</p>
               </div>
             </div>
           </div>
@@ -179,41 +185,71 @@ const GSTR3BSimulation: React.FC = () => {
       </div>
 
       {/* Navigation Bar */}
-      <div className="bg-blue-600 text-white">
+      <div className="bg-blue-900 text-white">
         <div className="max-w-7xl mx-auto px-4">
           <nav className="flex space-x-6 py-3">
             <a href="#" className="hover:text-blue-200 text-sm font-medium">
               Dashboard
             </a>
-            <a href="#" className="hover:text-blue-200 text-sm font-medium">
+            <a
+              href="#"
+              className="hover:text-blue-200 text-sm font-medium flex items-center"
+            >
               Services
+              <span className="ml-1">▼</span>
             </a>
-            <a href="#" className="hover:text-blue-200 text-sm font-medium">
+            <a
+              href="#"
+              className="hover:text-blue-200 text-sm font-medium flex items-center"
+            >
               GST Law
+              <span className="ml-1">▼</span>
             </a>
-            <a href="#" className="hover:text-blue-200 text-sm font-medium">
+            <a
+              href="#"
+              className="hover:text-blue-200 text-sm font-medium flex items-center"
+            >
               Downloads
+              <span className="ml-1">▼</span>
             </a>
-            <a href="#" className="hover:text-blue-200 text-sm font-medium">
+            <a
+              href="#"
+              className="hover:text-blue-200 text-sm font-medium flex items-center"
+            >
               Search Taxpayer
+              <span className="ml-1">▼</span>
             </a>
             <a href="#" className="hover:text-blue-200 text-sm font-medium">
               Help and Taxpayer Facilities
             </a>
-            <a href="#" className="hover:text-blue-200 text-sm font-medium">
-              e-Invoice
-            </a>
           </nav>
+          <div className="flex justify-end pb-2">
+            <a href="#" className="text-xs text-blue-200 hover:text-white mr-4">
+              Skip to Main Content
+            </a>
+            <div className="flex items-center space-x-2">
+              <button className="text-xs font-bold text-white hover:text-blue-200">
+                A+
+              </button>
+              <button className="text-xs font-bold text-white hover:text-blue-200">
+                A-
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Left Sidebar */}
-      <div className="fixed left-0 top-0 h-full w-16 bg-gray-800 text-white z-10">
+      <div className="fixed left-0 top-0 h-full w-16 bg-gray-700 text-white z-10">
         <div className="flex flex-col items-center py-4 space-y-6">
-          <FaHome className="text-xl hover:text-blue-400 cursor-pointer" />
+          <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+            <span className="text-gray-700 font-bold text-xs">GST</span>
+          </div>
           <FaBars className="text-xl hover:text-blue-400 cursor-pointer" />
           <FaSync className="text-xl hover:text-blue-400 cursor-pointer" />
-          <FaCog className="text-xl hover:text-blue-400 cursor-pointer" />
+          <div className="w-6 h-6 bg-gray-600 rounded flex items-center justify-center">
+            <span className="text-xs">⚙</span>
+          </div>
           <FaMoon className="text-xl hover:text-blue-400 cursor-pointer" />
           <FaInfoCircle className="text-xl hover:text-blue-400 cursor-pointer" />
           <FaExclamationTriangle className="text-xl hover:text-blue-400 cursor-pointer" />
@@ -236,42 +272,31 @@ const GSTR3BSimulation: React.FC = () => {
           </div>
 
           {/* Experiment Instructions */}
-          <div className="bg-teal-50 border border-teal-200 rounded-lg p-6 mb-8">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-xl font-bold text-teal-800 mb-2">
-                  GSTR-3B - Monthly summary return with payment of tax
-                </h3>
-                <p className="text-teal-700 mb-4">
-                  File your monthly summary return and pay the tax due.
-                </p>
-                <p className="text-teal-600 font-medium">
-                  Experiment 2 - Complete GSTR-3B return filing process.
-                </p>
-              </div>
-              <div className="flex space-x-2">
-                <button className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg flex items-center">
-                  <FaQuestionCircle className="mr-2" />
-                  HELP
-                </button>
-                <button className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg">
-                  <FaSync />
-                </button>
-              </div>
-            </div>
+          <div className="bg-blue-100 border border-blue-200 rounded-lg p-4 mb-8">
+            <p className="text-blue-800 font-medium">
+              Experiment 1: Select June month&gt;Prepare Online under GSTR-3B
+              tile to start with GSTR-3B Filing process.
+            </p>
           </div>
 
           {/* File Returns Section */}
           <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">
-              File Returns
-            </h3>
-            <p className="text-gray-600 mb-6">
-              Complete your monthly GSTR-3B return filing with tax payment.
-            </p>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-gray-800">File Returns</h3>
+              <select className="text-sm border border-gray-300 rounded px-2 py-1">
+                <option>English</option>
+              </select>
+            </div>
+
+            {/* Yellow notification bar */}
+            <div className="bg-yellow-100 border border-yellow-200 rounded p-3 mb-4">
+              <p className="text-yellow-800 text-sm">
+                GSTR-2A can now be downloaded in excel/CSV f
+              </p>
+            </div>
 
             <div className="mb-4">
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-red-600">
                 • Indicates Mandatory Fields
               </span>
             </div>
@@ -340,6 +365,7 @@ const GSTR3BSimulation: React.FC = () => {
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
+                  <option value="select">select</option>
                   <option value="April">April</option>
                   <option value="May">May</option>
                   <option value="June">June</option>
@@ -350,6 +376,26 @@ const GSTR3BSimulation: React.FC = () => {
                 <button className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium">
                   SEARCH
                 </button>
+              </div>
+            </div>
+
+            {/* ITC Options */}
+            <div className="space-y-2">
+              <div className="flex items-center">
+                <span className="text-sm font-medium text-gray-700 mr-2">
+                  1.
+                </span>
+                <span className="text-sm text-gray-700">
+                  Report ITC Reversal Opening Balance
+                </span>
+              </div>
+              <div className="flex items-center">
+                <span className="text-sm font-medium text-gray-700 mr-2">
+                  2.
+                </span>
+                <span className="text-sm text-gray-700">
+                  Report RCM ITC Opening Balance
+                </span>
               </div>
             </div>
           </div>

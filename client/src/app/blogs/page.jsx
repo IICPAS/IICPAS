@@ -338,8 +338,8 @@ export default function BlogsPage() {
                   <div
                     className={`${
                       viewMode === "grid"
-                        ? "grid gap-8 grid-cols-1 lg:grid-cols-2"
-                        : "space-y-6"
+                        ? "grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                        : "space-y-4"
                     }`}
                   >
                     {currentBlogs.map((blog, index) => {
@@ -376,24 +376,15 @@ export default function BlogsPage() {
                       return viewMode === "grid" ? (
                         <motion.div
                           key={blog._id}
-                          className="group relative bg-white rounded-3xl shadow-2xl border border-gray-100/50 overflow-hidden transform-gpu hover:shadow-3xl transition-all duration-700 hover:-translate-y-2"
-                          initial={{ opacity: 0, y: 50, rotateX: 15 }}
-                          whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+                          className="group relative bg-white rounded-2xl shadow-lg border border-gray-100/50 overflow-hidden transform-gpu hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                          initial={{ opacity: 0, y: 20 }}
+                          whileInView={{ opacity: 1, y: 0 }}
                           transition={{
-                            duration: 0.8,
-                            delay: index * 0.1,
-                            type: "spring",
-                            stiffness: 100,
+                            duration: 0.5,
+                            delay: index * 0.05,
                           }}
                           whileHover={{
-                            scale: 1.02,
-                            rotateY: 2,
-                            z: 50,
-                          }}
-                          style={{
-                            transformStyle: "preserve-3d",
-                            boxShadow:
-                              "0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)",
+                            scale: 1.01,
                           }}
                         >
                           {/* Glassmorphism Background */}
@@ -401,9 +392,9 @@ export default function BlogsPage() {
 
                           {/* Image Container with Advanced Effects */}
                           <motion.div
-                            className="relative overflow-hidden h-64"
-                            whileHover={{ scale: 1.08 }}
-                            transition={{ duration: 0.6, ease: "easeOut" }}
+                            className="relative overflow-hidden h-48"
+                            whileHover={{ scale: 1.05 }}
+                            transition={{ duration: 0.3, ease: "easeOut" }}
                           >
                             <img
                               src={imageUrl}
@@ -420,9 +411,9 @@ export default function BlogsPage() {
 
                             {/* Floating Date Badge */}
                             <motion.div
-                              className="absolute top-6 left-6 bg-white/95 backdrop-blur-md text-gray-800 text-xs font-bold px-4 py-2 rounded-2xl flex items-center gap-2 shadow-xl border border-white/20"
-                              whileHover={{ scale: 1.1, rotate: 2 }}
-                              transition={{ duration: 0.3 }}
+                              className="absolute top-3 left-3 bg-white/95 backdrop-blur-md text-gray-800 text-xs font-bold px-3 py-1 rounded-xl flex items-center gap-1 shadow-lg border border-white/20"
+                              whileHover={{ scale: 1.05 }}
+                              transition={{ duration: 0.2 }}
                             >
                               <Calendar size={16} className="text-green-500" />
                               {blog.createdAt
@@ -439,9 +430,9 @@ export default function BlogsPage() {
 
                             {/* Category Badge */}
                             <motion.div
-                              className="absolute top-6 right-6 bg-gradient-to-r from-green-500 to-blue-500 text-white text-xs font-bold px-4 py-2 rounded-2xl flex items-center gap-2 shadow-xl"
-                              whileHover={{ scale: 1.1, rotate: -2 }}
-                              transition={{ duration: 0.3 }}
+                              className="absolute top-3 right-3 bg-gradient-to-r from-green-500 to-blue-500 text-white text-xs font-bold px-3 py-1 rounded-xl flex items-center gap-1 shadow-lg"
+                              whileHover={{ scale: 1.05 }}
+                              transition={{ duration: 0.2 }}
                             >
                               <Tag size={14} />
                               <span>{blog.category || "General"}</span>
@@ -449,12 +440,12 @@ export default function BlogsPage() {
 
                             {/* Reading Time Badge */}
                             <motion.div
-                              className="absolute bottom-6 left-6 bg-black/80 backdrop-blur-md text-white text-xs font-medium px-3 py-2 rounded-xl flex items-center gap-2"
-                              initial={{ opacity: 0, y: 20 }}
+                              className="absolute bottom-3 left-3 bg-black/80 backdrop-blur-md text-white text-xs font-medium px-2 py-1 rounded-lg flex items-center gap-1"
+                              initial={{ opacity: 0, y: 10 }}
                               whileInView={{ opacity: 1, y: 0 }}
                               transition={{
-                                duration: 0.5,
-                                delay: 0.3 + index * 0.1,
+                                duration: 0.3,
+                                delay: 0.1 + index * 0.05,
                               }}
                             >
                               <Clock size={14} />
@@ -486,18 +477,18 @@ export default function BlogsPage() {
                           </motion.div>
 
                           {/* Enhanced Content Container */}
-                          <div className="relative p-8 flex flex-col justify-between flex-1 min-h-[240px]">
+                          <div className="relative p-4 flex flex-col justify-between flex-1 min-h-[180px]">
                             {/* Blog Meta */}
                             <motion.div
-                              className="mb-6"
-                              initial={{ opacity: 0, x: -30 }}
+                              className="mb-3"
+                              initial={{ opacity: 0, x: -20 }}
                               whileInView={{ opacity: 1, x: 0 }}
                               transition={{
-                                duration: 0.6,
-                                delay: 0.2 + index * 0.1,
+                                duration: 0.4,
+                                delay: 0.1 + index * 0.05,
                               }}
                             >
-                              <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
+                              <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
                                 <div className="inline-flex items-center gap-1.5">
                                   <Calendar className="w-3 h-3" />
                                   <span>
@@ -524,18 +515,18 @@ export default function BlogsPage() {
 
                             {/* Enhanced Title */}
                             <motion.div
-                              initial={{ opacity: 0, y: 30 }}
+                              initial={{ opacity: 0, y: 20 }}
                               whileInView={{ opacity: 1, y: 0 }}
                               transition={{
-                                duration: 0.6,
-                                delay: 0.3 + index * 0.1,
+                                duration: 0.4,
+                                delay: 0.15 + index * 0.05,
                               }}
                             >
                               <Link
                                 href={`/blogs/${encodeURIComponent(
                                   blog.title.replace(/\s+/g, "-").toLowerCase()
                                 )}`}
-                                className="text-xl font-bold leading-tight mb-4 text-gray-900 hover:text-transparent hover:bg-gradient-to-r hover:from-green-600 hover:to-blue-600 hover:bg-clip-text transition-all duration-500 group-hover:underline decoration-2 underline-offset-4 line-clamp-2"
+                                className="text-lg font-bold leading-tight mb-2 text-gray-900 hover:text-transparent hover:bg-gradient-to-r hover:from-green-600 hover:to-blue-600 hover:bg-clip-text transition-all duration-300 group-hover:underline decoration-2 underline-offset-4 line-clamp-2"
                               >
                                 {blog.title}
                               </Link>
@@ -543,65 +534,59 @@ export default function BlogsPage() {
 
                             {/* Enhanced Content Preview */}
                             <motion.p
-                              className="text-gray-600 text-sm leading-relaxed mb-6 flex-1 line-clamp-3"
-                              initial={{ opacity: 0, y: 30 }}
+                              className="text-gray-600 text-xs leading-relaxed mb-3 flex-1 line-clamp-2"
+                              initial={{ opacity: 0, y: 20 }}
                               whileInView={{ opacity: 1, y: 0 }}
                               transition={{
-                                duration: 0.6,
-                                delay: 0.4 + index * 0.1,
+                                duration: 0.4,
+                                delay: 0.2 + index * 0.05,
                               }}
                             >
                               {blog.content
                                 .replace(/<[^>]+>/g, "")
-                                .slice(0, 150)}
-                              {blog.content.length > 150 && "..."}
+                                .slice(0, 100)}
+                              {blog.content.length > 100 && "..."}
                             </motion.p>
 
                             {/* Enhanced Read More Button */}
                             <motion.div
-                              initial={{ opacity: 0, y: 30 }}
+                              initial={{ opacity: 0, y: 20 }}
                               whileInView={{ opacity: 1, y: 0 }}
                               transition={{
-                                duration: 0.6,
-                                delay: 0.5 + index * 0.1,
+                                duration: 0.4,
+                                delay: 0.25 + index * 0.05,
                               }}
                             >
                               <Link
                                 href={`/blogs/${encodeURIComponent(
                                   blog.title.replace(/\s+/g, "-").toLowerCase()
                                 )}`}
-                                className="group/btn inline-flex items-center gap-3 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-6 py-3 rounded-2xl font-semibold text-sm transition-all duration-300 hover:shadow-xl hover:shadow-green-500/25 hover:-translate-y-1"
+                                className="group/btn inline-flex items-center gap-2 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-4 py-2 rounded-xl font-semibold text-xs transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5"
                               >
-                                <span>Read Full Article</span>
-                                <motion.div
-                                  whileHover={{ x: 5, rotate: 5 }}
-                                  transition={{ duration: 0.3 }}
-                                >
-                                  <ArrowRight size={18} />
-                                </motion.div>
+                                <span>Read Article →</span>
                               </Link>
                             </motion.div>
                           </div>
 
                           {/* Decorative Elements */}
-                          <div className="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-br from-green-400/20 to-blue-500/20 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                          <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-gradient-to-tr from-blue-400/20 to-green-500/20 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                          <div className="absolute -top-2 -right-2 w-16 h-16 bg-gradient-to-br from-green-400/20 to-blue-500/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                          <div className="absolute -bottom-2 -left-2 w-20 h-20 bg-gradient-to-tr from-blue-400/20 to-green-500/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                         </motion.div>
                       ) : (
                         // List View Mode
                         <motion.div
                           key={blog._id}
-                          className="group relative bg-white rounded-2xl shadow-lg border border-gray-100/50 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
-                          initial={{ opacity: 0, x: -50 }}
+                          className="group relative bg-white rounded-xl shadow-md border border-gray-100/50 overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+                          initial={{ opacity: 0, x: -30 }}
                           whileInView={{ opacity: 1, x: 0 }}
                           transition={{
-                            duration: 0.6,
-                            delay: index * 0.05,
+                            duration: 0.4,
+                            delay: index * 0.03,
                           }}
                         >
                           <div className="flex flex-col md:flex-row">
                             {/* Image Container for List View */}
-                            <div className="relative md:w-80 h-48 md:h-full overflow-hidden">
+                            <div className="relative md:w-60 h-40 md:h-full overflow-hidden">
                               <img
                                 src={imageUrl}
                                 alt={blog.title}
