@@ -18,6 +18,7 @@ import {
   ExpandLess as ExpandLessIcon,
   PartyMode as PartyModeIcon,
   CardGiftcard as GiftIcon,
+  Share as ShareIcon,
   Star as StarIcon,
   LocalFireDepartment as FireIcon,
   EmojiEvents as TrophyIcon,
@@ -89,6 +90,12 @@ const SpecialOfferFlashCard = ({
     handleCloseCard(offerId);
     // Then navigate to courses page
     router.push("/course");
+  };
+
+  const handleWhatsAppShare = (offer) => {
+    const shareText = `🎉 ${offer.title} - ${offer.description}\n\nGet up to 60% discount on courses at IICPA Institute!\n\nVisit: ${window.location.origin}/course\n\n#IICPAInstitute #CourseOffer #Education`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+    window.open(whatsappUrl, "_blank");
   };
 
   const formatTimeRemaining = (expiryDate) => {
@@ -245,24 +252,63 @@ const SpecialOfferFlashCard = ({
                   />
                 </Box>
 
-                {/* Get Now Button */}
+                {/* Action Buttons */}
                 <Box
-                  onClick={() => handleGetNowClick(offer._id)}
                   sx={{
-                    backgroundColor: "#FF6B6B",
-                    color: "white",
-                    padding: "12px 24px",
-                    borderRadius: "25px",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    transition: "all 0.3s ease",
-                    "&:hover": {
-                      backgroundColor: "#e55a5a",
-                      transform: "translateY(-2px)",
-                    },
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 2,
+                    justifyContent: "center",
+                    alignItems: "center",
                   }}
                 >
-                  GET NOW
+                  {/* Get Now Button */}
+                  <Box
+                    onClick={() => handleGetNowClick(offer._id)}
+                    sx={{
+                      backgroundColor: "#FF6B6B",
+                      color: "white",
+                      padding: "12px 40px",
+                      borderRadius: "25px",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      transition: "all 0.3s ease",
+                      minWidth: "200px",
+                      "&:hover": {
+                        backgroundColor: "#e55a5a",
+                        transform: "translateY(-2px)",
+                      },
+                    }}
+                  >
+                    GET NOW
+                  </Box>
+
+                  {/* WhatsApp Share Button */}
+                  <IconButton
+                    onClick={() => handleWhatsAppShare(offer)}
+                    sx={{
+                      backgroundColor: "#25D366",
+                      color: "white",
+                      width: 32,
+                      height: 32,
+                      borderRadius: "50%",
+                      transition: "all 0.3s ease",
+                      "&:hover": {
+                        backgroundColor: "#20b358",
+                        transform: "scale(1.1)",
+                      },
+                    }}
+                    title="Share on WhatsApp"
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488" />
+                    </svg>
+                  </IconButton>
                 </Box>
               </CardContent>
             </Card>

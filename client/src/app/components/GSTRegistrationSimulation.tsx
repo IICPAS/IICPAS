@@ -13,7 +13,6 @@ import {
   FaCheckCircle,
   FaPlay,
   FaBuilding,
-  FaDownload,
   FaSearch,
   FaQuestionCircle,
   FaGlobe,
@@ -29,13 +28,107 @@ interface RegistrationStep {
   isCompleted: boolean;
 }
 
+interface FormData {
+  businessDetails: {
+    businessName: string;
+    panNumber: string;
+    businessType: string;
+    constitutionOfBusiness: string;
+    taxpayerType: string;
+  };
+  addressDetails: {
+    businessAddress: {
+      street: string;
+      city: string;
+      state: string;
+      pincode: string;
+    };
+    correspondenceAddress: {
+      street: string;
+      city: string;
+      state: string;
+      pincode: string;
+    };
+  };
+  bankDetails: {
+    bankName: string;
+    accountNumber: string;
+    ifscCode: string;
+    accountHolderName: string;
+  };
+  businessActivities: {
+    primaryActivity: string;
+    secondaryActivities: string[];
+    hsnCode: string;
+    turnover: string;
+  };
+  authorizedSignatory: {
+    name: string;
+    designation: string;
+    panNumber: string;
+    email: string;
+    mobile: string;
+  };
+  documents: {
+    panCard: File | null;
+    aadharCard: File | null;
+    bankStatement: File | null;
+    businessProof: File | null;
+  };
+}
+
 const GSTRegistrationSimulation: React.FC = () => {
   const [currentStep, setCurrentStep] = useState("overview");
-  const [selectedPeriod, setSelectedPeriod] = useState({
-    financialYear: "2024-25",
-    quarter: "Quarter 1 (Apr - Jun)",
-    period: "April",
+  const [activeStepIndex, setActiveStepIndex] = useState(0);
+  const [formData, setFormData] = useState<FormData>({
+    businessDetails: {
+      businessName: "",
+      panNumber: "",
+      businessType: "",
+      constitutionOfBusiness: "",
+      taxpayerType: "",
+    },
+    addressDetails: {
+      businessAddress: {
+        street: "",
+        city: "",
+        state: "",
+        pincode: "",
+      },
+      correspondenceAddress: {
+        street: "",
+        city: "",
+        state: "",
+        pincode: "",
+      },
+    },
+    bankDetails: {
+      bankName: "",
+      accountNumber: "",
+      ifscCode: "",
+      accountHolderName: "",
+    },
+    businessActivities: {
+      primaryActivity: "",
+      secondaryActivities: [],
+      hsnCode: "",
+      turnover: "",
+    },
+    authorizedSignatory: {
+      name: "",
+      designation: "",
+      panNumber: "",
+      email: "",
+      mobile: "",
+    },
+    documents: {
+      panCard: null,
+      aadharCard: null,
+      bankStatement: null,
+      businessProof: null,
+    },
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const registrationSteps: RegistrationStep[] = [
     {
@@ -53,41 +146,832 @@ const GSTRegistrationSimulation: React.FC = () => {
       isCompleted: false,
     },
     {
+      id: "bank-details",
+      title: "Bank Details",
+      description: "Enter bank account information",
+      icon: <FaFileAlt className="text-2xl text-purple-600" />,
+      isCompleted: false,
+    },
+    {
+      id: "business-activities",
+      title: "Business Activities",
+      description: "Specify business activities and HSN codes",
+      icon: <FaSearch className="text-2xl text-orange-600" />,
+      isCompleted: false,
+    },
+    {
+      id: "authorized-signatory",
+      title: "Authorized Signatory",
+      description: "Add authorized signatory details",
+      icon: <FaCheckCircle className="text-2xl text-teal-600" />,
+      isCompleted: false,
+    },
+    {
       id: "document-upload",
       title: "Document Upload",
       description: "Upload required documents and certificates",
-      icon: <FaUpload className="text-2xl text-purple-600" />,
+      icon: <FaUpload className="text-2xl text-red-600" />,
       isCompleted: false,
     },
     {
       id: "verification",
       title: "Verification",
       description: "Verify details and submit application",
-      icon: <FaCheckCircle className="text-2xl text-orange-600" />,
+      icon: <FaCheckCircle className="text-2xl text-indigo-600" />,
       isCompleted: false,
     },
     {
       id: "gstin-generation",
       title: "GSTIN Generation",
       description: "Generate GSTIN and download certificate",
-      icon: <FaFileAlt className="text-2xl text-teal-600" />,
-      isCompleted: false,
-    },
-    {
-      id: "amendment",
-      title: "Amendment Process",
-      description: "Learn how to amend registration details",
-      icon: <FaSync className="text-2xl text-red-600" />,
+      icon: <FaFileAlt className="text-2xl text-pink-600" />,
       isCompleted: false,
     },
   ];
 
   const handleStartSimulation = () => {
     setCurrentStep("steps");
+    setActiveStepIndex(0);
   };
 
   const handleStepClick = (stepId: string) => {
-    console.log(`Opening step: ${stepId}`);
+    const stepIndex = registrationSteps.findIndex((step) => step.id === stepId);
+    setActiveStepIndex(stepIndex);
+    setCurrentStep("steps");
+  };
+
+  const handleNextStep = () => {
+    if (activeStepIndex < registrationSteps.length - 1) {
+      setActiveStepIndex(activeStepIndex + 1);
+    }
+  };
+
+  const handlePrevStep = () => {
+    if (activeStepIndex > 0) {
+      setActiveStepIndex(activeStepIndex - 1);
+    }
+  };
+
+  const handleInputChange = (
+    section: string,
+    field: string,
+    value: string | object
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      [section]: {
+        ...prev[section as keyof FormData],
+        [field]: value,
+      },
+    }));
+  };
+
+  const handleFileUpload = (documentType: string, file: File) => {
+    setFormData((prev) => ({
+      ...prev,
+      documents: {
+        ...prev.documents,
+        [documentType]: file,
+      },
+    }));
+  };
+
+  const validateCurrentStep = () => {
+    const currentStepId = registrationSteps[activeStepIndex].id;
+    const newErrors: Record<string, string> = {};
+
+    switch (currentStepId) {
+      case "business-details":
+        if (!formData.businessDetails.businessName)
+          newErrors.businessName = "Business name is required";
+        if (!formData.businessDetails.panNumber)
+          newErrors.panNumber = "PAN number is required";
+        break;
+      case "address-details":
+        if (!formData.addressDetails.businessAddress.street)
+          newErrors.street = "Street address is required";
+        if (!formData.addressDetails.businessAddress.city)
+          newErrors.city = "City is required";
+        break;
+      case "bank-details":
+        if (!formData.bankDetails.bankName)
+          newErrors.bankName = "Bank name is required";
+        if (!formData.bankDetails.accountNumber)
+          newErrors.accountNumber = "Account number is required";
+        break;
+      case "business-activities":
+        if (!formData.businessActivities.primaryActivity)
+          newErrors.primaryActivity = "Primary activity is required";
+        if (!formData.businessActivities.hsnCode)
+          newErrors.hsnCode = "HSN code is required";
+        break;
+      case "authorized-signatory":
+        if (!formData.authorizedSignatory.name)
+          newErrors.name = "Name is required";
+        if (!formData.authorizedSignatory.email)
+          newErrors.email = "Email is required";
+        break;
+      case "document-upload":
+        if (!formData.documents.panCard)
+          newErrors.panCard = "PAN card is required";
+        if (!formData.documents.aadharCard)
+          newErrors.aadharCard = "Aadhar card is required";
+        break;
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleStepSubmit = () => {
+    if (validateCurrentStep()) {
+      handleNextStep();
+    }
+  };
+
+  const generateCertificate = () => {
+    // Create a canvas to generate the certificate
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+
+    // Set canvas size
+    canvas.width = 800;
+    canvas.height = 600;
+
+    if (!ctx) return;
+
+    // Background
+    ctx.fillStyle = "#f8f9fa";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Border
+    ctx.strokeStyle = "#28a745";
+    ctx.lineWidth = 8;
+    ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
+
+    // Inner border
+    ctx.strokeStyle = "#6c757d";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(40, 40, canvas.width - 80, canvas.height - 80);
+
+    // Header
+    ctx.fillStyle = "#28a745";
+    ctx.font = "bold 32px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("GST REGISTRATION CERTIFICATE", canvas.width / 2, 100);
+
+    // Subtitle
+    ctx.fillStyle = "#6c757d";
+    ctx.font = "18px Arial";
+    ctx.fillText("Government of India", canvas.width / 2, 130);
+
+    // Certificate details
+    ctx.fillStyle = "#212529";
+    ctx.font = "16px Arial";
+    ctx.textAlign = "left";
+
+    const details = [
+      `Business Name: ${formData.businessDetails.businessName}`,
+      `PAN Number: ${formData.businessDetails.panNumber}`,
+      `GSTIN: 22ABCDE1234F1Z5`,
+      `Business Type: ${formData.businessDetails.businessType}`,
+      `Registration Date: ${new Date().toLocaleDateString("en-IN")}`,
+      `Address: ${formData.addressDetails.businessAddress.street}, ${formData.addressDetails.businessAddress.city}`,
+      `State: ${formData.addressDetails.businessAddress.state}`,
+      `Pincode: ${formData.addressDetails.businessAddress.pincode}`,
+    ];
+
+    let y = 200;
+    details.forEach((detail) => {
+      ctx.fillText(detail, 100, y);
+      y += 30;
+    });
+
+    // Footer
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#6c757d";
+    ctx.font = "14px Arial";
+    ctx.fillText(
+      "This certificate is valid for GST registration purposes",
+      canvas.width / 2,
+      canvas.height - 80
+    );
+    ctx.fillText(
+      "Issued by GST Portal, Government of India",
+      canvas.width / 2,
+      canvas.height - 50
+    );
+
+    // Convert canvas to blob and download
+    canvas.toBlob((blob) => {
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `GST_Certificate_${formData.businessDetails.businessName.replace(
+          /\s+/g,
+          "_"
+        )}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
+    }, "image/png");
+  };
+
+  const renderStepContent = () => {
+    const currentStepId = registrationSteps[activeStepIndex].id;
+
+    switch (currentStepId) {
+      case "business-details":
+        return (
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Business Name *
+              </label>
+              <input
+                type="text"
+                value={formData.businessDetails.businessName}
+                onChange={(e) =>
+                  handleInputChange(
+                    "businessDetails",
+                    "businessName",
+                    e.target.value
+                  )
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter business name"
+              />
+              {errors.businessName && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.businessName}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                PAN Number *
+              </label>
+              <input
+                type="text"
+                value={formData.businessDetails.panNumber}
+                onChange={(e) =>
+                  handleInputChange(
+                    "businessDetails",
+                    "panNumber",
+                    e.target.value
+                  )
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter PAN number"
+              />
+              {errors.panNumber && (
+                <p className="text-red-500 text-sm mt-1">{errors.panNumber}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Business Type
+              </label>
+              <select
+                value={formData.businessDetails.businessType}
+                onChange={(e) =>
+                  handleInputChange(
+                    "businessDetails",
+                    "businessType",
+                    e.target.value
+                  )
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Select business type</option>
+                <option value="manufacturing">Manufacturing</option>
+                <option value="trading">Trading</option>
+                <option value="services">Services</option>
+                <option value="mixed">Mixed</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Constitution of Business
+              </label>
+              <select
+                value={formData.businessDetails.constitutionOfBusiness}
+                onChange={(e) =>
+                  handleInputChange(
+                    "businessDetails",
+                    "constitutionOfBusiness",
+                    e.target.value
+                  )
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Select constitution</option>
+                <option value="individual">Individual</option>
+                <option value="partnership">Partnership</option>
+                <option value="company">Company</option>
+                <option value="llp">LLP</option>
+                <option value="huf">HUF</option>
+              </select>
+            </div>
+          </div>
+        );
+
+      case "address-details":
+        return (
+          <div className="space-y-6">
+            <h4 className="text-lg font-semibold text-gray-800 mb-4">
+              Business Address
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Street Address *
+                </label>
+                <input
+                  type="text"
+                  value={formData.addressDetails.businessAddress.street}
+                  onChange={(e) =>
+                    handleInputChange("addressDetails", "businessAddress", {
+                      ...formData.addressDetails.businessAddress,
+                      street: e.target.value,
+                    })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter street address"
+                />
+                {errors.street && (
+                  <p className="text-red-500 text-sm mt-1">{errors.street}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  City *
+                </label>
+                <input
+                  type="text"
+                  value={formData.addressDetails.businessAddress.city}
+                  onChange={(e) =>
+                    handleInputChange("addressDetails", "businessAddress", {
+                      ...formData.addressDetails.businessAddress,
+                      city: e.target.value,
+                    })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter city"
+                />
+                {errors.city && (
+                  <p className="text-red-500 text-sm mt-1">{errors.city}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  State
+                </label>
+                <select
+                  value={formData.addressDetails.businessAddress.state}
+                  onChange={(e) =>
+                    handleInputChange("addressDetails", "businessAddress", {
+                      ...formData.addressDetails.businessAddress,
+                      state: e.target.value,
+                    })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select state</option>
+                  <option value="maharashtra">Maharashtra</option>
+                  <option value="gujarat">Gujarat</option>
+                  <option value="karnataka">Karnataka</option>
+                  <option value="tamil-nadu">Tamil Nadu</option>
+                  <option value="delhi">Delhi</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Pincode
+                </label>
+                <input
+                  type="text"
+                  value={formData.addressDetails.businessAddress.pincode}
+                  onChange={(e) =>
+                    handleInputChange("addressDetails", "businessAddress", {
+                      ...formData.addressDetails.businessAddress,
+                      pincode: e.target.value,
+                    })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter pincode"
+                />
+              </div>
+            </div>
+          </div>
+        );
+
+      case "bank-details":
+        return (
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Bank Name *
+              </label>
+              <input
+                type="text"
+                value={formData.bankDetails.bankName}
+                onChange={(e) =>
+                  handleInputChange("bankDetails", "bankName", e.target.value)
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter bank name"
+              />
+              {errors.bankName && (
+                <p className="text-red-500 text-sm mt-1">{errors.bankName}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Account Number *
+              </label>
+              <input
+                type="text"
+                value={formData.bankDetails.accountNumber}
+                onChange={(e) =>
+                  handleInputChange(
+                    "bankDetails",
+                    "accountNumber",
+                    e.target.value
+                  )
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter account number"
+              />
+              {errors.accountNumber && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.accountNumber}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                IFSC Code
+              </label>
+              <input
+                type="text"
+                value={formData.bankDetails.ifscCode}
+                onChange={(e) =>
+                  handleInputChange("bankDetails", "ifscCode", e.target.value)
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter IFSC code"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Account Holder Name
+              </label>
+              <input
+                type="text"
+                value={formData.bankDetails.accountHolderName}
+                onChange={(e) =>
+                  handleInputChange(
+                    "bankDetails",
+                    "accountHolderName",
+                    e.target.value
+                  )
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter account holder name"
+              />
+            </div>
+          </div>
+        );
+
+      case "business-activities":
+        return (
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Primary Activity *
+              </label>
+              <input
+                type="text"
+                value={formData.businessActivities.primaryActivity}
+                onChange={(e) =>
+                  handleInputChange(
+                    "businessActivities",
+                    "primaryActivity",
+                    e.target.value
+                  )
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter primary business activity"
+              />
+              {errors.primaryActivity && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.primaryActivity}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                HSN Code *
+              </label>
+              <input
+                type="text"
+                value={formData.businessActivities.hsnCode}
+                onChange={(e) =>
+                  handleInputChange(
+                    "businessActivities",
+                    "hsnCode",
+                    e.target.value
+                  )
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter HSN code"
+              />
+              {errors.hsnCode && (
+                <p className="text-red-500 text-sm mt-1">{errors.hsnCode}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Expected Annual Turnover
+              </label>
+              <select
+                value={formData.businessActivities.turnover}
+                onChange={(e) =>
+                  handleInputChange(
+                    "businessActivities",
+                    "turnover",
+                    e.target.value
+                  )
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Select turnover range</option>
+                <option value="0-20lakhs">0 - 20 Lakhs</option>
+                <option value="20lakhs-1crore">20 Lakhs - 1 Crore</option>
+                <option value="1crore-5crore">1 Crore - 5 Crore</option>
+                <option value="5crore-above">5 Crore and above</option>
+              </select>
+            </div>
+          </div>
+        );
+
+      case "authorized-signatory":
+        return (
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Full Name *
+              </label>
+              <input
+                type="text"
+                value={formData.authorizedSignatory.name}
+                onChange={(e) =>
+                  handleInputChange(
+                    "authorizedSignatory",
+                    "name",
+                    e.target.value
+                  )
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter full name"
+              />
+              {errors.name && (
+                <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Designation
+              </label>
+              <input
+                type="text"
+                value={formData.authorizedSignatory.designation}
+                onChange={(e) =>
+                  handleInputChange(
+                    "authorizedSignatory",
+                    "designation",
+                    e.target.value
+                  )
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter designation"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Email Address *
+              </label>
+              <input
+                type="email"
+                value={formData.authorizedSignatory.email}
+                onChange={(e) =>
+                  handleInputChange(
+                    "authorizedSignatory",
+                    "email",
+                    e.target.value
+                  )
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter email address"
+              />
+              {errors.email && (
+                <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Mobile Number
+              </label>
+              <input
+                type="tel"
+                value={formData.authorizedSignatory.mobile}
+                onChange={(e) =>
+                  handleInputChange(
+                    "authorizedSignatory",
+                    "mobile",
+                    e.target.value
+                  )
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter mobile number"
+              />
+            </div>
+          </div>
+        );
+
+      case "document-upload":
+        return (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  PAN Card *
+                </label>
+                <input
+                  type="file"
+                  onChange={(e) =>
+                    e.target.files &&
+                    handleFileUpload("panCard", e.target.files[0])
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                />
+                {errors.panCard && (
+                  <p className="text-red-500 text-sm mt-1">{errors.panCard}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Aadhar Card *
+                </label>
+                <input
+                  type="file"
+                  onChange={(e) =>
+                    e.target.files &&
+                    handleFileUpload("aadharCard", e.target.files[0])
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                />
+                {errors.aadharCard && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.aadharCard}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Bank Statement
+                </label>
+                <input
+                  type="file"
+                  onChange={(e) =>
+                    e.target.files &&
+                    handleFileUpload("bankStatement", e.target.files[0])
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Business Proof
+                </label>
+                <input
+                  type="file"
+                  onChange={(e) =>
+                    e.target.files &&
+                    handleFileUpload("businessProof", e.target.files[0])
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                />
+              </div>
+            </div>
+          </div>
+        );
+
+      case "verification":
+        return (
+          <div className="space-y-6">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <h4 className="text-lg font-semibold text-green-800 mb-4">
+                Review Your Information
+              </h4>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Business Name:</span>
+                  <span className="font-medium">
+                    {formData.businessDetails.businessName}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">PAN Number:</span>
+                  <span className="font-medium">
+                    {formData.businessDetails.panNumber}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Business Type:</span>
+                  <span className="font-medium">
+                    {formData.businessDetails.businessType}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Primary Activity:</span>
+                  <span className="font-medium">
+                    {formData.businessActivities.primaryActivity}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">HSN Code:</span>
+                  <span className="font-medium">
+                    {formData.businessActivities.hsnCode}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-blue-800">
+                Please review all the information above. Once you proceed, your
+                GST registration application will be submitted for processing.
+              </p>
+            </div>
+          </div>
+        );
+
+      case "gstin-generation":
+        return (
+          <div className="space-y-6 text-center">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-8">
+              <FaCheckCircle className="text-6xl text-green-500 mx-auto mb-4" />
+              <h4 className="text-2xl font-bold text-green-800 mb-4">
+                Registration Successful!
+              </h4>
+              <p className="text-green-700 mb-6">
+                Your GST registration has been processed successfully. Your
+                GSTIN will be generated shortly.
+              </p>
+              <div className="bg-white border border-green-300 rounded-lg p-4 mb-6">
+                <p className="text-sm text-gray-600 mb-2">Your GSTIN:</p>
+                <p className="text-xl font-bold text-green-600">
+                  22ABCDE1234F1Z5
+                </p>
+              </div>
+              <button
+                onClick={generateCertificate}
+                className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium"
+              >
+                Download Certificate
+              </button>
+            </div>
+          </div>
+        );
+
+      default:
+        return <div>Step content not found</div>;
+    }
   };
 
   return (
@@ -288,16 +1172,38 @@ const GSTRegistrationSimulation: React.FC = () => {
                 <div
                   key={step.id}
                   onClick={() => handleStepClick(step.id)}
-                  className="bg-white border-2 border-gray-200 rounded-lg p-6 hover:border-blue-300 hover:shadow-md transition-all cursor-pointer group"
+                  className={`bg-white border-2 rounded-lg p-6 hover:shadow-md transition-all cursor-pointer group ${
+                    activeStepIndex === index
+                      ? "border-blue-500 bg-blue-50"
+                      : "border-gray-200 hover:border-blue-300"
+                  }`}
                 >
                   <div className="text-center">
                     <div className="mb-4">{step.icon}</div>
-                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <span className="text-blue-600 font-bold text-sm">
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-3 ${
+                        activeStepIndex === index
+                          ? "bg-blue-500"
+                          : "bg-blue-100"
+                      }`}
+                    >
+                      <span
+                        className={`font-bold text-sm ${
+                          activeStepIndex === index
+                            ? "text-white"
+                            : "text-blue-600"
+                        }`}
+                      >
                         {index + 1}
                       </span>
                     </div>
-                    <h4 className="text-lg font-bold text-gray-800 mb-2 group-hover:text-blue-600">
+                    <h4
+                      className={`text-lg font-bold mb-2 group-hover:text-blue-600 ${
+                        activeStepIndex === index
+                          ? "text-blue-600"
+                          : "text-gray-800"
+                      }`}
+                    >
                       {step.title}
                     </h4>
                     <p className="text-sm text-gray-600 mb-4">
@@ -312,6 +1218,61 @@ const GSTRegistrationSimulation: React.FC = () => {
               ))}
             </div>
           </div>
+
+          {/* Interactive Step Forms */}
+          {currentStep === "steps" && (
+            <div className="bg-white rounded-lg shadow-md p-6 mt-8">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center">
+                  {registrationSteps[activeStepIndex].icon}
+                  <span className="ml-2">
+                    {registrationSteps[activeStepIndex].title}
+                  </span>
+                </h3>
+                <div className="text-sm text-gray-600">
+                  Step {activeStepIndex + 1} of {registrationSteps.length}
+                </div>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="w-full bg-gray-200 rounded-full h-2 mb-6">
+                <div
+                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  style={{
+                    width: `${
+                      ((activeStepIndex + 1) / registrationSteps.length) * 100
+                    }%`,
+                  }}
+                ></div>
+              </div>
+
+              {/* Step Content */}
+              <div className="mb-6">{renderStepContent()}</div>
+
+              {/* Navigation Buttons */}
+              <div className="flex justify-between">
+                <button
+                  onClick={handlePrevStep}
+                  disabled={activeStepIndex === 0}
+                  className={`px-6 py-2 rounded-lg font-medium ${
+                    activeStepIndex === 0
+                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      : "bg-gray-600 text-white hover:bg-gray-700"
+                  }`}
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={handleStepSubmit}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium"
+                >
+                  {activeStepIndex === registrationSteps.length - 1
+                    ? "Complete"
+                    : "Next"}
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Quick Stats */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
