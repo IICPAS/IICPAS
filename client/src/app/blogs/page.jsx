@@ -338,8 +338,8 @@ export default function BlogsPage() {
                   <div
                     className={`${
                       viewMode === "grid"
-                        ? "grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3"
-                        : "space-y-4"
+                        ? "grid gap-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3"
+                        : "space-y-2"
                     }`}
                   >
                     {currentBlogs.map((blog, index) => {
@@ -392,7 +392,7 @@ export default function BlogsPage() {
 
                           {/* Image Container with Advanced Effects */}
                           <motion.div
-                            className="relative overflow-hidden h-48"
+                            className="relative overflow-hidden h-40"
                             whileHover={{ scale: 1.05 }}
                             transition={{ duration: 0.3, ease: "easeOut" }}
                           >
@@ -477,10 +477,10 @@ export default function BlogsPage() {
                           </motion.div>
 
                           {/* Enhanced Content Container */}
-                          <div className="relative p-4 flex flex-col justify-between flex-1 min-h-[180px]">
+                          <div className="relative p-3 flex flex-col justify-between flex-1 min-h-[160px]">
                             {/* Blog Meta */}
                             <motion.div
-                              className="mb-3"
+                              className="mb-2"
                               initial={{ opacity: 0, x: -20 }}
                               whileInView={{ opacity: 1, x: 0 }}
                               transition={{
@@ -488,7 +488,7 @@ export default function BlogsPage() {
                                 delay: 0.1 + index * 0.05,
                               }}
                             >
-                              <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
+                              <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
                                 <div className="inline-flex items-center gap-1.5">
                                   <Calendar className="w-3 h-3" />
                                   <span>
@@ -526,7 +526,7 @@ export default function BlogsPage() {
                                 href={`/blogs/${encodeURIComponent(
                                   blog.title.replace(/\s+/g, "-").toLowerCase()
                                 )}`}
-                                className="text-lg font-bold leading-tight mb-2 text-gray-900 hover:text-transparent hover:bg-gradient-to-r hover:from-green-600 hover:to-blue-600 hover:bg-clip-text transition-all duration-300 group-hover:underline decoration-2 underline-offset-4 line-clamp-2"
+                                className="text-base font-bold leading-tight mb-1 text-gray-900 hover:text-transparent hover:bg-gradient-to-r hover:from-green-600 hover:to-blue-600 hover:bg-clip-text transition-all duration-300 group-hover:underline decoration-2 underline-offset-4 line-clamp-2"
                               >
                                 {blog.title}
                               </Link>
@@ -534,7 +534,7 @@ export default function BlogsPage() {
 
                             {/* Enhanced Content Preview */}
                             <motion.p
-                              className="text-gray-600 text-xs leading-relaxed mb-3 flex-1 line-clamp-2"
+                              className="text-gray-600 text-xs leading-relaxed mb-2 flex-1 line-clamp-2"
                               initial={{ opacity: 0, y: 20 }}
                               whileInView={{ opacity: 1, y: 0 }}
                               transition={{
