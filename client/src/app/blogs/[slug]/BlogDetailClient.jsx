@@ -26,16 +26,16 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
         <div className="min-h-screen bg-white flex items-center justify-center">
           <div className="text-center">
             <div className="text-6xl mb-6">📝</div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">
+            <h1 className="text-xl font-bold text-gray-900 mb-4">
               Article Not Found
             </h1>
-            <p className="text-gray-600 mb-8">
+            <p className="text-sm text-gray-600 mb-8">
               The blog post you're looking for doesn't exist or has been
               removed.
             </p>
             <Link
               href="/blogs"
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
             >
               <ArrowLeft className="w-5 h-5" />
               Back to Blogs
@@ -103,7 +103,7 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
               >
-                <nav className="flex items-center space-x-2 text-sm text-gray-500">
+                <nav className="flex items-center space-x-2 text-xs text-gray-500">
                   <Link
                     href="/blogs"
                     className="hover:text-green-600 transition-colors"
@@ -122,8 +122,8 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.1 }}
               >
-                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-                  <div className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 px-3 py-1.5 rounded-lg border border-green-200">
+                <div className="flex flex-wrap items-center gap-4 text-xs text-gray-600">
+                  <div className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 px-2 py-1 rounded-lg border border-green-200 text-xs">
                     <Tag className="w-3 h-3" />
                     <span>{blog.category || "General"}</span>
                   </div>
@@ -148,7 +148,7 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
 
               {/* Title */}
               <motion.h1
-                className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 leading-tight mb-4 max-w-4xl mx-auto text-center"
+                className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 leading-tight mb-4 max-w-4xl mx-auto text-center"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
@@ -187,7 +187,7 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
             {/* Article Content */}
             <article className="flex-1 lg:max-w-none">
               <motion.div
-                className="prose prose-lg max-w-none"
+                className="prose prose-sm max-w-none text-sm"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.4 }}
@@ -203,17 +203,17 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
               >
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
-                    <button className="inline-flex items-center gap-2 text-gray-600 hover:text-green-600 transition-colors">
-                      <Share2 className="w-4 h-4" />
+                    <button className="inline-flex items-center gap-2 text-gray-600 hover:text-green-600 transition-colors text-sm">
+                      <Share2 className="w-3 h-3" />
                       <span>Share</span>
                     </button>
-                    <button className="inline-flex items-center gap-2 text-gray-600 hover:text-green-600 transition-colors">
-                      <Bookmark className="w-4 h-4" />
+                    <button className="inline-flex items-center gap-2 text-gray-600 hover:text-green-600 transition-colors text-sm">
+                      <Bookmark className="w-3 h-3" />
                       <span>Save</span>
                     </button>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-500">
-                    <Eye className="w-4 h-4" />
+                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <Eye className="w-3 h-3" />
                     <span>1,234 views</span>
                   </div>
                 </div>
@@ -229,7 +229,7 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, delay: 0.6 }}
               >
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                <h3 className="text-base font-semibold text-gray-900 mb-4">
                   Related Articles
                 </h3>
                 <div className="space-y-4">
@@ -263,7 +263,7 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="text-sm font-medium text-gray-900 group-hover:text-green-600 transition-colors line-clamp-2">
+                          <h4 className="text-xs font-medium text-gray-900 group-hover:text-green-600 transition-colors line-clamp-2">
                             {relatedBlog.title}
                           </h4>
                           <p className="text-xs text-gray-500 mt-1">
