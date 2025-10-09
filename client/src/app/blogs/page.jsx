@@ -173,13 +173,13 @@ export default function BlogsPage() {
               transition={{ duration: 0.8 }}
             >
               <Sparkles className="w-5 h-5 text-green-500" />
-              <span className="text-sm font-semibold text-gray-700">
+              <span className="text-xs font-semibold text-gray-700">
                 {blogs.length} Articles Published
               </span>
             </motion.div>
 
             <motion.h1
-              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 leading-tight mb-6"
+              className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-6"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
@@ -191,7 +191,7 @@ export default function BlogsPage() {
             </motion.h1>
 
             <motion.p
-              className="text-xl lg:text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed mb-8"
+              className="text-sm lg:text-base text-gray-600 max-w-3xl mx-auto leading-relaxed mb-8"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
@@ -215,7 +215,7 @@ export default function BlogsPage() {
                     placeholder="Search articles, authors, or topics..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-12 pr-6 py-4 bg-white/80 backdrop-blur-md border border-gray-200 rounded-2xl shadow-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+                    className="w-full pl-12 pr-6 py-3 bg-white/80 backdrop-blur-md border border-gray-200 rounded-2xl shadow-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 placeholder-gray-500 text-sm"
                   />
                   {searchTerm && (
                     <motion.button
@@ -277,7 +277,7 @@ export default function BlogsPage() {
                 </div>
 
                 {/* Results Count */}
-                <div className="text-sm text-gray-600 bg-white/60 backdrop-blur-md px-4 py-2 rounded-xl border border-gray-200">
+                <div className="text-xs text-gray-600 bg-white/60 backdrop-blur-md px-4 py-2 rounded-xl border border-gray-200">
                   Showing {currentBlogs.length} of {filteredBlogs.length}{" "}
                   articles
                 </div>
@@ -312,12 +312,12 @@ export default function BlogsPage() {
                     transition={{ duration: 0.6 }}
                   >
                     <div className="text-6xl mb-4">🔍</div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">
                       {searchTerm || selectedCategory !== "all"
                         ? "No Results Found"
                         : "No Blogs Yet"}
                     </h3>
-                    <p className="text-gray-600 mb-4">
+                    <p className="text-sm text-gray-600 mb-4">
                       {searchTerm || selectedCategory !== "all"
                         ? "Try adjusting your search term or category filter"
                         : "Check back soon for amazing content!"}
@@ -328,7 +328,7 @@ export default function BlogsPage() {
                           setSearchTerm("");
                           setSelectedCategory("all");
                         }}
-                        className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:shadow-lg"
+                        className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-300 hover:shadow-lg"
                       >
                         Clear Filters
                       </button>
@@ -338,7 +338,7 @@ export default function BlogsPage() {
                   <div
                     className={`${
                       viewMode === "grid"
-                        ? "grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                        ? "grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
                         : "space-y-4"
                     }`}
                   >
@@ -526,7 +526,7 @@ export default function BlogsPage() {
                                 href={`/blogs/${encodeURIComponent(
                                   blog.title.replace(/\s+/g, "-").toLowerCase()
                                 )}`}
-                                className="text-lg font-bold leading-tight mb-2 text-gray-900 hover:text-transparent hover:bg-gradient-to-r hover:from-green-600 hover:to-blue-600 hover:bg-clip-text transition-all duration-300 group-hover:underline decoration-2 underline-offset-4 line-clamp-2"
+                                className="text-sm font-bold leading-tight mb-2 text-gray-900 hover:text-transparent hover:bg-gradient-to-r hover:from-green-600 hover:to-blue-600 hover:bg-clip-text transition-all duration-300 group-hover:underline decoration-2 underline-offset-4 line-clamp-2"
                               >
                                 {blog.title}
                               </Link>
@@ -561,7 +561,7 @@ export default function BlogsPage() {
                                 href={`/blogs/${encodeURIComponent(
                                   blog.title.replace(/\s+/g, "-").toLowerCase()
                                 )}`}
-                                className="group/btn inline-flex items-center gap-2 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-4 py-2 rounded-xl font-semibold text-xs transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5"
+                                className="group/btn inline-flex items-center gap-2 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-3 py-1.5 rounded-xl font-semibold text-xs transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5"
                               >
                                 <span>Read Article →</span>
                               </Link>
@@ -649,12 +649,12 @@ export default function BlogsPage() {
                                 href={`/blogs/${encodeURIComponent(
                                   blog.title.replace(/\s+/g, "-").toLowerCase()
                                 )}`}
-                                className="text-xl md:text-2xl font-bold leading-tight mb-4 text-gray-900 hover:text-transparent hover:bg-gradient-to-r hover:from-green-600 hover:to-blue-600 hover:bg-clip-text transition-all duration-500 block"
+                                className="text-base md:text-lg font-bold leading-tight mb-4 text-gray-900 hover:text-transparent hover:bg-gradient-to-r hover:from-green-600 hover:to-blue-600 hover:bg-clip-text transition-all duration-500 block"
                               >
                                 {blog.title}
                               </Link>
 
-                              <p className="text-gray-600 mb-4 leading-relaxed">
+                              <p className="text-sm text-gray-600 mb-4 leading-relaxed">
                                 {blog.content
                                   .replace(/<[^>]+>/g, "")
                                   .slice(0, 200)}
@@ -678,7 +678,7 @@ export default function BlogsPage() {
                                       .replace(/\s+/g, "-")
                                       .toLowerCase()
                                   )}`}
-                                  className="inline-flex items-center gap-2 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-6 py-2 rounded-xl font-semibold text-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+                                  className="inline-flex items-center gap-2 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-4 py-1.5 rounded-xl font-semibold text-xs transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
                                 >
                                   <span>Read More</span>
                                   <ArrowRight className="w-4 h-4" />
@@ -706,7 +706,7 @@ export default function BlogsPage() {
                         setCurrentPage(Math.max(1, currentPage - 1))
                       }
                       disabled={currentPage === 1}
-                      className={`px-4 py-2 rounded-xl font-semibold transition-all duration-200 ${
+                      className={`px-3 py-1.5 rounded-xl font-semibold text-sm transition-all duration-200 ${
                         currentPage === 1
                           ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                           : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:shadow-lg"
@@ -721,7 +721,7 @@ export default function BlogsPage() {
                         <button
                           key={pageNum}
                           onClick={() => setCurrentPage(pageNum)}
-                          className={`px-4 py-2 rounded-xl font-semibold transition-all duration-200 ${
+                          className={`px-3 py-1.5 rounded-xl font-semibold text-sm transition-all duration-200 ${
                             currentPage === pageNum
                               ? "bg-gradient-to-r from-green-500 to-blue-600 text-white shadow-lg"
                               : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:shadow-lg"
@@ -738,7 +738,7 @@ export default function BlogsPage() {
                         setCurrentPage(Math.min(totalPages, currentPage + 1))
                       }
                       disabled={currentPage === totalPages}
-                      className={`px-4 py-2 rounded-xl font-semibold transition-all duration-200 ${
+                      className={`px-3 py-1.5 rounded-xl font-semibold text-sm transition-all duration-200 ${
                         currentPage === totalPages
                           ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                           : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:shadow-lg"
