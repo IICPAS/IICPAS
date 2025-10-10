@@ -330,6 +330,36 @@ router.post("/admin/send-receipt/:transactionId", async (req, res) => {
   }
 });
 
+// Delete transaction (Admin only)
+router.delete("/admin/:transactionId", async (req, res) => {
+  try {
+    const { transactionId } = req.params;
+
+    const transaction = await Transaction.findById(transactionId);
+    if (!transaction) {
+      return res.status(404).json({
+        success: false,
+        message: "Transaction not found",
+      });
+    }
+
+    // Delete the transaction
+    await Transaction.findByIdAndDelete(transactionId);
+
+    res.json({
+      success: true,
+      message: "Transaction deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete transaction error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete transaction",
+      error: error.message,
+    });
+  }
+});
+
 // Get student's transactions
 router.get("/student/my-transactions", async (req, res) => {
   try {
