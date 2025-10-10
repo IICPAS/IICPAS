@@ -162,7 +162,7 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
 
       {/* Cover Image Section */}
       <section className="pb-6 bg-white">
-        <div className="max-w-6xl mx-auto px-4">
+        <div className="max-w-6xl px-4">
           <motion.div
             className="relative overflow-hidden rounded-2xl shadow-lg"
             initial={{ opacity: 0, scale: 0.95 }}
