@@ -182,7 +182,7 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
 
       {/* Main Content */}
       <section className="pb-16 bg-white">
-        <div className="max-w-full mx-auto px-4">
+        <div className="max-w-full mx-auto pl-8 pr-4">
           <div className="flex flex-col lg:flex-row gap-4">
             {/* Article Content */}
             <article className="flex-1 lg:max-w-none">
