@@ -10,6 +10,7 @@ import {
   FaSearch,
   FaFilter,
   FaEnvelope,
+  FaTrash,
 } from "react-icons/fa";
 
 const TransactionsTab = () => {
@@ -64,6 +65,41 @@ const TransactionsTab = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteTransaction = async (transactionId) => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        setActionLoading(true);
+        const response = await axios.delete(
+          `${API_BASE}/api/v1/transactions/admin/${transactionId}`
+        );
+
+        if (response.data.success) {
+          Swal.fire("Deleted!", "Transaction has been deleted.", "success");
+          fetchTransactions(); // Refresh the list
+        }
+      } catch (error) {
+        console.error("Error deleting transaction:", error);
+        Swal.fire({
+          title: "Error",
+          text: "Failed to delete transaction",
+          icon: "error",
+        });
+      } finally {
+        setActionLoading(false);
+      }
     }
   };
 
@@ -427,6 +463,16 @@ const TransactionsTab = () => {
                               )}
                             </>
                           )}
+                          <button
+                            onClick={() =>
+                              handleDeleteTransaction(transaction._id)
+                            }
+                            className="text-red-600 hover:text-red-900"
+                            title="Delete Transaction"
+                            disabled={actionLoading}
+                          >
+                            <FaTrash />
+                          </button>
                         </div>
                       </td>
                     </tr>
