@@ -148,7 +148,7 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
 
               {/* Title */}
               <motion.h1
-                className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 leading-tight mb-4 max-w-4xl mx-auto text-center"
+                className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 leading-tight mb-4 max-w-4xl text-left"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
@@ -187,7 +187,7 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
             {/* Article Content */}
             <article className="flex-1 lg:max-w-none">
               <motion.div
-                className="prose prose-lg max-w-none"
+                className="prose prose-lg max-w-none ml-8"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.4 }}
@@ -222,68 +222,6 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
 
             {/* Sidebar */}
             <aside className="lg:w-96">
-              {/* Related Articles */}
-              <motion.div
-                className="bg-gray-50 rounded-2xl p-6"
-                initial={{ opacity: 0, x: 30 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8, delay: 0.6 }}
-              >
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  Related Articles
-                </h3>
-                <div className="space-y-4">
-                  {getRelatedArticles().map((relatedBlog, index) => (
-                    <Link
-                      key={relatedBlog._id}
-                      href={`/blogs/${relatedBlog.title
-                        .replace(/\s+/g, "-")
-                        .toLowerCase()}`}
-                      className="block group"
-                    >
-                      <div className="flex gap-3">
-                        <div className="w-16 h-16 bg-gray-200 rounded-lg flex-shrink-0 overflow-hidden">
-                          <img
-                            src={
-                              relatedBlog.imageUrl?.startsWith("http")
-                                ? relatedBlog.imageUrl
-                                : relatedBlog.imageUrl
-                                ? `${
-                                    process.env.NEXT_PUBLIC_API_URL ||
-                                    "http://localhost:8080"
-                                  }${
-                                    relatedBlog.imageUrl.startsWith("/")
-                                      ? relatedBlog.imageUrl
-                                      : "/" + relatedBlog.imageUrl
-                                  }`
-                                : getFallbackImage(relatedBlog.title)
-                            }
-                            alt={relatedBlog.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="text-sm font-medium text-gray-900 group-hover:text-green-600 transition-colors line-clamp-2">
-                            {relatedBlog.title}
-                          </h4>
-                          <p className="text-xs text-gray-500 mt-1">
-                            {relatedBlog.createdAt
-                              ? new Date(
-                                  relatedBlog.createdAt
-                                ).toLocaleDateString("en-GB", {
-                                  day: "2-digit",
-                                  month: "short",
-                                  year: "numeric",
-                                })
-                              : "Recent"}
-                          </p>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </motion.div>
-
               {/* Accounting Quiz */}
               <motion.div
                 className="mt-8"
@@ -294,6 +232,117 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
                 <AccountingQuiz />
               </motion.div>
             </aside>
+          </div>
+        </div>
+      </section>
+
+      {/* Moving Read More Cards Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+          <motion.div
+            className="text-center mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Continue Reading
+            </h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Discover more insights and knowledge from our expert team
+            </p>
+          </motion.div>
+
+          {/* Moving Cards Container */}
+          <div className="relative overflow-hidden">
+            <motion.div
+              className="flex gap-6"
+              animate={{
+                x: [0, -100 * getRelatedArticles().length],
+              }}
+              transition={{
+                duration: 30,
+                repeat: Infinity,
+                ease: "linear",
+              }}
+              style={{
+                width: `${getRelatedArticles().length * 320}px`,
+              }}
+            >
+              {/* Duplicate cards for seamless loop */}
+              {[...getRelatedArticles(), ...getRelatedArticles()].map(
+                (relatedBlog, index) => (
+                  <motion.div
+                    key={`${relatedBlog._id}-${index}`}
+                    className="flex-shrink-0 w-80 bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
+                    whileHover={{ y: -5 }}
+                  >
+                    <Link
+                      href={`/blogs/${relatedBlog.title
+                        .replace(/\s+/g, "-")
+                        .toLowerCase()}`}
+                      className="block group"
+                    >
+                      <div className="h-48 overflow-hidden">
+                        <img
+                          src={
+                            relatedBlog.imageUrl?.startsWith("http")
+                              ? relatedBlog.imageUrl
+                              : relatedBlog.imageUrl
+                              ? `${
+                                  process.env.NEXT_PUBLIC_API_URL ||
+                                  "http://localhost:8080"
+                                }${
+                                  relatedBlog.imageUrl.startsWith("/")
+                                    ? relatedBlog.imageUrl
+                                    : "/" + relatedBlog.imageUrl
+                                }`
+                              : getFallbackImage(relatedBlog.title)
+                          }
+                          alt={relatedBlog.title}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        />
+                      </div>
+                      <div className="p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 group-hover:text-green-600 transition-colors line-clamp-2 mb-2">
+                          {relatedBlog.title}
+                        </h3>
+                        <p className="text-sm text-gray-500 mb-3">
+                          {relatedBlog.createdAt
+                            ? new Date(
+                                relatedBlog.createdAt
+                              ).toLocaleDateString("en-GB", {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                              })
+                            : "Recent"}
+                        </p>
+                        <div className="flex items-center text-green-600 text-sm font-medium">
+                          <span>Read More</span>
+                          <motion.svg
+                            className="w-4 h-4 ml-1"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            animate={{ x: [0, 4, 0] }}
+                            transition={{ duration: 1.5, repeat: Infinity }}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M9 5l7 7-7 7"
+                            />
+                          </motion.svg>
+                        </div>
+                      </div>
+                    </Link>
+                  </motion.div>
+                )
+              )}
+            </motion.div>
           </div>
         </div>
       </section>
