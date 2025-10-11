@@ -8,7 +8,7 @@ import { Send } from "lucide-react";
 import { toast } from "react-hot-toast";
 
 export default function ContactSection() {
-  const [contactData, setContactData] = useState({
+  const [contactData] = useState({
     title: "Contact Us",
     subtitle: "Let's Get in Touch",
     description:
@@ -19,7 +19,7 @@ export default function ContactSection() {
         label: "Phone",
       },
       email: {
-        address: "contact@taxesquire.in",
+        address: "iicpaconnect@gmail.com",
         label: "Email",
       },
       address: {
@@ -48,7 +48,7 @@ export default function ContactSection() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Use static data directly - no API call needed
+    // Use hardcoded data directly - no API call needed
     setLoading(false);
   }, []);
 

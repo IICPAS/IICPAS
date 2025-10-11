@@ -64,6 +64,7 @@ export default function EditCourse({ courseId, onBack }) {
         price: c.price || "",
         discount: c.discount || "",
         status: c.status || "Active",
+        duration: c.duration || "",
         video: c.video || "",
         description: c.description || "",
         examCert: c.examCert || "",
@@ -337,6 +338,14 @@ export default function EditCourse({ courseId, onBack }) {
               value={form.slug}
               onChange={handleInputChange}
               className="w-full border p-2 rounded"
+            />
+            <label>Duration</label>
+            <input
+              name="duration"
+              value={form.duration}
+              onChange={handleInputChange}
+              className="w-full border p-2 rounded"
+              placeholder="e.g., 3 months, 6 weeks, 40 hours"
             />
             <label>Course Image</label>
             <input

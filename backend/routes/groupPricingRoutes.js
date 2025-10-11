@@ -2,6 +2,7 @@ import express from "express";
 import {
   getAllGroupPricing,
   getGroupPricingById,
+  getGroupPricingBySlug,
   createGroupPricing,
   updateGroupPricing,
   deleteGroupPricing,
@@ -15,6 +16,9 @@ const router = express.Router();
 
 // GET /api/group-pricing - Get all group pricing configurations
 router.get("/", getAllGroupPricing);
+
+// GET /api/group-pricing/slug/:slug - Get group pricing by slug
+router.get("/slug/:slug", getGroupPricingBySlug);
 
 // GET /api/group-pricing/:id - Get group pricing by ID
 router.get("/:id", getGroupPricingById);

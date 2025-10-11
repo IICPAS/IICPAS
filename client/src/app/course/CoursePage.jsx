@@ -24,7 +24,8 @@ export default function CoursePage() {
   const [loading, setLoading] = useState(false); // Initialize as false to prevent initial blinking
 
   // Define API_BASE at component level
-  const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080";
+  const API_BASE =
+    process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
   console.log("API_BASE", process.env.NEXT_PUBLIC_API_URL);
   // Fetch data
   useEffect(() => {
@@ -268,7 +269,7 @@ export default function CoursePage() {
 
   return (
     <section className="bg-gradient-to-br from-[#f5fcfa] via-white to-[#eef7fc] min-h-screen text-[#0b1224]">
-      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div className="max-w-full mx-auto px-4 pb-8">
         <div className="flex flex-col lg:flex-row gap-6 items-start">
           {/* Sidebar */}
           <aside className="w-full lg:w-1/4 xl:w-1/5 lg:sticky lg:top-24 lg:max-h-screen lg:overflow-y-auto">
@@ -337,216 +338,210 @@ export default function CoursePage() {
 
           {/* Course Cards */}
           <main className="w-full lg:w-3/4 xl:w-4/5">
-            {/* Group Pricing Cards - Show only when group names are selected */}
-            {selectedGroupNames.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 auto-rows-max">
-                {filteredGroupPricing.length === 0 && (
-                  <div className="col-span-full text-gray-500 text-center py-12">
-                    No groups found for selected group names.
-                  </div>
-                )}
-                {filteredGroupPricing.map((group, index) => (
-                  <GroupCourseCard
-                    key={group._id || `group-${index}`}
-                    groupPricing={group}
-                    index={index}
-                  />
-                ))}
-              </div>
-            )}
+            {/* Unified Display: Show all courses together in a single grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 auto-rows-max">
+              {/* Individual Course Cards */}
+              {filteredCourses.map((course, index) => {
+                // Use recorded session pricing if available, otherwise fall back to legacy pricing
+                const recordedPrice =
+                  course.pricing?.recordedSession?.finalPrice ||
+                  course.pricing?.recordedSession?.price;
+                const recordedDiscount =
+                  course.pricing?.recordedSession?.discount;
+                const legacyPrice = course.price;
+                const legacyDiscount = course.discount;
 
-            {/* Individual Course Cards - Show when no group names are selected */}
-            {selectedGroupNames.length === 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 auto-rows-max">
-                <>
-                  {filteredCourses.length === 0 && (
-                    <div className="col-span-full text-gray-500 text-center py-12">
-                      No courses found.
-                    </div>
-                  )}
-                  {filteredCourses.map((course, index) => {
-                    // Use recorded session pricing if available, otherwise fall back to legacy pricing
-                    const recordedPrice =
-                      course.pricing?.recordedSession?.finalPrice ||
-                      course.pricing?.recordedSession?.price;
-                    const recordedDiscount =
-                      course.pricing?.recordedSession?.discount;
-                    const legacyPrice = course.price;
-                    const legacyDiscount = course.discount;
+                // Determine which pricing to use
+                const displayPrice = recordedPrice || legacyPrice;
+                const displayDiscount = recordedDiscount || legacyDiscount;
 
-                    // Determine which pricing to use
-                    const displayPrice = recordedPrice || legacyPrice;
-                    const displayDiscount = recordedDiscount || legacyDiscount;
+                const discountedPrice =
+                  displayDiscount && displayDiscount > 0
+                    ? displayPrice
+                    : displayPrice;
 
-                    const discountedPrice =
-                      displayDiscount && displayDiscount > 0
-                        ? displayPrice
-                        : displayPrice;
+                return (
+                  <motion.div
+                    key={course._id || index}
+                    whileHover={{ scale: 1.02 }}
+                    className="bg-white rounded-xl shadow-lg hover:shadow-xl transition duration-300 ease-in-out group cursor-pointer"
+                    onClick={() => {
+                      // Use course slug if available, otherwise generate from title
+                      const courseId =
+                        course.slug ||
+                        course.title
+                          .toLowerCase()
+                          .replace(/\s+/g, "-")
+                          .replace(/[^\w-]/g, "");
+                      router.push(`/course/${courseId}`);
+                    }}
+                  >
+                    {/* Image Section */}
+                    <div className="relative h-40 w-full rounded-t-xl overflow-hidden">
+                      {course.image ? (
+                        <Image
+                          src={
+                            course.image.startsWith("http")
+                              ? course.image
+                              : course.image.startsWith("/uploads/")
+                              ? `${process.env.NEXT_PUBLIC_API_URL}${course.image}`
+                              : course.image.startsWith("/")
+                              ? course.image
+                              : `${process.env.NEXT_PUBLIC_API_URL}${course.image}`
+                          }
+                          alt={course.title}
+                          fill
+                          className="object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
+                          sizes="(max-width: 768px) 100vw, 33vw"
+                          priority={index < 2}
+                          onError={(e) => {
+                            console.log("Image failed to load:", e);
+                            console.log("Image src was:", e.currentTarget.src);
+                            // Fallback to placeholder
+                            e.currentTarget.style.display = "none";
+                            const placeholder =
+                              e.currentTarget.nextElementSibling;
+                            if (placeholder) {
+                              placeholder.style.display = "flex";
+                            }
+                          }}
+                        />
+                      ) : null}
 
-                    return (
-                      <motion.div
-                        key={course._id || index}
-                        whileHover={{ scale: 1.02 }}
-                        className="bg-white rounded-xl shadow-lg hover:shadow-xl transition duration-300 ease-in-out group cursor-pointer"
-                        onClick={() => {
-                          // Use course slug if available, otherwise generate from title
-                          const courseId =
-                            course.slug ||
-                            course.title
-                              .toLowerCase()
-                              .replace(/\s+/g, "-")
-                              .replace(/[^\w-]/g, "");
-                          router.push(`/course/${courseId}`);
+                      {/* Fallback placeholder - always present but hidden when image loads */}
+                      <div
+                        className={`w-full h-full flex items-center justify-center text-gray-400 bg-gray-200 ${
+                          course.image ? "hidden" : ""
+                        }`}
+                        style={{
+                          display: course.image ? "none" : "flex",
                         }}
                       >
-                        {/* Image Section */}
-                        <div className="relative h-48 w-full rounded-t-xl overflow-hidden">
-                          {course.image ? (
-                            <Image
-                              src={
-                                course.image.startsWith("http")
-                                  ? course.image
-                                  : course.image.startsWith("/uploads/")
-                                  ? `${process.env.NEXT_PUBLIC_API_URL}${course.image}`
-                                  : course.image.startsWith("/")
-                                  ? course.image
-                                  : `${process.env.NEXT_PUBLIC_API_URL}${course.image}`
-                              }
-                              alt={course.title}
-                              fill
-                              className="object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
-                              sizes="(max-width: 768px) 100vw, 33vw"
-                              priority={index < 2}
-                              onError={(e) => {
-                                console.log("Image failed to load:", e);
-                                console.log(
-                                  "Image src was:",
-                                  e.currentTarget.src
-                                );
-                                // Fallback to placeholder
-                                e.currentTarget.style.display = "none";
-                                const placeholder =
-                                  e.currentTarget.nextElementSibling;
-                                if (placeholder) {
-                                  placeholder.style.display = "flex";
-                                }
-                              }}
-                            />
-                          ) : null}
-
-                          {/* Fallback placeholder - always present but hidden when image loads */}
-                          <div
-                            className={`w-full h-full flex items-center justify-center text-gray-400 bg-gray-200 ${
-                              course.image ? "hidden" : ""
-                            }`}
-                            style={{ display: course.image ? "none" : "flex" }}
-                          >
-                            <div className="text-center">
-                              <div className="text-4xl mb-2">📚</div>
-                              <div className="text-sm">Course Image</div>
-                            </div>
-                          </div>
+                        <div className="text-center">
+                          <div className="text-4xl mb-2">📚</div>
+                          <div className="text-sm">Course Image</div>
                         </div>
+                      </div>
+                    </div>
 
-                        {/* Content Section */}
-                        <div className="p-5 space-y-3 relative">
-                          {/* Wishlist Star */}
-                          <div
-                            className="absolute top-3 right-3 cursor-pointer z-10"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleLike(course._id);
-                            }}
+                    {/* Content Section */}
+                    <div className="p-4 space-y-2 relative">
+                      {/* Wishlist Star */}
+                      <div
+                        className="absolute top-3 right-3 cursor-pointer z-10"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleLike(course._id);
+                        }}
+                      >
+                        <button
+                          className={`w-8 h-8 flex items-center justify-center transition-all duration-300 hover:scale-110 ${
+                            wishlistCourseIds.includes(course._id)
+                              ? "text-yellow-500"
+                              : "text-yellow-500 hover:text-yellow-600"
+                          }`}
+                          title={
+                            wishlistCourseIds.includes(course._id)
+                              ? "Remove from Wishlist"
+                              : "Add to Wishlist"
+                          }
+                        >
+                          <svg
+                            className="w-5 h-5"
+                            fill={
+                              wishlistCourseIds.includes(course._id)
+                                ? "currentColor"
+                                : "none"
+                            }
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
                           >
-                            <button
-                              className={`w-8 h-8 flex items-center justify-center transition-all duration-300 hover:scale-110 ${
-                                wishlistCourseIds.includes(course._id)
-                                  ? "text-yellow-500"
-                                  : "text-yellow-500 hover:text-yellow-600"
-                              }`}
-                              title={
-                                wishlistCourseIds.includes(course._id)
-                                  ? "Remove from Wishlist"
-                                  : "Add to Wishlist"
-                              }
-                            >
-                              <svg
-                                className="w-5 h-5"
-                                fill={
-                                  wishlistCourseIds.includes(course._id)
-                                    ? "currentColor"
-                                    : "none"
-                                }
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                              </svg>
-                            </button>
-                          </div>
-                          {/* Category */}
-                          <p className="text-sm text-gray-500 font-medium">
-                            {course.category}
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                          </svg>
+                        </button>
+                      </div>
+                      {/* Category */}
+                      <p className="text-sm text-gray-500 font-medium">
+                        {course.category}
+                      </p>
+
+                      {/* Title */}
+                      <h3 className="text-base font-bold text-gray-900 group-hover:text-green-600 transition-colors line-clamp-2">
+                        {course.title}
+                      </h3>
+
+                      {/* Price Section */}
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-green-600 font-bold text-lg">
+                            ₹
+                            {discountedPrice &&
+                            typeof discountedPrice === "number"
+                              ? discountedPrice.toLocaleString()
+                              : "0"}
                           </p>
-
-                          {/* Title */}
-                          <h3 className="text-lg font-bold text-gray-900 group-hover:text-green-600 transition-colors line-clamp-2">
-                            {course.title}
-                          </h3>
-
-                          {/* Price Section */}
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-green-600 font-bold text-xl">
-                                ₹
-                                {discountedPrice &&
-                                typeof discountedPrice === "number"
-                                  ? discountedPrice.toLocaleString()
-                                  : "0"}
-                              </p>
-                              {displayDiscount > 0 && (
-                                <p className="text-gray-400 text-sm line-through">
-                                  ₹
-                                  {(() => {
-                                    const originalPrice =
-                                      course.pricing?.recordedSession?.price ||
-                                      course.price;
-                                    return originalPrice &&
-                                      typeof originalPrice === "number"
-                                      ? originalPrice.toLocaleString()
-                                      : "0";
-                                  })()}
-                                </p>
-                              )}
-                            </div>
-
-                            {/* Enroll Button */}
-                            <button
-                              className="bg-gray-900 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                // Use course slug if available, otherwise generate from title
-                                const courseId =
-                                  course.slug ||
-                                  course.title
-                                    .toLowerCase()
-                                    .replace(/\s+/g, "-")
-                                    .replace(/[^\w-]/g, "");
-                                router.push(`/course/${courseId}`);
-                              }}
-                            >
-                              Enroll Now →
-                            </button>
-                          </div>
+                          {displayDiscount > 0 && (
+                            <p className="text-gray-400 text-sm line-through">
+                              ₹
+                              {(() => {
+                                const originalPrice =
+                                  course.pricing?.recordedSession?.price ||
+                                  course.price;
+                                return originalPrice &&
+                                  typeof originalPrice === "number"
+                                  ? originalPrice.toLocaleString()
+                                  : "0";
+                              })()}
+                            </p>
+                          )}
                         </div>
-                      </motion.div>
-                    );
-                  })}
-                </>
-              </div>
-            )}
+
+                        {/* Enroll Button */}
+                        <button
+                          className="bg-gray-900 hover:bg-green-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-200"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Use course slug if available, otherwise generate from title
+                            const courseId =
+                              course.slug ||
+                              course.title
+                                .toLowerCase()
+                                .replace(/\s+/g, "-")
+                                .replace(/[^\w-]/g, "");
+                            router.push(`/course/${courseId}`);
+                          }}
+                        >
+                          Enroll →
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+
+              {/* Group Pricing Cards */}
+              {filteredGroupPricing.map((group, index) => (
+                <GroupCourseCard
+                  key={group._id || `group-${index}`}
+                  groupPricing={group}
+                  index={index}
+                />
+              ))}
+
+              {/* No courses found message */}
+              {filteredCourses.length === 0 &&
+                filteredGroupPricing.length === 0 && (
+                  <div className="col-span-full text-gray-500 text-center py-12">
+                    <div className="text-4xl mb-4">📚</div>
+                    <h3 className="text-xl font-semibold mb-2">
+                      No courses found
+                    </h3>
+                    <p>Try adjusting your search or filter criteria.</p>
+                  </div>
+                )}
+            </div>
           </main>
         </div>
       </div>

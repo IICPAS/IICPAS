@@ -7,6 +7,13 @@ const GroupPricingSchema = new Schema({
     required: true,
     trim: true,
   },
+  slug: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+    lowercase: true,
+  },
   level: {
     type: String,
     required: true,
@@ -166,8 +173,16 @@ const GroupPricingSchema = new Schema({
   },
 });
 
-// Update the updatedAt field before saving
+// Generate slug from groupName before saving
 GroupPricingSchema.pre("save", function (next) {
+  if (this.isModified("groupName") || !this.slug) {
+    this.slug = this.groupName
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, "") // Remove special characters
+      .replace(/\s+/g, "-") // Replace spaces with hyphens
+      .replace(/-+/g, "-") // Replace multiple hyphens with single hyphen
+      .trim("-"); // Remove leading/trailing hyphens
+  }
   this.updatedAt = Date.now();
   next();
 });

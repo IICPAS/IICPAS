@@ -259,10 +259,6 @@ export default function CourseDetailPage({
   const [ratingsLoading, setRatingsLoading] = useState(true);
   const [student, setStudent] = useState<any>(null);
 
-  const [isEnrollingRecordedCenter, setIsEnrollingRecordedCenter] =
-    useState(false);
-  const [isEnrollingLiveCenter, setIsEnrollingLiveCenter] = useState(false);
-
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const [pendingCartAction, setPendingCartAction] = useState<{
@@ -389,125 +385,6 @@ export default function CourseDetailPage({
     } catch (error: any) {
       console.error("Error adding to cart:", error);
       alert("Course added to cart successfully!");
-    }
-  };
-
-  // Handle Digital Hub Recorded Session + Center enrollment
-  const handleDigitalHubRecordedCenterEnrollment = async () => {
-    if (!student) {
-      setShowLoginModal(true);
-      return;
-    }
-
-    setIsEnrollingRecordedCenter(true);
-    try {
-      const enrollUrl = `${API_BASE}/v1/students/enroll-recorded-session-center/${student._id}`;
-      console.log(
-        "Enrolling in recorded session + center with URL:",
-        enrollUrl
-      );
-      console.log("Course ID:", course._id);
-      console.log("Student ID:", student._id);
-
-      // Enroll student in recorded session + center
-      const response = await axios.post(
-        enrollUrl,
-        { courseId: course._id },
-        { withCredentials: true }
-      );
-
-      console.log("Enrollment response:", response.data);
-      alert(
-        "Successfully enrolled in Digital Hub Recorded Sessions + Center! You can now access recorded content and center facilities from your dashboard."
-      );
-    } catch (error: any) {
-      console.error("Error enrolling in recorded sessions + center:", error);
-      console.error("Error details:", error.response?.data);
-      console.error("Error status:", error.response?.status);
-
-      // Provide more specific error messages
-      let errorMessage =
-        "Failed to enroll in recorded sessions + center. Please try again.";
-
-      if (error.response?.status === 400) {
-        if (error.response?.data?.message?.includes("already enrolled")) {
-          errorMessage =
-            "You are already enrolled in this recorded session + center.";
-        } else if (error.response?.data?.message?.includes("Invalid")) {
-          errorMessage =
-            "Invalid course or student information. Please refresh the page and try again.";
-        } else {
-          errorMessage = error.response?.data?.message || errorMessage;
-        }
-      } else if (error.response?.status === 404) {
-        errorMessage =
-          "Course or student not found. Please refresh the page and try again.";
-      } else if (error.response?.status === 401) {
-        errorMessage =
-          "Please login again to enroll in recorded sessions + center.";
-      }
-
-      alert(errorMessage);
-    } finally {
-      setIsEnrollingRecordedCenter(false);
-    }
-  };
-
-  // Handle Digital Hub Live Session + Center enrollment
-  const handleDigitalHubLiveCenterEnrollment = async () => {
-    if (!student) {
-      setShowLoginModal(true);
-      return;
-    }
-
-    setIsEnrollingLiveCenter(true);
-    try {
-      const enrollUrl = `${API_BASE}/v1/students/enroll-live-session-center/${student._id}`;
-      console.log("Enrolling in live session + center with URL:", enrollUrl);
-      console.log("Course ID:", course._id);
-      console.log("Student ID:", student._id);
-
-      // Enroll student in live session + center
-      const response = await axios.post(
-        enrollUrl,
-        { courseId: course._id },
-        { withCredentials: true }
-      );
-
-      console.log("Enrollment response:", response.data);
-      alert(
-        "Successfully enrolled in Digital Hub Live Sessions + Center! You can now access live sessions and center facilities from your dashboard."
-      );
-    } catch (error: any) {
-      console.error("Error enrolling in live sessions + center:", error);
-      console.error("Error details:", error.response?.data);
-      console.error("Error status:", error.response?.status);
-
-      // Provide more specific error messages
-      let errorMessage =
-        "Failed to enroll in live sessions + center. Please try again.";
-
-      if (error.response?.status === 400) {
-        if (error.response?.data?.message?.includes("already enrolled")) {
-          errorMessage =
-            "You are already enrolled in this live session + center.";
-        } else if (error.response?.data?.message?.includes("Invalid")) {
-          errorMessage =
-            "Invalid course or student information. Please refresh the page and try again.";
-        } else {
-          errorMessage = error.response?.data?.message || errorMessage;
-        }
-      } else if (error.response?.status === 404) {
-        errorMessage =
-          "Course or student not found. Please refresh the page and try again.";
-      } else if (error.response?.status === 401) {
-        errorMessage =
-          "Please login again to enroll in live sessions + center.";
-      }
-
-      alert(errorMessage);
-    } finally {
-      setIsEnrollingLiveCenter(false);
     }
   };
 
