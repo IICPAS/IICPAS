@@ -25,6 +25,10 @@ const nextConfig = {
       process.env.NODE_ENV === "production"
         ? "https://api.iicpa.in/api"
         : "http://localhost:8080/api",
+    NEXT_PUBLIC_BACKEND_URL:
+      process.env.NODE_ENV === "production"
+        ? "https://api.iicpa.in/api"
+        : "http://localhost:8080/api",
   },
 };
 module.exports = nextConfig;

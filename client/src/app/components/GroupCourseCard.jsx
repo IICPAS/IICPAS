@@ -8,8 +8,8 @@ export default function GroupCourseCard({ groupPricing, index }) {
   const router = useRouter();
 
   const handleClick = () => {
-    // Navigate to group package detail page
-    router.push(`/group-package/${groupPricing._id}`);
+    // Navigate to group package detail page using SEO-friendly slug
+    router.push(`/group-package/${groupPricing.slug}`);
   };
 
   return (
@@ -163,11 +163,11 @@ export default function GroupCourseCard({ groupPricing, index }) {
             className="bg-gray-900 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex-shrink-0"
             onClick={(e) => {
               e.stopPropagation();
-              // Navigate to group package detail page for enrollment
-              router.push(`/group-package/${groupPricing._id}`);
+              // Navigate to group package detail page for enrollment using SEO-friendly slug
+              router.push(`/group-package/${groupPricing.slug}`);
             }}
           >
-            Enroll Now →
+            Enroll →
           </button>
         </div>
       </div>

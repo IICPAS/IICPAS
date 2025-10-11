@@ -53,6 +53,63 @@ export const getAllGroupPricing = async (req, res) => {
   }
 };
 
+// Get group pricing by slug
+export const getGroupPricingBySlug = async (req, res) => {
+  try {
+    const { slug } = req.params;
+
+    const groupPricing = await GroupPricing.findOne({ slug }).populate({
+      path: "courseIds",
+      select: "title category level price",
+      populate: {
+        path: "chapters",
+        select: "title",
+        populate: {
+          path: "topics",
+          select: "title",
+        },
+      },
+    });
+
+    if (!groupPricing) {
+      return res.status(404).json({
+        success: false,
+        message: "Group package not found",
+      });
+    }
+
+    // Ensure center pricing structures exist
+    if (!groupPricing.pricing.recordedSessionCenter) {
+      groupPricing.pricing.recordedSessionCenter = {
+        title: "DIGITAL HUB+ RECORDED SESSION+ CENTER",
+        buttonText: "Add Digital Hub+ Center",
+        price: 0,
+        discount: 0,
+        finalPrice: 0,
+      };
+    }
+
+    if (!groupPricing.pricing.liveSessionCenter) {
+      groupPricing.pricing.liveSessionCenter = {
+        title: "DIGITAL HUB+ LIVE SESSION+ CENTER",
+        buttonText: "Add Digital Hub+ Center",
+        price: 0,
+        discount: 0,
+        finalPrice: 0,
+      };
+    }
+
+    res.json(groupPricing);
+  } catch (error) {
+    console.error("Error fetching group pricing by slug:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch group pricing",
+      error: error.message,
+    });
+  }
+};
+
 // Get group pricing by ID
 export const getGroupPricingById = async (req, res) => {
   try {
@@ -243,8 +300,17 @@ export const createGroupPricing = async (req, res) => {
       });
     }
 
+    // Generate slug from groupName
+    const slug = groupName
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, "") // Remove special characters
+      .replace(/\s+/g, "-") // Replace spaces with hyphens
+      .replace(/-+/g, "-") // Replace multiple hyphens with single hyphen
+      .trim("-"); // Remove leading/trailing hyphens
+
     const newGroupPricing = new GroupPricing({
       groupName,
+      slug,
       level,
       courseIds: parsedCourseIds,
       groupPrice: parseFloat(groupPrice),
@@ -386,7 +452,16 @@ export const updateGroupPricing = async (req, res) => {
     }
 
     // Update fields
-    if (groupName) groupPricing.groupName = groupName;
+    if (groupName) {
+      groupPricing.groupName = groupName;
+      // Regenerate slug when groupName changes
+      groupPricing.slug = groupName
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, "") // Remove special characters
+        .replace(/\s+/g, "-") // Replace spaces with hyphens
+        .replace(/-+/g, "-") // Replace multiple hyphens with single hyphen
+        .trim("-"); // Remove leading/trailing hyphens
+    }
     if (level) groupPricing.level = level;
     if (parsedCourseIds) groupPricing.courseIds = parsedCourseIds;
     if (groupPrice) groupPricing.groupPrice = parseFloat(groupPrice);

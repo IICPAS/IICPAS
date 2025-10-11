@@ -35,7 +35,7 @@ export default function BlogsPage() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [viewMode, setViewMode] = useState("grid");
   const [currentPage, setCurrentPage] = useState(1);
-  const [blogsPerPage] = useState(9);
+  const [blogsPerPage] = useState(15);
 
   useEffect(() => {
     async function fetchBlogs() {
@@ -125,7 +125,7 @@ export default function BlogsPage() {
       <Header />
       <div className="min-h-screen bg-white">
         {/* Enhanced Hero Section */}
-        <section className="relative pt-24 pb-16 sm:pt-28 sm:pb-20 md:pt-32 md:pb-24 bg-gradient-to-br from-green-50 via-white to-blue-50 overflow-hidden">
+        <section className="relative pt-24 pb-8 sm:pt-28 sm:pb-12 md:pt-32 md:pb-16 px-4 sm:px-6 md:px-8 bg-gradient-to-br from-green-50 via-white to-blue-50 overflow-hidden">
           {/* Animated Background Elements */}
           <div className="absolute inset-0 overflow-hidden">
             <motion.div
@@ -166,20 +166,8 @@ export default function BlogsPage() {
           </div>
 
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 md:px-8 text-center">
-            <motion.div
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-green-500/10 to-blue-500/10 backdrop-blur-md rounded-full px-6 py-3 mb-8 border border-green-200/20"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8 }}
-            >
-              <Sparkles className="w-5 h-5 text-green-500" />
-              <span className="text-xs font-semibold text-gray-700">
-                {blogs.length} Articles Published
-              </span>
-            </motion.div>
-
             <motion.h1
-              className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-6"
+              className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-3"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
@@ -191,7 +179,7 @@ export default function BlogsPage() {
             </motion.h1>
 
             <motion.p
-              className="text-sm lg:text-base text-gray-600 max-w-3xl mx-auto leading-relaxed mb-8"
+              className="text-sm lg:text-base text-gray-600 max-w-3xl mx-auto leading-relaxed mb-4"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
@@ -207,7 +195,7 @@ export default function BlogsPage() {
               transition={{ duration: 0.8, delay: 0.4 }}
             >
               {/* Search Bar */}
-              <div className="relative mb-6">
+              <div className="relative mb-4">
                 <div className="relative">
                   <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <input
@@ -287,7 +275,7 @@ export default function BlogsPage() {
         </section>
 
         {/* Blog Grid Section */}
-        <section className="relative py-20 bg-white overflow-hidden">
+        <section className="relative pt-8 pb-20 bg-white overflow-hidden">
           <div className="relative max-w-7xl mx-auto px-6">
             {/* Layout with Sidebar */}
             <div className="flex flex-col lg:flex-row gap-8">
@@ -338,7 +326,7 @@ export default function BlogsPage() {
                   <div
                     className={`${
                       viewMode === "grid"
-                        ? "grid gap-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3"
+                        ? "grid gap-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4"
                         : "space-y-2"
                     }`}
                   >

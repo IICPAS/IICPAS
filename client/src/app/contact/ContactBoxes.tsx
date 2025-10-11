@@ -27,88 +27,33 @@ export default function ContactBoxes() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchContactInfo();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const fetchContactInfo = async () => {
-    try {
-      const response = await fetch("/api/contact-info/active");
-      if (response.ok) {
-        const data = await response.json();
-        // Map the data to include color based on background
-        const mappedData = data.map((item: ContactBox) => ({
-          ...item,
-          color: getColorFromBg(item.bg),
-        }));
-        setContactInfo(mappedData);
-      } else {
-        // Fallback to mock data if API fails
-        setContactInfo([
-          {
-            title: "Address",
-            content:
-              "SHOP NO 712-A, SEVENTH FLOOR, KASANA TOWER, ALPHA COMMERCIAL BELT, Greater Noida, Gautam Buddha Nagar,Uttar Pradesh, 201308",
-            icon: "FaMapMarkerAlt",
-            bg: "from-blue-50 to-blue-100",
-            color: "text-blue-700",
-          },
-          {
-            title: "Phone",
-            content: "+91 9593330999",
-            icon: "FaPhoneAlt",
-            bg: "from-green-50 to-green-100",
-            color: "text-green-700",
-          },
-          {
-            title: "Email",
-            content: "support@iicpa.org",
-            icon: "FaEnvelope",
-            bg: "from-purple-50 to-purple-100",
-            color: "text-purple-700",
-          },
-        ]);
-      }
-    } catch (error) {
-      console.error("Error fetching contact info:", error);
-      // Fallback to mock data on error
-      setContactInfo([
-        {
-          title: "Address",
-          content:
-            "SHOP NO 712-A, SEVENTH FLOOR, KASANA TOWER, ALPHA COMMERCIAL BELT, Greater Noida, Gautam Buddha Nagar,Uttar Pradesh, 201308",
-          icon: "FaMapMarkerAlt",
-          bg: "from-blue-50 to-blue-100",
-          color: "text-blue-700",
-        },
-        {
-          title: "Phone",
-          content: "+91 9593330999",
-          icon: "FaPhoneAlt",
-          bg: "from-green-50 to-green-100",
-          color: "text-green-700",
-        },
-        {
-          title: "Email",
-          content: "support@iicpa.org",
-          icon: "FaEnvelope",
-          bg: "from-purple-50 to-purple-100",
-          color: "text-purple-700",
-        },
-      ]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getColorFromBg = (bg: string): string => {
-    if (bg.includes("blue")) return "text-blue-700";
-    if (bg.includes("green")) return "text-green-700";
-    if (bg.includes("purple")) return "text-purple-700";
-    if (bg.includes("red")) return "text-red-700";
-    if (bg.includes("yellow")) return "text-yellow-700";
-    if (bg.includes("indigo")) return "text-indigo-700";
-    return "text-gray-700";
-  };
+    // Use hardcoded data directly - no API call needed
+    setContactInfo([
+      {
+        title: "Address",
+        content:
+          "SHOP NO 712-A, SEVENTH FLOOR, KASANA TOWER, ALPHA COMMERCIAL BELT, Greater Noida, Gautam Buddha Nagar,Uttar Pradesh, 201308",
+        icon: "FaMapMarkerAlt",
+        bg: "from-blue-50 to-blue-100",
+        color: "text-blue-700",
+      },
+      {
+        title: "Phone",
+        content: "+91 9593330999",
+        icon: "FaPhoneAlt",
+        bg: "from-green-50 to-green-100",
+        color: "text-green-700",
+      },
+      {
+        title: "Email",
+        content: "support@iicpa.org",
+        icon: "FaEnvelope",
+        bg: "from-purple-50 to-purple-100",
+        color: "text-purple-700",
+      },
+    ]);
+    setLoading(false);
+  }, []);
 
   if (loading) {
     return (
