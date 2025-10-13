@@ -91,106 +91,99 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
     <>
       <Header />
 
-      {/* Professional Blog Header */}
-      <section className="relative pt-32 pb-16 bg-white">
-        <div className="max-w-full mx-auto px-4">
-          <div className="flex flex-col lg:flex-row gap-8 lg:items-start">
-            <div className="flex-1 lg:max-w-none">
-              {/* Breadcrumb */}
-              <motion.div
-                className="mb-6"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
+      {/* Centered Reading Area */}
+      <section className="relative pt-32 pb-16 bg-gray-50">
+        <div className="max-w-4xl mx-auto px-4">
+          {/* Breadcrumb */}
+          <motion.div
+            className="mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <nav className="flex items-center justify-center space-x-2 text-sm text-gray-500">
+              <Link
+                href="/blogs"
+                className="hover:text-green-600 transition-colors"
               >
-                <nav className="flex items-center space-x-2 text-sm text-gray-500">
-                  <Link
-                    href="/blogs"
-                    className="hover:text-green-600 transition-colors"
-                  >
-                    Blog
-                  </Link>
-                  <span>/</span>
-                  <span>{blog.title}</span>
-                </nav>
-              </motion.div>
+                Blog
+              </Link>
+              <span>/</span>
+              <span>{blog.title}</span>
+            </nav>
+          </motion.div>
 
-              {/* Article Meta */}
+          {/* Main Reading Container */}
+          <motion.div
+            className="bg-white rounded-3xl shadow-xl overflow-hidden"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          >
+            {/* Article Meta */}
+            <div className="px-8 pt-8 pb-4">
               <motion.div
-                className="mb-6"
+                className="flex flex-wrap items-center justify-center gap-4 text-sm text-gray-600 mb-6"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.1 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
               >
-                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-                  <div className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 px-3 py-1.5 rounded-lg border border-green-200">
-                    <Tag className="w-3 h-3" />
-                    <span>{blog.category || "General"}</span>
-                  </div>
-                  <div className="inline-flex items-center gap-1.5">
-                    <Calendar className="w-3 h-3 text-gray-400" />
-                    <span>
-                      {blog.createdAt
-                        ? new Date(blog.createdAt).toLocaleDateString("en-GB", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                          })
-                        : "Recent"}
-                    </span>
-                  </div>
-                  <div className="inline-flex items-center gap-1.5">
-                    <Clock className="w-3 h-3 text-gray-400" />
-                    <span>{Math.ceil(blog.content.length / 500)} min read</span>
-                  </div>
+                <div className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 px-4 py-2 rounded-full border border-green-200">
+                  <Tag className="w-3 h-3" />
+                  <span>{blog.category || "General"}</span>
+                </div>
+                <div className="inline-flex items-center gap-1.5">
+                  <Calendar className="w-3 h-3 text-gray-400" />
+                  <span>
+                    {blog.createdAt
+                      ? new Date(blog.createdAt).toLocaleDateString("en-GB", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        })
+                      : "Recent"}
+                  </span>
+                </div>
+                <div className="inline-flex items-center gap-1.5">
+                  <Clock className="w-3 h-3 text-gray-400" />
+                  <span>{Math.ceil(blog.content.length / 500)} min read</span>
                 </div>
               </motion.div>
 
               {/* Title */}
               <motion.h1
-                className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 leading-tight mb-4 max-w-4xl text-left"
+                className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 leading-tight text-center mb-8"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
+                transition={{ duration: 0.8, delay: 0.4 }}
               >
                 {blog.title}
               </motion.h1>
             </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Cover Image Section */}
-      <section className="pb-6 bg-white">
-        <div className="max-w-6xl pl-6 pr-4">
-          <motion.div
-            className="relative overflow-hidden rounded-2xl shadow-lg"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-          >
-            <img
-              src={imageUrl}
-              alt={blog.title}
-              className="w-full h-48 sm:h-56 md:h-64 object-cover"
-              loading="eager"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-          </motion.div>
-        </div>
-      </section>
+            {/* Cover Image */}
+            <motion.div
+              className="relative overflow-hidden"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, delay: 0.5 }}
+            >
+              <img
+                src={imageUrl}
+                alt={blog.title}
+                className="w-full h-64 sm:h-80 md:h-96 object-cover"
+                loading="eager"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+            </motion.div>
 
-      {/* Main Content */}
-      <section className="pb-16 bg-white">
-        <div className="max-w-full mx-auto pl-8 pr-4">
-          <div className="flex flex-col lg:flex-row gap-4">
             {/* Article Content */}
-            <article className="flex-1 lg:max-w-none">
+            <div className="px-8 py-8">
               <motion.div
-                className="prose prose-lg max-w-none ml-8"
+                className="prose prose-lg max-w-none text-center text-gray-700 leading-relaxed"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.4 }}
+                transition={{ duration: 0.8, delay: 0.6 }}
                 dangerouslySetInnerHTML={{ __html: blog.content }}
               />
 
@@ -199,15 +192,15 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
                 className="mt-12 pt-8 border-t border-gray-200"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.5 }}
+                transition={{ duration: 0.6, delay: 0.7 }}
               >
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <div className="flex items-center gap-4">
-                    <button className="inline-flex items-center gap-2 text-gray-600 hover:text-green-600 transition-colors">
+                <div className="flex flex-wrap items-center justify-center gap-6">
+                  <div className="flex items-center gap-6">
+                    <button className="inline-flex items-center gap-2 text-gray-600 hover:text-green-600 transition-colors px-4 py-2 rounded-full hover:bg-green-50">
                       <Share2 className="w-4 h-4" />
                       <span>Share</span>
                     </button>
-                    <button className="inline-flex items-center gap-2 text-gray-600 hover:text-green-600 transition-colors">
+                    <button className="inline-flex items-center gap-2 text-gray-600 hover:text-green-600 transition-colors px-4 py-2 rounded-full hover:bg-green-50">
                       <Bookmark className="w-4 h-4" />
                       <span>Save</span>
                     </button>
@@ -218,56 +211,55 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
                   </div>
                 </div>
               </motion.div>
-            </article>
+            </div>
+          </motion.div>
 
-            {/* Sidebar */}
-            <aside className="lg:w-96">
-              {/* Accounting Quiz */}
-              <motion.div
-                className="mt-8"
-                initial={{ opacity: 0, x: 30 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8, delay: 0.7 }}
-              >
-                <AccountingQuiz />
-              </motion.div>
-            </aside>
-          </div>
+          {/* Accounting Quiz Section */}
+          <motion.div
+            className="mt-12"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.8 }}
+          >
+            <div className="bg-white rounded-3xl shadow-xl p-8">
+              <AccountingQuiz />
+            </div>
+          </motion.div>
         </div>
       </section>
 
-      {/* Moving Read More Cards Section */}
-      <section className="py-16 bg-gray-50">
+      {/* Moving Blogs Carousel Section */}
+      <section className="py-20 bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
           <motion.div
-            className="text-center mb-12"
+            className="text-center mb-16"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-4xl font-bold text-gray-900 mb-6">
               Continue Reading
             </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <p className="text-gray-600 max-w-2xl mx-auto text-lg">
               Discover more insights and knowledge from our expert team
             </p>
           </motion.div>
 
           {/* Moving Cards Container */}
-          <div className="relative overflow-hidden">
+          <div className="relative overflow-hidden rounded-3xl bg-white/50 backdrop-blur-sm p-8">
             <motion.div
-              className="flex gap-6"
+              className="flex gap-8"
               animate={{
                 x: [0, -100 * getRelatedArticles().length],
               }}
               transition={{
-                duration: 30,
+                duration: 40,
                 repeat: Infinity,
                 ease: "linear",
               }}
               style={{
-                width: `${getRelatedArticles().length * 320}px`,
+                width: `${getRelatedArticles().length * 360}px`,
               }}
             >
               {/* Duplicate cards for seamless loop */}
@@ -275,8 +267,8 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
                 (relatedBlog, index) => (
                   <motion.div
                     key={`${relatedBlog._id}-${index}`}
-                    className="flex-shrink-0 w-80 bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
-                    whileHover={{ y: -5 }}
+                    className="flex-shrink-0 w-80 bg-white rounded-3xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-500 hover:scale-105"
+                    whileHover={{ y: -8 }}
                   >
                     <Link
                       href={`/blogs/${relatedBlog.title
@@ -284,7 +276,7 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
                         .toLowerCase()}`}
                       className="block group"
                     >
-                      <div className="h-48 overflow-hidden">
+                      <div className="h-56 overflow-hidden rounded-t-3xl">
                         <img
                           src={
                             relatedBlog.imageUrl?.startsWith("http")
@@ -301,14 +293,19 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
                               : getFallbackImage(relatedBlog.title)
                           }
                           alt={relatedBlog.title}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                         />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       </div>
-                      <div className="p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 group-hover:text-green-600 transition-colors line-clamp-2 mb-2">
+                      <div className="p-8">
+                        <div className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-medium mb-4">
+                          <Tag className="w-3 h-3" />
+                          <span>{relatedBlog.category || "General"}</span>
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 group-hover:text-green-600 transition-colors line-clamp-2 mb-3">
                           {relatedBlog.title}
                         </h3>
-                        <p className="text-sm text-gray-500 mb-3">
+                        <p className="text-sm text-gray-500 mb-4">
                           {relatedBlog.createdAt
                             ? new Date(
                                 relatedBlog.createdAt
@@ -319,15 +316,15 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
                               })
                             : "Recent"}
                         </p>
-                        <div className="flex items-center text-green-600 text-sm font-medium">
+                        <div className="flex items-center text-green-600 text-sm font-semibold">
                           <span>Read More</span>
                           <motion.svg
-                            className="w-4 h-4 ml-1"
+                            className="w-5 h-5 ml-2"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
-                            animate={{ x: [0, 4, 0] }}
-                            transition={{ duration: 1.5, repeat: Infinity }}
+                            animate={{ x: [0, 5, 0] }}
+                            transition={{ duration: 2, repeat: Infinity }}
                           >
                             <path
                               strokeLinecap="round"
