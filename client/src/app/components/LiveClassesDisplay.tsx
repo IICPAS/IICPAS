@@ -39,6 +39,7 @@ export default function LiveClassesDisplay() {
     "upcoming" | "live" | "completed"
   >("upcoming");
   const [user, setUser] = useState<User | null>(null);
+  const [blogs, setBlogs] = useState<any[]>([]);
 
   const API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -64,14 +65,21 @@ export default function LiveClassesDisplay() {
       await getUser();
 
       try {
-        const response = await fetch(`${API}/api/live-sessions`, {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-        });
+        const [liveSessionsResponse, blogsResponse] = await Promise.all([
+          fetch(`${API}/api/live-sessions`, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+          }),
+          fetch(`${API}/api/blogs`, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+          }),
+        ]);
 
-        if (response.ok) {
-          const data = await response.json();
+        if (liveSessionsResponse.ok) {
+          const data = await liveSessionsResponse.json();
 
           const transformedClasses = data.map((session: any) => ({
             _id: session._id,
@@ -101,8 +109,29 @@ export default function LiveClassesDisplay() {
           }));
 
           setLiveClasses(transformedClasses);
+        }
+
+        // Handle blogs response
+        if (blogsResponse.ok) {
+          const blogsData = await blogsResponse.json();
+          // Filter only active blogs
+          const activeBlogs = blogsData.filter(
+            (blog: any) => blog.status === "active"
+          );
+          setBlogs(activeBlogs);
         } else {
-          console.error("API request failed with status:", response.status);
+          console.error(
+            "Blogs API request failed with status:",
+            blogsResponse.status
+          );
+          setBlogs([]);
+        }
+
+        if (!liveSessionsResponse.ok) {
+          console.error(
+            "Live sessions API request failed with status:",
+            liveSessionsResponse.status
+          );
           setLiveClasses([
             {
               _id: "1",
@@ -353,6 +382,143 @@ export default function LiveClassesDisplay() {
         <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
         <span>Live updates enabled</span>
       </div>
+
+      {/* Moving Blogs Carousel Section */}
+      {blogs.length > 0 && (
+        <section className="py-20 bg-white mt-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+            <motion.div
+              className="text-center mb-16"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+            >
+              <h2 className="text-4xl font-bold text-gray-900 mb-6">
+                Latest Blog Posts
+              </h2>
+              <p className="text-gray-600 max-w-2xl mx-auto text-lg">
+                Stay updated with our latest insights and knowledge
+              </p>
+            </motion.div>
+
+            {/* Moving Cards Container */}
+            <div className="relative overflow-hidden rounded-3xl bg-white p-8">
+              <motion.div
+                className="flex gap-8"
+                animate={{
+                  x: [0, -100 * Math.min(blogs.length, 10)],
+                }}
+                transition={{
+                  duration: 40,
+                  repeat: Infinity,
+                  ease: "linear",
+                }}
+                style={{
+                  width: `${Math.min(blogs.length, 10) * 360}px`,
+                }}
+              >
+                {/* Duplicate cards for seamless loop */}
+                {[...blogs.slice(0, 10), ...blogs.slice(0, 10)].map(
+                  (blog, index) => {
+                    // Generate fallback image based on blog title or use default
+                    const getFallbackImage = (title: string) => {
+                      const images = [
+                        "/images/accounting.webp",
+                        "/images/course.png",
+                        "/images/live-class.jpg",
+                        "/images/student.png",
+                        "/images/university.png",
+                        "/images/vr-student.jpg",
+                      ];
+                      const hash = title.split("").reduce((a, b) => {
+                        a = (a << 5) - a + b.charCodeAt(0);
+                        return a & a;
+                      }, 0);
+                      return images[Math.abs(hash) % images.length];
+                    };
+
+                    const imageUrl = blog.imageUrl?.startsWith("http")
+                      ? blog.imageUrl
+                      : blog.imageUrl
+                      ? `${
+                          process.env.NEXT_PUBLIC_API_URL ||
+                          "http://localhost:8080"
+                        }${
+                          blog.imageUrl.startsWith("/")
+                            ? blog.imageUrl
+                            : "/" + blog.imageUrl
+                        }`
+                      : getFallbackImage(blog.title);
+
+                    return (
+                      <motion.div
+                        key={`${blog._id}-${index}`}
+                        className="flex-shrink-0 w-80 bg-white rounded-3xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-500 hover:scale-105"
+                        whileHover={{ y: -8 }}
+                        onClick={() => {
+                          const blogSlug = blog.title
+                            .replace(/\s+/g, "-")
+                            .toLowerCase();
+                          window.location.href = `/blogs/${blogSlug}`;
+                        }}
+                      >
+                        <div className="h-56 overflow-hidden rounded-t-3xl">
+                          <img
+                            src={imageUrl}
+                            alt={blog.title}
+                            className="w-full h-full object-cover hover:scale-110 transition-transform duration-700"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300" />
+                        </div>
+                        <div className="p-8">
+                          <div className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-medium mb-4">
+                            <span>📝</span>
+                            <span>{blog.category || "General"}</span>
+                          </div>
+                          <h3 className="text-xl font-bold text-gray-900 hover:text-green-600 transition-colors line-clamp-2 mb-3">
+                            {blog.title}
+                          </h3>
+                          <p className="text-sm text-gray-500 mb-4">
+                            {blog.createdAt
+                              ? new Date(blog.createdAt).toLocaleDateString(
+                                  "en-GB",
+                                  {
+                                    day: "2-digit",
+                                    month: "short",
+                                    year: "numeric",
+                                  }
+                                )
+                              : "Recent"}
+                          </p>
+                          <div className="flex items-center text-green-600 text-sm font-semibold">
+                            <span>Read More</span>
+                            <motion.svg
+                              className="w-5 h-5 ml-2"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                              animate={{ x: [0, 5, 0] }}
+                              transition={{ duration: 2, repeat: Infinity }}
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 5l7 7-7 7"
+                              />
+                            </motion.svg>
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  }
+                )}
+              </motion.div>
+            </div>
+          </div>
+        </section>
+      )}
     </div>
   );
 }
