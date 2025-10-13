@@ -103,10 +103,18 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
           >
             <nav className="flex items-center justify-center space-x-2 text-sm text-gray-500">
               <Link
+                href="/"
+                className="hover:text-green-600 transition-colors flex items-center gap-1"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Home
+              </Link>
+              <span>/</span>
+              <Link
                 href="/blogs"
                 className="hover:text-green-600 transition-colors"
               >
-                Blog
+                Blogs
               </Link>
               <span>/</span>
               <span>{blog.title}</span>
@@ -171,7 +179,7 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
               <img
                 src={imageUrl}
                 alt={blog.title}
-                className="w-full h-64 sm:h-80 md:h-96 object-cover"
+                className="w-full h-48 sm:h-56 md:h-64 object-cover"
                 loading="eager"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
