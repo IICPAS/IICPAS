@@ -235,7 +235,7 @@ export default function GroupPackagePage({
       <Header />
 
       <div className="pt-32 sm:pt-40 lg:pt-48 pb-16">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-3 gap-8 ml-16">
           {/* LEFT */}
           <div className="lg:col-span-2">
             <motion.div
@@ -323,7 +323,7 @@ export default function GroupPackagePage({
                   {pkg.courseIds.map((course, i) => (
                     <div
                       key={course._id}
-                      className="mb-3 rounded-lg border border-gray-100 shadow-md hover:scale-[1.01] transition"
+                      className="mb-3 ml-4 mr-4 rounded-lg border border-gray-100 shadow-md hover:scale-[1.01] transition"
                     >
                       <button
                         onClick={() => toggle(i)}
