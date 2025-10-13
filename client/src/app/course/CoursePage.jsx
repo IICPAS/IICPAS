@@ -557,6 +557,158 @@ export default function CoursePage() {
           </main>
         </div>
       </div>
+
+      {/* Moving Courses Carousel Section */}
+      {allCourses.length > 0 && (
+        <section className="py-20 bg-gradient-to-br from-gray-50 to-gray-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+            <motion.div
+              className="text-center mb-16"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+            >
+              <h2 className="text-4xl font-bold text-gray-900 mb-6">
+                Explore More Courses
+              </h2>
+              <p className="text-gray-600 max-w-2xl mx-auto text-lg">
+                Discover our comprehensive range of professional courses
+              </p>
+            </motion.div>
+
+            {/* Moving Cards Container */}
+            <div className="relative overflow-hidden rounded-3xl bg-white/50 backdrop-blur-sm p-8">
+              <motion.div
+                className="flex gap-8"
+                animate={{
+                  x: [0, -100 * Math.min(allCourses.length, 10)],
+                }}
+                transition={{
+                  duration: 40,
+                  repeat: Infinity,
+                  ease: "linear",
+                }}
+                style={{
+                  width: `${Math.min(allCourses.length, 10) * 360}px`,
+                }}
+              >
+                {/* Duplicate cards for seamless loop */}
+                {[...allCourses.slice(0, 10), ...allCourses.slice(0, 10)].map(
+                  (course, index) => {
+                    // Use recorded session pricing if available, otherwise fall back to legacy pricing
+                    const recordedPrice =
+                      course.pricing?.recordedSession?.finalPrice ||
+                      course.pricing?.recordedSession?.price;
+                    const recordedDiscount =
+                      course.pricing?.recordedSession?.discount;
+                    const legacyPrice = course.price;
+                    const legacyDiscount = course.discount;
+
+                    // Determine which pricing to use
+                    const displayPrice = recordedPrice || legacyPrice;
+                    const displayDiscount = recordedDiscount || legacyDiscount;
+
+                    const discountedPrice =
+                      displayDiscount && displayPrice
+                        ? displayPrice - (displayPrice * displayDiscount) / 100
+                        : displayPrice;
+
+                    const imageUrl = course.imageUrl?.startsWith("http")
+                      ? course.imageUrl
+                      : course.imageUrl
+                      ? `${
+                          process.env.NEXT_PUBLIC_API_URL ||
+                          "http://localhost:8080"
+                        }${
+                          course.imageUrl.startsWith("/")
+                            ? course.imageUrl
+                            : "/" + course.imageUrl
+                        }`
+                      : "/images/course.png";
+
+                    return (
+                      <motion.div
+                        key={`${course._id}-${index}`}
+                        className="flex-shrink-0 w-80 bg-white rounded-3xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-500 hover:scale-105"
+                        whileHover={{ y: -8 }}
+                        onClick={() => {
+                          const courseId =
+                            course.slug ||
+                            course.title
+                              .toLowerCase()
+                              .replace(/\s+/g, "-")
+                              .replace(/[^\w-]/g, "");
+                          router.push(`/course/${courseId}`);
+                        }}
+                      >
+                        <div className="h-56 overflow-hidden rounded-t-3xl">
+                          <img
+                            src={imageUrl}
+                            alt={course.title}
+                            className="w-full h-full object-cover hover:scale-110 transition-transform duration-700"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300" />
+                        </div>
+                        <div className="p-8">
+                          <div className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-medium mb-4">
+                            <span>📚</span>
+                            <span>{course.category || "General"}</span>
+                          </div>
+                          <h3 className="text-xl font-bold text-gray-900 hover:text-green-600 transition-colors line-clamp-2 mb-3">
+                            {course.title}
+                          </h3>
+                          <p className="text-sm text-gray-500 mb-4">
+                            {course.level || "Professional Level"}
+                          </p>
+                          <div className="flex items-center justify-between mb-4">
+                            <div>
+                              <p className="text-green-600 font-bold text-lg">
+                                ₹
+                                {discountedPrice?.toLocaleString() ||
+                                  displayPrice?.toLocaleString() ||
+                                  "0"}
+                              </p>
+                              {displayDiscount && (
+                                <p className="text-gray-400 text-sm line-through">
+                                  ₹{displayPrice?.toLocaleString() || "0"}
+                                </p>
+                              )}
+                            </div>
+                            {displayDiscount && (
+                              <span className="bg-red-100 text-red-600 text-xs font-bold px-2 py-1 rounded">
+                                {displayDiscount}% OFF
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center text-green-600 text-sm font-semibold">
+                            <span>Learn More</span>
+                            <motion.svg
+                              className="w-5 h-5 ml-2"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                              animate={{ x: [0, 5, 0] }}
+                              transition={{ duration: 2, repeat: Infinity }}
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 5l7 7-7 7"
+                              />
+                            </motion.svg>
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  }
+                )}
+              </motion.div>
+            </div>
+          </div>
+        </section>
+      )}
     </section>
   );
 }
