@@ -12,6 +12,7 @@ import connectDB from "./config/db.js";
 import studentRoutes from "./routes/studentRoutes.js";
 import newCartRoutes from "./routes/newCartRoutes.js";
 import paymentRoutes from "./routes/PaymentRoutes/paymentRoutes.js";
+import testPaymentRoutes from "./routes/payment.js";
 import transactionRoutes from "./routes/transactionRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import blogRoutes from "./routes/blogRoutes.js";
@@ -204,6 +205,9 @@ app.use("/api/v1/website/faq", faqRoutes);
 //Ticket Routes
 app.use("/api/tickets", ticketRoutes);
 app.use("/api/bookings", bookingRoutes);
+
+//Test Payment Routes
+app.use("/api/test-payment", testPaymentRoutes);
 
 //IP Whitelist Routes
 app.use("/api/ip-whitelist", ipWhitelistRoutes);
