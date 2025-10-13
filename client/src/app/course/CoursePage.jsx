@@ -521,14 +521,26 @@ export default function CoursePage() {
                 );
               })}
 
-              {/* Group Pricing Cards */}
-              {filteredGroupPricing.map((group, index) => (
-                <GroupCourseCard
-                  key={group._id || `group-${index}`}
-                  groupPricing={group}
-                  index={index}
-                />
-              ))}
+              {/* Course Packages Section */}
+              {filteredGroupPricing.length > 0 && (
+                <>
+                  <div className="col-span-full mb-6">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                      Course Packages
+                    </h2>
+                    <p className="text-gray-600">
+                      Complete course bundles with special pricing
+                    </p>
+                  </div>
+                  {filteredGroupPricing.map((group, index) => (
+                    <GroupCourseCard
+                      key={group._id || `group-${index}`}
+                      groupPricing={group}
+                      index={index}
+                    />
+                  ))}
+                </>
+              )}
 
               {/* No courses found message */}
               {filteredCourses.length === 0 &&
