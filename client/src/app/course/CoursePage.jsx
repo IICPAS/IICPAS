@@ -596,7 +596,7 @@ export default function CoursePage() {
             </motion.div>
 
             {/* Moving Cards Container */}
-            <div className="relative overflow-hidden rounded-3xl bg-white/50 backdrop-blur-sm p-8">
+            <div className="relative overflow-hidden rounded-3xl bg-white p-8">
               <motion.div
                 className="flex gap-8"
                 animate={{

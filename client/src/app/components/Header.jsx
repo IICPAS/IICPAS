@@ -49,7 +49,7 @@ const navLinks = [
   {
     name: "Resources",
     children: [
-      { name: "Blogs", href: "/blog" },
+      { name: "Blogs", href: "/blogs" },
       { name: "Contact", href: "/contact" },
       { name: "About", href: "/about" },
       { name: "Demo Digital Hub", href: "/demo-digital-hub" },
