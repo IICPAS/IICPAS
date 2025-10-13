@@ -127,14 +127,9 @@ const SpecialOfferFlashCard = ({
             style={{ animationDelay: `${index * 100}ms` }}
           >
             {/* Main Card */}
-            <div className="relative bg-gradient-to-br from-white via-gray-50 to-white rounded-3xl shadow-2xl overflow-hidden border border-white/20 backdrop-blur-sm">
+            <div className="relative bg-gradient-to-br from-white via-gray-50 to-white rounded-3xl shadow-2xl overflow-hidden backdrop-blur-sm">
               {/* 3D Card Effect */}
               <div className="absolute inset-0 bg-gradient-to-br from-pink-500/10 via-purple-500/10 to-orange-500/10 rounded-3xl"></div>
-
-              {/* Animated Border */}
-              <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-pink-500 via-purple-500 to-orange-500 p-[2px]">
-                <div className="h-full w-full rounded-3xl bg-white"></div>
-              </div>
 
               {/* Close Button */}
               <button
@@ -194,11 +189,10 @@ const SpecialOfferFlashCard = ({
                   {offer.description}
                 </p>
 
-                {/* Time Remaining with 3D Effect */}
+                {/* Time Remaining */}
                 <div className="mb-6">
-                  <div className="inline-block relative">
-                    <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-blue-500 rounded-full blur-md opacity-50"></div>
-                    <div className="relative bg-gradient-to-r from-green-500 via-blue-500 to-green-600 text-white px-6 py-3 rounded-full font-bold text-sm shadow-lg transform hover:scale-105 transition-transform duration-200">
+                  <div className="inline-block">
+                    <div className="bg-gradient-to-r from-green-500 via-blue-500 to-green-600 text-white px-6 py-3 rounded-full font-bold text-sm transform hover:scale-105 transition-transform duration-200">
                       ⏰ {formatTimeRemaining(offer.expiryDate)}
                     </div>
                   </div>
