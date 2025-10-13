@@ -16,6 +16,7 @@ export default function CoursePage() {
   const [allCourses, setAllCourses] = useState([]);
   const [categories, setCategories] = useState([]);
   const [groupPricing, setGroupPricing] = useState([]);
+  const [blogs, setBlogs] = useState([]);
   const [search, setSearch] = useState("");
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedGroupNames, setSelectedGroupNames] = useState([]);
@@ -33,13 +34,18 @@ export default function CoursePage() {
       setLoading(true);
 
       try {
-        // Fetch courses, categories, and group pricing in parallel
-        const [coursesResponse, categoriesResponse, groupPricingResponse] =
-          await Promise.allSettled([
-            axios.get(`${API_BASE}/courses`),
-            axios.get(`${API_BASE}/categories`),
-            axios.get(`${API_BASE}/group-pricing`),
-          ]);
+        // Fetch courses, categories, group pricing, and blogs in parallel
+        const [
+          coursesResponse,
+          categoriesResponse,
+          groupPricingResponse,
+          blogsResponse,
+        ] = await Promise.allSettled([
+          axios.get(`${API_BASE}/courses`),
+          axios.get(`${API_BASE}/categories`),
+          axios.get(`${API_BASE}/group-pricing`),
+          axios.get(`${API_BASE}/blogs`),
+        ]);
 
         // Update courses if API call succeeded
         if (
@@ -75,6 +81,18 @@ export default function CoursePage() {
             "Group pricing response failed or empty:",
             groupPricingResponse
           );
+        }
+
+        // Update blogs if API call succeeded
+        if (
+          blogsResponse.status === "fulfilled" &&
+          blogsResponse.value.data?.length > 0
+        ) {
+          // Filter only active blogs
+          const activeBlogs = blogsResponse.value.data.filter(
+            (blog) => blog.status === "active"
+          );
+          setBlogs(activeBlogs);
         }
       } catch (error) {
         console.log("API calls failed:", error);
@@ -558,8 +576,8 @@ export default function CoursePage() {
         </div>
       </div>
 
-      {/* Moving Courses Carousel Section */}
-      {allCourses.length > 0 && (
+      {/* Moving Blogs Carousel Section */}
+      {blogs.length > 0 && (
         <section className="py-20 bg-gradient-to-br from-gray-50 to-gray-100">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
             <motion.div
@@ -570,10 +588,10 @@ export default function CoursePage() {
               viewport={{ once: true }}
             >
               <h2 className="text-4xl font-bold text-gray-900 mb-6">
-                Explore More Courses
+                Latest Blog Posts
               </h2>
               <p className="text-gray-600 max-w-2xl mx-auto text-lg">
-                Discover our comprehensive range of professional courses
+                Stay updated with our latest insights and knowledge
               </p>
             </motion.div>
 
@@ -582,7 +600,7 @@ export default function CoursePage() {
               <motion.div
                 className="flex gap-8"
                 animate={{
-                  x: [0, -100 * Math.min(allCourses.length, 10)],
+                  x: [0, -100 * Math.min(blogs.length, 10)],
                 }}
                 transition={{
                   duration: 40,
@@ -590,99 +608,84 @@ export default function CoursePage() {
                   ease: "linear",
                 }}
                 style={{
-                  width: `${Math.min(allCourses.length, 10) * 360}px`,
+                  width: `${Math.min(blogs.length, 10) * 360}px`,
                 }}
               >
                 {/* Duplicate cards for seamless loop */}
-                {[...allCourses.slice(0, 10), ...allCourses.slice(0, 10)].map(
-                  (course, index) => {
-                    // Use recorded session pricing if available, otherwise fall back to legacy pricing
-                    const recordedPrice =
-                      course.pricing?.recordedSession?.finalPrice ||
-                      course.pricing?.recordedSession?.price;
-                    const recordedDiscount =
-                      course.pricing?.recordedSession?.discount;
-                    const legacyPrice = course.price;
-                    const legacyDiscount = course.discount;
+                {[...blogs.slice(0, 10), ...blogs.slice(0, 10)].map(
+                  (blog, index) => {
+                    // Generate fallback image based on blog title or use default
+                    const getFallbackImage = (title) => {
+                      const images = [
+                        "/images/accounting.webp",
+                        "/images/course.png",
+                        "/images/live-class.jpg",
+                        "/images/student.png",
+                        "/images/university.png",
+                        "/images/vr-student.jpg",
+                      ];
+                      const hash = title.split("").reduce((a, b) => {
+                        a = (a << 5) - a + b.charCodeAt(0);
+                        return a & a;
+                      }, 0);
+                      return images[Math.abs(hash) % images.length];
+                    };
 
-                    // Determine which pricing to use
-                    const displayPrice = recordedPrice || legacyPrice;
-                    const displayDiscount = recordedDiscount || legacyDiscount;
-
-                    const discountedPrice =
-                      displayDiscount && displayPrice
-                        ? displayPrice - (displayPrice * displayDiscount) / 100
-                        : displayPrice;
-
-                    const imageUrl = course.imageUrl?.startsWith("http")
-                      ? course.imageUrl
-                      : course.imageUrl
+                    const imageUrl = blog.imageUrl?.startsWith("http")
+                      ? blog.imageUrl
+                      : blog.imageUrl
                       ? `${
                           process.env.NEXT_PUBLIC_API_URL ||
                           "http://localhost:8080"
                         }${
-                          course.imageUrl.startsWith("/")
-                            ? course.imageUrl
-                            : "/" + course.imageUrl
+                          blog.imageUrl.startsWith("/")
+                            ? blog.imageUrl
+                            : "/" + blog.imageUrl
                         }`
-                      : "/images/course.png";
+                      : getFallbackImage(blog.title);
 
                     return (
                       <motion.div
-                        key={`${course._id}-${index}`}
+                        key={`${blog._id}-${index}`}
                         className="flex-shrink-0 w-80 bg-white rounded-3xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-500 hover:scale-105"
                         whileHover={{ y: -8 }}
                         onClick={() => {
-                          const courseId =
-                            course.slug ||
-                            course.title
-                              .toLowerCase()
-                              .replace(/\s+/g, "-")
-                              .replace(/[^\w-]/g, "");
-                          router.push(`/course/${courseId}`);
+                          const blogSlug = blog.title
+                            .replace(/\s+/g, "-")
+                            .toLowerCase();
+                          router.push(`/blogs/${blogSlug}`);
                         }}
                       >
                         <div className="h-56 overflow-hidden rounded-t-3xl">
                           <img
                             src={imageUrl}
-                            alt={course.title}
+                            alt={blog.title}
                             className="w-full h-full object-cover hover:scale-110 transition-transform duration-700"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300" />
                         </div>
                         <div className="p-8">
                           <div className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-medium mb-4">
-                            <span>📚</span>
-                            <span>{course.category || "General"}</span>
+                            <span>📝</span>
+                            <span>{blog.category || "General"}</span>
                           </div>
                           <h3 className="text-xl font-bold text-gray-900 hover:text-green-600 transition-colors line-clamp-2 mb-3">
-                            {course.title}
+                            {blog.title}
                           </h3>
                           <p className="text-sm text-gray-500 mb-4">
-                            {course.level || "Professional Level"}
+                            {blog.createdAt
+                              ? new Date(blog.createdAt).toLocaleDateString(
+                                  "en-GB",
+                                  {
+                                    day: "2-digit",
+                                    month: "short",
+                                    year: "numeric",
+                                  }
+                                )
+                              : "Recent"}
                           </p>
-                          <div className="flex items-center justify-between mb-4">
-                            <div>
-                              <p className="text-green-600 font-bold text-lg">
-                                ₹
-                                {discountedPrice?.toLocaleString() ||
-                                  displayPrice?.toLocaleString() ||
-                                  "0"}
-                              </p>
-                              {displayDiscount && (
-                                <p className="text-gray-400 text-sm line-through">
-                                  ₹{displayPrice?.toLocaleString() || "0"}
-                                </p>
-                              )}
-                            </div>
-                            {displayDiscount && (
-                              <span className="bg-red-100 text-red-600 text-xs font-bold px-2 py-1 rounded">
-                                {displayDiscount}% OFF
-                              </span>
-                            )}
-                          </div>
                           <div className="flex items-center text-green-600 text-sm font-semibold">
-                            <span>Learn More</span>
+                            <span>Read More</span>
                             <motion.svg
                               className="w-5 h-5 ml-2"
                               fill="none"
