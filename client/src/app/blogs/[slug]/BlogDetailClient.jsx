@@ -93,7 +93,7 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
 
       {/* Centered Reading Area */}
       <section className="relative pt-32 pb-16 bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4">
+        <div className="w-[85vw] mx-auto px-4">
           {/* Breadcrumb */}
           <motion.div
             className="mb-8"
@@ -163,7 +163,7 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
 
             {/* Cover Image */}
             <motion.div
-              className="relative overflow-hidden"
+              className="relative overflow-hidden mx-4"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, delay: 0.5 }}
