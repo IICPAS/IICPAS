@@ -1,6 +1,5 @@
-const express = require("express");
-const router = express.Router();
-const {
+import express from "express";
+import {
   createTDSSimulation,
   getTDSSimulations,
   getTDSSimulation,
@@ -11,8 +10,10 @@ const {
   generateTDSCertificate,
   generateTDSChallan,
   getTDSSimulationStats,
-} = require("../controllers/tdsSimulationController");
-const requireAuth = require("../middleware/requireAuth");
+} from "../controllers/tdsSimulationController.js";
+import { requireAuth } from "../middleware/requireAuth.js";
+
+const router = express.Router();
 
 // Apply authentication middleware to all routes
 router.use(requireAuth);
@@ -33,4 +34,4 @@ router.post("/:id/validate", validateTDSSimulation);
 router.post("/:id/generate-certificate", generateTDSCertificate);
 router.post("/:id/generate-challan", generateTDSChallan);
 
-module.exports = router;
+export default router;

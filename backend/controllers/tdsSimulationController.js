@@ -1,5 +1,5 @@
-const TDSSimulation = require("../models/TDSSimulation");
-const mongoose = require("mongoose");
+import TDSSimulation from "../models/TDSSimulation.js";
+import mongoose from "mongoose";
 
 // Create TDS Simulation
 const createTDSSimulation = async (req, res) => {
@@ -530,7 +530,7 @@ const getTDSSimulationStats = async (req, res) => {
   }
 };
 
-module.exports = {
+export {
   createTDSSimulation,
   getTDSSimulations,
   getTDSSimulation,

@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 // TDS Simulation Schema
 const tdsSimulationSchema = new mongoose.Schema(
@@ -395,4 +395,4 @@ tdsSimulationSchema.index({ financialYear: 1, quarter: 1 });
 tdsSimulationSchema.index({ createdBy: 1 });
 tdsSimulationSchema.index({ isActive: 1 });
 
-module.exports = mongoose.model("TDSSimulation", tdsSimulationSchema);
+export default mongoose.model("TDSSimulation", tdsSimulationSchema);
