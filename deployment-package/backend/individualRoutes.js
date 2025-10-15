@@ -19,7 +19,6 @@ import {
   updateTrainingRequestStatus,
 } from "../controllers/individualController.js";
 import { requireAuth, requirePermission } from "../middleware/requireAuth.js";
-import { requireAuth as requireIndividualAuth } from "../controllers/individualController.js";
 import uploadIndividualDoc from "../middleware/individualUpload.js";
 import uploadIndividualImage from "../middleware/individualImageUpload.js";
 
@@ -71,7 +70,7 @@ router.delete("/image", deleteImage);
 // Documents management routes
 router.post("/documents", getUserDocuments);
 
-router.get("/profile-valid", requireIndividualAuth, (req, res) => {
+router.get("/profile-valid", requireAuth, (req, res) => {
   console.log("Profile-valid endpoint called");
   console.log("User object:", req.user);
   res.status(200).json({
@@ -97,17 +96,12 @@ router.post("/reset-password", resetPassword);
 // Create training request (Individual users)
 router.post(
   "/training-requests",
-  requireIndividualAuth,
   uploadIndividualDoc.single("resume"),
   createTrainingRequest
 );
 
 // Get user's training requests (Individual users)
-router.get(
-  "/training-requests",
-  requireIndividualAuth,
-  getUserTrainingRequests
-);
+router.get("/training-requests", getUserTrainingRequests);
 
 // Get all training requests (Admin only)
 router.get(

@@ -148,7 +148,7 @@ export const requireAuth = async (req, res, next) => {
       token,
       process.env.JWT_SECRET || "default_jwt_secret_for_development"
     );
-    const user = await Individual.findById(decoded._id);
+    const user = await Individual.findById(decoded.id);
     if (!user) return res.status(401).json({ error: "Not authenticated" });
     req.user = user;
     next();
@@ -588,10 +588,20 @@ export const createTrainingRequest = async (req, res) => {
         .json({ error: "Training, category, and resume are required" });
     }
 
-    // Get user from middleware (req.user is set by requireIndividualAuth)
-    const user = req.user;
-    if (!user) {
+    // Get user from JWT token
+    const token = req.cookies.jwt;
+    if (!token) {
       return res.status(401).json({ error: "Authentication required" });
+    }
+
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || "default_jwt_secret_for_development"
+    );
+    const user = await Individual.findById(decoded.id);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
     }
 
     // Create training request
@@ -619,10 +629,20 @@ export const createTrainingRequest = async (req, res) => {
 // Get user's training requests
 export const getUserTrainingRequests = async (req, res) => {
   try {
-    // Get user from middleware (req.user is set by requireIndividualAuth)
-    const user = req.user;
-    if (!user) {
+    // Get user from JWT token
+    const token = req.cookies.jwt;
+    if (!token) {
       return res.status(401).json({ error: "Authentication required" });
+    }
+
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || "default_jwt_secret_for_development"
+    );
+    const user = await Individual.findById(decoded.id);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
     }
 
     const requests = await TrainingRequest.find({ individualId: user._id })
