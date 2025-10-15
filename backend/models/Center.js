@@ -35,7 +35,26 @@ const centerSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true,
-    lowercase: true
+    lowercase: true,
+    unique: true
+  },
+  password: {
+    type: String,
+    required: false // Not required for admin-created centers
+  },
+  location: {
+    type: String,
+    trim: true
+  },
+  type: {
+    type: String,
+    trim: true
+  },
+  documentPath: {
+    type: String // Path to verification document
+  },
+  image: {
+    type: String // Path to center image/logo
   },
   manager: {
     name: {
@@ -69,8 +88,8 @@ const centerSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ["active", "inactive", "maintenance"],
-    default: "active"
+    enum: ["pending", "approved", "rejected", "active", "inactive", "maintenance"],
+    default: "pending"
   },
   coordinates: {
     latitude: {
@@ -99,7 +118,7 @@ const centerSchema = new mongoose.Schema({
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Employee",
-    required: true
+    required: false // Not required for self-registered centers
   },
   updatedBy: {
     type: mongoose.Schema.Types.ObjectId,
