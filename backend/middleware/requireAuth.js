@@ -13,7 +13,10 @@ const requireAuth = async (req, res, next) => {
       token = req.headers.authorization.split(" ")[1];
 
       // Verify token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = jwt.verify(
+        token,
+        process.env.JWT_SECRET || "default_jwt_secret_for_development"
+      );
 
       // Get employee from token
       req.user = await Employee.findById(decoded.id).select("-password");

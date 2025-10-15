@@ -129,7 +129,7 @@ app.use(cookieParser());
 app.use("/api/college", collegeRoutes);
 app.use("/api/admin", authRoutes);
 app.use("/api/contact-old", contactRoutesOld);
-app.use("/api/compaHnies", companyRoutes);
+app.use("/api/companies", companyRoutes);
 app.use("/api/blogs", blogRoutes);
 app.use("/api", alertRoutes);
 app.use("/api/news", newsRoutes);

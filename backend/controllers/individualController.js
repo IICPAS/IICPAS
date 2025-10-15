@@ -143,7 +143,10 @@ export const requireAuth = async (req, res, next) => {
     const token = req.cookies.jwt;
 
     if (!token) return res.status(401).json({ error: "Not authenticated" });
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || "default_jwt_secret_for_development"
+    );
     const user = await Individual.findById(decoded.id);
     if (!user) return res.status(401).json({ error: "Not authenticated" });
     req.user = user;

@@ -7,7 +7,10 @@ const isStudent = (req, res, next) => {
   if (!token) return res.status(401).json({ message: "Unauthorized" });
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || "default_jwt_secret_for_development"
+    );
     console.log("isStudent middleware - decoded:", decoded);
 
     // Handle both old tokens (without role) and new tokens (with role)
