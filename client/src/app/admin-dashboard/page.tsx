@@ -105,6 +105,7 @@ import EditConfidentialityPolicyTab from "./EditConfidentialityPolicyTab";
 import EditDisclaimerPolicyTab from "./EditDisclaimerPolicyTab";
 import EditIICPAReviewTab from "./EditIICPAReviewTab";
 import TransactionsTab from "./TransactionsTab";
+import IndividualRequestsTab from "./IndividualRequestsTab";
 
 // All available modules with their permissions (unused - replaced by NAVIGATION_GROUPS)
 /*
@@ -259,6 +260,11 @@ const NAVIGATION_GROUPS = [
       { id: "colleges", label: "Colleges", icon: <FaUniversity /> },
       { id: "companies", label: "Companies", icon: <FaStarOfDavid /> },
       { id: "team", label: "Our Team", icon: <FaUsers /> },
+      {
+        id: "individual-requests",
+        label: "Individual Requests",
+        icon: <FaUser />,
+      },
     ],
   },
   {
@@ -844,6 +850,8 @@ function AdminDashboardContent() {
           <ContactInfoTab />
         ) : activeTab === "profile" ? (
           <AdminProfileTab />
+        ) : activeTab === "individual-requests" ? (
+          <IndividualRequestsTab />
         ) : activeTab === "" ? (
           <div>
             {/* Welcome Message */}
