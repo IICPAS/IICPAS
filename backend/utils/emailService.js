@@ -51,7 +51,7 @@ export const sendReceiptEmail = async (transaction, pdfBuffer) => {
         address: emailConfig.auth.user,
       },
       to: studentEmail,
-      subject: `Payment Receipt - ₹${amount?.toLocaleString(
+      subject: `Payment Receipt - Rs. ${amount?.toLocaleString(
         "en-IN"
       )} - ${courseName}`,
       html: `
@@ -69,7 +69,7 @@ export const sendReceiptEmail = async (transaction, pdfBuffer) => {
             <div style="background: white; padding: 15px; border-radius: 5px; margin: 15px 0; border-left: 4px solid #28a745;">
               <p style="margin: 0; font-size: 14px;"><strong>Payment Details:</strong></p>
               <p style="margin: 5px 0 0 0; font-size: 18px; color: #28a745; font-weight: bold;">
-                Amount: ₹${amount?.toLocaleString("en-IN") || "N/A"}
+                Amount: Rs. ${amount?.toLocaleString("en-IN") || "N/A"}
               </p>
               <p style="margin: 5px 0 0 0; font-size: 14px; color: #666;">
                 UTR Number: ${transaction.utrNumber || "N/A"}

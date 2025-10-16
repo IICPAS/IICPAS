@@ -66,7 +66,7 @@ const AlertMarquee = ({ showMarquee = true }) => {
   if (loading) {
     return (
       <div className="bg-green-600 text-white font-bold border-b border-yellow-200 fixed top-0 left-0 w-full z-50 h-10 flex items-center justify-center">
-        <span className="text-white font-medium text-sm">
+        <span className="text-white font-medium text-xs">
           Loading announcements...
         </span>
       </div>
@@ -84,7 +84,7 @@ const AlertMarquee = ({ showMarquee = true }) => {
       <Marquee speed={80} gradient={false} className="py-2 overflow-hidden">
         {alerts.map((alert, index) => (
           <div key={alert._id} className="inline-block mx-8">
-            <span className="text-white font-medium text-sm">
+            <span className="text-white font-medium text-xs">
               📢 {alert.title}: {alert.message}
             </span>
           </div>

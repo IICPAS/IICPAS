@@ -191,6 +191,13 @@ const employeeSchema = new mongoose.Schema(
         delete: { type: Boolean, default: false },
         active: { type: Boolean, default: false },
       },
+      "individual-requests": {
+        add: { type: Boolean, default: false },
+        read: { type: Boolean, default: false },
+        update: { type: Boolean, default: false },
+        delete: { type: Boolean, default: false },
+        active: { type: Boolean, default: false },
+      },
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
@@ -222,12 +229,19 @@ employeeSchema.methods.comparePassword = async function (candidatePassword) {
 
 // Method to check permission
 employeeSchema.methods.hasPermission = function (module, action) {
+  // Admin users have all permissions
+  if (this.role === "Admin") return true;
   if (!this.permissions[module]) return false;
   return this.permissions[module][action] || false;
 };
 
 // Method to get all accessible modules
 employeeSchema.methods.getAccessibleModules = function () {
+  // Admin users can access all modules
+  if (this.role === "Admin") {
+    return Object.keys(this.permissions);
+  }
+
   const accessible = [];
   Object.keys(this.permissions).forEach((module) => {
     if (this.permissions[module].read) {

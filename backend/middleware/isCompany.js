@@ -2,7 +2,8 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 
 dotenv.config();
-const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
+const JWT_SECRET =
+  process.env.JWT_SECRET || "default_jwt_secret_for_development";
 
 export const isCompany = (req, res, next) => {
   const token = req.cookies.token;

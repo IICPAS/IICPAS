@@ -5,7 +5,8 @@ import jwt from "jsonwebtoken";
 import Individual from "../models/Individual.js";
 import { signJwt, cookieOptions } from "../utils/auth.js";
 
-const JWT_SECRET = process.env.JWT_SECRET || "secret";
+const JWT_SECRET =
+  process.env.JWT_SECRET || "default_jwt_secret_for_development";
 
 export const register = async (req, res) => {
   const { name, email, password, role } = req.body;
@@ -39,9 +40,9 @@ export const login = async (req, res) => {
     );
 
     // Return complete admin data with all fields
-    res.status(200).json({ 
-      message: "Logged in", 
-      token, 
+    res.status(200).json({
+      message: "Logged in",
+      token,
       admin: {
         id: admin._id,
         name: admin.name,
@@ -55,7 +56,7 @@ export const login = async (req, res) => {
           city: "",
           state: "",
           pincode: "",
-          country: "India"
+          country: "India",
         },
         dateOfBirth: admin.dateOfBirth || "",
         gender: admin.gender || "",
@@ -70,7 +71,7 @@ export const login = async (req, res) => {
           twitter: "",
           facebook: "",
           instagram: "",
-          website: ""
+          website: "",
         },
         preferences: admin.preferences || {
           theme: "light",
@@ -79,8 +80,8 @@ export const login = async (req, res) => {
           notifications: {
             email: true,
             sms: true,
-            push: true
-          }
+            push: true,
+          },
         },
         fieldVisibility: admin.fieldVisibility || {
           phone: true,
@@ -94,11 +95,11 @@ export const login = async (req, res) => {
           experience: true,
           qualifications: true,
           socialLinks: true,
-          bio: true
+          bio: true,
         },
         createdAt: admin.createdAt,
-        updatedAt: admin.updatedAt
-      }
+        updatedAt: admin.updatedAt,
+      },
     });
   } catch (err) {
     res.status(500).json({ message: "Error", error: err.message });
@@ -158,11 +159,25 @@ export const userLogin = async (req, res) => {
 // Admin profile update
 export const updateAdminProfile = async (req, res) => {
   try {
-    const { 
-      name, email, phone, role, image,
-      bio, address, dateOfBirth, gender,
-      department, designation, employeeId, joiningDate, experience, qualifications,
-      socialLinks, preferences, fieldVisibility
+    const {
+      name,
+      email,
+      phone,
+      role,
+      image,
+      bio,
+      address,
+      dateOfBirth,
+      gender,
+      department,
+      designation,
+      employeeId,
+      joiningDate,
+      experience,
+      qualifications,
+      socialLinks,
+      preferences,
+      fieldVisibility,
     } = req.body;
     const adminId = req.user.id; // From isAdmin middleware
 
@@ -197,22 +212,21 @@ export const updateAdminProfile = async (req, res) => {
       socialLinks,
       preferences,
       fieldVisibility,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     // Remove undefined fields
-    Object.keys(updateData).forEach(key => {
+    Object.keys(updateData).forEach((key) => {
       if (updateData[key] === undefined) {
         delete updateData[key];
       }
     });
 
     // Update admin profile
-    const updatedAdmin = await Admin.findByIdAndUpdate(
-      adminId,
-      updateData,
-      { new: true, runValidators: true }
-    );
+    const updatedAdmin = await Admin.findByIdAndUpdate(adminId, updateData, {
+      new: true,
+      runValidators: true,
+    });
 
     if (!updatedAdmin) {
       return res.status(404).json({ message: "Admin not found" });
@@ -241,7 +255,7 @@ export const updateAdminProfile = async (req, res) => {
         preferences: updatedAdmin.preferences,
         fieldVisibility: updatedAdmin.fieldVisibility,
         createdAt: updatedAdmin.createdAt,
-        updatedAt: updatedAdmin.updatedAt
+        updatedAt: updatedAdmin.updatedAt,
       },
     });
   } catch (err) {

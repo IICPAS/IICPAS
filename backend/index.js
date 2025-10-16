@@ -12,6 +12,7 @@ import connectDB from "./config/db.js";
 import studentRoutes from "./routes/studentRoutes.js";
 import newCartRoutes from "./routes/newCartRoutes.js";
 import paymentRoutes from "./routes/PaymentRoutes/paymentRoutes.js";
+import testPaymentRoutes from "./routes/payment.js";
 import transactionRoutes from "./routes/transactionRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import blogRoutes from "./routes/blogRoutes.js";
@@ -32,6 +33,7 @@ import categoryRoutes from "./routes/Content/categoryRoutes.js";
 import LiveSessionRoutes from "./routes/LiveSessionRoutes/LiveSessionRoutes.js";
 import courseLevelsRoutes from "./routes/courseLevelsRoutes.js";
 import groupPricingRoutes from "./routes/groupPricingRoutes.js";
+import specialOfferRoutes from "./routes/specialOfferRoutes.js";
 
 //Extra Routes
 import metaTagRoutes from "./routes/metatagsRoute.js";
@@ -150,9 +152,13 @@ app.use("/api/categories", categoryRoutes);
 import assignmentRoutes from "./routes/assignmentRoutes.js";
 import caseStudyRoutes from "./routes/caseStudyRoutes.js";
 import gstSimulationRoutes from "./routes/gstSimulationRoutes.js";
+import tdsSimulationRoutes from "./routes/tdsSimulationRoutes.js";
+import gstReturnRoutes from "./routes/gstReturnRoutes.js";
 app.use("/api/assignments", assignmentRoutes);
 app.use("/api/case-studies", caseStudyRoutes);
 app.use("/api/gst-simulations", gstSimulationRoutes);
+app.use("/api/tds-simulations", tdsSimulationRoutes);
+app.use("/api/gst-returns", gstReturnRoutes);
 
 app.use("/metatags", metaTagRoutes);
 app.use("/api/tickets", ticketRoutes);
@@ -201,6 +207,9 @@ app.use("/api/v1/website/faq", faqRoutes);
 //Ticket Routes
 app.use("/api/tickets", ticketRoutes);
 app.use("/api/bookings", bookingRoutes);
+
+//Test Payment Routes
+app.use("/api/test-payment", testPaymentRoutes);
 
 //IP Whitelist Routes
 app.use("/api/ip-whitelist", ipWhitelistRoutes);
@@ -261,6 +270,7 @@ app.use("/api/v1/course-ratings", courseRatingRoutes);
 // Course Levels Routes
 app.use("/api/course-levels", courseLevelsRoutes);
 app.use("/api/group-pricing", groupPricingRoutes);
+app.use("/api/special-offers", specialOfferRoutes);
 
 // Create HTTP server and Socket.io
 const server = createServer(app);

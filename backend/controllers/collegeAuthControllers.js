@@ -92,7 +92,10 @@ export const isCollegeLoggedIn = (req, res) => {
   if (!token) return res.status(401).json({ isLoggedIn: false });
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || "default_jwt_secret_for_development"
+    );
     if (decoded.role === "college") {
       // console.log(decoded.name, decoded.email, decoded);
       return res.status(200).json({

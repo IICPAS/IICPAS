@@ -1,4 +1,5 @@
 import Individual from "../models/Individual.js";
+import TrainingRequest from "../models/TrainingRequest.js";
 import { signJwt, cookieOptions } from "../utils/auth.js";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
@@ -143,8 +144,11 @@ export const requireAuth = async (req, res, next) => {
     const token = req.cookies.jwt;
 
     if (!token) return res.status(401).json({ error: "Not authenticated" });
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await Individual.findById(decoded.id);
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || "default_jwt_secret_for_development"
+    );
+    const user = await Individual.findById(decoded._id);
     if (!user) return res.status(401).json({ error: "Not authenticated" });
     req.user = user;
     next();
@@ -564,6 +568,143 @@ export const deleteImage = async (req, res) => {
       },
     });
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// ========================
+// ✅ Training Request Functions
+// ========================
+
+// Create training request
+export const createTrainingRequest = async (req, res) => {
+  try {
+    const { training, category } = req.body;
+    const resume = req.file;
+
+    if (!training || !category || !resume) {
+      return res
+        .status(400)
+        .json({ error: "Training, category, and resume are required" });
+    }
+
+    // Get user from middleware (req.user is set by requireIndividualAuth)
+    const user = req.user;
+    if (!user) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
+    // Create training request
+    const trainingRequest = await TrainingRequest.create({
+      individualId: user._id,
+      individualName: user.name,
+      individualEmail: user.email,
+      individualPhone: user.phone,
+      training,
+      category,
+      resume: resume.path,
+      status: "pending",
+    });
+
+    res.status(201).json({
+      message: "Training request submitted successfully",
+      request: trainingRequest,
+    });
+  } catch (err) {
+    console.error("Training request creation error:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Get user's training requests
+export const getUserTrainingRequests = async (req, res) => {
+  try {
+    // Get user from middleware (req.user is set by requireIndividualAuth)
+    const user = req.user;
+    if (!user) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
+    const requests = await TrainingRequest.find({ individualId: user._id })
+      .sort({ createdAt: -1 })
+      .populate("approvedBy", "name email");
+
+    res.json({ requests });
+  } catch (err) {
+    console.error("Get training requests error:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Get all training requests (Admin only)
+export const getAllTrainingRequests = async (req, res) => {
+  try {
+    const { status } = req.query;
+
+    let filter = {};
+    if (status) {
+      filter.status = status;
+    }
+
+    const requests = await TrainingRequest.find(filter)
+      .sort({ createdAt: -1 })
+      .populate("individualId", "name email phone")
+      .populate("approvedBy", "name email");
+
+    res.json({ requests });
+  } catch (err) {
+    console.error("Get all training requests error:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Update training request status (Admin only)
+export const updateTrainingRequestStatus = async (req, res) => {
+  try {
+    const { requestId } = req.params;
+    const { status, adminNotes } = req.body;
+
+    if (
+      !["pending", "approved", "rejected", "in_progress", "completed"].includes(
+        status
+      )
+    ) {
+      return res.status(400).json({ error: "Invalid status" });
+    }
+
+    const updateData = { status };
+
+    if (adminNotes) {
+      updateData.adminNotes = adminNotes;
+    }
+
+    if (status === "approved") {
+      updateData.approvedBy = req.user.id;
+      updateData.approvedAt = new Date();
+    }
+
+    if (status === "completed") {
+      updateData.completedAt = new Date();
+    }
+
+    const request = await TrainingRequest.findByIdAndUpdate(
+      requestId,
+      updateData,
+      { new: true }
+    )
+      .populate("individualId", "name email phone")
+      .populate("approvedBy", "name email");
+
+    if (!request) {
+      return res.status(404).json({ error: "Training request not found" });
+    }
+
+    res.json({
+      message: "Training request status updated successfully",
+      request,
+    });
+  } catch (err) {
+    console.error("Update training request error:", err);
     res.status(500).json({ error: err.message });
   }
 };

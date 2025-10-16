@@ -109,6 +109,7 @@ export const createCourse = async (req, res) => {
       level,
       discount,
       status,
+      duration,
       description,
       examCert,
       caseStudy,
@@ -145,9 +146,7 @@ export const createCourse = async (req, res) => {
     if (pricing) {
       try {
         parsedPricing =
-          typeof pricing === "string"
-            ? JSON.parse(pricing)
-            : pricing;
+          typeof pricing === "string" ? JSON.parse(pricing) : pricing;
       } catch (error) {
         console.error("Error parsing pricing data:", error);
         parsedPricing = {};
@@ -158,10 +157,7 @@ export const createCourse = async (req, res) => {
     let parsedTabs = {};
     if (tabs) {
       try {
-        parsedTabs =
-          typeof tabs === "string"
-            ? JSON.parse(tabs)
-            : tabs;
+        parsedTabs = typeof tabs === "string" ? JSON.parse(tabs) : tabs;
       } catch (error) {
         console.error("Error parsing tabs data:", error);
         parsedTabs = {};
@@ -184,6 +180,7 @@ export const createCourse = async (req, res) => {
       level,
       discount,
       status,
+      duration,
       description,
       examCert,
       caseStudy,

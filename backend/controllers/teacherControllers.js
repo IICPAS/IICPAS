@@ -3,7 +3,8 @@ import Teacher from "../models/Teacher.js";
 import jwt from "jsonwebtoken";
 import { signJwt, cookieOptions } from "../utils/auth.js";
 
-const JWT_SECRET = process.env.JWT_SECRET || "secret";
+const JWT_SECRET =
+  process.env.JWT_SECRET || "default_jwt_secret_for_development";
 
 // Teacher registration
 export const teacherRegister = async (req, res) => {

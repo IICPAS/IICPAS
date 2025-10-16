@@ -3,65 +3,113 @@
 import BlogHero from "./BlogHero";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
+import AccountingQuiz from "./AccountingQuiz";
+import BlogDetailClient from "./BlogDetailClient";
 import axios from "axios";
+import { Metadata } from "next";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
 
-export default async function BlogDetail({ params }) {
+// Generate dynamic metadata for SEO
+export async function generateMetadata({ params }) {
   const slug = params.slug;
-  let blog = null;
 
   try {
     const res = await axios.get(`${API_BASE}/blogs`);
-    blog = res.data.find(
+    const foundBlog = res.data.find(
       (b) =>
         b.title &&
         b.title.replace(/\s+/g, "-").toLowerCase() === slug.toLowerCase()
     );
-  } catch (e) {
-    blog = null;
-  }
 
-  // Show 'not found' if blog does not exist or is not active
-  if (!blog || blog.status !== "active") {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <h1 className="text-2xl font-bold text-red-600">
-          Blog not found or inactive
-        </h1>
-      </div>
+    if (!foundBlog || foundBlog.status !== "active") {
+      return {
+        title: "Blog Post Not Found - IICPA Institute",
+        description: "The requested blog post could not be found.",
+      };
+    }
+
+    // Create dynamic SEO title based on blog heading
+    const seoTitle = `${foundBlog.title} - IICPA Institute`;
+
+    // Generate description from content (first 160 characters)
+    const description = foundBlog.content
+      ? foundBlog.content.replace(/<[^>]*>/g, "").substring(0, 160) + "..."
+      : `Learn about ${foundBlog.title} at IICPA Institute. Professional accounting and finance training.`;
+
+    return {
+      title: seoTitle,
+      description: description,
+      keywords: foundBlog.category
+        ? `${foundBlog.category}, accounting, finance, IICPA`
+        : "accounting, finance, IICPA",
+      openGraph: {
+        title: seoTitle,
+        description: description,
+        type: "article",
+        url: `https://iicpa.in/blogs/${slug}`,
+        images: foundBlog.imageUrl
+          ? [
+              {
+                url: foundBlog.imageUrl.startsWith("http")
+                  ? foundBlog.imageUrl
+                  : `https://iicpa.in${foundBlog.imageUrl}`,
+                width: 1200,
+                height: 630,
+                alt: foundBlog.title,
+              },
+            ]
+          : [
+              {
+                url: "https://iicpa.in/images/blog-default.jpg",
+                width: 1200,
+                height: 630,
+                alt: "IICPA Institute Blog",
+              },
+            ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: seoTitle,
+        description: description,
+        images: foundBlog.imageUrl
+          ? [
+              foundBlog.imageUrl.startsWith("http")
+                ? foundBlog.imageUrl
+                : `https://iicpa.in${foundBlog.imageUrl}`,
+            ]
+          : ["https://iicpa.in/images/blog-default.jpg"],
+      },
+    };
+  } catch (error) {
+    console.error("Error generating metadata:", error);
+    return {
+      title: "Blog Post - IICPA Institute",
+      description: "Professional accounting and finance training blog post.",
+    };
+  }
+}
+
+export default async function BlogDetail({ params }) {
+  const slug = params.slug;
+
+  try {
+    const res = await axios.get(`${API_BASE}/blogs`);
+    const foundBlog = res.data.find(
+      (b) =>
+        b.title &&
+        b.title.replace(/\s+/g, "-").toLowerCase() === slug.toLowerCase()
     );
-  }
 
-  return (
-    <>
-      <Header />
-      <BlogHero blogTitle={blog.title} />
-      <div className="max-w-3xl mx-auto pt-20 pb-12 px-4">
-        <h1 className="text-3xl font-bold mb-4">{blog.title}</h1>
-        <div className="mb-3 text-sm text-gray-500">
-          By {blog.author} •{" "}
-          {blog.createdAt &&
-            new Date(blog.createdAt).toLocaleDateString("en-GB")}
-        </div>
-        {blog.imageUrl && (
-          <img
-            src={
-              blog.imageUrl.startsWith("http")
-                ? blog.imageUrl
-                : `${API_BASE.replace("/api", "")}/${blog.imageUrl}`
-            }
-            alt={blog.title}
-            className="w-full h-64 object-cover rounded mb-6"
-          />
-        )}
-        <div
-          className="prose max-w-none"
-          dangerouslySetInnerHTML={{ __html: blog.content }}
-        />
-      </div>
-      <Footer />
-    </>
-  );
+    // Store all active blogs for related articles
+    const activeBlogs = (res.data || []).filter((b) => b.status === "active");
+
+    return (
+      <BlogDetailClient blog={foundBlog} allBlogs={activeBlogs} slug={slug} />
+    );
+  } catch (error) {
+    console.error("Error fetching blog:", error);
+    return <BlogDetailClient blog={null} allBlogs={[]} slug={slug} />;
+  }
 }

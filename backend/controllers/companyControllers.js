@@ -6,7 +6,8 @@ import nodemailer from "nodemailer";
 
 dotenv.config();
 
-const JWT_SECRET = process.env.JWT_SECRET || "secret123";
+const JWT_SECRET =
+  process.env.JWT_SECRET || "default_jwt_secret_for_development";
 const isProd = process.env.NODE_ENV === "production";
 
 const transporter = nodemailer.createTransport({

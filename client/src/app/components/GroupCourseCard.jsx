@@ -8,8 +8,8 @@ export default function GroupCourseCard({ groupPricing, index }) {
   const router = useRouter();
 
   const handleClick = () => {
-    // Navigate to group package detail page
-    router.push(`/group-package/${groupPricing._id}`);
+    // Navigate to group package detail page using SEO-friendly slug
+    router.push(`/group-package/${groupPricing.slug}`);
   };
 
   return (
@@ -36,7 +36,9 @@ export default function GroupCourseCard({ groupPricing, index }) {
                     process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"
                   }${groupPricing.image}`
             }
-            alt={`${groupPricing.level} Group Package`}
+            alt={`${
+              groupPricing.groupName || groupPricing.level
+            } Group Package`}
             fill
             className="object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
             sizes="(max-width: 768px) 100vw, 33vw"
@@ -67,12 +69,13 @@ export default function GroupCourseCard({ groupPricing, index }) {
 
         {/* Group Badge */}
         <div className="absolute top-3 left-3 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-          {groupPricing.level}
+          {groupPricing.groupName || groupPricing.level}
         </div>
 
         {/* Course Count Badge */}
-        <div className="absolute top-3 right-3 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-          Courses: {groupPricing.courseIds?.length || 0}
+        <div className="absolute top-3 right-3 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
+          <span>📚</span>
+          <span>{groupPricing.courseIds?.length || 0}</span>
         </div>
       </div>
 
@@ -83,7 +86,7 @@ export default function GroupCourseCard({ groupPricing, index }) {
 
         {/* Title */}
         <h3 className="text-lg font-bold text-gray-900 group-hover:text-green-600 transition-colors line-clamp-2">
-          {groupPricing.level} Course Package
+          {groupPricing.groupName || groupPricing.level}
         </h3>
 
         {/* Description */}
@@ -94,30 +97,77 @@ export default function GroupCourseCard({ groupPricing, index }) {
         )}
 
         {/* Course Count Display */}
-        <div className="flex items-center space-x-2 text-sm text-gray-600">
-          <span className="font-medium">Courses:</span>
-          <span>{groupPricing.courseIds?.length || 0}</span>
+        <div className="flex items-center justify-between text-sm text-gray-600">
+          <div className="flex items-center gap-2">
+            <span className="flex items-center gap-1">
+              <span>📚</span>
+              <span className="font-medium">
+                {groupPricing.courseIds?.length || 0} courses
+              </span>
+            </span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span>📅</span>
+            <span className="font-medium">3 weeks</span>
+          </div>
         </div>
 
         {/* Price Section */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-4">
           <div>
-            <p className="text-green-600 font-bold text-xl">
-              ₹{groupPricing.groupPrice?.toLocaleString()}
-            </p>
-            <p className="text-gray-400 text-xs">Complete package price</p>
+            {/* Calculate smallest price from all pricing options */}
+            {(() => {
+              const prices = [
+                groupPricing.pricing?.recordedSession?.finalPrice,
+                groupPricing.pricing?.liveSession?.finalPrice,
+                groupPricing.pricing?.recordedSessionCenter?.finalPrice,
+                groupPricing.pricing?.liveSessionCenter?.finalPrice,
+              ].filter((price) => price && typeof price === "number");
+
+              const smallestPrice =
+                prices.length > 0
+                  ? Math.min(...prices)
+                  : groupPricing.groupPrice;
+              const originalPrice = groupPricing.groupPrice;
+              const hasDiscount = smallestPrice < originalPrice;
+
+              return (
+                <div>
+                  <div className="flex items-center gap-2">
+                    <p className="text-green-600 font-bold text-xl">
+                      ₹{smallestPrice?.toLocaleString() || "0"}
+                    </p>
+                    {hasDiscount && (
+                      <span className="bg-red-100 text-red-600 text-xs font-bold px-2 py-1 rounded">
+                        SAVE ₹{(originalPrice - smallestPrice).toLocaleString()}
+                      </span>
+                    )}
+                  </div>
+                  {hasDiscount && (
+                    <p className="text-gray-400 text-sm line-through">
+                      ₹{originalPrice?.toLocaleString() || "0"}
+                    </p>
+                  )}
+                  <p className="text-gray-400 text-xs">
+                    {hasDiscount
+                      ? "Limited time offer!"
+                      : "Complete package price"}
+                  </p>
+                </div>
+              );
+            })()}
           </div>
 
           {/* Enroll Button */}
           <button
-            className="bg-gray-900 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+            className="bg-gray-900 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex-shrink-0"
             onClick={(e) => {
               e.stopPropagation();
-              // Navigate to group package detail page for enrollment
-              router.push(`/group-package/${groupPricing._id}`);
+              // Navigate to group package detail page for enrollment using SEO-friendly slug
+              router.push(`/group-package/${groupPricing.slug}`);
             }}
           >
-            Enroll Now →
+            Enroll →
           </button>
         </div>
       </div>

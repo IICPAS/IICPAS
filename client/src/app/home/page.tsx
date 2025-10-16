@@ -1,6 +1,5 @@
 import React from "react";
 import Header from "../components/Header";
-import AboutHero from "../contact/ContactHero";
 import HeroSection from "../components/HeroSection";
 import WhyIICPA from "../components/WhyIICPA";
 import AboutUsSection from "../components/AboutUsSection";

@@ -4,26 +4,26 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
-import { Mail, PhoneCall, MapPin, Send } from "lucide-react";
+import { Send } from "lucide-react";
 import { toast } from "react-hot-toast";
 
 export default function ContactSection() {
-  const [contactData, setContactData] = useState({
+  const [contactData] = useState({
     title: "Contact Us",
     subtitle: "Let's Get in Touch",
     description:
       "Ready to start your learning journey? Get in touch with us today!",
     contactInfo: {
       phone: {
-        number: "+91 98765 43210",
+        number: "+91 9593330999",
         label: "Phone",
       },
       email: {
-        address: "support@iicpa.org",
+        address: "iicpaconnect@gmail.com",
         label: "Email",
       },
       address: {
-        text: "123 Knowledge Park, New Delhi, India",
+        text: "SHOP NO 712-A, SEVENTH FLOOR, KASANA TOWER, ALPHA COMMERCIAL BELT, Greater Noida, Gautam Buddha Nagar,Uttar Pradesh, 201308",
         label: "Address",
       },
     },
@@ -48,26 +48,9 @@ export default function ContactSection() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchContactData();
+    // Use hardcoded data directly - no API call needed
+    setLoading(false);
   }, []);
-
-  const fetchContactData = async () => {
-    try {
-      const API_BASE =
-        process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
-      const response = await fetch(`${API_BASE}/contact`);
-      if (response.ok) {
-        const data = await response.json();
-        setContactData(data);
-      } else {
-        console.error("Failed to fetch contact data:", response.status);
-      }
-    } catch (error) {
-      console.error("Error fetching Contact data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -291,33 +274,12 @@ export default function ContactSection() {
             >
               {/* Phone Contact */}
               <motion.div
-                className="flex items-start gap-4 group"
+                className="group"
                 initial={{ opacity: 0, x: 20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.02, delay: 0.01 }}
                 whileHover={{ x: 5 }}
               >
-                <motion.div
-                  className="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-500 to-blue-500 flex items-center justify-center text-white shadow-lg transform-gpu"
-                  whileHover={{
-                    scale: 1.1,
-                    rotate: 5,
-                  }}
-                  animate={{
-                    y: [0, -3, 0],
-                    rotate: [0, 1, -1, 0],
-                  }}
-                  transition={{
-                    duration: 4,
-                    ease: "easeInOut",
-                  }}
-                  style={{
-                    transform: "translateZ(20px)",
-                    boxShadow: "0 10px 25px -5px rgba(34, 197, 94, 0.4)",
-                  }}
-                >
-                  <PhoneCall size={20} />
-                </motion.div>
                 <div>
                   <p className="font-bold text-gray-900 text-lg mb-1">
                     {contactData.contactInfo.phone.label}
@@ -330,34 +292,12 @@ export default function ContactSection() {
 
               {/* Email Contact */}
               <motion.div
-                className="flex items-start gap-4 group"
+                className="group"
                 initial={{ opacity: 0, x: 20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.02, delay: 0.01 }}
                 whileHover={{ x: 5 }}
               >
-                <motion.div
-                  className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white shadow-lg transform-gpu"
-                  whileHover={{
-                    scale: 1.1,
-                    rotate: 5,
-                  }}
-                  animate={{
-                    y: [0, -3, 0],
-                    rotate: [0, 1, -1, 0],
-                  }}
-                  transition={{
-                    duration: 4,
-                    ease: "easeInOut",
-                    delay: 1,
-                  }}
-                  style={{
-                    transform: "translateZ(20px)",
-                    boxShadow: "0 10px 25px -5px rgba(59, 130, 246, 0.4)",
-                  }}
-                >
-                  <Mail size={20} />
-                </motion.div>
                 <div>
                   <p className="font-bold text-gray-900 text-lg mb-1">
                     {contactData.contactInfo.email.label}
@@ -370,34 +310,12 @@ export default function ContactSection() {
 
               {/* Address Contact */}
               <motion.div
-                className="flex items-start gap-4 group"
+                className="group"
                 initial={{ opacity: 0, x: 20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.02, delay: 0.01 }}
                 whileHover={{ x: 5 }}
               >
-                <motion.div
-                  className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white shadow-lg transform-gpu"
-                  whileHover={{
-                    scale: 1.1,
-                    rotate: 5,
-                  }}
-                  animate={{
-                    y: [0, -3, 0],
-                    rotate: [0, 1, -1, 0],
-                  }}
-                  transition={{
-                    duration: 4,
-                    ease: "easeInOut",
-                    delay: 2,
-                  }}
-                  style={{
-                    transform: "translateZ(20px)",
-                    boxShadow: "0 10px 25px -5px rgba(147, 51, 234, 0.4)",
-                  }}
-                >
-                  <MapPin size={20} />
-                </motion.div>
                 <div>
                   <p className="font-bold text-gray-900 text-lg mb-1">
                     {contactData.contactInfo.address.label}

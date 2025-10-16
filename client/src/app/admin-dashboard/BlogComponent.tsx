@@ -9,7 +9,8 @@ import {
 } from "@/utils/sweetAlert";
 import dynamic from "next/dynamic";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
 
 // Blog interface
 interface Blog {
@@ -153,54 +154,72 @@ export default function BlogComponent() {
 
   const handleExcelExport = () => {
     // Export all blogs to CSV
-    const headers = ['title', 'author', 'content', 'status', 'createdDate', 'createdTime'];
+    const headers = [
+      "title",
+      "author",
+      "content",
+      "status",
+      "createdDate",
+      "createdTime",
+    ];
     const csvContent = [
-      headers.join(','),
-      ...blogs.map(blog => 
-        headers.map(header => {
-          let value = '';
-          switch(header) {
-            case 'title':
-              value = blog.title || '';
-              break;
-            case 'author':
-              value = blog.author || '';
-              break;
-            case 'content':
-              value = blog.content || '';
-              break;
-            case 'status':
-              value = blog.status || '';
-              break;
-            case 'createdDate':
-              value = blog.createdAt ? new Date(blog.createdAt).toISOString().split('T')[0] : '';
-              break;
-            case 'createdTime':
-              value = blog.createdAt ? new Date(blog.createdAt).toTimeString().split(' ')[0] : '';
-              break;
-          }
-          // Escape quotes and wrap in quotes if contains comma
-          return value.includes(',') || value.includes('"') 
-            ? `"${value.replace(/"/g, '""')}"` 
-            : value;
-        }).join(',')
-      )
-    ].join('\n');
+      headers.join(","),
+      ...blogs.map((blog) =>
+        headers
+          .map((header) => {
+            let value = "";
+            switch (header) {
+              case "title":
+                value = blog.title || "";
+                break;
+              case "author":
+                value = blog.author || "";
+                break;
+              case "content":
+                value = blog.content || "";
+                break;
+              case "status":
+                value = blog.status || "";
+                break;
+              case "createdDate":
+                value = blog.createdAt
+                  ? new Date(blog.createdAt).toISOString().split("T")[0]
+                  : "";
+                break;
+              case "createdTime":
+                value = blog.createdAt
+                  ? new Date(blog.createdAt).toTimeString().split(" ")[0]
+                  : "";
+                break;
+            }
+            // Escape quotes and wrap in quotes if contains comma
+            return value.includes(",") || value.includes('"')
+              ? `"${value.replace(/"/g, '""')}"`
+              : value;
+          })
+          .join(",")
+      ),
+    ].join("\n");
 
     // Create and download file
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `blogs_export_${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = 'hidden';
+    link.setAttribute("href", url);
+    link.setAttribute(
+      "download",
+      `blogs_export_${new Date().toISOString().split("T")[0]}.csv`
+    );
+    link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
-    showSuccess("Exported!", `Successfully exported ${blogs.length} blogs to CSV file.`);
-  };
 
+    showSuccess(
+      "Exported!",
+      `Successfully exported ${blogs.length} blogs to CSV file.`
+    );
+  };
 
   const handleEdit = (blog: Blog) => {
     setSelectedBlog(blog);
@@ -210,7 +229,9 @@ export default function BlogComponent() {
       content: blog.content || "",
       image: null,
       previewUrl: blog.imageUrl
-        ? `${API_BASE.replace("/api", "")}/${blog.imageUrl}`
+        ? `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}${
+            blog.imageUrl.startsWith("/") ? blog.imageUrl : "/" + blog.imageUrl
+          }`
         : null,
     });
     setMode("edit");
@@ -371,13 +392,30 @@ export default function BlogComponent() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {blog.imageUrl ? (
                       <img
-                        src={`${API_BASE.replace("/api", "")}/${blog.imageUrl}`}
+                        src={`${
+                          process.env.NEXT_PUBLIC_API_URL ||
+                          "http://localhost:8080"
+                        }${
+                          blog.imageUrl.startsWith("/")
+                            ? blog.imageUrl
+                            : "/" + blog.imageUrl
+                        }`}
                         alt="Blog"
                         className="h-10 w-16 object-cover rounded border"
+                        onError={(e) => {
+                          console.error("Blog image failed to load:", e);
+                          console.error("Image URL was:", e.currentTarget.src);
+                          e.currentTarget.style.display = "none";
+                          e.currentTarget.nextElementSibling.style.display =
+                            "inline";
+                        }}
                       />
                     ) : (
                       <span className="text-gray-400">No image</span>
                     )}
+                    <span className="text-gray-400" style={{ display: "none" }}>
+                      Image not found
+                    </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <button
@@ -394,27 +432,57 @@ export default function BlogComponent() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <div className="flex flex-col">
                       <div className="flex items-center">
-                        <svg className="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        <svg
+                          className="w-4 h-4 mr-1 text-gray-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
                         </svg>
                         <span className="text-xs">
-                          {blog.createdAt ? new Date(blog.createdAt).toLocaleDateString('en-IN', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric'
-                          }) : 'N/A'}
+                          {blog.createdAt
+                            ? new Date(blog.createdAt).toLocaleDateString(
+                                "en-IN",
+                                {
+                                  year: "numeric",
+                                  month: "short",
+                                  day: "numeric",
+                                }
+                              )
+                            : "N/A"}
                         </span>
                       </div>
                       <div className="flex items-center mt-1">
-                        <svg className="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <svg
+                          className="w-4 h-4 mr-1 text-gray-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
                         </svg>
                         <span className="text-xs">
-                          {blog.createdAt ? new Date(blog.createdAt).toLocaleTimeString('en-IN', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: true
-                          }) : 'N/A'}
+                          {blog.createdAt
+                            ? new Date(blog.createdAt).toLocaleTimeString(
+                                "en-IN",
+                                {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  hour12: true,
+                                }
+                              )
+                            : "N/A"}
                         </span>
                       </div>
                     </div>
@@ -643,7 +711,13 @@ export default function BlogComponent() {
           </div>
           {selectedBlog.imageUrl && (
             <img
-              src={`${API_BASE.replace("/api", "")}/${selectedBlog.imageUrl}`}
+              src={`${
+                process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"
+              }${
+                selectedBlog.imageUrl.startsWith("/")
+                  ? selectedBlog.imageUrl
+                  : "/" + selectedBlog.imageUrl
+              }`}
               alt="Blog Banner"
               className="w-full max-h-80 object-cover rounded-lg shadow"
             />
@@ -656,7 +730,6 @@ export default function BlogComponent() {
       )}
     </div>
   );
-
 
   // Main render
   return (

@@ -344,12 +344,9 @@ export default function CourseDetailPage({
   useEffect(() => {
     const checkStudentAuth = async () => {
       try {
-        const response = await axios.get(
-          `${API_BASE}/api/v1/students/isstudent`,
-          {
-            withCredentials: true,
-          }
-        );
+        const response = await axios.get(`${API_BASE}/v1/students/isstudent`, {
+          withCredentials: true,
+        });
         setStudent(response.data.student);
       } catch {
         setStudent(null);
@@ -404,7 +401,7 @@ export default function CourseDetailPage({
 
     setIsEnrollingRecordedCenter(true);
     try {
-      const enrollUrl = `${API_BASE}/api/v1/students/enroll-recorded-session-center/${student._id}`;
+      const enrollUrl = `${API_BASE}/v1/students/enroll-recorded-session-center/${student._id}`;
       console.log(
         "Enrolling in recorded session + center with URL:",
         enrollUrl
@@ -465,7 +462,7 @@ export default function CourseDetailPage({
 
     setIsEnrollingLiveCenter(true);
     try {
-      const enrollUrl = `${API_BASE}/api/v1/students/enroll-live-session-center/${student._id}`;
+      const enrollUrl = `${API_BASE}/v1/students/enroll-live-session-center/${student._id}`;
       console.log("Enrolling in live session + center with URL:", enrollUrl);
       console.log("Course ID:", course._id);
       console.log("Student ID:", student._id);
@@ -522,7 +519,7 @@ export default function CourseDetailPage({
         // Use the course ID from the fetched course data, not the slug
         const courseId = course?._id || resolvedParams.courseId;
         const response = await axios.get(
-          `${API_BASE}/api/v1/course-ratings/course/${courseId}`
+          `${API_BASE}/v1/course-ratings/course/${courseId}`
         );
         if (response.data.success) {
           setCourseRatings(response.data);
@@ -636,7 +633,9 @@ export default function CourseDetailPage({
     if (course.description) {
       doc.setFontSize(12);
       doc.setFont("helvetica", "normal");
-      const descriptionLines = doc.splitTextToSize(course.description, 170);
+      // Remove HTML tags from description
+      const cleanDescription = course.description.replace(/<[^>]*>/g, "");
+      const descriptionLines = doc.splitTextToSize(cleanDescription, 170);
       doc.text(descriptionLines, 20, yPosition);
       yPosition += descriptionLines.length * 6 + 10;
     }
@@ -653,9 +652,7 @@ export default function CourseDetailPage({
     yPosition += 6;
     doc.text(`Level: ${course.level || "N/A"}`, 20, yPosition);
     yPosition += 6;
-    doc.text(`Price: ₹${course.price || "N/A"}`, 20, yPosition);
-    yPosition += 6;
-    doc.text(`Rating: ${course.rating || "N/A"}/5`, 20, yPosition);
+    doc.text(`Price: Rs. ${course.price || "N/A"}`, 20, yPosition);
     yPosition += 15;
 
     // Add syllabus content
@@ -1178,116 +1175,6 @@ export default function CourseDetailPage({
                     </div>
                   </div>
 
-                  {/* Center Options Cards - Side by Side */}
-                  <div className="grid grid-cols-2 gap-2 mb-4">
-                    {/* Recorded Session + Center Option */}
-                    <div className="border-2 border-[#3cd664] rounded-lg p-2">
-                      <div className="mb-2">
-                        <div className="text-center mb-1">
-                          <span className="text-xs font-bold text-[#3cd664] block">
-                            {course?.pricing?.recordedSessionCenter?.title?.split(
-                              "+"
-                            )[0] || "DIGITAL HUB+"}
-                          </span>
-                          <span className="text-xs font-bold text-[#3cd664] block">
-                            {course?.pricing?.recordedSessionCenter?.title?.split(
-                              "+"
-                            )[1] || "RECORDED SESSION+"}
-                          </span>
-                          <span className="text-xs font-bold text-[#3cd664] block">
-                            {course?.pricing?.recordedSessionCenter?.title?.split(
-                              "+"
-                            )[2] || "CENTER"}
-                          </span>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-sm font-bold text-[#3cd664]">
-                            ₹
-                            {course?.pricing?.recordedSessionCenter?.finalPrice
-                              ? course.pricing.recordedSessionCenter.finalPrice.toLocaleString()
-                              : course?.pricing?.recordedSessionCenter?.price
-                              ? course.pricing.recordedSessionCenter.price.toLocaleString()
-                              : course.price
-                              ? (course.price * 1.8).toLocaleString()
-                              : "3,600"}
-                          </div>
-                          {course?.pricing?.recordedSessionCenter?.discount &&
-                            course.pricing.recordedSessionCenter.discount >
-                              0 && (
-                              <div className="text-xs text-gray-500 line-through">
-                                ₹
-                                {course.pricing.recordedSessionCenter.price.toLocaleString()}
-                              </div>
-                            )}
-                        </div>
-                      </div>
-
-                      <button
-                        onClick={handleDigitalHubRecordedCenterEnrollment}
-                        disabled={isEnrollingRecordedCenter}
-                        className="w-full bg-[#3cd664] hover:bg-[#33bb58] text-white font-bold py-1 px-2 rounded text-xs disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {isEnrollingRecordedCenter
-                          ? "Enrolling..."
-                          : course?.pricing?.recordedSessionCenter
-                              ?.buttonText || "Add Digital Hub+ Center"}
-                      </button>
-                    </div>
-
-                    {/* Live Session + Center Option */}
-                    <div className="border-2 border-blue-500 rounded-lg p-2">
-                      <div className="mb-2">
-                        <div className="text-center mb-1">
-                          <span className="text-xs font-bold text-blue-500 block">
-                            {course?.pricing?.liveSessionCenter?.title?.split(
-                              "+"
-                            )[0] || "DIGITAL HUB+"}
-                          </span>
-                          <span className="text-xs font-bold text-blue-500 block">
-                            {course?.pricing?.liveSessionCenter?.title?.split(
-                              "+"
-                            )[1] || "LIVE SESSION+"}
-                          </span>
-                          <span className="text-xs font-bold text-blue-500 block">
-                            {course?.pricing?.liveSessionCenter?.title?.split(
-                              "+"
-                            )[2] || "CENTER"}
-                          </span>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-sm font-bold text-blue-500">
-                            ₹
-                            {course?.pricing?.liveSessionCenter?.finalPrice
-                              ? course.pricing.liveSessionCenter.finalPrice.toLocaleString()
-                              : course?.pricing?.liveSessionCenter?.price
-                              ? course.pricing.liveSessionCenter.price.toLocaleString()
-                              : course.price
-                              ? (course.price * 2.2).toLocaleString()
-                              : "4,400"}
-                          </div>
-                          {course?.pricing?.liveSessionCenter?.discount &&
-                            course.pricing.liveSessionCenter.discount > 0 && (
-                              <div className="text-xs text-gray-500 line-through">
-                                ₹
-                                {course.pricing.liveSessionCenter.price.toLocaleString()}
-                              </div>
-                            )}
-                        </div>
-                      </div>
-
-                      <button
-                        onClick={handleDigitalHubLiveCenterEnrollment}
-                        disabled={isEnrollingLiveCenter}
-                        className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-1 px-2 rounded text-xs disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {isEnrollingLiveCenter
-                          ? "Enrolling..."
-                          : course?.pricing?.liveSessionCenter?.buttonText ||
-                            "Add Digital Hub+ Center"}
-                      </button>
-                    </div>
-                  </div>
-
                   {/* Checkout Button */}
                   {cartCount > 0 && (
                     <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
@@ -1412,7 +1299,7 @@ export default function CourseDetailPage({
             // Refresh student data first
             try {
               const response = await axios.get(
-                `${API_BASE}/api/v1/students/isstudent`,
+                `${API_BASE}/v1/students/isstudent`,
                 { withCredentials: true }
               );
               const loggedInStudent = response.data.student;

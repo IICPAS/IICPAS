@@ -43,6 +43,7 @@ const GroupPricingTab = ({ onBack }) => {
   const [openDialog, setOpenDialog] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [formData, setFormData] = useState({
+    groupName: "",
     level: "",
     courseIds: [],
     groupPrice: "",
@@ -54,6 +55,12 @@ const GroupPricingTab = ({ onBack }) => {
     livePrice: "",
     liveFinalPrice: "",
     liveDiscount: "",
+    recordedPriceCenter: "0",
+    recordedFinalPriceCenter: "0",
+    recordedDiscountCenter: "0",
+    livePriceCenter: "0",
+    liveFinalPriceCenter: "0",
+    liveDiscountCenter: "0",
   });
   const [imagePreview, setImagePreview] = useState(null);
 
@@ -102,6 +109,7 @@ const GroupPricingTab = ({ onBack }) => {
   const handleAddNew = () => {
     setEditingItem(null);
     setFormData({
+      groupName: "",
       level: "",
       courseIds: [],
       groupPrice: "",
@@ -113,6 +121,12 @@ const GroupPricingTab = ({ onBack }) => {
       livePrice: "",
       liveFinalPrice: "",
       liveDiscount: "",
+      recordedPriceCenter: "0",
+      recordedFinalPriceCenter: "0",
+      recordedDiscountCenter: "0",
+      livePriceCenter: "0",
+      liveFinalPriceCenter: "0",
+      liveDiscountCenter: "0",
     });
     setImagePreview(null);
     setOpenDialog(true);
@@ -121,12 +135,22 @@ const GroupPricingTab = ({ onBack }) => {
   const handleEdit = (item) => {
     setEditingItem(item);
 
+    // Debug: Log the item data to see what's available
+    console.log("Editing item:", item);
+    console.log("Item pricing:", item.pricing);
+    console.log(
+      "Recorded session center:",
+      item.pricing?.recordedSessionCenter
+    );
+    console.log("Live session center:", item.pricing?.liveSessionCenter);
+
     // Extract course IDs from populated objects
     const courseIds = (item.courseIds || []).map((course) =>
       typeof course === "object" ? course._id : course
     );
 
     setFormData({
+      groupName: item.groupName || "",
       level: item.level,
       courseIds: courseIds,
       groupPrice: item.groupPrice.toString(),
@@ -140,6 +164,30 @@ const GroupPricingTab = ({ onBack }) => {
       livePrice: item.pricing?.liveSession?.price?.toString() || "",
       liveFinalPrice: item.pricing?.liveSession?.finalPrice?.toString() || "",
       liveDiscount: item.pricing?.liveSession?.discount?.toString() || "",
+      recordedPriceCenter:
+        item.pricing?.recordedSessionCenter?.price !== undefined
+          ? item.pricing.recordedSessionCenter.price.toString()
+          : "",
+      recordedFinalPriceCenter:
+        item.pricing?.recordedSessionCenter?.finalPrice !== undefined
+          ? item.pricing.recordedSessionCenter.finalPrice.toString()
+          : "",
+      recordedDiscountCenter:
+        item.pricing?.recordedSessionCenter?.discount !== undefined
+          ? item.pricing.recordedSessionCenter.discount.toString()
+          : "",
+      livePriceCenter:
+        item.pricing?.liveSessionCenter?.price !== undefined
+          ? item.pricing.liveSessionCenter.price.toString()
+          : "",
+      liveFinalPriceCenter:
+        item.pricing?.liveSessionCenter?.finalPrice !== undefined
+          ? item.pricing.liveSessionCenter.finalPrice.toString()
+          : "",
+      liveDiscountCenter:
+        item.pricing?.liveSessionCenter?.discount !== undefined
+          ? item.pricing.liveSessionCenter.discount.toString()
+          : "",
     });
     setImagePreview(item.image || null);
     setOpenDialog(true);
@@ -191,25 +239,34 @@ const GroupPricingTab = ({ onBack }) => {
 
   const handleSave = async () => {
     if (
+      !formData.groupName ||
       !formData.level ||
       !formData.courseIds.length ||
       !formData.groupPrice ||
       !formData.recordedPrice ||
       !formData.recordedFinalPrice ||
       !formData.livePrice ||
-      !formData.liveFinalPrice
+      !formData.liveFinalPrice ||
+      !formData.recordedPriceCenter ||
+      !formData.recordedFinalPriceCenter ||
+      !formData.livePriceCenter ||
+      !formData.liveFinalPriceCenter
     ) {
-      toast.error("Please fill in all required fields", {
-        style: {
-          zIndex: 9999,
-          position: "top-center",
-        },
-      });
+      toast.error(
+        "Please fill in all required fields including group name and center session pricing",
+        {
+          style: {
+            zIndex: 9999,
+            position: "top-center",
+          },
+        }
+      );
       return;
     }
 
     try {
       const formDataToSend = new FormData();
+      formDataToSend.append("groupName", formData.groupName);
       formDataToSend.append("level", formData.level);
       formDataToSend.append("courseIds", JSON.stringify(formData.courseIds));
       formDataToSend.append("groupPrice", formData.groupPrice);
@@ -220,6 +277,26 @@ const GroupPricingTab = ({ onBack }) => {
       formDataToSend.append("livePrice", formData.livePrice);
       formDataToSend.append("liveFinalPrice", formData.liveFinalPrice);
       formDataToSend.append("liveDiscount", formData.liveDiscount);
+
+      // Add center session pricing data
+      formDataToSend.append(
+        "recordedPriceCenter",
+        formData.recordedPriceCenter
+      );
+      formDataToSend.append(
+        "recordedFinalPriceCenter",
+        formData.recordedFinalPriceCenter
+      );
+      formDataToSend.append(
+        "recordedDiscountCenter",
+        formData.recordedDiscountCenter
+      );
+      formDataToSend.append("livePriceCenter", formData.livePriceCenter);
+      formDataToSend.append(
+        "liveFinalPriceCenter",
+        formData.liveFinalPriceCenter
+      );
+      formDataToSend.append("liveDiscountCenter", formData.liveDiscountCenter);
 
       if (formData.image) {
         formDataToSend.append("image", formData.image);
@@ -266,10 +343,6 @@ const GroupPricingTab = ({ onBack }) => {
         },
       });
     }
-  };
-
-  const getCoursesForLevel = (level) => {
-    return courses.filter((course) => course.level === level);
   };
 
   const getSelectedCourseNames = (courseIds) => {
@@ -407,6 +480,15 @@ const GroupPricingTab = ({ onBack }) => {
                     </Stack>
                   </Stack>
 
+                  {item.groupName && (
+                    <Typography
+                      variant="h5"
+                      sx={{ mb: 1, color: "#1976d2", fontWeight: 700 }}
+                    >
+                      {item.groupName}
+                    </Typography>
+                  )}
+
                   <Typography
                     variant="h6"
                     sx={{ mb: 1, color: "#2e7d32", fontWeight: 600 }}
@@ -462,6 +544,17 @@ const GroupPricingTab = ({ onBack }) => {
         </DialogTitle>
         <DialogContent>
           <Stack spacing={3} sx={{ mt: 2 }}>
+            <TextField
+              fullWidth
+              label="Group Name"
+              value={formData.groupName}
+              onChange={(e) =>
+                setFormData({ ...formData, groupName: e.target.value })
+              }
+              required
+              placeholder="e.g., GST Pro, Accounting Master"
+            />
+
             <FormControl fullWidth required>
               <InputLabel>Course Level</InputLabel>
               <Select
@@ -503,12 +596,11 @@ const GroupPricingTab = ({ onBack }) => {
                   </Box>
                 )}
               >
-                {formData.level &&
-                  getCoursesForLevel(formData.level).map((course) => (
-                    <MenuItem key={course._id} value={course._id}>
-                      {course.title}
-                    </MenuItem>
-                  ))}
+                {courses.map((course) => (
+                  <MenuItem key={course._id} value={course._id}>
+                    {course.title}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
 
@@ -637,6 +729,120 @@ const GroupPricingTab = ({ onBack }) => {
                   value={formData.liveDiscount}
                   onChange={(e) =>
                     setFormData({ ...formData, liveDiscount: e.target.value })
+                  }
+                  inputProps={{ min: 0, max: 100, step: 0.01 }}
+                />
+              </Grid>
+            </Grid>
+
+            {/* Recorded Session Center Pricing */}
+            <Typography
+              variant="subtitle1"
+              sx={{ mt: 2, mb: 1, fontWeight: 500 }}
+            >
+              Recorded Session Center Pricing
+            </Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={4}>
+                <TextField
+                  fullWidth
+                  label="Original Price (₹)"
+                  type="number"
+                  value={formData.recordedPriceCenter}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      recordedPriceCenter: e.target.value,
+                    })
+                  }
+                  required
+                  inputProps={{ min: 0, step: 0.01 }}
+                />
+              </Grid>
+              <Grid item xs={4}>
+                <TextField
+                  fullWidth
+                  label="Final Price (₹)"
+                  type="number"
+                  value={formData.recordedFinalPriceCenter}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      recordedFinalPriceCenter: e.target.value,
+                    })
+                  }
+                  required
+                  inputProps={{ min: 0, step: 0.01 }}
+                />
+              </Grid>
+              <Grid item xs={4}>
+                <TextField
+                  fullWidth
+                  label="Discount (%)"
+                  type="number"
+                  value={formData.recordedDiscountCenter}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      recordedDiscountCenter: e.target.value,
+                    })
+                  }
+                  inputProps={{ min: 0, max: 100, step: 0.01 }}
+                />
+              </Grid>
+            </Grid>
+
+            {/* Live Session Center Pricing */}
+            <Typography
+              variant="subtitle1"
+              sx={{ mt: 2, mb: 1, fontWeight: 500 }}
+            >
+              Live Session Center Pricing
+            </Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={4}>
+                <TextField
+                  fullWidth
+                  label="Original Price (₹)"
+                  type="number"
+                  value={formData.livePriceCenter}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      livePriceCenter: e.target.value,
+                    })
+                  }
+                  required
+                  inputProps={{ min: 0, step: 0.01 }}
+                />
+              </Grid>
+              <Grid item xs={4}>
+                <TextField
+                  fullWidth
+                  label="Final Price (₹)"
+                  type="number"
+                  value={formData.liveFinalPriceCenter}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      liveFinalPriceCenter: e.target.value,
+                    })
+                  }
+                  required
+                  inputProps={{ min: 0, step: 0.01 }}
+                />
+              </Grid>
+              <Grid item xs={4}>
+                <TextField
+                  fullWidth
+                  label="Discount (%)"
+                  type="number"
+                  value={formData.liveDiscountCenter}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      liveDiscountCenter: e.target.value,
+                    })
                   }
                   inputProps={{ min: 0, max: 100, step: 0.01 }}
                 />

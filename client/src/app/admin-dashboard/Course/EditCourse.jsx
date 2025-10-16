@@ -6,7 +6,6 @@ import dynamic from "next/dynamic";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import { FaArrowLeft, FaSave } from "react-icons/fa";
-import { getCourseLevels } from "../../../utils/courseLevels";
 
 const JoditEditor = dynamic(() => import("jodit-react"), { ssr: false });
 const MySwal = withReactContent(Swal);
@@ -22,7 +21,6 @@ const CATEGORY_OPTIONS = [
 
 export default function EditCourse({ courseId, onBack }) {
   const [form, setForm] = useState(null);
-  const [levelOptions, setLevelOptions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [simulations, setSimulations] = useState([]);
@@ -55,50 +53,47 @@ export default function EditCourse({ courseId, onBack }) {
   useEffect(() => {
     setMounted(true);
 
-    // Load course levels first
-    getCourseLevels().then((levels) => {
-      setLevelOptions(levels);
-
-      // Then load course data
-      axios.get(`${API_BASE}/courses/${courseId}`).then((res) => {
-        const c = res.data;
-        setForm({
-          category:
-            CATEGORY_OPTIONS.find((opt) => opt.value === c.category) || null,
-          title: c.title || "",
-          slug: c.slug || "",
-          price: c.price || "",
-          level: levels.find((opt) => opt.value === c.level) || null,
-          discount: c.discount || "",
-          status: c.status || "Active",
-          video: c.video || "",
-          description: c.description || "",
-          examCert: c.examCert || "",
-          caseStudy: c.caseStudy || "",
-          assignment: c.assignment || "",
-          seoTitle: c.seoTitle || "",
-          seoKeywords: c.seoKeywords || "",
-          seoDescription: c.seoDescription || "",
-          metaTitle: c.metaTitle || "",
-          metaKeywords: c.metaKeywords || "",
-          metaDescription: c.metaDescription || "",
-          image: null,
-          imageUrl: c.image || "",
-          // Pricing fields for both live and recorded sessions
-          recordedSessionPrice: c.pricing?.recordedSession?.price || "",
-          recordedSessionDiscount: c.pricing?.recordedSession?.discount || "",
-          liveSessionPrice: c.pricing?.liveSession?.price || "",
-          liveSessionDiscount: c.pricing?.liveSession?.discount || "",
-          // Center pricing fields
-          recordedSessionCenterPrice: c.pricing?.recordedSessionCenter?.price || "",
-          recordedSessionCenterDiscount: c.pricing?.recordedSessionCenter?.discount || "",
-          liveSessionCenterPrice: c.pricing?.liveSessionCenter?.price || "",
-          liveSessionCenterDiscount: c.pricing?.liveSessionCenter?.discount || "",
-        });
-
-        // Load simulations
-        setSimulations(c.simulations || []);
+    // Load course data
+    axios.get(`${API_BASE}/courses/${courseId}`).then((res) => {
+      const c = res.data;
+      setForm({
+        category:
+          CATEGORY_OPTIONS.find((opt) => opt.value === c.category) || null,
+        title: c.title || "",
+        slug: c.slug || "",
+        price: c.price || "",
+        discount: c.discount || "",
+        status: c.status || "Active",
+        duration: c.duration || "",
+        video: c.video || "",
+        description: c.description || "",
+        examCert: c.examCert || "",
+        caseStudy: c.caseStudy || "",
+        assignment: c.assignment || "",
+        seoTitle: c.seoTitle || "",
+        seoKeywords: c.seoKeywords || "",
+        seoDescription: c.seoDescription || "",
+        metaTitle: c.metaTitle || "",
+        metaKeywords: c.metaKeywords || "",
+        metaDescription: c.metaDescription || "",
+        image: null,
+        imageUrl: c.image || "",
+        // Pricing fields for both live and recorded sessions
+        recordedSessionPrice: c.pricing?.recordedSession?.price || "",
+        recordedSessionDiscount: c.pricing?.recordedSession?.discount || "",
+        liveSessionPrice: c.pricing?.liveSession?.price || "",
+        liveSessionDiscount: c.pricing?.liveSession?.discount || "",
+        // Center pricing fields
+        recordedSessionCenterPrice:
+          c.pricing?.recordedSessionCenter?.price || "",
+        recordedSessionCenterDiscount:
+          c.pricing?.recordedSessionCenter?.discount || "",
+        liveSessionCenterPrice: c.pricing?.liveSessionCenter?.price || "",
+        liveSessionCenterDiscount: c.pricing?.liveSessionCenter?.discount || "",
       });
+
+      // Load simulations
+      setSimulations(c.simulations || []);
     });
   }, [courseId]);
 
@@ -125,8 +120,6 @@ export default function EditCourse({ courseId, onBack }) {
 
   const handleCategoryChange = (option) =>
     setForm((f) => ({ ...f, category: option }));
-  const handleLevelChange = (option) =>
-    setForm((f) => ({ ...f, level: option }));
 
   // Simulation image upload handler
   const handleSimulationImageUpload = async (file) => {
@@ -240,7 +233,6 @@ export default function EditCourse({ courseId, onBack }) {
     try {
       const fd = new FormData();
       fd.append("category", form.category?.value || "");
-      fd.append("level", form.level?.value || "");
 
       // Add pricing structure
       const pricing = {
@@ -279,7 +271,6 @@ export default function EditCourse({ courseId, onBack }) {
         if (
           [
             "category",
-            "level",
             "imageUrl",
             "recordedSessionPrice",
             "recordedSessionDiscount",
@@ -348,6 +339,14 @@ export default function EditCourse({ courseId, onBack }) {
               onChange={handleInputChange}
               className="w-full border p-2 rounded"
             />
+            <label>Duration</label>
+            <input
+              name="duration"
+              value={form.duration}
+              onChange={handleInputChange}
+              className="w-full border p-2 rounded"
+              placeholder="e.g., 3 months, 6 weeks, 40 hours"
+            />
             <label>Course Image</label>
             <input
               type="file"
@@ -402,13 +401,6 @@ export default function EditCourse({ courseId, onBack }) {
           </div>
 
           <div className="space-y-4">
-            <label>Level</label>
-            <Select
-              options={levelOptions}
-              value={form.level}
-              onChange={handleLevelChange}
-            />
-
             {/* Recorded Session Pricing */}
             <div className="border p-4 rounded-lg bg-green-50">
               <h4 className="font-semibold text-green-800 mb-3">

@@ -9,37 +9,43 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import wishlistEventManager from "../../utils/wishlistEventManager";
 import GroupCourseCard from "../components/GroupCourseCard";
-
-const skillLevels = ["Executive Level", "Professional Level"];
+import SimpleScrabbleGame from "./SimpleScrabbleGame";
 
 export default function CoursePage() {
   const router = useRouter();
   const [allCourses, setAllCourses] = useState([]);
   const [categories, setCategories] = useState([]);
   const [groupPricing, setGroupPricing] = useState([]);
+  const [blogs, setBlogs] = useState([]);
   const [search, setSearch] = useState("");
   const [selectedCategories, setSelectedCategories] = useState([]);
-  const [selectedLevels, setSelectedLevels] = useState([]);
+  const [selectedGroupNames, setSelectedGroupNames] = useState([]);
   const [student, setStudent] = useState(null);
   const [wishlistCourseIds, setWishlistCourseIds] = useState([]);
   const [loading, setLoading] = useState(false); // Initialize as false to prevent initial blinking
 
   // Define API_BASE at component level
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
-
+  const API_BASE =
+    process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+  console.log("API_BASE", process.env.NEXT_PUBLIC_API_URL);
   // Fetch data
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
 
       try {
-        // Fetch courses, categories, and group pricing in parallel
-        const [coursesResponse, categoriesResponse, groupPricingResponse] =
-          await Promise.allSettled([
-            axios.get(`${API_BASE}/api/courses`),
-            axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/categories`),
-            axios.get(`${API_BASE}/api/group-pricing`),
-          ]);
+        // Fetch courses, categories, group pricing, and blogs in parallel
+        const [
+          coursesResponse,
+          categoriesResponse,
+          groupPricingResponse,
+          blogsResponse,
+        ] = await Promise.allSettled([
+          axios.get(`${API_BASE}/courses`),
+          axios.get(`${API_BASE}/categories`),
+          axios.get(`${API_BASE}/group-pricing`),
+          axios.get(`${API_BASE}/blogs`),
+        ]);
 
         // Update courses if API call succeeded
         if (
@@ -60,11 +66,33 @@ export default function CoursePage() {
         }
 
         // Update group pricing if API call succeeded
+        console.log("Group pricing response:", groupPricingResponse);
         if (
           groupPricingResponse.status === "fulfilled" &&
           groupPricingResponse.value.data?.length > 0
         ) {
+          console.log(
+            "Setting group pricing data:",
+            groupPricingResponse.value.data
+          );
           setGroupPricing(groupPricingResponse.value.data);
+        } else {
+          console.log(
+            "Group pricing response failed or empty:",
+            groupPricingResponse
+          );
+        }
+
+        // Update blogs if API call succeeded
+        if (
+          blogsResponse.status === "fulfilled" &&
+          blogsResponse.value.data?.length > 0
+        ) {
+          // Filter only active blogs
+          const activeBlogs = blogsResponse.value.data.filter(
+            (blog) => blog.status === "active"
+          );
+          setBlogs(activeBlogs);
         }
       } catch (error) {
         console.log("API calls failed:", error);
@@ -76,7 +104,7 @@ export default function CoursePage() {
     // Fetch data from API
     fetchData();
 
-    // Fetch wishlist state
+    // Fetch wishlist state (don't depend on student state)
     fetchWishlistState();
 
     // Subscribe to wishlist changes
@@ -96,17 +124,14 @@ export default function CoursePage() {
     return () => {
       unsubscribe();
     };
-  }, [student]);
+  }, []); // Remove student dependency to prevent loops
 
   // Fetch current wishlist state
   const fetchWishlistState = async () => {
     try {
-      const studentRes = await axios.get(
-        `${API_BASE}/api/v1/students/isstudent`,
-        {
-          withCredentials: true,
-        }
-      );
+      const studentRes = await axios.get(`${API_BASE}/v1/students/isstudent`, {
+        withCredentials: true,
+      });
 
       if (studentRes.data.student) {
         setStudent(studentRes.data.student);
@@ -114,16 +139,26 @@ export default function CoursePage() {
 
         // Fetch wishlist
         const wishlistRes = await axios.get(
-          `${API_BASE}/api/v1/students/get-wishlist/${studentId}`,
+          `${API_BASE}/v1/students/get-wishlist/${studentId}`,
           { withCredentials: true }
         );
         const wishlistIds = wishlistRes.data.wishlist || [];
         setWishlistCourseIds(wishlistIds);
+      } else {
+        // No student logged in, clear wishlist
+        setStudent(null);
+        setWishlistCourseIds([]);
       }
     } catch (error) {
       console.error("Error fetching wishlist state:", error);
+      // Handle 401 Unauthorized errors gracefully
+      if (error.response?.status === 401) {
+        console.log("User not authenticated, clearing student data");
+      }
       // Don't show error to user for background operations
       // Just log it and continue
+      setStudent(null);
+      setWishlistCourseIds([]);
     }
   };
 
@@ -134,16 +169,16 @@ export default function CoursePage() {
     const matchesCategory =
       selectedCategories.length === 0 ||
       selectedCategories.includes(course.category);
-    const matchesLevel =
-      selectedLevels.length === 0 || selectedLevels.includes(course.level);
-    return matchesSearch && matchesCategory && matchesLevel;
+    return matchesSearch && matchesCategory;
   });
 
-  // Filter group pricing based on selected levels
+  // Filter group pricing based on selected group names
   const filteredGroupPricing = groupPricing.filter((group) => {
-    // Group pricing should only be shown if a level filter is explicitly selected
-    // AND the group's level matches one of the selected levels
-    return selectedLevels.length > 0 && selectedLevels.includes(group.level);
+    // Show all groups if no group name filter is selected, otherwise filter by selected group names
+    return (
+      selectedGroupNames.length === 0 ||
+      selectedGroupNames.includes(group.groupName)
+    );
   });
 
   // Handlers
@@ -154,9 +189,11 @@ export default function CoursePage() {
         : [...prev, categoryName]
     );
 
-  const toggleLevel = (lvl) =>
-    setSelectedLevels((prev) =>
-      prev.includes(lvl) ? prev.filter((l) => l !== lvl) : [...prev, lvl]
+  const toggleGroupName = (groupName) =>
+    setSelectedGroupNames((prev) =>
+      prev.includes(groupName)
+        ? prev.filter((g) => g !== groupName)
+        : [...prev, groupName]
     );
 
   const toggleLike = async (courseId) => {
@@ -194,7 +231,7 @@ export default function CoursePage() {
       if (isLiked) {
         // Remove from wishlist
         const response = await axios.post(
-          `${API_BASE}/api/v1/students/remove-wishlist/${studentId}`,
+          `${API_BASE}/v1/students/remove-wishlist/${studentId}`,
           { courseId },
           { withCredentials: true }
         );
@@ -203,7 +240,7 @@ export default function CoursePage() {
       } else {
         // Add to wishlist
         const response = await axios.post(
-          `${API_BASE}/api/v1/students/add-wishlist/${studentId}`,
+          `${API_BASE}/v1/students/add-wishlist/${studentId}`,
           { courseId },
           { withCredentials: true }
         );
@@ -250,82 +287,78 @@ export default function CoursePage() {
 
   return (
     <section className="bg-gradient-to-br from-[#f5fcfa] via-white to-[#eef7fc] min-h-screen text-[#0b1224]">
-      <div className="max-w-7xl mx-auto px-4 py-16 flex flex-col md:flex-row gap-10">
-        {/* Sidebar */}
-        <aside className="w-full md:w-1/4">
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold mb-4">Find by Course Name</h2>
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search courses..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full border rounded-lg px-4 py-2 focus:outline-none shadow"
-              />
-              <FaSearch className="absolute right-3 top-3 text-gray-400" />
+      <div className="max-w-full mx-auto px-4 pb-8 mr-4">
+        <div className="flex flex-col lg:flex-row gap-6 items-start">
+          {/* Sidebar */}
+          <aside className="w-full lg:w-1/4 xl:w-1/5 lg:sticky lg:top-24 lg:max-h-screen lg:overflow-y-auto ml-8">
+            <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+              <h2 className="text-xl font-bold mb-4">Find by Course Name</h2>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search courses..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full border rounded-lg px-4 py-2 focus:outline-none shadow"
+                />
+                <FaSearch className="absolute right-3 top-3 text-gray-400" />
+              </div>
             </div>
-          </div>
 
-          <div className="mb-6">
-            <h3 className="text-xl font-semibold mb-3">Categories</h3>
-            {categories.length === 0 && (
-              <div className="text-gray-400 text-sm">No categories</div>
-            )}
-            {categories.map((cat) => (
-              <label
-                key={cat._id}
-                className="flex items-center space-x-2 text-sm mb-2"
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedCategories.includes(cat.category)}
-                  onChange={() => toggleCategory(cat.category)}
-                  className="accent-green-600"
-                />
-                <span>{cat.category}</span>
-              </label>
-            ))}
-          </div>
-
-          <div className="mb-6">
-            <h3 className="text-xl font-semibold mb-3">Skills Level</h3>
-            {skillLevels.map((level) => (
-              <label
-                key={level}
-                className="flex items-center space-x-2 text-sm mb-2"
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedLevels.includes(level)}
-                  onChange={() => toggleLevel(level)}
-                  className="accent-green-600"
-                />
-                <span>{level}</span>
-              </label>
-            ))}
-          </div>
-        </aside>
-
-        {/* Course Cards */}
-        <main className="w-full md:w-3/4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Group Pricing Cards */}
-          {filteredGroupPricing.map((group, index) => (
-            <GroupCourseCard
-              key={group._id || `group-${index}`}
-              groupPricing={group}
-              index={index}
-            />
-          ))}
-
-          {/* Individual Course Cards - Show initially, hide when level filter is selected */}
-          {selectedLevels.length === 0 && (
-            <>
-              {filteredCourses.length === 0 && (
-                <div className="col-span-3 text-gray-500 text-center py-12">
-                  No courses found.
-                </div>
+            <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+              <h3 className="text-lg font-semibold mb-3">Categories</h3>
+              {categories.length === 0 && (
+                <div className="text-gray-400 text-sm">No categories</div>
               )}
+              {categories.map((cat) => (
+                <label
+                  key={cat._id}
+                  className="flex items-center space-x-2 text-sm mb-2"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedCategories.includes(cat.category)}
+                    onChange={() => toggleCategory(cat.category)}
+                    className="accent-green-600"
+                  />
+                  <span>{cat.category}</span>
+                </label>
+              ))}
+            </div>
+
+            <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+              <h3 className="text-lg font-semibold mb-3">
+                Course Combinations
+              </h3>
+              {groupPricing.length === 0 ? (
+                <div className="text-gray-400 text-sm">No groups available</div>
+              ) : (
+                groupPricing.map((group) => (
+                  <label
+                    key={group._id}
+                    className="flex items-center space-x-2 text-sm mb-2"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedGroupNames.includes(group.groupName)}
+                      onChange={() => toggleGroupName(group.groupName)}
+                      className="accent-green-600"
+                    />
+                    <span>{group.groupName}</span>
+                  </label>
+                ))
+              )}
+            </div>
+
+            {/* Mini Scrabble Game */}
+            <SimpleScrabbleGame />
+          </aside>
+
+          {/* Course Cards */}
+          <main className="w-full lg:w-3/4 xl:w-4/5">
+            {/* Unified Display: Show all courses together in a single grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 auto-rows-max">
+              {/* Individual Course Cards */}
               {filteredCourses.map((course, index) => {
                 // Use recorded session pricing if available, otherwise fall back to legacy pricing
                 const recordedPrice =
@@ -362,17 +395,17 @@ export default function CoursePage() {
                     }}
                   >
                     {/* Image Section */}
-                    <div className="relative h-48 w-full rounded-t-xl overflow-hidden">
+                    <div className="relative h-40 w-full rounded-t-xl overflow-hidden">
                       {course.image ? (
                         <Image
                           src={
                             course.image.startsWith("http")
                               ? course.image
                               : course.image.startsWith("/uploads/")
-                              ? `${API_BASE}${course.image}`
+                              ? `${process.env.NEXT_PUBLIC_API_URL}${course.image}`
                               : course.image.startsWith("/")
                               ? course.image
-                              : `${API_BASE}${course.image}`
+                              : `${process.env.NEXT_PUBLIC_API_URL}${course.image}`
                           }
                           alt={course.title}
                           fill
@@ -398,7 +431,9 @@ export default function CoursePage() {
                         className={`w-full h-full flex items-center justify-center text-gray-400 bg-gray-200 ${
                           course.image ? "hidden" : ""
                         }`}
-                        style={{ display: course.image ? "none" : "flex" }}
+                        style={{
+                          display: course.image ? "none" : "flex",
+                        }}
                       >
                         <div className="text-center">
                           <div className="text-4xl mb-2">📚</div>
@@ -408,7 +443,7 @@ export default function CoursePage() {
                     </div>
 
                     {/* Content Section */}
-                    <div className="p-5 space-y-3 relative">
+                    <div className="p-4 space-y-2 relative">
                       {/* Wishlist Star */}
                       <div
                         className="absolute top-3 right-3 cursor-pointer z-10"
@@ -451,30 +486,39 @@ export default function CoursePage() {
                       </p>
 
                       {/* Title */}
-                      <h3 className="text-lg font-bold text-gray-900 group-hover:text-green-600 transition-colors line-clamp-2">
+                      <h3 className="text-base font-bold text-gray-900 group-hover:text-green-600 transition-colors line-clamp-2">
                         {course.title}
                       </h3>
 
                       {/* Price Section */}
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-green-600 font-bold text-xl">
-                            ₹{discountedPrice.toLocaleString()}
+                          <p className="text-green-600 font-bold text-lg">
+                            ₹
+                            {discountedPrice &&
+                            typeof discountedPrice === "number"
+                              ? discountedPrice.toLocaleString()
+                              : "0"}
                           </p>
                           {displayDiscount > 0 && (
                             <p className="text-gray-400 text-sm line-through">
                               ₹
-                              {(
-                                course.pricing?.recordedSession?.price ||
-                                course.price
-                              ).toLocaleString()}
+                              {(() => {
+                                const originalPrice =
+                                  course.pricing?.recordedSession?.price ||
+                                  course.price;
+                                return originalPrice &&
+                                  typeof originalPrice === "number"
+                                  ? originalPrice.toLocaleString()
+                                  : "0";
+                              })()}
                             </p>
                           )}
                         </div>
 
                         {/* Enroll Button */}
                         <button
-                          className="bg-gray-900 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+                          className="bg-gray-900 hover:bg-green-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-200"
                           onClick={(e) => {
                             e.stopPropagation();
                             // Use course slug if available, otherwise generate from title
@@ -487,17 +531,140 @@ export default function CoursePage() {
                             router.push(`/course/${courseId}`);
                           }}
                         >
-                          Enroll Now →
+                          Enroll →
                         </button>
                       </div>
                     </div>
                   </motion.div>
                 );
               })}
-            </>
-          )}
-        </main>
+
+              {/* Course Packages Section */}
+              {filteredGroupPricing.length > 0 && (
+                <>
+                  <div className="col-span-full mb-6">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                      Course Packages
+                    </h2>
+                    <p className="text-gray-600">
+                      Complete course bundles with special pricing
+                    </p>
+                  </div>
+                  {filteredGroupPricing.map((group, index) => (
+                    <GroupCourseCard
+                      key={group._id || `group-${index}`}
+                      groupPricing={group}
+                      index={index}
+                    />
+                  ))}
+                </>
+              )}
+
+              {/* No courses found message */}
+              {filteredCourses.length === 0 &&
+                filteredGroupPricing.length === 0 && (
+                  <div className="col-span-full text-gray-500 text-center py-12">
+                    <div className="text-4xl mb-4">📚</div>
+                    <h3 className="text-xl font-semibold mb-2">
+                      No courses found
+                    </h3>
+                    <p>Try adjusting your search or filter criteria.</p>
+                  </div>
+                )}
+            </div>
+          </main>
+        </div>
       </div>
+
+      {/* Softwares We Teach Carousel Section */}
+      <section className="py-20 bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="w-full">
+          <motion.div
+            className="text-center mb-16 px-4"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-4xl font-bold text-gray-900 mb-6">
+              Softwares We Teach
+            </h2>
+            <p className="text-gray-600 max-w-2xl mx-auto text-lg">
+              Master industry-leading software tools and technologies
+            </p>
+          </motion.div>
+
+          {/* Moving Cards Container */}
+          <div
+            className="relative overflow-hidden bg-white py-8"
+            style={{ width: "95vw" }}
+          >
+            <motion.div
+              className="flex gap-8"
+              animate={{
+                x: [0, -100 * 8],
+              }}
+              transition={{
+                duration: 20,
+                repeat: Infinity,
+                ease: "linear",
+              }}
+              style={{
+                width: `${8 * 360}px`,
+              }}
+            >
+              {/* Software data */}
+              {(() => {
+                const softwares = [
+                  { name: "Power BI", image: "/softwares/PowerBI.jpeg" },
+                  {
+                    name: "Share Trading",
+                    image: "/softwares/share-trading.jpg",
+                  },
+                  { name: "Zoho", image: "/softwares/zoho.png" },
+                  { name: "PowerPoint", image: "/softwares/powerpoint.svg" },
+                  { name: "QuickBooks", image: "/softwares/quickbooks.png" },
+                  { name: "SAP", image: "/softwares/sap.webp" },
+                  { name: "Tally Prime", image: "/softwares/tally-prime.png" },
+                  {
+                    name: "Microsoft Excel",
+                    image: "/softwares/microsoft-excel-icon.webp",
+                  },
+                ];
+
+                // Duplicate cards for seamless loop
+                return [...softwares, ...softwares].map((software, index) => (
+                  <motion.div
+                    key={`${software.name}-${index}`}
+                    className="flex-shrink-0 w-80 bg-white rounded-3xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-500 hover:scale-105 mx-4"
+                    whileHover={{ y: -8 }}
+                  >
+                    <div className="h-56 overflow-hidden rounded-t-3xl bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center">
+                      <img
+                        src={software.image}
+                        alt={software.name}
+                        className="w-32 h-32 object-contain hover:scale-110 transition-transform duration-700"
+                      />
+                    </div>
+                    <div className="p-8">
+                      <div className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-medium mb-4">
+                        <span>💻</span>
+                        <span>Software</span>
+                      </div>
+                      <h3 className="text-xl font-bold text-gray-900 hover:text-blue-600 transition-colors line-clamp-2 mb-3">
+                        {software.name}
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        Professional certification course
+                      </p>
+                    </div>
+                  </motion.div>
+                ));
+              })()}
+            </motion.div>
+          </div>
+        </div>
+      </section>
     </section>
   );
 }

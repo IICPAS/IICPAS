@@ -2,6 +2,18 @@ import mongoose from "mongoose";
 const { Schema, model } = mongoose;
 
 const GroupPricingSchema = new Schema({
+  groupName: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  slug: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+    lowercase: true,
+  },
   level: {
     type: String,
     required: true,
@@ -81,6 +93,58 @@ const GroupPricingSchema = new Schema({
         default: "Add Digital Hub+",
       },
     },
+    recordedSessionCenter: {
+      price: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+      finalPrice: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+      discount: {
+        type: Number,
+        default: 0,
+        min: 0,
+        max: 100,
+      },
+      title: {
+        type: String,
+        default: "DIGITAL HUB+ RECORDED SESSION+ CENTER",
+      },
+      buttonText: {
+        type: String,
+        default: "Add Digital Hub+ Center",
+      },
+    },
+    liveSessionCenter: {
+      price: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+      finalPrice: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+      discount: {
+        type: Number,
+        default: 0,
+        min: 0,
+        max: 100,
+      },
+      title: {
+        type: String,
+        default: "DIGITAL HUB+ LIVE SESSION+ CENTER",
+      },
+      buttonText: {
+        type: String,
+        default: "Add Digital Hub+ Center",
+      },
+    },
   },
   // Rating will be calculated from included courses
   averageRating: {
@@ -109,8 +173,16 @@ const GroupPricingSchema = new Schema({
   },
 });
 
-// Update the updatedAt field before saving
+// Generate slug from groupName before saving
 GroupPricingSchema.pre("save", function (next) {
+  if (this.isModified("groupName") || !this.slug) {
+    this.slug = this.groupName
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, "") // Remove special characters
+      .replace(/\s+/g, "-") // Replace spaces with hyphens
+      .replace(/-+/g, "-") // Replace multiple hyphens with single hyphen
+      .trim("-"); // Remove leading/trailing hyphens
+  }
   this.updatedAt = Date.now();
   next();
 });

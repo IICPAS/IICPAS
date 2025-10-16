@@ -3,7 +3,6 @@ import Select from "react-select";
 import axios from "axios";
 import { FaArrowLeft, FaPlus } from "react-icons/fa";
 import dynamic from "next/dynamic";
-import { getCourseLevels } from "../../../utils/courseLevels";
 
 const JoditEditor = dynamic(() => import("jodit-react"), { ssr: false });
 
@@ -14,7 +13,6 @@ const initialForm = {
   title: "",
   slug: "",
   price: "",
-  level: null,
   discount: "",
   status: "Active",
   video: "",
@@ -65,7 +63,6 @@ const initialForm = {
 
 export default function CourseAddTab({ onBack }) {
   const [categoryOptions, setCategoryOptions] = useState([]);
-  const [levelOptions, setLevelOptions] = useState([]);
   const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -99,15 +96,10 @@ export default function CourseAddTab({ onBack }) {
         );
       })
       .catch(() => setCategoryOptions([]));
-
-    // Load course levels
-    getCourseLevels().then(setLevelOptions);
   }, []);
 
   const handleCategoryChange = (option) =>
     setForm((f) => ({ ...f, category: option }));
-  const handleLevelChange = (option) =>
-    setForm((f) => ({ ...f, level: option }));
 
   const handleInputChange = (e) => {
     const { name, value, files } = e.target;
@@ -178,7 +170,6 @@ export default function CourseAddTab({ onBack }) {
       const fd = new FormData();
 
       fd.append("category", form.category?.value || "");
-      fd.append("level", form.level?.value || "");
 
       // Add pricing structure
       const pricing = {
@@ -217,7 +208,6 @@ export default function CourseAddTab({ onBack }) {
         if (
           [
             "category",
-            "level",
             "recordedSessionPrice",
             "recordedSessionDiscount",
             "liveSessionPrice",
@@ -350,19 +340,6 @@ export default function CourseAddTab({ onBack }) {
             </div>
           </div>
           <div className="space-y-5">
-            <div>
-              <label className="block mb-1 font-semibold">
-                Select course level
-              </label>
-              <Select
-                options={levelOptions}
-                value={form.level}
-                onChange={handleLevelChange}
-                placeholder="Select course level"
-                required
-                styles={{ control: (base) => ({ ...base, minHeight: "40px" }) }}
-              />
-            </div>
             <div>
               <label className="block mb-1 font-semibold">Course Slug</label>
               <input

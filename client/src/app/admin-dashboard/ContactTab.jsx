@@ -161,7 +161,7 @@ export default function ContactTab() {
         return;
       }
 
-      const response = await fetch(`${API_BASE}/contact`, {
+      const response = await fetch(`${API_BASE}/contact/admin`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

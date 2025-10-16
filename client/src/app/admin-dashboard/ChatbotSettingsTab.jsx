@@ -10,11 +10,13 @@ const API = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080/api";
 const ChatbotSettingsTab = () => {
   const [settings, setSettings] = useState({
     assistantName: "Neha Singh",
-    profilePicture: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop&crop=face",
-    welcomeMessage: "Hi! I'm your course assistant. To provide you with personalized assistance, I'll need a few details from you.\n\nLet's start with your **Full Name** please:",
-    status: "Online"
+    profilePicture:
+      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop&crop=face",
+    welcomeMessage:
+      "Hi! I'm your course assistant. To provide you with personalized assistance, I'll need a few details from you.\n\nLet's start with your **Full Name** please:",
+    status: "Online",
   });
-  
+
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
@@ -47,9 +49,9 @@ const ChatbotSettingsTab = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setSettings(prev => ({
+    setSettings((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -69,21 +71,25 @@ const ChatbotSettingsTab = () => {
     try {
       setSaving(true);
       const token = localStorage.getItem("adminToken");
-      
+
       let profilePictureUrl = settings.profilePicture;
-      
+
       // Upload new image if selected
       if (imageFile) {
         const formData = new FormData();
-        formData.append('image', imageFile);
-        
-        const uploadResponse = await axios.post(`${API}/chatbot/upload/chatbot-image`, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            Authorization: token ? `Bearer ${token}` : undefined,
-          },
-        });
-        
+        formData.append("image", imageFile);
+
+        const uploadResponse = await axios.post(
+          `${API}/chatbot/upload/chatbot-image`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+              Authorization: token ? `Bearer ${token}` : undefined,
+            },
+          }
+        );
+
         if (uploadResponse.data.success) {
           profilePictureUrl = uploadResponse.data.imageUrl;
         }
@@ -91,15 +97,19 @@ const ChatbotSettingsTab = () => {
 
       const updatedSettings = {
         ...settings,
-        profilePicture: profilePictureUrl
+        profilePicture: profilePictureUrl,
       };
 
-      const response = await axios.post(`${API}/chatbot/settings`, updatedSettings, {
-        headers: {
-          Authorization: token ? `Bearer ${token}` : undefined,
-        },
-      });
-      
+      const response = await axios.post(
+        `${API}/chatbot/settings`,
+        updatedSettings,
+        {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : undefined,
+          },
+        }
+      );
+
       if (response.data.success) {
         toast.success("Chatbot settings updated successfully!");
         setSettings(updatedSettings);
@@ -139,7 +149,7 @@ const ChatbotSettingsTab = () => {
               <FaUser className="text-green-500" />
               Assistant Profile
             </h3>
-            
+
             {/* Profile Picture Upload */}
             <div className="flex flex-col items-center space-y-4">
               <div className="relative">
@@ -156,7 +166,7 @@ const ChatbotSettingsTab = () => {
                     </div>
                   )}
                 </div>
-                
+
                 <label className="absolute bottom-0 right-0 bg-green-500 text-white p-2 rounded-full cursor-pointer hover:bg-green-600 transition-colors">
                   <FaUpload className="text-sm" />
                   <input
@@ -167,7 +177,7 @@ const ChatbotSettingsTab = () => {
                   />
                 </label>
               </div>
-              
+
               <p className="text-sm text-gray-600 text-center">
                 Click the upload icon to change the assistant's profile picture
               </p>
@@ -176,7 +186,9 @@ const ChatbotSettingsTab = () => {
 
           {/* Preview */}
           <div className="bg-gray-50 p-6 rounded-lg">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Preview</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              Preview
+            </h3>
             <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-lg">
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 rounded-full overflow-hidden bg-white bg-opacity-20 flex items-center justify-center">
@@ -202,8 +214,10 @@ const ChatbotSettingsTab = () => {
         {/* Right Column - Settings Form */}
         <div className="space-y-6">
           <div className="bg-gray-50 p-6 rounded-lg">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Assistant Details</h3>
-            
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              Assistant Details
+            </h3>
+
             <div className="space-y-4">
               {/* Assistant Name */}
               <div>
@@ -252,7 +266,8 @@ const ChatbotSettingsTab = () => {
                   placeholder="Enter the welcome message for new users"
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Use **bold text** for emphasis. This message will be shown to new users.
+                  Use **bold text** for emphasis. This message will be shown to
+                  new users.
                 </p>
               </div>
             </div>
@@ -265,11 +280,7 @@ const ChatbotSettingsTab = () => {
               disabled={saving}
               className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
             >
-              {saving ? (
-                <FaSpinner className="animate-spin" />
-              ) : (
-                <FaSave />
-              )}
+              {saving ? <FaSpinner className="animate-spin" /> : <FaSave />}
               {saving ? "Saving..." : "Save Settings"}
             </button>
           </div>
@@ -281,8 +292,14 @@ const ChatbotSettingsTab = () => {
         <h4 className="font-semibold text-blue-800 mb-2">Instructions:</h4>
         <ul className="text-sm text-blue-700 space-y-1">
           <li>• The assistant name will appear in the chatbot header</li>
-          <li>• The profile picture will be displayed in both the chat button and header</li>
-          <li>• The welcome message will be shown to new users when they start a conversation</li>
+          <li>
+            • The profile picture will be displayed in both the chat button and
+            header
+          </li>
+          <li>
+            • The welcome message will be shown to new users when they start a
+            conversation
+          </li>
           <li>• Changes will be applied immediately after saving</li>
         </ul>
       </div>
@@ -291,4 +308,3 @@ const ChatbotSettingsTab = () => {
 };
 
 export default ChatbotSettingsTab;
-

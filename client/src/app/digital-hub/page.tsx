@@ -215,7 +215,7 @@ function DigitalHubContent() {
   const [selectedTopic, setSelectedTopic] = useState<TopicData | null>(null);
   const [topicContent, setTopicContent] = useState("");
   const [loading, setLoading] = useState(true);
-  
+
   // Demo mode state
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -247,7 +247,8 @@ function DigitalHubContent() {
     e.preventDefault();
 
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const API_BASE =
+        process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
       const response = await fetch(`${API_BASE}/tickets`, {
         method: "POST",
         headers: {
@@ -371,19 +372,19 @@ function DigitalHubContent() {
   // Function to split content into pages
   const splitContentIntoPages = (content: string, maxPages: number = 3) => {
     if (!content) return { pages: [], totalPages: 0 };
-    
+
     // Split content by paragraphs or sections
     const paragraphs = content.split(/(?=<h[1-6]|<\/p>|<\/div>|<\/section>)/i);
     const pages = [];
     const itemsPerPage = Math.ceil(paragraphs.length / maxPages);
-    
+
     for (let i = 0; i < paragraphs.length; i += itemsPerPage) {
-      const pageContent = paragraphs.slice(i, i + itemsPerPage).join('');
+      const pageContent = paragraphs.slice(i, i + itemsPerPage).join("");
       if (pageContent.trim()) {
         pages.push(pageContent);
       }
     }
-    
+
     return { pages, totalPages: Math.min(pages.length, maxPages) };
   };
 
@@ -398,10 +399,13 @@ function DigitalHubContent() {
     if (topic.content) {
       try {
         const decodedContent = atob(topic.content);
-        
+
         if (isDemo) {
           // For demo mode, split content into pages and limit to 1 page
-          const { pages, totalPages } = splitContentIntoPages(decodedContent, 1);
+          const { pages, totalPages } = splitContentIntoPages(
+            decodedContent,
+            1
+          );
           setTotalPages(totalPages);
           setCurrentPage(1);
           setTopicContent(pages[0] || "Content not available");
@@ -1449,7 +1453,10 @@ function DigitalHubContent() {
                 }`}
               />
             </button>
-            <button className="p-2 rounded-lg hover:bg-gray-200 transition-colors" aria-label="Go back">
+            <button
+              className="p-2 rounded-lg hover:bg-gray-200 transition-colors"
+              aria-label="Go back"
+            >
               <ArrowLeft
                 className={`w-5 h-5 ${
                   isDarkMode ? "text-white" : "text-black"
@@ -1497,27 +1504,29 @@ function DigitalHubContent() {
                       <h3 className="text-sm font-semibold text-gray-600 mb-2">
                         Topics
                       </h3>
-                      {topics.map((topic: TopicData, index) => (
-                        <button
-                          key={topic._id}
-                          onClick={() => {
-                            setHamburgerOpen(false);
-                            handleTopicSelect(topic);
-                          }}
-                          className={`w-full text-left p-3 rounded-lg hover:bg-green-50 hover:text-black transition-colors border border-gray-600 ${
-                            selectedTopic?._id === topic._id
-                              ? "bg-gray-100 border-gray-600"
-                              : ""
-                          } ${isDarkMode ? "text-black" : "text-gray-700"}`}
-                        >
-                          <div className="flex items-center space-x-3">
-                            <div className="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-medium">
-                              {index + 1}
+                      {(isDemo ? topics.slice(0, 1) : topics).map(
+                        (topic: TopicData, index) => (
+                          <button
+                            key={topic._id}
+                            onClick={() => {
+                              setHamburgerOpen(false);
+                              handleTopicSelect(topic);
+                            }}
+                            className={`w-full text-left p-3 rounded-lg hover:bg-green-50 hover:text-black transition-colors border border-gray-600 ${
+                              selectedTopic?._id === topic._id
+                                ? "bg-gray-100 border-gray-600"
+                                : ""
+                            } ${isDarkMode ? "text-black" : "text-gray-700"}`}
+                          >
+                            <div className="flex items-center space-x-3">
+                              <div className="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-medium">
+                                {index + 1}
+                              </div>
+                              <span className="font-medium">{topic.title}</span>
                             </div>
-                            <span className="font-medium">{topic.title}</span>
-                          </div>
-                        </button>
-                      ))}
+                          </button>
+                        )
+                      )}
                     </>
                   )}
 
@@ -1635,27 +1644,30 @@ function DigitalHubContent() {
                       </span>
                     )}
                   </h1>
-                  
+
                   {/* Demo Limit Banner */}
                   {isDemo && showDemoLimit && (
                     <div className="mb-6 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
                           <div className="w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center">
-                            <span className="text-yellow-800 font-bold text-sm">!</span>
+                            <span className="text-yellow-800 font-bold text-sm">
+                              !
+                            </span>
                           </div>
                           <div>
                             <h3 className="text-lg font-semibold text-yellow-800">
                               Demo Content - Page {currentPage} of {totalPages}
                             </h3>
                             <p className="text-yellow-700 text-sm">
-                              You're viewing a preview of this course content. 
-                              {totalPages > 1 && ` Only the first ${totalPages} pages are available in demo mode.`}
+                              You're viewing a preview of this course content.
+                              {totalPages > 1 &&
+                                ` Only the first ${totalPages} pages are available in demo mode.`}
                             </p>
                           </div>
                         </div>
-                        <button 
-                          onClick={() => router.push('/student-login')}
+                        <button
+                          onClick={() => router.push("/student-login")}
                           className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-300 shadow-md hover:shadow-lg"
                         >
                           Get Full Access
@@ -1663,14 +1675,14 @@ function DigitalHubContent() {
                       </div>
                     </div>
                   )}
-                  
+
                   <div className="text-lg leading-relaxed bg-white border border-gray-200 rounded-lg p-8 shadow-sm text-gray-900">
                     <div
                       dangerouslySetInnerHTML={{
                         __html: topicContent,
                       }}
                     />
-                    
+
                     {/* Demo Mode Controls */}
                     {isDemo && (
                       <div className="mt-8">
@@ -1680,7 +1692,10 @@ function DigitalHubContent() {
                             <button
                               onClick={() => {
                                 if (currentPage > 1) {
-                                  const { pages } = splitContentIntoPages(atob(selectedTopic?.content || ""), 1);
+                                  const { pages } = splitContentIntoPages(
+                                    atob(selectedTopic?.content || ""),
+                                    1
+                                  );
                                   setCurrentPage(currentPage - 1);
                                   setTopicContent(pages[currentPage - 2] || "");
                                 }
@@ -1694,13 +1709,16 @@ function DigitalHubContent() {
                             >
                               ← Previous
                             </button>
-                            
+
                             <div className="flex items-center space-x-2">
                               {Array.from({ length: totalPages }, (_, i) => (
                                 <button
                                   key={i}
                                   onClick={() => {
-                                    const { pages } = splitContentIntoPages(atob(selectedTopic?.content || ""), 1);
+                                    const { pages } = splitContentIntoPages(
+                                      atob(selectedTopic?.content || ""),
+                                      1
+                                    );
                                     setCurrentPage(i + 1);
                                     setTopicContent(pages[i] || "");
                                   }}
@@ -1714,14 +1732,17 @@ function DigitalHubContent() {
                                 </button>
                               ))}
                             </div>
-                            
+
                             <button
                               onClick={() => {
                                 if (isDemo) {
                                   // In demo mode, show purchase popup instead of next page
                                   setShowPurchasePopup(true);
                                 } else if (currentPage < totalPages) {
-                                  const { pages } = splitContentIntoPages(atob(selectedTopic?.content || ""), 1);
+                                  const { pages } = splitContentIntoPages(
+                                    atob(selectedTopic?.content || ""),
+                                    1
+                                  );
                                   setCurrentPage(currentPage + 1);
                                   setTopicContent(pages[currentPage] || "");
                                 }
@@ -1737,13 +1758,13 @@ function DigitalHubContent() {
                             </button>
                           </div>
                         )}
-                        
+
                         {/* Purchase Button - Always visible in demo mode */}
                         <div className="flex justify-center">
                           <button
                             onClick={() => {
                               // Redirect to course purchase or payment page
-                              router.push('/course');
+                              router.push("/course");
                             }}
                             className="px-8 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-300 shadow-md hover:shadow-lg text-lg"
                           >
@@ -2610,61 +2631,135 @@ function DigitalHubContent() {
           <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300 scale-100">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-2xl font-bold text-gray-900">Unlock Full Course</h3>
+                <h3 className="text-2xl font-bold text-gray-900">
+                  Unlock Full Course
+                </h3>
                 <button
                   onClick={() => setShowPurchasePopup(false)}
                   className="text-gray-400 hover:text-gray-600 transition-colors"
                   aria-label="Close popup"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 </button>
               </div>
-              
+
               <div className="mb-6">
                 <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 mb-4">
                   <div className="flex items-center space-x-3">
                     <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                      <svg
+                        className="w-6 h-6 text-white"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                        />
                       </svg>
                     </div>
                     <div>
-                      <h4 className="font-semibold text-gray-900">Get Full Access</h4>
-                      <p className="text-sm text-gray-600">Access all chapters, assignments, and resources</p>
+                      <h4 className="font-semibold text-gray-900">
+                        Get Full Access
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        Access all chapters, assignments, and resources
+                      </p>
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3">
-                    <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    <svg
+                      className="w-5 h-5 text-green-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
                     </svg>
-                    <span className="text-gray-700">Complete course content</span>
+                    <span className="text-gray-700">
+                      Complete course content
+                    </span>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    <svg
+                      className="w-5 h-5 text-green-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
                     </svg>
-                    <span className="text-gray-700">Interactive assignments</span>
+                    <span className="text-gray-700">
+                      Interactive assignments
+                    </span>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    <svg
+                      className="w-5 h-5 text-green-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
                     </svg>
-                    <span className="text-gray-700">Case studies & simulations</span>
+                    <span className="text-gray-700">
+                      Case studies & simulations
+                    </span>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    <svg
+                      className="w-5 h-5 text-green-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
                     </svg>
-                    <span className="text-gray-700">Certificate of completion</span>
+                    <span className="text-gray-700">
+                      Certificate of completion
+                    </span>
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex space-x-3">
                 <button
                   onClick={() => setShowPurchasePopup(false)}
@@ -2675,7 +2770,7 @@ function DigitalHubContent() {
                 <button
                   onClick={() => {
                     setShowPurchasePopup(false);
-                    router.push('/student-login');
+                    router.push("/student-login");
                   }}
                   className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-300 font-medium shadow-md hover:shadow-lg"
                 >

@@ -17,9 +17,91 @@ export const getAllGroupPricing = async (req, res) => {
       })
       .sort({ level: 1, createdAt: -1 });
 
-    res.json(groupPricing);
+    // Ensure center pricing structures exist for all records
+    const groupPricingWithDefaults = groupPricing.map((pricing) => {
+      if (!pricing.pricing.recordedSessionCenter) {
+        pricing.pricing.recordedSessionCenter = {
+          title: "DIGITAL HUB+ RECORDED SESSION+ CENTER",
+          buttonText: "Add Digital Hub+ Center",
+          price: 0,
+          discount: 0,
+          finalPrice: 0,
+        };
+      }
+
+      if (!pricing.pricing.liveSessionCenter) {
+        pricing.pricing.liveSessionCenter = {
+          title: "DIGITAL HUB+ LIVE SESSION+ CENTER",
+          buttonText: "Add Digital Hub+ Center",
+          price: 0,
+          discount: 0,
+          finalPrice: 0,
+        };
+      }
+
+      return pricing;
+    });
+
+    res.json(groupPricingWithDefaults);
   } catch (error) {
     console.error("Error fetching group pricing:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch group pricing",
+      error: error.message,
+    });
+  }
+};
+
+// Get group pricing by slug
+export const getGroupPricingBySlug = async (req, res) => {
+  try {
+    const { slug } = req.params;
+
+    const groupPricing = await GroupPricing.findOne({ slug }).populate({
+      path: "courseIds",
+      select: "title category level price",
+      populate: {
+        path: "chapters",
+        select: "title",
+        populate: {
+          path: "topics",
+          select: "title",
+        },
+      },
+    });
+
+    if (!groupPricing) {
+      return res.status(404).json({
+        success: false,
+        message: "Group package not found",
+      });
+    }
+
+    // Ensure center pricing structures exist
+    if (!groupPricing.pricing.recordedSessionCenter) {
+      groupPricing.pricing.recordedSessionCenter = {
+        title: "DIGITAL HUB+ RECORDED SESSION+ CENTER",
+        buttonText: "Add Digital Hub+ Center",
+        price: 0,
+        discount: 0,
+        finalPrice: 0,
+      };
+    }
+
+    if (!groupPricing.pricing.liveSessionCenter) {
+      groupPricing.pricing.liveSessionCenter = {
+        title: "DIGITAL HUB+ LIVE SESSION+ CENTER",
+        buttonText: "Add Digital Hub+ Center",
+        price: 0,
+        discount: 0,
+        finalPrice: 0,
+      };
+    }
+
+    res.json(groupPricing);
+  } catch (error) {
+    console.error("Error fetching group pricing by slug:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch group pricing",
@@ -52,6 +134,27 @@ export const getGroupPricingById = async (req, res) => {
       });
     }
 
+    // Ensure center pricing structures exist
+    if (!groupPricing.pricing.recordedSessionCenter) {
+      groupPricing.pricing.recordedSessionCenter = {
+        title: "DIGITAL HUB+ RECORDED SESSION+ CENTER",
+        buttonText: "Add Digital Hub+ Center",
+        price: 0,
+        discount: 0,
+        finalPrice: 0,
+      };
+    }
+
+    if (!groupPricing.pricing.liveSessionCenter) {
+      groupPricing.pricing.liveSessionCenter = {
+        title: "DIGITAL HUB+ LIVE SESSION+ CENTER",
+        buttonText: "Add Digital Hub+ Center",
+        price: 0,
+        discount: 0,
+        finalPrice: 0,
+      };
+    }
+
     res.json(groupPricing);
   } catch (error) {
     console.error("Error fetching group pricing:", error);
@@ -70,6 +173,7 @@ export const createGroupPricing = async (req, res) => {
     console.log("Create Group Pricing - Request file:", req.file);
 
     const {
+      groupName,
       level,
       courseIds,
       groupPrice,
@@ -80,6 +184,12 @@ export const createGroupPricing = async (req, res) => {
       livePrice,
       liveFinalPrice,
       liveDiscount,
+      recordedPriceCenter,
+      recordedFinalPriceCenter,
+      recordedDiscountCenter,
+      livePriceCenter,
+      liveFinalPriceCenter,
+      liveDiscountCenter,
     } = req.body;
     const image = req.file
       ? `/uploads/group_pricing_images/${req.file.filename}`
@@ -103,6 +213,7 @@ export const createGroupPricing = async (req, res) => {
 
     // Validate required fields
     if (
+      !groupName ||
       !level ||
       !parsedCourseIds ||
       !Array.isArray(parsedCourseIds) ||
@@ -111,33 +222,37 @@ export const createGroupPricing = async (req, res) => {
       !recordedPrice ||
       !recordedFinalPrice ||
       !livePrice ||
-      !liveFinalPrice
+      !liveFinalPrice ||
+      !recordedPriceCenter ||
+      !recordedFinalPriceCenter ||
+      !livePriceCenter ||
+      !liveFinalPriceCenter
     ) {
-      console.log(
-        "Validation failed - level:",
-        level,
-        "courseIds:",
-        parsedCourseIds,
-        "groupPrice:",
-        groupPrice
-      );
+      console.log("=== VALIDATION FAILED ===");
+      console.log("groupName:", groupName);
+      console.log("level:", level);
+      console.log("parsedCourseIds:", parsedCourseIds);
+      console.log("groupPrice:", groupPrice);
+      console.log("recordedPrice:", recordedPrice);
+      console.log("recordedFinalPrice:", recordedFinalPrice);
+      console.log("livePrice:", livePrice);
+      console.log("liveFinalPrice:", liveFinalPrice);
+      console.log("recordedPriceCenter:", recordedPriceCenter);
+      console.log("recordedFinalPriceCenter:", recordedFinalPriceCenter);
+      console.log("livePriceCenter:", livePriceCenter);
+      console.log("liveFinalPriceCenter:", liveFinalPriceCenter);
+      console.log("========================");
       return res.status(400).json({
         success: false,
         message:
-          "Level, courseIds, groupPrice, and pricing details are required",
+          "Group name, level, courseIds, groupPrice, and pricing details are required",
       });
     }
 
-    // Validate that all courses exist and belong to the specified level
-    console.log(
-      "Looking for courses with IDs:",
-      parsedCourseIds,
-      "and level:",
-      level
-    );
+    // Validate that all courses exist (removed level filter)
+    console.log("Looking for courses with IDs:", parsedCourseIds);
     const courses = await Course.find({
       _id: { $in: parsedCourseIds },
-      level: level,
       status: "Active",
     });
 
@@ -149,10 +264,18 @@ export const createGroupPricing = async (req, res) => {
     );
 
     if (courses.length !== parsedCourseIds.length) {
+      console.log("=== COURSE VALIDATION FAILED ===");
+      console.log("Requested course IDs:", parsedCourseIds);
+      console.log(
+        "Found courses:",
+        courses.map((c) => ({ id: c._id, title: c.title, level: c.level }))
+      );
+      console.log("Expected count:", parsedCourseIds.length);
+      console.log("Found count:", courses.length);
+      console.log("================================");
       return res.status(400).json({
         success: false,
-        message:
-          "Some courses not found or don't belong to the specified level",
+        message: "Some courses not found or are inactive",
       });
     }
 
@@ -163,14 +286,31 @@ export const createGroupPricing = async (req, res) => {
     });
 
     if (existingGroupPricing) {
+      console.log("=== DUPLICATE GROUP PRICING FOUND ===");
+      console.log("Existing group pricing for level:", level);
+      console.log("Existing ID:", existingGroupPricing._id);
+      console.log("Existing name:", existingGroupPricing.groupName);
+      console.log("====================================");
       return res.status(400).json({
         success: false,
-        message:
-          "Group pricing already exists for this level. Please update the existing one.",
+        message: `Group pricing already exists for ${level}. Please update the existing record (ID: ${existingGroupPricing._id}) or delete it first.`,
+        existingRecordId: existingGroupPricing._id,
+        existingRecordName: existingGroupPricing.groupName,
+        action: "update_or_delete_existing",
       });
     }
 
+    // Generate slug from groupName
+    const slug = groupName
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, "") // Remove special characters
+      .replace(/\s+/g, "-") // Replace spaces with hyphens
+      .replace(/-+/g, "-") // Replace multiple hyphens with single hyphen
+      .trim("-"); // Remove leading/trailing hyphens
+
     const newGroupPricing = new GroupPricing({
+      groupName,
+      slug,
       level,
       courseIds: parsedCourseIds,
       groupPrice: parseFloat(groupPrice),
@@ -186,6 +326,16 @@ export const createGroupPricing = async (req, res) => {
           price: parseFloat(livePrice),
           finalPrice: parseFloat(liveFinalPrice),
           discount: parseFloat(liveDiscount) || 0,
+        },
+        recordedSessionCenter: {
+          price: parseFloat(recordedPriceCenter),
+          finalPrice: parseFloat(recordedFinalPriceCenter),
+          discount: parseFloat(recordedDiscountCenter) || 0,
+        },
+        liveSessionCenter: {
+          price: parseFloat(livePriceCenter),
+          finalPrice: parseFloat(liveFinalPriceCenter),
+          discount: parseFloat(liveDiscountCenter) || 0,
         },
       },
     });
@@ -229,17 +379,24 @@ export const updateGroupPricing = async (req, res) => {
   try {
     const { id } = req.params;
     const {
+      groupName,
       level,
       courseIds,
       groupPrice,
-      description,
       status,
+      description,
       recordedPrice,
       recordedFinalPrice,
       recordedDiscount,
       livePrice,
       liveFinalPrice,
       liveDiscount,
+      recordedPriceCenter,
+      recordedFinalPriceCenter,
+      recordedDiscountCenter,
+      livePriceCenter,
+      liveFinalPriceCenter,
+      liveDiscountCenter,
     } = req.body;
     const image = req.file
       ? `/uploads/group_pricing_images/${req.file.filename}`
@@ -277,27 +434,34 @@ export const updateGroupPricing = async (req, res) => {
       });
     }
 
-    // If level or courseIds are being updated, validate courses
-    if (level || parsedCourseIds) {
-      const targetLevel = level || groupPricing.level;
-      const targetCourseIds = parsedCourseIds || groupPricing.courseIds;
+    // If courseIds are being updated, validate courses exist
+    if (parsedCourseIds) {
+      const targetCourseIds = parsedCourseIds;
 
       const courses = await Course.find({
         _id: { $in: targetCourseIds },
-        level: targetLevel,
         status: "Active",
       });
 
       if (courses.length !== targetCourseIds.length) {
         return res.status(400).json({
           success: false,
-          message:
-            "Some courses not found or don't belong to the specified level",
+          message: "Some courses not found or are inactive",
         });
       }
     }
 
     // Update fields
+    if (groupName) {
+      groupPricing.groupName = groupName;
+      // Regenerate slug when groupName changes
+      groupPricing.slug = groupName
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, "") // Remove special characters
+        .replace(/\s+/g, "-") // Replace spaces with hyphens
+        .replace(/-+/g, "-") // Replace multiple hyphens with single hyphen
+        .trim("-"); // Remove leading/trailing hyphens
+    }
     if (level) groupPricing.level = level;
     if (parsedCourseIds) groupPricing.courseIds = parsedCourseIds;
     if (groupPrice) groupPricing.groupPrice = parseFloat(groupPrice);
@@ -325,6 +489,63 @@ export const updateGroupPricing = async (req, res) => {
           parseFloat(liveFinalPrice);
       if (liveDiscount !== undefined)
         groupPricing.pricing.liveSession.discount = parseFloat(liveDiscount);
+    }
+
+    // Initialize center pricing structures if they don't exist
+    if (!groupPricing.pricing.recordedSessionCenter) {
+      groupPricing.pricing.recordedSessionCenter = {
+        title: "DIGITAL HUB+ RECORDED SESSION+ CENTER",
+        buttonText: "Add Digital Hub+ Center",
+        price: 0,
+        discount: 0,
+        finalPrice: 0,
+      };
+    }
+
+    if (!groupPricing.pricing.liveSessionCenter) {
+      groupPricing.pricing.liveSessionCenter = {
+        title: "DIGITAL HUB+ LIVE SESSION+ CENTER",
+        buttonText: "Add Digital Hub+ Center",
+        price: 0,
+        discount: 0,
+        finalPrice: 0,
+      };
+    }
+
+    // Update recorded session center pricing
+    if (
+      recordedPriceCenter ||
+      recordedFinalPriceCenter ||
+      recordedDiscountCenter !== undefined
+    ) {
+      if (recordedPriceCenter)
+        groupPricing.pricing.recordedSessionCenter.price =
+          parseFloat(recordedPriceCenter);
+      if (recordedFinalPriceCenter)
+        groupPricing.pricing.recordedSessionCenter.finalPrice = parseFloat(
+          recordedFinalPriceCenter
+        );
+      if (recordedDiscountCenter !== undefined)
+        groupPricing.pricing.recordedSessionCenter.discount = parseFloat(
+          recordedDiscountCenter
+        );
+    }
+
+    // Update live session center pricing
+    if (
+      livePriceCenter ||
+      liveFinalPriceCenter ||
+      liveDiscountCenter !== undefined
+    ) {
+      if (livePriceCenter)
+        groupPricing.pricing.liveSessionCenter.price =
+          parseFloat(livePriceCenter);
+      if (liveFinalPriceCenter)
+        groupPricing.pricing.liveSessionCenter.finalPrice =
+          parseFloat(liveFinalPriceCenter);
+      if (liveDiscountCenter !== undefined)
+        groupPricing.pricing.liveSessionCenter.discount =
+          parseFloat(liveDiscountCenter);
     }
 
     const updatedGroupPricing = await groupPricing.save();

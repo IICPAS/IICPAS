@@ -125,7 +125,13 @@ export default function BlogSection() {
               const imageUrl = blog.imageUrl?.startsWith("http")
                 ? blog.imageUrl
                 : blog.imageUrl
-                ? `${API_BASE.replace("/api", "")}/${blog.imageUrl}`
+                ? `${
+                    process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"
+                  }${
+                    blog.imageUrl.startsWith("/")
+                      ? blog.imageUrl
+                      : "/" + blog.imageUrl
+                  }`
                 : getFallbackImage(blog.title);
 
               return (
@@ -217,24 +223,34 @@ export default function BlogSection() {
 
                   {/* Enhanced Content Container */}
                   <div className="relative p-8 flex flex-col justify-between flex-1 min-h-[280px]">
-                    {/* Author Section with Avatar */}
+                    {/* Blog Meta */}
                     <motion.div
                       className="mb-6"
                       initial={{ opacity: 0, x: -30 }}
                       whileInView={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.6, delay: 0.2 + index * 0.1 }}
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                          {blog.author?.charAt(0) || "A"}
+                      <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
+                        <div className="inline-flex items-center gap-1.5">
+                          <Calendar className="w-3 h-3" />
+                          <span>
+                            {blog.createdAt
+                              ? new Date(blog.createdAt).toLocaleDateString(
+                                  "en-GB",
+                                  {
+                                    day: "2-digit",
+                                    month: "short",
+                                    year: "numeric",
+                                  }
+                                )
+                              : "Recent"}
+                          </span>
                         </div>
-                        <div>
-                          <p className="text-sm font-semibold text-gray-800">
-                            {blog.author || "Anonymous"}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            Content Creator
-                          </p>
+                        <div className="inline-flex items-center gap-1.5">
+                          <Clock className="w-3 h-3" />
+                          <span>
+                            {Math.ceil(blog.content.length / 500)} min read
+                          </span>
                         </div>
                       </div>
                     </motion.div>
@@ -312,7 +328,7 @@ export default function BlogSection() {
               className="relative"
             >
               <Link
-                href="/blog"
+                href="/blogs"
                 className="group relative inline-flex items-center gap-4 bg-gradient-to-r from-green-500 via-green-600 to-blue-600 hover:from-green-600 hover:via-green-700 hover:to-blue-700 text-white px-10 py-5 rounded-3xl font-bold text-lg shadow-2xl transition-all duration-500 hover:shadow-green-500/30 hover:-translate-y-2 overflow-hidden"
               >
                 {/* Animated Background */}
