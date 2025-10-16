@@ -9,8 +9,8 @@ import Header from "../components/Header";
 export default function CenterLoginPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    email: "",
-    password: "",
+    email: "mockcenter@test.com",
+    password: "test123",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -39,7 +39,7 @@ export default function CenterLoginPage() {
         { withCredentials: true }
       );
 
-      if (response.data.center.status === "approved") {
+      if (response.data.data.center.status === "approved") {
         toast.success("Login successful!");
         router.push("/center-dashboard");
       } else {
