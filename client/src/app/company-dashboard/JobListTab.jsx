@@ -49,6 +49,8 @@ import {
   Close as CloseIcon,
   Save as SaveIcon,
   Cancel as CancelIcon,
+  ToggleOn as ToggleOnIcon,
+  ToggleOff as ToggleOffIcon,
 } from "@mui/icons-material";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
@@ -160,6 +162,32 @@ const JobManagerTab = ({ companyEmail }) => {
   const handleViewApplications = (job) => {
     setSelectedJob(job);
     setMainTab("applications");
+  };
+
+  const handleToggleStatus = async (job) => {
+    try {
+      const newStatus = job.status === "active" ? "inactive" : "active";
+      console.log(`Toggling job ${job._id} from ${job.status} to ${newStatus}`);
+      
+      const response = await axios.put(`${API}/api/jobs-external/${job._id}`, { status: newStatus });
+      console.log("Job status update response:", response.data);
+      
+      toast.success(`Job ${newStatus === "active" ? "activated" : "deactivated"} successfully!`);
+      
+      // Update the job in the local state immediately for better UX
+      setJobs(prevJobs => 
+        prevJobs.map(j => 
+          j._id === job._id ? { ...j, status: newStatus } : j
+        )
+      );
+      
+      // Also fetch fresh data to ensure consistency
+      fetchJobs();
+    } catch (error) {
+      console.error("Error toggling job status:", error);
+      console.error("Error details:", error.response?.data || error.message);
+      toast.error("Failed to update job status");
+    }
   };
 
   const handleAddJob = () => {
@@ -908,11 +936,12 @@ const JobManagerTab = ({ companyEmail }) => {
                           {job.title}
                         </Typography>
                         <Chip
-                          label="Active"
+                          label={job.status === "active" ? "Active" : "Inactive"}
                           size="small"
                           sx={{
-                            background:
-                              "linear-gradient(135deg, #4caf50 0%, #45a049 100%)",
+                            background: job.status === "active" 
+                              ? "linear-gradient(135deg, #4caf50 0%, #45a049 100%)"
+                              : "linear-gradient(135deg, #f44336 0%, #d32f2f 100%)",
                             color: "white",
                             fontWeight: 600,
                           }}
@@ -962,6 +991,21 @@ const JobManagerTab = ({ companyEmail }) => {
                             }}
                           >
                             <EditIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title={job.status === "active" ? "Deactivate Job" : "Activate Job"}>
+                          <IconButton
+                            onClick={() => handleToggleStatus(job)}
+                            sx={{
+                              color: job.status === "active" ? "#ff9800" : "#4caf50",
+                              "&:hover": {
+                                background: job.status === "active" 
+                                  ? "rgba(255, 152, 0, 0.1)" 
+                                  : "rgba(76, 175, 80, 0.1)",
+                              },
+                            }}
+                          >
+                            {job.status === "active" ? <ToggleOnIcon /> : <ToggleOffIcon />}
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="View Applications">

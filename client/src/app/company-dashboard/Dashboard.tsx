@@ -188,7 +188,7 @@ const CompanyDashboardOverview = () => {
       );
 
       const activeJobs = companyJobs.filter(
-        (job: { status?: string }) => !job.status || job.status === "active"
+        (job: { status?: string }) => job.status === "active"
       ).length;
 
       console.log("Active jobs count:", activeJobs);
