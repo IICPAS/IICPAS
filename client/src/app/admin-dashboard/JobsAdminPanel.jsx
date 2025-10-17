@@ -63,6 +63,8 @@ export default function JobsAdminPanel() {
       // Combine both job types and add a source identifier
       const internalJobs = (internalJobsRes.data || []).map(job => ({
         ...job,
+        role: job.type || job.role, // Normalize role field
+        salary: job.salary || "0", // Ensure salary field exists
         source: 'internal',
         sourceLabel: 'Internal'
       }));
@@ -95,6 +97,19 @@ export default function JobsAdminPanel() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate required fields
+    if (!form.title || !form.type || !form.location || !form.description || !form.salary) {
+      Swal.fire("Error!", "Please fill in all required fields including salary.", "error");
+      return;
+    }
+    
+    // Validate salary is a positive number
+    if (isNaN(form.salary) || parseFloat(form.salary) < 0) {
+      Swal.fire("Error!", "Please enter a valid salary amount.", "error");
+      return;
+    }
+    
     try {
       if (editId) {
         // Determine the correct endpoint based on job source
@@ -116,13 +131,23 @@ export default function JobsAdminPanel() {
         await axios.put(endpoint, submitData);
       } else {
         // For new jobs, always create as internal
-        await axios.post(`${API_BASE}/jobs-internal`, form);
+        // Map form fields to backend expected fields
+        const newJobData = {
+          title: form.title,
+          type: form.type,
+          location: form.location,
+          description: form.description,
+          salary: form.salary || "0", // Ensure salary is not empty
+          status: "active" // Set default status
+        };
+        console.log("Creating new job with data:", newJobData);
+        await axios.post(`${API_BASE}/jobs-internal`, newJobData);
       }
       
       resetForm();
       fetchJobs();
       setMode("list");
-      Swal.fire("Success!", "Job updated successfully!", "success");
+      Swal.fire("Success!", editId ? "Job updated successfully!" : "Job created successfully!", "success");
     } catch (error) {
       console.error('Error submitting job:', error);
       Swal.fire("Error!", "Failed to update job. Please try again.", "error");
@@ -327,7 +352,7 @@ export default function JobsAdminPanel() {
                     </span>
                   </TableCell>
                   <TableCell>
-                    {job.source === 'external' ? (job.companyName || job.email || 'Company') : 'IICPA Institute'}
+                    IICPA Institute
                   </TableCell>
                   <TableCell align="center">
                     <div className="flex items-center justify-center gap-1">
@@ -413,9 +438,13 @@ export default function JobsAdminPanel() {
             />
             <TextField
               label="Salary"
+              required
+              type="number"
               value={form.salary}
               onChange={(e) => setForm({ ...form, salary: e.target.value })}
               fullWidth
+              inputProps={{ min: 0 }}
+              helperText="Enter salary amount in rupees"
             />
           </div>
 
@@ -459,11 +488,9 @@ export default function JobsAdminPanel() {
                 }`}>
                   {selectedJob.sourceLabel}
                 </span>
-                {selectedJob.source === 'external' && (
-                  <span className="ml-2 text-gray-500">
-                    • Posted by: {selectedJob.companyName || selectedJob.email || 'Company'}
-                  </span>
-                )}
+                <span className="ml-2 text-gray-500">
+                  • Posted by: IICPA Institute
+                </span>
               </p>
             </div>
             <Button

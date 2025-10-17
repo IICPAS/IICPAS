@@ -31,15 +31,46 @@ export default function AllJobsWithModalApply() {
 
   const fetchJobs = async () => {
     try {
-      const res = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/jobs-external`
+      // Fetch both internal and external jobs
+      const [internalJobsRes, externalJobsRes] = await Promise.all([
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/jobs-internal`),
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/jobs-external`)
+      ]);
+      
+      // Combine both job types and normalize field names
+      const internalJobs = (internalJobsRes.data || []).map(job => ({
+        ...job,
+        role: job.type || job.role,
+        jd: job.description || job.jd,
+        salary: job.salary || "0", // Ensure salary field exists
+        source: 'internal',
+        postedBy: 'IICPA Institute'
+      }));
+      
+      const externalJobs = (externalJobsRes.data || []).map(job => ({
+        ...job,
+        source: 'external',
+        postedBy: 'IICPA Institute' // Always show IICPA Institute for consistency
+      }));
+      
+      // Combine all jobs and filter only active ones for public display
+      const allJobs = [...internalJobs, ...externalJobs];
+      const activeJobs = allJobs.filter(job => 
+        job.status === 'active' || job.status === undefined
       );
-      // Filter only active jobs for public display
-      const activeJobs = (res.data || []).filter(job => job.status === 'active');
+      
       setJobs(activeJobs);
     } catch (error) {
       console.error("Error fetching jobs:", error);
-      setJobs([]);
+      // Fallback to external jobs only
+      try {
+        const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/jobs-external`);
+        const activeJobs = (res.data || []).filter(job => job.status === 'active');
+        setJobs(activeJobs);
+      } catch (fallbackError) {
+        console.error("Error fetching external jobs:", fallbackError);
+        setJobs([]);
+      }
     }
   };
 
@@ -61,13 +92,15 @@ export default function AllJobsWithModalApply() {
 
   const handleSubmit = async () => {
     try {
-      await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/apply/jobs-external`,
-        {
-          jobId: selectedJob._id,
-          ...form,
-        }
-      );
+      // Use appropriate endpoint based on job source
+      const endpoint = selectedJob.source === 'internal' 
+        ? `${process.env.NEXT_PUBLIC_API_URL}/api/jobs-internal/${selectedJob._id}/applications`
+        : `${process.env.NEXT_PUBLIC_API_URL}/api/apply/jobs-external`;
+      
+      await axios.post(endpoint, {
+        jobId: selectedJob._id,
+        ...form,
+      });
       setSubmitted(true);
     } catch (err) {
       console.error("Error applying", err);
@@ -104,10 +137,19 @@ export default function AllJobsWithModalApply() {
               key={job._id}
               className="bg-white shadow-md rounded-xl p-6 hover:shadow-lg transition-all"
             >
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                <Briefcase className="inline-block mr-2 text-blue-600" />
-                {job.title}
-              </h3>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-xl font-semibold text-gray-800">
+                  <Briefcase className="inline-block mr-2 text-blue-600" />
+                  {job.title}
+                </h3>
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  job.source === 'internal' 
+                    ? 'bg-blue-100 text-blue-800' 
+                    : 'bg-green-100 text-green-800'
+                }`}>
+                  {job.postedBy}
+                </span>
+              </div>
 
               <p className="text-gray-600 text-sm mb-2">
                 <strong>Role:</strong> {job.role}

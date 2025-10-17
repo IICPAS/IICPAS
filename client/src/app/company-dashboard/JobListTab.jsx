@@ -83,15 +83,52 @@ const JobManagerTab = ({ companyEmail }) => {
 
   const fetchJobs = async () => {
     try {
-      console.log("Fetching jobs for email:", companyEmail);
-      const res = await axios.get(
-        `${API}/api/jobs-external?email=${companyEmail}`
-      );
-      console.log("Jobs response:", res.data);
-      setJobs(res.data || []);
+      console.log("Fetching all jobs (internal + external)");
+      
+      // Fetch both internal and external jobs
+      const [internalJobsRes, externalJobsRes] = await Promise.all([
+        axios.get(`${API}/api/jobs-internal`),
+        axios.get(`${API}/api/jobs-external`)
+      ]);
+      
+      // Combine both job types and add source identifier
+      const internalJobs = (internalJobsRes.data || []).map(job => ({
+        ...job,
+        role: job.type || job.role, // Normalize role field
+        salary: job.salary || "0", // Ensure salary field exists
+        source: 'internal',
+        sourceLabel: 'Admin Posted',
+        postedBy: 'IICPA Institute'
+      }));
+      
+      const externalJobs = (externalJobsRes.data || []).map(job => ({
+        ...job,
+        source: 'external',
+        sourceLabel: 'Company Posted',
+        postedBy: 'IICPA Institute' // Always show IICPA Institute for consistency
+      }));
+      
+      // Combine all jobs
+      const allJobs = [...internalJobs, ...externalJobs];
+      console.log("All jobs (internal + external):", allJobs);
+      console.log("Job statuses:", allJobs.map(j => ({ id: j._id, title: j.title, status: j.status })));
+      setJobs(allJobs);
     } catch (error) {
       console.error("Error fetching jobs:", error);
       toast.error("Failed to load jobs");
+      // Fallback to external jobs only
+      try {
+        const res = await axios.get(`${API}/api/jobs-external`);
+        setJobs((res.data || []).map(job => ({
+          ...job,
+          source: 'external',
+          sourceLabel: 'Company Posted',
+          postedBy: 'IICPA Institute' // Always show IICPA Institute for consistency
+        })));
+      } catch (fallbackError) {
+        console.error("Error fetching external jobs:", fallbackError);
+        setJobs([]);
+      }
     }
   };
 
@@ -107,7 +144,15 @@ const JobManagerTab = ({ companyEmail }) => {
       } else if (mainTab === "edit" && editJobId) {
         const jobData = { ...form, email: companyEmail };
         console.log("Updating job with data:", jobData);
-        await axios.put(`${API}/api/jobs-external/${editJobId}`, jobData);
+        
+        // Find the job being edited to determine its source
+        const jobBeingEdited = jobs.find(j => j._id === editJobId);
+        const endpoint = jobBeingEdited?.source === 'internal' 
+          ? `${API}/api/jobs-internal/${editJobId}`
+          : `${API}/api/jobs-external/${editJobId}`;
+        
+        console.log("Using endpoint:", endpoint, "for job source:", jobBeingEdited?.source);
+        await axios.put(endpoint, jobData);
         toast.success("Job updated successfully! ✨");
       }
       setForm(emptyJob);
@@ -134,7 +179,7 @@ const JobManagerTab = ({ companyEmail }) => {
     setOpenDialog(true);
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (job) => {
     const result = await MySwal.fire({
       title: "Delete Job?",
       text: "This action cannot be undone!",
@@ -150,10 +195,16 @@ const JobManagerTab = ({ companyEmail }) => {
     });
     if (result.isConfirmed) {
       try {
-        await axios.delete(`${API}/api/jobs-external/${id}`);
+        // Use appropriate endpoint based on job source
+        const endpoint = job.source === 'internal' 
+          ? `${API}/api/jobs-internal/${job._id}`
+          : `${API}/api/jobs-external/${job._id}`;
+        
+        await axios.delete(endpoint);
         toast.success("Job deleted successfully! 🗑️");
         fetchJobs();
-      } catch {
+      } catch (error) {
+        console.error("Error deleting job:", error);
         toast.error("Delete failed");
       }
     }
@@ -169,23 +220,38 @@ const JobManagerTab = ({ companyEmail }) => {
       const newStatus = job.status === "active" ? "inactive" : "active";
       console.log(`Toggling job ${job._id} from ${job.status} to ${newStatus}`);
       
-      const response = await axios.put(`${API}/api/jobs-external/${job._id}`, { status: newStatus });
+      // Use appropriate endpoint based on job source
+      const endpoint = job.source === 'internal' 
+        ? `${API}/api/jobs-internal/${job._id}`
+        : `${API}/api/jobs-external/${job._id}`;
+      
+      console.log(`Using endpoint: ${endpoint} for ${job.source} job`);
+      
+      const response = await axios.put(endpoint, { status: newStatus });
       console.log("Job status update response:", response.data);
+      
+      // Update the job in the local state immediately for better UX
+      setJobs(prevJobs => {
+        const updatedJobs = prevJobs.map(j => 
+          j._id === job._id ? { ...j, status: newStatus } : j
+        );
+        console.log("Updated jobs state:", updatedJobs);
+        console.log("Job with updated status:", updatedJobs.find(j => j._id === job._id));
+        return updatedJobs;
+      });
       
       toast.success(`Job ${newStatus === "active" ? "activated" : "deactivated"} successfully!`);
       
-      // Update the job in the local state immediately for better UX
-      setJobs(prevJobs => 
-        prevJobs.map(j => 
-          j._id === job._id ? { ...j, status: newStatus } : j
-        )
-      );
+      // Fetch fresh data after a short delay to ensure backend has processed the update
+      setTimeout(() => {
+        fetchJobs();
+      }, 1000);
       
-      // Also fetch fresh data to ensure consistency
-      fetchJobs();
     } catch (error) {
       console.error("Error toggling job status:", error);
       console.error("Error details:", error.response?.data || error.message);
+      console.error("Job source:", job.source);
+      console.error("Job ID:", job._id);
       toast.error("Failed to update job status");
     }
   };
@@ -1023,7 +1089,7 @@ const JobManagerTab = ({ companyEmail }) => {
                         </Tooltip>
                         <Tooltip title="Delete Job">
                           <IconButton
-                            onClick={() => handleDelete(job._id)}
+                            onClick={() => handleDelete(job)}
                             sx={{
                               color: "#f44336",
                               "&:hover": {
