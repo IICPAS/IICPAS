@@ -60,3 +60,18 @@ export const deleteApplication = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+// SHORTLIST application by ID
+export const shortlistApplication = async (req, res) => {
+  try {
+    const app = await JobApplication.findByIdAndUpdate(
+      req.params.id,
+      { shortlisted: true },
+      { new: true }
+    );
+    if (!app) return res.status(404).json({ message: "Application not found" });
+    res.json(app);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};

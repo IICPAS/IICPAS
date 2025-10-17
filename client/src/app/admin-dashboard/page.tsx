@@ -265,6 +265,11 @@ const NAVIGATION_GROUPS = [
         label: "Individual Requests",
         icon: <FaUser />,
       },
+      {
+        id: "jobs-post-management",
+        label: "Jobs Post Management",
+        icon: <FaBriefcase />,
+      },
     ],
   },
   {
@@ -708,6 +713,8 @@ function AdminDashboardContent() {
         ) : activeTab === "transactions" ? (
           <TransactionsTab />
         ) : activeTab === "jobs" ? (
+          <JobsAdminPanel />
+        ) : activeTab === "jobs-post-management" ? (
           <JobsAdminPanel />
         ) : activeTab === "staff" ? (
           <StaffManagementTab />
