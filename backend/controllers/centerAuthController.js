@@ -153,15 +153,17 @@ export const loginCenter = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Login successful",
-      center: {
-        id: center._id,
-        name: center.name,
-        email: center.email,
-        phone: center.phone,
-        location: center.location,
-        address: center.address,
-        type: center.type,
-        status: center.status
+      data: {
+        center: {
+          id: center._id,
+          name: center.name,
+          email: center.email,
+          phone: center.phone,
+          location: center.location,
+          address: center.address,
+          type: center.type,
+          status: center.status
+        }
       }
     });
   } catch (error) {

@@ -47,13 +47,15 @@ export default function RevisionTestsTab() {
     level: "",
     title: "",
     timeLimit: "",
+    difficulty: "Normal",
   });
   const [questions, setQuestions] = useState([]);
   const [excelFile, setExcelFile] = useState(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewTest, setPreviewTest] = useState(null);
 
-  const levels = ["Level 1", "Level 2", "Level 3", "Pro"];
+  const levels = ["Level 1", "Level 2", "Pro"];
+  const difficulties = ["Normal", "Hard", "Hardest"];
 
   useEffect(() => {
     fetchRevisionTests();
@@ -212,6 +214,7 @@ export default function RevisionTestsTab() {
       level: test.level,
       title: test.title,
       timeLimit: test.timeLimit.toString(),
+      difficulty: test.difficulty || "Normal",
     });
     setQuestions(test.questions);
     setModalOpen(true);
@@ -268,6 +271,7 @@ export default function RevisionTestsTab() {
       level: "",
       title: "",
       timeLimit: "",
+      difficulty: "Normal",
     });
     setQuestions([]);
     setExcelFile(null);
@@ -304,6 +308,7 @@ export default function RevisionTestsTab() {
     const headers = [
       "Course",
       "Level",
+      "Difficulty",
       "Title",
       "Time Limit",
       "Questions",
@@ -315,6 +320,7 @@ export default function RevisionTestsTab() {
         [
           `"${test.course.title}"`,
           `"${test.level}"`,
+          `"${test.difficulty || "Normal"}"`,
           `"${test.title}"`,
           test.timeLimit,
           test.totalQuestions,
@@ -429,6 +435,7 @@ export default function RevisionTestsTab() {
               </TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Course</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Level</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Difficulty</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Title</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Time Limit</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Questions</TableCell>
@@ -447,6 +454,30 @@ export default function RevisionTestsTab() {
                 </TableCell>
                 <TableCell>{test.course?.title}</TableCell>
                 <TableCell>{test.level}</TableCell>
+                <TableCell>
+                  <span
+                    style={{
+                      padding: "4px 8px",
+                      borderRadius: "4px",
+                      fontSize: "12px",
+                      fontWeight: "bold",
+                      backgroundColor:
+                        test.difficulty === "Normal"
+                          ? "#e3f2fd"
+                          : test.difficulty === "Hard"
+                          ? "#fff3e0"
+                          : "#ffebee",
+                      color:
+                        test.difficulty === "Normal"
+                          ? "#1976d2"
+                          : test.difficulty === "Hard"
+                          ? "#f57c00"
+                          : "#d32f2f",
+                    }}
+                  >
+                    {test.difficulty || "Normal"}
+                  </span>
+                </TableCell>
                 <TableCell>{test.title}</TableCell>
                 <TableCell>{test.timeLimit} min</TableCell>
                 <TableCell>{test.totalQuestions}</TableCell>
@@ -540,6 +571,21 @@ export default function RevisionTestsTab() {
                   {levels.map((level) => (
                     <MenuItem key={level} value={level}>
                       {level}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <FormControl fullWidth>
+                <InputLabel>Difficulty</InputLabel>
+                <Select
+                  value={form.difficulty}
+                  onChange={(e) => setForm({ ...form, difficulty: e.target.value })}
+                  label="Difficulty"
+                >
+                  {difficulties.map((difficulty) => (
+                    <MenuItem key={difficulty} value={difficulty}>
+                      {difficulty}
                     </MenuItem>
                   ))}
                 </Select>
@@ -662,6 +708,9 @@ export default function RevisionTestsTab() {
               </Typography>
               <Typography variant="body1" mb={2}>
                 <strong>Level:</strong> {previewTest.level}
+              </Typography>
+              <Typography variant="body1" mb={2}>
+                <strong>Difficulty:</strong> {previewTest.difficulty || "Normal"}
               </Typography>
               <Typography variant="body1" mb={2}>
                 <strong>Time Limit:</strong> {previewTest.timeLimit} minutes

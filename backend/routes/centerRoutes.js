@@ -30,11 +30,26 @@ router.get("/courses", getAvailableCourses);
 
 // Protected center routes
 router.get("/profile", isCenter, getCenterProfile);
+router.get("/iscenter", isCenter, (req, res) => {
+  res.status(200).json({
+    success: true,
+    center: {
+      id: req.center._id,
+      name: req.center.name,
+      email: req.center.email,
+      phone: req.center.phone,
+      location: req.center.location,
+      address: req.center.address,
+      type: req.center.type,
+      status: req.center.status
+    }
+  });
+});
 
 // Admin routes (no authentication required)
 router.get("/", getAllCenters);
-router.get("/:id", getCenterById);
 router.post("/", createCenter);
+router.get("/:id", getCenterById);
 router.put("/:id", updateCenter);
 router.delete("/:id", deleteCenter);
 

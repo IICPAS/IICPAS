@@ -56,7 +56,7 @@ const getRevisionTest = async (req, res) => {
 // Create revision test
 const createRevisionTest = async (req, res) => {
   try {
-    const { course, level, title, timeLimit, questions } = req.body;
+    const { course, level, title, timeLimit, questions, difficulty } = req.body;
 
     const revisionTest = new RevisionTest({
       course,
@@ -64,6 +64,7 @@ const createRevisionTest = async (req, res) => {
       title,
       timeLimit,
       questions,
+      difficulty: difficulty || "Normal",
       totalQuestions: questions.length,
     });
 

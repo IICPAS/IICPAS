@@ -184,19 +184,47 @@ export default function RevisionTab() {
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const getLevelColor = (level) => {
-    switch (level) {
-      case "Level 1":
-        return "#ef4444"; // red
-      case "Level 2":
-        return "#f97316"; // orange
-      case "Level 3":
-        return "#22c55e"; // green
-      case "Pro":
-        return "#3b82f6"; // blue
-      default:
-        return "#6b7280"; // gray
+  const getLevelColor = (level, difficulty) => {
+    // Base colors for levels
+    const baseColors = {
+      "Level 1": "#ef4444", // red
+      "Level 2": "#f97316", // orange
+      "Pro": "#8b5cf6", // purple (most advanced)
+    };
+    
+    const baseColor = baseColors[level] || "#6b7280";
+    
+    // Adjust color based on difficulty
+    if (difficulty === "Hard") {
+      // Make color darker for hard difficulty
+      return darkenColor(baseColor, 0.2);
+    } else if (difficulty === "Hardest") {
+      // Make color even darker for hardest difficulty
+      return darkenColor(baseColor, 0.4);
     }
+    
+    return baseColor;
+  };
+
+  const darkenColor = (color, amount) => {
+    const num = parseInt(color.replace("#", ""), 16);
+    const amt = Math.round(2.55 * amount * 100);
+    const R = (num >> 16) - amt;
+    const G = (num >> 8 & 0x00FF) - amt;
+    const B = (num & 0x0000FF) - amt;
+    return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+      (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+      (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+  };
+
+  const getDifficultyLabel = (level, difficulty) => {
+    const difficultyLabels = {
+      "Level 1": { "Normal": "Normal", "Hard": "Hard", "Hardest": "Hardest" },
+      "Level 2": { "Normal": "Normal", "Hard": "Hard", "Hardest": "Hardest" },
+      "Pro": { "Normal": "Normal", "Hard": "Hard", "Hardest": "Hardest" }
+    };
+    
+    return difficultyLabels[level]?.[difficulty] || difficulty || "Normal";
   };
 
   const getLevelIcon = (level) => {
@@ -205,10 +233,8 @@ export default function RevisionTab() {
         return "1";
       case "Level 2":
         return "2";
-      case "Level 3":
-        return "3";
       case "Pro":
-        return "pro";
+        return "P";
       default:
         return "?";
     }
@@ -259,30 +285,43 @@ export default function RevisionTab() {
               <Typography variant="h6" gutterBottom>
                 {course.title}
               </Typography>
+              
+              {/* Course Info */}
+              <div className="mb-3">
+                <Typography variant="body2" color="text.secondary" gutterBottom>
+                  {course.category} • {course.level}
+                </Typography>
+                <Typography variant="body2" color="primary" fontWeight="bold">
+                  Tests Available: {course.tests.length}
+                </Typography>
+              </div>
 
-              {/* Level Badges */}
+              {/* Level Badges - Dynamically show only available test levels */}
               <div className="flex flex-wrap gap-3 mt-4">
-                {["Level 1", "Level 2", "Level 3", "Pro"].map((level) => {
-                  const test = course.tests.find((t) => t.level === level);
+                {course.tests.map((test) => {
                   const isCompleted = false; // TODO: Add completion tracking
+                  const difficulty = test?.difficulty || "Normal";
 
                   return (
                     <div
-                      key={level}
-                      className="flex flex-col items-center cursor-pointer"
-                      onClick={() => test && startQuiz(test)}
+                      key={test._id}
+                      className="flex flex-col items-center cursor-pointer relative"
+                      onClick={() => startQuiz(test)}
                     >
                       <div
                         className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-sm"
                         style={{
-                          backgroundColor: getLevelColor(level),
-                          opacity: test ? 1 : 0.5,
+                          backgroundColor: getLevelColor(test.level, difficulty),
+                          opacity: 1,
                         }}
                       >
-                        {getLevelIcon(level)}
+                        {getLevelIcon(test.level)}
                       </div>
-                      <Typography variant="caption" className="mt-1">
-                        {level}
+                      <Typography variant="caption" className="mt-1 text-center">
+                        {test.level}
+                      </Typography>
+                      <Typography variant="caption" className="text-xs text-gray-600 text-center">
+                        {getDifficultyLabel(test.level, difficulty)}
                       </Typography>
                       {isCompleted && (
                         <CheckCircleIcon
@@ -326,7 +365,12 @@ export default function RevisionTab() {
             <>
               {/* Header */}
               <div className="flex justify-between items-center mb-4">
-                <Typography variant="h5">{currentTest.title}</Typography>
+                <div>
+                  <Typography variant="h5">{currentTest.title}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Level: {currentTest.level} • Difficulty: {currentTest.difficulty || "Normal"}
+                  </Typography>
+                </div>
                 <div className="flex items-center gap-2">
                   {quizStarted && !showResults && (
                     <Chip

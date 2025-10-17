@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
-import { Center } from "./models/Center.js";
+import Center from "./models/Center.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -40,10 +40,18 @@ const createMockCenter = async () => {
       password: hashedPassword,
       location: "Greater Noida",
       address: "123 Learning Street, Greater Noida, UP 201310",
+      city: "Greater Noida",
+      state: "Uttar Pradesh",
+      pincode: "201310",
       type: "Educational Institute",
       status: "approved", // Set as approved for immediate login
-      document: "/uploads/center_docs/mock_document.pdf",
+      documentPath: "/uploads/center_docs/mock_document.pdf",
       image: "/uploads/center_docs/mock_center_logo.png",
+      manager: {
+        name: "Mock Manager",
+        phone: "+91 9876543210",
+        email: "mockcenter@test.com"
+      }
     });
 
     await mockCenter.save();
