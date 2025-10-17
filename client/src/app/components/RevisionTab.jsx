@@ -285,34 +285,43 @@ export default function RevisionTab() {
               <Typography variant="h6" gutterBottom>
                 {course.title}
               </Typography>
+              
+              {/* Course Info */}
+              <div className="mb-3">
+                <Typography variant="body2" color="text.secondary" gutterBottom>
+                  {course.category} • {course.level}
+                </Typography>
+                <Typography variant="body2" color="primary" fontWeight="bold">
+                  Tests Available: {course.tests.length}
+                </Typography>
+              </div>
 
-              {/* Level Badges */}
+              {/* Level Badges - Dynamically show only available test levels */}
               <div className="flex flex-wrap gap-3 mt-4">
-                {["Level 1", "Level 2", "Pro"].map((level) => {
-                  const test = course.tests.find((t) => t.level === level);
+                {course.tests.map((test) => {
                   const isCompleted = false; // TODO: Add completion tracking
                   const difficulty = test?.difficulty || "Normal";
 
                   return (
                     <div
-                      key={level}
+                      key={test._id}
                       className="flex flex-col items-center cursor-pointer relative"
-                      onClick={() => test && startQuiz(test)}
+                      onClick={() => startQuiz(test)}
                     >
                       <div
                         className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-sm"
                         style={{
-                          backgroundColor: getLevelColor(level, difficulty),
-                          opacity: test ? 1 : 0.5,
+                          backgroundColor: getLevelColor(test.level, difficulty),
+                          opacity: 1,
                         }}
                       >
-                        {getLevelIcon(level)}
+                        {getLevelIcon(test.level)}
                       </div>
                       <Typography variant="caption" className="mt-1 text-center">
-                        {level}
+                        {test.level}
                       </Typography>
                       <Typography variant="caption" className="text-xs text-gray-600 text-center">
-                        {getDifficultyLabel(level, difficulty)}
+                        {getDifficultyLabel(test.level, difficulty)}
                       </Typography>
                       {isCompleted && (
                         <CheckCircleIcon
