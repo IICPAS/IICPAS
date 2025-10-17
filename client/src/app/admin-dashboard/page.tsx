@@ -238,6 +238,7 @@ const NAVIGATION_GROUPS = [
         label: "Course Rating Approval",
         icon: <FaStar />,
       },
+      { id: "revision-tests", label: "Revision Tests", icon: <FaSyncAlt /> },
     ],
   },
   {
@@ -246,7 +247,6 @@ const NAVIGATION_GROUPS = [
     icon: <FaCalendarAlt />,
     items: [
       { id: "live-session", label: "Live Session", icon: <FaCalendarAlt /> },
-      { id: "revision-tests", label: "Revision Tests", icon: <FaSyncAlt /> },
       { id: "calendar", label: "Calendar", icon: <FaCalendarAlt /> },
     ],
   },
