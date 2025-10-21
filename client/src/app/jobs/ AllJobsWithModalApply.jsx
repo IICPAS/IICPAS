@@ -92,18 +92,35 @@ export default function AllJobsWithModalApply() {
 
   const handleSubmit = async () => {
     try {
+      console.log("Submitting application for job:", selectedJob);
+      console.log("Form data:", form);
+      
       // Use appropriate endpoint based on job source
       const endpoint = selectedJob.source === 'internal' 
         ? `${process.env.NEXT_PUBLIC_API_URL}/api/jobs-internal/${selectedJob._id}/applications`
         : `${process.env.NEXT_PUBLIC_API_URL}/api/apply/jobs-external`;
       
-      await axios.post(endpoint, {
+      const applicationData = {
         jobId: selectedJob._id,
-        ...form,
-      });
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        resumeLink: form.resumeLink,
+        // Add company email from the job data
+        companyEmail: selectedJob.email || 'admin@iicpa.com'
+      };
+      
+      console.log("Sending application data:", applicationData);
+      console.log("To endpoint:", endpoint);
+      
+      const response = await axios.post(endpoint, applicationData);
+      console.log("Application response:", response.data);
+      
       setSubmitted(true);
     } catch (err) {
       console.error("Error applying", err);
+      console.error("Error details:", err.response?.data);
+      alert("Failed to submit application. Please try again.");
     }
   };
 

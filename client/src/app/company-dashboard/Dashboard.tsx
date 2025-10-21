@@ -14,7 +14,7 @@ import {
   DollarSign,
 } from "lucide-react";
 
-const URL = process.env.NEXT_PUBLIC_URL || "http://localhost:8080";
+const URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 const CompanyDashboardOverview = () => {
   const [metrics, setMetrics] = useState({
@@ -172,36 +172,75 @@ const CompanyDashboardOverview = () => {
     try {
       const targetEmail = email || companyEmail;
       console.log("Fetching applications for company email:", targetEmail);
-      const res = await axios.get(`${URL}/api/apply/jobs-external`);
-      const allApplications = res.data || [];
+      console.log("Company email from state:", companyEmail);
+      console.log("Target email:", targetEmail);
+      
+      // First try with the company's email
+      let companyApplications = [];
+      try {
+        const res = await axios.get(`${URL}/api/apply/jobs-external/company/${targetEmail}`);
+        companyApplications = res.data || [];
+        console.log("Company applications received:", companyApplications.length);
+      } catch (primaryError) {
+        console.log("Primary email failed, trying fallback...");
+      }
+      
+      // Always try fallback with admin@iicpa.com to get all applications
+      try {
+        console.log("Trying fallback with admin@iicpa.com...");
+        const fallbackRes = await axios.get(`${URL}/api/apply/jobs-external/company/admin@iicpa.com`);
+        const fallbackApplications = fallbackRes.data || [];
+        console.log("Fallback applications received:", fallbackApplications.length);
+        
+        // Combine applications and remove duplicates
+        const allApplications = [...companyApplications];
+        fallbackApplications.forEach(app => {
+          if (!allApplications.find(existing => existing._id === app._id)) {
+            allApplications.push(app);
+          }
+        });
+        
+        console.log("Total unique applications:", allApplications.length);
 
-      // Filter applications by company email (check both companyEmail and email fields)
-      const companyApplications = allApplications.filter(
-        (app: { companyEmail?: string; email?: string }) =>
-          app.companyEmail === targetEmail || app.email === targetEmail
-      );
+        const pendingApplications = allApplications.filter(
+          (app: { status: string }) => app.status === "pending"
+        ).length;
+        const approvedApplications = allApplications.filter(
+          (app: { status: string }) => app.status === "approved" || app.status === "shortlisted"
+        ).length;
 
-      console.log("Company applications received:", companyApplications);
+        setMetrics((prevMetrics) => ({
+          ...prevMetrics,
+          totalApplications: allApplications.length,
+          pendingApplications: pendingApplications,
+          approvedApplications: approvedApplications,
+        }));
+      } catch (fallbackError) {
+        console.error("Fallback also failed:", fallbackError);
+        // Use only company applications if fallback fails
+        const pendingApplications = companyApplications.filter(
+          (app: { status: string }) => app.status === "pending"
+        ).length;
+        const approvedApplications = companyApplications.filter(
+          (app: { status: string }) => app.status === "approved" || app.status === "shortlisted"
+        ).length;
 
-      const pendingApplications = companyApplications.filter(
-        (app: { status: string }) => app.status === "pending"
-      ).length;
-      const approvedApplications = companyApplications.filter(
-        (app: { status: string }) => app.status === "approved"
-      ).length;
-
-      setMetrics((prevMetrics) => {
-        const newMetrics = {
+        setMetrics((prevMetrics) => ({
           ...prevMetrics,
           totalApplications: companyApplications.length,
           pendingApplications: pendingApplications,
           approvedApplications: approvedApplications,
-        };
-        console.log("Setting application metrics:", newMetrics);
-        return newMetrics;
-      });
+        }));
+      }
     } catch (error) {
       console.error("Error fetching applications:", error);
+      // Set applications to 0 if all attempts fail
+      setMetrics((prevMetrics) => ({
+        ...prevMetrics,
+        totalApplications: 0,
+        pendingApplications: 0,
+        approvedApplications: 0,
+      }));
     }
   };
 
