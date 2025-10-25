@@ -1,6 +1,43 @@
 import React from "react";
+import { Metadata } from "next";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
+
+export const metadata: Metadata = {
+  title: "Accounting Courses - IICPA Institute",
+  description:
+    "Master accounting fundamentals with our comprehensive accounting courses. Learn financial accounting, managerial accounting, and advanced accounting principles.",
+  keywords:
+    "accounting courses, financial accounting, managerial accounting, accounting fundamentals, accounting training, CA preparation",
+  openGraph: {
+    title: "Accounting Courses - IICPA Institute",
+    description:
+      "Master accounting fundamentals with our comprehensive accounting courses. Learn financial accounting, managerial accounting, and advanced accounting principles.",
+    url: "https://iicpa.in/courses/accounting",
+    siteName: "IICPA Institute",
+    images: [
+      {
+        url: "https://iicpa.in/images/og-default.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Accounting Courses - IICPA Institute",
+      },
+    ],
+    locale: "en_IN",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Accounting Courses - IICPA Institute",
+    description:
+      "Master accounting fundamentals with our comprehensive accounting courses. Learn financial accounting, managerial accounting, and advanced accounting principles.",
+    images: ["https://iicpa.in/images/og-default.jpg"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
 
 const AccountingCoursesPage = () => {
   return (
@@ -13,7 +50,8 @@ const AccountingCoursesPage = () => {
               Accounting Courses
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Build a strong foundation in accounting principles and practices with our expert-led courses.
+              Build a strong foundation in accounting principles and practices
+              with our expert-led courses.
             </p>
           </div>
 
@@ -23,9 +61,12 @@ const AccountingCoursesPage = () => {
                 Financial Accounting
               </h3>
               <p className="text-gray-600 mb-4">
-                Learn the fundamentals of financial accounting, including journal entries, ledgers, and financial statements.
+                Learn the fundamentals of financial accounting, including
+                journal entries, ledgers, and financial statements.
               </p>
-              <div className="text-green-600 font-medium">Duration: 6 weeks</div>
+              <div className="text-green-600 font-medium">
+                Duration: 6 weeks
+              </div>
             </div>
 
             <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
@@ -33,9 +74,12 @@ const AccountingCoursesPage = () => {
                 Managerial Accounting
               </h3>
               <p className="text-gray-600 mb-4">
-                Understand cost accounting, budgeting, and internal reporting for business decision-making.
+                Understand cost accounting, budgeting, and internal reporting
+                for business decision-making.
               </p>
-              <div className="text-green-600 font-medium">Duration: 8 weeks</div>
+              <div className="text-green-600 font-medium">
+                Duration: 8 weeks
+              </div>
             </div>
 
             <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
@@ -43,9 +87,12 @@ const AccountingCoursesPage = () => {
                 Advanced Accounting
               </h3>
               <p className="text-gray-600 mb-4">
-                Master complex accounting topics including consolidations, partnerships, and international standards.
+                Master complex accounting topics including consolidations,
+                partnerships, and international standards.
               </p>
-              <div className="text-green-600 font-medium">Duration: 10 weeks</div>
+              <div className="text-green-600 font-medium">
+                Duration: 10 weeks
+              </div>
             </div>
           </div>
         </div>

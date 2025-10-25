@@ -1,6 +1,43 @@
 import React from "react";
+import { Metadata } from "next";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
+
+export const metadata: Metadata = {
+  title: "Investment Banking Courses - IICPA Institute",
+  description:
+    "Master investment banking with our comprehensive courses covering capital markets, M&A, and financial modeling. Build expertise in financial services.",
+  keywords:
+    "investment banking courses, capital markets, mergers acquisitions, financial modeling, investment banking training, M&A courses",
+  openGraph: {
+    title: "Investment Banking Courses - IICPA Institute",
+    description:
+      "Master investment banking with our comprehensive courses covering capital markets, M&A, and financial modeling. Build expertise in financial services.",
+    url: "https://iicpa.in/courses/investment-banking",
+    siteName: "IICPA Institute",
+    images: [
+      {
+        url: "https://iicpa.in/images/og-default.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Investment Banking Courses - IICPA Institute",
+      },
+    ],
+    locale: "en_IN",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Investment Banking Courses - IICPA Institute",
+    description:
+      "Master investment banking with our comprehensive courses covering capital markets, M&A, and financial modeling. Build expertise in financial services.",
+    images: ["https://iicpa.in/images/og-default.jpg"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
 
 const InvestmentBankingCoursesPage = () => {
   return (
@@ -13,7 +50,8 @@ const InvestmentBankingCoursesPage = () => {
               Investment Banking Courses
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Master the world of investment banking with our comprehensive courses covering capital markets and financial services.
+              Master the world of investment banking with our comprehensive
+              courses covering capital markets and financial services.
             </p>
           </div>
 
@@ -23,9 +61,12 @@ const InvestmentBankingCoursesPage = () => {
                 Capital Markets
               </h3>
               <p className="text-gray-600 mb-4">
-                Learn about equity and debt markets, IPOs, secondary offerings, and market analysis.
+                Learn about equity and debt markets, IPOs, secondary offerings,
+                and market analysis.
               </p>
-              <div className="text-green-600 font-medium">Duration: 10 weeks</div>
+              <div className="text-green-600 font-medium">
+                Duration: 10 weeks
+              </div>
             </div>
 
             <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
@@ -33,9 +74,12 @@ const InvestmentBankingCoursesPage = () => {
                 Mergers & Acquisitions
               </h3>
               <p className="text-gray-600 mb-4">
-                Master M&A processes, valuation techniques, due diligence, and deal structuring.
+                Master M&A processes, valuation techniques, due diligence, and
+                deal structuring.
               </p>
-              <div className="text-green-600 font-medium">Duration: 12 weeks</div>
+              <div className="text-green-600 font-medium">
+                Duration: 12 weeks
+              </div>
             </div>
 
             <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
@@ -43,9 +87,12 @@ const InvestmentBankingCoursesPage = () => {
                 Financial Modeling
               </h3>
               <p className="text-gray-600 mb-4">
-                Build advanced financial models for valuation, forecasting, and investment analysis.
+                Build advanced financial models for valuation, forecasting, and
+                investment analysis.
               </p>
-              <div className="text-green-600 font-medium">Duration: 8 weeks</div>
+              <div className="text-green-600 font-medium">
+                Duration: 8 weeks
+              </div>
             </div>
           </div>
         </div>

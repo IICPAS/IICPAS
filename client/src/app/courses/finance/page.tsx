@@ -1,6 +1,43 @@
 import React from "react";
+import { Metadata } from "next";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
+
+export const metadata: Metadata = {
+  title: "Finance Courses - IICPA Institute",
+  description:
+    "Master finance fundamentals with our comprehensive finance courses. Learn financial analysis, corporate finance, and investment management.",
+  keywords:
+    "finance courses, financial analysis, corporate finance, investment management, finance training, financial modeling",
+  openGraph: {
+    title: "Finance Courses - IICPA Institute",
+    description:
+      "Master finance fundamentals with our comprehensive finance courses. Learn financial analysis, corporate finance, and investment management.",
+    url: "https://iicpa.in/courses/finance",
+    siteName: "IICPA Institute",
+    images: [
+      {
+        url: "https://iicpa.in/images/og-default.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Finance Courses - IICPA Institute",
+      },
+    ],
+    locale: "en_IN",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Finance Courses - IICPA Institute",
+    description:
+      "Master finance fundamentals with our comprehensive finance courses. Learn financial analysis, corporate finance, and investment management.",
+    images: ["https://iicpa.in/images/og-default.jpg"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
 
 const FinanceCoursesPage = () => {
   return (
@@ -13,7 +50,8 @@ const FinanceCoursesPage = () => {
               Finance Courses
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Master the fundamentals of finance with our comprehensive courses designed for aspiring financial professionals.
+              Master the fundamentals of finance with our comprehensive courses
+              designed for aspiring financial professionals.
             </p>
           </div>
 
@@ -23,9 +61,12 @@ const FinanceCoursesPage = () => {
                 Financial Analysis
               </h3>
               <p className="text-gray-600 mb-4">
-                Learn to analyze financial statements, evaluate company performance, and make informed investment decisions.
+                Learn to analyze financial statements, evaluate company
+                performance, and make informed investment decisions.
               </p>
-              <div className="text-green-600 font-medium">Duration: 8 weeks</div>
+              <div className="text-green-600 font-medium">
+                Duration: 8 weeks
+              </div>
             </div>
 
             <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
@@ -33,9 +74,12 @@ const FinanceCoursesPage = () => {
                 Corporate Finance
               </h3>
               <p className="text-gray-600 mb-4">
-                Understand capital structure, working capital management, and corporate valuation techniques.
+                Understand capital structure, working capital management, and
+                corporate valuation techniques.
               </p>
-              <div className="text-green-600 font-medium">Duration: 10 weeks</div>
+              <div className="text-green-600 font-medium">
+                Duration: 10 weeks
+              </div>
             </div>
 
             <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
@@ -43,9 +87,12 @@ const FinanceCoursesPage = () => {
                 Investment Management
               </h3>
               <p className="text-gray-600 mb-4">
-                Master portfolio theory, risk management, and investment strategies for various asset classes.
+                Master portfolio theory, risk management, and investment
+                strategies for various asset classes.
               </p>
-              <div className="text-green-600 font-medium">Duration: 12 weeks</div>
+              <div className="text-green-600 font-medium">
+                Duration: 12 weeks
+              </div>
             </div>
           </div>
         </div>
