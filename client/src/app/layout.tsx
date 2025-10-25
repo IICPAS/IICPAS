@@ -8,6 +8,7 @@ import WhatsAppButton from "@/components/WhatsAppButton";
 import CookiePolicyPopup from "@/components/CookiePolicyPopup";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import SpecialOfferWrapper from "@/components/SpecialOfferWrapper";
+import CopyProtection from "@/components/CopyProtection";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,6 +26,7 @@ export default function RootLayout({
     <html lang="en">
       <GoogleAnalytics />
       <body className={inter.className} suppressHydrationWarning={true}>
+        <CopyProtection />
         <AuthProvider>
           {/* Special Offers Flash Cards - Show on all pages as modal */}
           <SpecialOfferWrapper location="all" maxCards={1} />
