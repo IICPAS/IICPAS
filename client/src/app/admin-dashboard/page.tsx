@@ -238,6 +238,7 @@ const NAVIGATION_GROUPS = [
         label: "Course Rating Approval",
         icon: <FaStar />,
       },
+      { id: "revision-tests", label: "Revision Tests", icon: <FaSyncAlt /> },
     ],
   },
   {
@@ -246,7 +247,6 @@ const NAVIGATION_GROUPS = [
     icon: <FaCalendarAlt />,
     items: [
       { id: "live-session", label: "Live Session", icon: <FaCalendarAlt /> },
-      { id: "revision-tests", label: "Revision Tests", icon: <FaSyncAlt /> },
       { id: "calendar", label: "Calendar", icon: <FaCalendarAlt /> },
     ],
   },
@@ -264,6 +264,11 @@ const NAVIGATION_GROUPS = [
         id: "individual-requests",
         label: "Individual Requests",
         icon: <FaUser />,
+      },
+      {
+        id: "jobs-post-management",
+        label: "Jobs Post Management",
+        icon: <FaBriefcase />,
       },
     ],
   },
@@ -708,6 +713,8 @@ function AdminDashboardContent() {
         ) : activeTab === "transactions" ? (
           <TransactionsTab />
         ) : activeTab === "jobs" ? (
+          <JobsAdminPanel />
+        ) : activeTab === "jobs-post-management" ? (
           <JobsAdminPanel />
         ) : activeTab === "staff" ? (
           <StaffManagementTab />

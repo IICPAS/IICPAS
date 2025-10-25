@@ -15,6 +15,12 @@ const JobsCompanySchema = new mongoose.Schema(
       },
     },
     jd: { type: String, required: true },
+    status: { 
+      type: String, 
+      enum: ["active", "inactive"], 
+      default: "active",
+      required: true
+    },
   },
   { timestamps: true }
 );

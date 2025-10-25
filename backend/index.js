@@ -52,6 +52,7 @@ import individualRoutes from "./routes/individualRoutes.js";
 //Jobs Controllers
 import JobsCompanyRoutes from "./routes/jobCompanyRoutes.js";
 import JobApplicationRoute from "./routes/jobApplicationRoutes.js";
+import ExternalJobApplicationRoutes from "./routes/externalJobApplicationRoutes.js";
 import UploadRoutes from "./routes/uploadRoutes.js";
 import centerRoutes from "./routes/centerRoutes.js";
 
@@ -220,7 +221,7 @@ app.use("/api/v1/individual", individualRoutes);
 
 //Jobs External
 app.use("/api/jobs-external", JobsCompanyRoutes);
-app.use("/api/apply/jobs-external", JobApplicationRoute);
+app.use("/api/apply/jobs-external", ExternalJobApplicationRoutes);
 
 //Student Routes
 app.use("/api/v1/students", studentRoutes);

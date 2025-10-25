@@ -49,13 +49,15 @@ import {
   Close as CloseIcon,
   Save as SaveIcon,
   Cancel as CancelIcon,
+  ToggleOn as ToggleOnIcon,
+  ToggleOff as ToggleOffIcon,
 } from "@mui/icons-material";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 
 const MySwal = withReactContent(Swal);
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 const emptyJob = {
   title: "",
@@ -73,6 +75,7 @@ const JobManagerTab = ({ companyEmail }) => {
   const [editJobId, setEditJobId] = useState(null);
   const [selectedJob, setSelectedJob] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
+  const [allApplications, setAllApplications] = useState([]);
 
   useEffect(() => {
     if (mainTab === "list" && companyEmail) fetchJobs();
@@ -81,15 +84,137 @@ const JobManagerTab = ({ companyEmail }) => {
 
   const fetchJobs = async () => {
     try {
-      console.log("Fetching jobs for email:", companyEmail);
-      const res = await axios.get(
-        `${API}/api/jobs-external?email=${companyEmail}`
-      );
-      console.log("Jobs response:", res.data);
-      setJobs(res.data || []);
+      console.log("Fetching all jobs (internal + external)");
+      
+      // Fetch both internal and external jobs
+      const [internalJobsRes, externalJobsRes] = await Promise.all([
+        axios.get(`${API}/api/jobs-internal`),
+        axios.get(`${API}/api/jobs-external`)
+      ]);
+      
+      // Combine both job types and add source identifier
+      const internalJobs = (internalJobsRes.data || []).map(job => ({
+        ...job,
+        role: job.type || job.role, // Normalize role field
+        salary: job.salary || "0", // Ensure salary field exists
+        source: 'internal',
+        sourceLabel: 'Admin Posted',
+        postedBy: 'IICPA Institute'
+      }));
+      
+      const externalJobs = (externalJobsRes.data || []).map(job => ({
+        ...job,
+        source: 'external',
+        sourceLabel: 'Company Posted',
+        postedBy: 'IICPA Institute' // Always show IICPA Institute for consistency
+      }));
+      
+      // Combine all jobs
+      const allJobs = [...internalJobs, ...externalJobs];
+      
+      // Fetch all applications once and then distribute to jobs
+      let allApplications = [];
+      try {
+        console.log("Fetching applications for company email:", companyEmail);
+        
+        // Try multiple approaches to get all applications
+        const applicationPromises = [];
+        
+        // Try with company email
+        applicationPromises.push(
+          axios.get(`${API}/api/apply/jobs-external/company/${companyEmail}`)
+            .then(res => res.data || [])
+            .catch(err => {
+              console.log("Company email fetch failed:", err.message);
+              return [];
+            })
+        );
+        
+        // Try with admin@iicpa.com
+        applicationPromises.push(
+          axios.get(`${API}/api/apply/jobs-external/company/admin@iicpa.com`)
+            .then(res => res.data || [])
+            .catch(err => {
+              console.log("Admin email fetch failed:", err.message);
+              return [];
+            })
+        );
+        
+        // Try to get all applications (no company filter)
+        applicationPromises.push(
+          axios.get(`${API}/api/apply/jobs-external`)
+            .then(res => res.data || [])
+            .catch(err => {
+              console.log("All applications fetch failed:", err.message);
+              return [];
+            })
+        );
+        
+        // Wait for all requests to complete
+        const [companyApps, adminApps, allApps] = await Promise.all(applicationPromises);
+        
+        console.log("Company applications:", companyApps.length);
+        console.log("Admin applications:", adminApps.length);
+        console.log("All applications:", allApps.length);
+        
+        // Combine all applications and remove duplicates
+        const allAppsMap = new Map();
+        
+        [...companyApps, ...adminApps, ...allApps].forEach(app => {
+          if (!allAppsMap.has(app._id)) {
+            allAppsMap.set(app._id, app);
+          }
+        });
+        
+        allApplications = Array.from(allAppsMap.values());
+        console.log("Total unique applications after deduplication:", allApplications.length);
+        
+      } catch (error) {
+        console.error("Error fetching applications:", error);
+        allApplications = [];
+      }
+
+      // Add application counts to each job
+      const jobsWithApplications = allJobs.map((job) => {
+        const jobApplications = allApplications.filter(app => {
+          // Handle both string and ObjectId comparisons
+          const appJobId = app.jobId?._id || app.jobId;
+          const jobId = job._id;
+          
+          // Convert both to strings for comparison
+          return String(appJobId) === String(jobId);
+        });
+        
+        console.log(`Job "${job.title}" (${job._id}) has ${jobApplications.length} applications`);
+        
+        return {
+          ...job,
+          applicationCount: jobApplications.length
+        };
+      });
+      
+      console.log("All jobs (internal + external):", jobsWithApplications);
+      console.log("Job statuses:", jobsWithApplications.map(j => ({ id: j._id, title: j.title, status: j.status, applications: j.applicationCount })));
+      setJobs(jobsWithApplications);
+      setAllApplications(allApplications); // Store applications for viewing
     } catch (error) {
       console.error("Error fetching jobs:", error);
       toast.error("Failed to load jobs");
+      // Fallback to external jobs only
+      try {
+        const res = await axios.get(`${API}/api/jobs-external`);
+        const externalJobs = (res.data || []).map(job => ({
+          ...job,
+          source: 'external',
+          sourceLabel: 'Company Posted',
+          postedBy: 'IICPA Institute', // Always show IICPA Institute for consistency
+          applicationCount: 0 // Default to 0 for fallback
+        }));
+        setJobs(externalJobs);
+      } catch (fallbackError) {
+        console.error("Error fetching external jobs:", fallbackError);
+        setJobs([]);
+      }
     }
   };
 
@@ -105,7 +230,15 @@ const JobManagerTab = ({ companyEmail }) => {
       } else if (mainTab === "edit" && editJobId) {
         const jobData = { ...form, email: companyEmail };
         console.log("Updating job with data:", jobData);
-        await axios.put(`${API}/api/jobs-external/${editJobId}`, jobData);
+        
+        // Find the job being edited to determine its source
+        const jobBeingEdited = jobs.find(j => j._id === editJobId);
+        const endpoint = jobBeingEdited?.source === 'internal' 
+          ? `${API}/api/jobs-internal/${editJobId}`
+          : `${API}/api/jobs-external/${editJobId}`;
+        
+        console.log("Using endpoint:", endpoint, "for job source:", jobBeingEdited?.source);
+        await axios.put(endpoint, jobData);
         toast.success("Job updated successfully! ✨");
       }
       setForm(emptyJob);
@@ -132,7 +265,7 @@ const JobManagerTab = ({ companyEmail }) => {
     setOpenDialog(true);
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (job) => {
     const result = await MySwal.fire({
       title: "Delete Job?",
       text: "This action cannot be undone!",
@@ -148,10 +281,16 @@ const JobManagerTab = ({ companyEmail }) => {
     });
     if (result.isConfirmed) {
       try {
-        await axios.delete(`${API}/api/jobs-external/${id}`);
+        // Use appropriate endpoint based on job source
+        const endpoint = job.source === 'internal' 
+          ? `${API}/api/jobs-internal/${job._id}`
+          : `${API}/api/jobs-external/${job._id}`;
+        
+        await axios.delete(endpoint);
         toast.success("Job deleted successfully! 🗑️");
         fetchJobs();
-      } catch {
+      } catch (error) {
+        console.error("Error deleting job:", error);
         toast.error("Delete failed");
       }
     }
@@ -160,6 +299,59 @@ const JobManagerTab = ({ companyEmail }) => {
   const handleViewApplications = (job) => {
     setSelectedJob(job);
     setMainTab("applications");
+  };
+
+  const handleUpdateApplicationStatus = async (applicationId, status) => {
+    try {
+      await axios.put(`${API}/api/apply/jobs-external/${applicationId}/status`, { status });
+      toast.success(`Application ${status} successfully!`);
+      // Refresh applications
+      fetchJobs();
+    } catch (error) {
+      console.error("Error updating application status:", error);
+      toast.error("Failed to update application status");
+    }
+  };
+
+  const handleToggleStatus = async (job) => {
+    try {
+      const newStatus = job.status === "active" ? "inactive" : "active";
+      console.log(`Toggling job ${job._id} from ${job.status} to ${newStatus}`);
+      
+      // Use appropriate endpoint based on job source
+      const endpoint = job.source === 'internal' 
+        ? `${API}/api/jobs-internal/${job._id}`
+        : `${API}/api/jobs-external/${job._id}`;
+      
+      console.log(`Using endpoint: ${endpoint} for ${job.source} job`);
+      
+      const response = await axios.put(endpoint, { status: newStatus });
+      console.log("Job status update response:", response.data);
+      
+      // Update the job in the local state immediately for better UX
+      setJobs(prevJobs => {
+        const updatedJobs = prevJobs.map(j => 
+          j._id === job._id ? { ...j, status: newStatus } : j
+        );
+        console.log("Updated jobs state:", updatedJobs);
+        console.log("Job with updated status:", updatedJobs.find(j => j._id === job._id));
+        return updatedJobs;
+      });
+      
+      toast.success(`Job ${newStatus === "active" ? "activated" : "deactivated"} successfully!`);
+      
+      // Fetch fresh data after a short delay to ensure backend has processed the update
+      setTimeout(() => {
+        fetchJobs();
+      }, 1000);
+      
+    } catch (error) {
+      console.error("Error toggling job status:", error);
+      console.error("Error details:", error.response?.data || error.message);
+      console.error("Job source:", job.source);
+      console.error("Job ID:", job._id);
+      toast.error("Failed to update job status");
+    }
   };
 
   const handleAddJob = () => {
@@ -621,6 +813,179 @@ const JobManagerTab = ({ companyEmail }) => {
     </Container>
   );
 
+  const renderAllApplicationsView = () => (
+    <Container maxWidth="lg" sx={{ mt: 4 }}>
+      <Card
+        elevation={0}
+        sx={{
+          borderRadius: 4,
+          background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+          color: "white",
+          mb: 3,
+        }}
+      >
+        <CardContent sx={{ p: 4 }}>
+          <Stack direction="row" alignItems="center" spacing={2}>
+            <Avatar
+              sx={{
+                bgcolor: "rgba(255,255,255,0.2)",
+                width: 56,
+                height: 56,
+              }}
+            >
+              <GroupIcon />
+            </Avatar>
+            <Box>
+              <Typography variant="h4" fontWeight={700}>
+                All Job Applications
+              </Typography>
+              <Typography variant="body1" sx={{ opacity: 0.9 }}>
+                View and manage all job applications
+              </Typography>
+            </Box>
+          </Stack>
+        </CardContent>
+      </Card>
+
+      <Button
+        variant="outlined"
+        onClick={() => setMainTab("list")}
+        startIcon={<CloseIcon />}
+        sx={{
+          borderRadius: 2,
+          textTransform: "none",
+          fontWeight: 600,
+          mb: 3,
+        }}
+      >
+        Back to Jobs
+      </Button>
+
+      {allApplications.length === 0 ? (
+        <Card elevation={0} sx={{ borderRadius: 3, p: 4, textAlign: "center" }}>
+          <Typography variant="h6" color="text.secondary">
+            No applications found
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            Applications will appear here when candidates apply for your jobs.
+          </Typography>
+        </Card>
+      ) : (
+        <Grid container spacing={3}>
+          {allApplications.map((application) => (
+            <Grid item xs={12} md={6} key={application._id}>
+              <Card
+                elevation={0}
+                sx={{
+                  borderRadius: 3,
+                  border: "1px solid #e0e0e0",
+                  p: 3,
+                  transition: "all 0.3s ease",
+                  "&:hover": {
+                    boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+                    transform: "translateY(-2px)",
+                  }
+                }}
+              >
+                <Stack spacing={2}>
+                  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                    <Box>
+                      <Typography variant="h6" fontWeight={600} color="primary">
+                        {application.name}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {application.email}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {application.phone}
+                      </Typography>
+                    </Box>
+                    <Chip
+                      label={application.status}
+                      size="small"
+                      sx={{
+                        background: application.status === "pending" 
+                          ? "linear-gradient(135deg, #ff9800 0%, #f57c00 100%)"
+                          : application.status === "approved" || application.status === "shortlisted"
+                          ? "linear-gradient(135deg, #4caf50 0%, #388e3c 100%)"
+                          : "linear-gradient(135deg, #f44336 0%, #d32f2f 100%)",
+                        color: "white",
+                        fontWeight: 600,
+                      }}
+                    />
+                  </Box>
+                  
+                  <Box>
+                    <Typography variant="subtitle2" fontWeight={600} color="text.primary">
+                      Applied for: {application.jobId?.title || "Unknown Job"}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Role: {application.jobId?.role || "N/A"}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Location: {application.jobId?.location || "N/A"}
+                    </Typography>
+                  </Box>
+
+                  {application.resumeLink && (
+                    <Box>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                        Resume:
+                      </Typography>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        href={application.resumeLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        sx={{
+                          textTransform: "none",
+                          borderRadius: 2,
+                        }}
+                      >
+                        View Resume
+                      </Button>
+                    </Box>
+                  )}
+
+                  <Box sx={{ display: "flex", gap: 1, mt: 2 }}>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      onClick={() => handleUpdateApplicationStatus(application._id, "approved")}
+                      sx={{
+                        background: "linear-gradient(135deg, #4caf50 0%, #388e3c 100%)",
+                        textTransform: "none",
+                        borderRadius: 2,
+                      }}
+                    >
+                      Approve
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={() => handleUpdateApplicationStatus(application._id, "rejected")}
+                      sx={{
+                        textTransform: "none",
+                        borderRadius: 2,
+                      }}
+                    >
+                      Reject
+                    </Button>
+                  </Box>
+
+                  <Typography variant="caption" color="text.secondary">
+                    Applied on: {new Date(application.appliedAt).toLocaleDateString()}
+                  </Typography>
+                </Stack>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      )}
+    </Container>
+  );
+
   const renderJobsList = () => (
     <Container maxWidth="xl" sx={{ mt: 4 }}>
       {/* Header Section */}
@@ -730,7 +1095,14 @@ const JobManagerTab = ({ companyEmail }) => {
               background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
               p: 3,
               boxShadow: "0 8px 32px rgba(79, 172, 254, 0.3)",
+              cursor: "pointer",
+              transition: "all 0.3s ease",
+              "&:hover": {
+                transform: "translateY(-4px)",
+                boxShadow: "0 12px 40px rgba(79, 172, 254, 0.4)",
+              }
             }}
+            onClick={() => setMainTab("all-applications")}
           >
             <Stack direction="row" alignItems="center" spacing={2}>
               <Avatar
@@ -741,9 +1113,13 @@ const JobManagerTab = ({ companyEmail }) => {
               >
                 <GroupIcon />
               </Avatar>
-              <Box>
+              <Box sx={{ flex: 1 }}>
                 <Typography variant="h4" fontWeight={700} color="white">
-                  0
+                  {(() => {
+                    const totalApplications = jobs.reduce((total, job) => total + (job.applicationCount || 0), 0);
+                    console.log("Total applications calculated:", totalApplications, "from jobs:", jobs.map(j => ({ title: j.title, count: j.applicationCount })));
+                    return totalApplications;
+                  })()}
                 </Typography>
                 <Typography variant="body2" color="white" sx={{ opacity: 0.9 }}>
                   Applications
@@ -908,11 +1284,12 @@ const JobManagerTab = ({ companyEmail }) => {
                           {job.title}
                         </Typography>
                         <Chip
-                          label="Active"
+                          label={job.status === "active" ? "Active" : "Inactive"}
                           size="small"
                           sx={{
-                            background:
-                              "linear-gradient(135deg, #4caf50 0%, #45a049 100%)",
+                            background: job.status === "active" 
+                              ? "linear-gradient(135deg, #4caf50 0%, #45a049 100%)"
+                              : "linear-gradient(135deg, #f44336 0%, #d32f2f 100%)",
                             color: "white",
                             fontWeight: 600,
                           }}
@@ -964,6 +1341,21 @@ const JobManagerTab = ({ companyEmail }) => {
                             <EditIcon />
                           </IconButton>
                         </Tooltip>
+                        <Tooltip title={job.status === "active" ? "Deactivate Job" : "Activate Job"}>
+                          <IconButton
+                            onClick={() => handleToggleStatus(job)}
+                            sx={{
+                              color: job.status === "active" ? "#ff9800" : "#4caf50",
+                              "&:hover": {
+                                background: job.status === "active" 
+                                  ? "rgba(255, 152, 0, 0.1)" 
+                                  : "rgba(76, 175, 80, 0.1)",
+                              },
+                            }}
+                          >
+                            {job.status === "active" ? <ToggleOnIcon /> : <ToggleOffIcon />}
+                          </IconButton>
+                        </Tooltip>
                         <Tooltip title="View Applications">
                           <IconButton
                             onClick={() => handleViewApplications(job)}
@@ -979,7 +1371,7 @@ const JobManagerTab = ({ companyEmail }) => {
                         </Tooltip>
                         <Tooltip title="Delete Job">
                           <IconButton
-                            onClick={() => handleDelete(job._id)}
+                            onClick={() => handleDelete(job)}
                             sx={{
                               color: "#f44336",
                               "&:hover": {
@@ -1004,7 +1396,9 @@ const JobManagerTab = ({ companyEmail }) => {
 
   return (
     <Box sx={{ minHeight: "100vh", background: "#f8fafc" }}>
-      {mainTab === "applications" ? renderApplicationsView() : renderJobsList()}
+      {mainTab === "applications" ? renderApplicationsView() : 
+       mainTab === "all-applications" ? renderAllApplicationsView() : 
+       renderJobsList()}
       {renderJobForm()}
     </Box>
   );

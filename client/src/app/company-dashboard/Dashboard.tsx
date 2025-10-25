@@ -14,7 +14,7 @@ import {
   DollarSign,
 } from "lucide-react";
 
-const URL = process.env.NEXT_PUBLIC_URL || "http://localhost:8080";
+const URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 const CompanyDashboardOverview = () => {
   const [metrics, setMetrics] = useState({
@@ -117,87 +117,47 @@ const CompanyDashboardOverview = () => {
 
   const fetchAllJobs = async (email?: string) => {
     try {
-      const targetEmail = email || companyEmail;
       console.log("=== fetchAllJobs START ===");
-      console.log("Fetching jobs for company email:", targetEmail);
-      console.log(
-        "URL being used:",
-        `${URL}/api/jobs-external?email=${targetEmail}`
-      );
+      console.log("Fetching all jobs (internal + external)");
 
-      if (!targetEmail) {
-        console.log("No email provided, skipping job fetch");
-        return;
-      }
+      // Fetch both internal and external jobs
+      const [internalJobsRes, externalJobsRes] = await Promise.all([
+        axios.get(`${URL}/api/jobs-internal`),
+        axios.get(`${URL}/api/jobs-external`)
+      ]);
 
-      // First try with email filter
-      let res;
-      try {
-        console.log("Trying API call with email filter...");
-        res = await axios.get(`${URL}/api/jobs-external?email=${targetEmail}`);
-        console.log("Jobs with email filter:", res.data);
-      } catch (error) {
-        console.log("Email filter failed, trying without filter");
-        console.log(
-          "Error details:",
-          error instanceof Error ? error.message : "Unknown error"
-        );
-        res = await axios.get(`${URL}/api/jobs-external`);
-        console.log("All jobs without filter:", res.data);
-      }
+      // Combine both job types
+      const internalJobs = internalJobsRes.data || [];
+      const externalJobs = externalJobsRes.data || [];
+      const allJobs = [...internalJobs, ...externalJobs];
+      
+      console.log("Internal jobs:", internalJobs);
+      console.log("External jobs:", externalJobs);
+      console.log("All jobs combined:", allJobs);
 
-      const allJobs = res.data || [];
-      console.log("All jobs received:", allJobs);
-      console.log("Current companyEmail state:", companyEmail);
-      console.log("Target email for filtering:", targetEmail);
+      // Calculate metrics from all jobs (both internal and external)
+      console.log("All jobs for metrics calculation:", allJobs);
 
-      // Filter jobs by company email manually
-      const companyJobs = allJobs.filter(
-        (job: { email?: string; companyEmail?: string; title?: string }) => {
-          console.log(
-            "Checking job:",
-            job.title,
-            "job.email:",
-            job.email,
-            "targetEmail:",
-            targetEmail,
-            "match:",
-            job.email === targetEmail
-          );
-          return job.email === targetEmail || job.companyEmail === targetEmail;
-        }
-      );
+      // Count active jobs (both internal and external)
+      const activeJobs = allJobs.filter(
+        (job: { status?: string }) => job.status === "active" || job.status === undefined
+      ).length;
 
-      console.log("Filtered company jobs:", companyJobs);
-
-      console.log(
-        "Job details:",
-        companyJobs.map(
-          (job: {
-            _id: string;
-            title: string;
-            email: string;
-            status?: string;
-          }) => ({
-            id: job._id,
-            title: job.title,
-            email: job.email,
-            status: job.status,
-          })
-        )
-      );
-
-      const activeJobs = companyJobs.filter(
-        (job: { status?: string }) => !job.status || job.status === "active"
+      // Count remote jobs (jobs with location containing "remote" or similar)
+      const remoteJobs = allJobs.filter(
+        (job: { location?: string }) => 
+          job.location && job.location.toLowerCase().includes("remote")
       ).length;
 
       console.log("Active jobs count:", activeJobs);
+      console.log("Remote jobs count:", remoteJobs);
 
       setMetrics((prevMetrics) => {
         const newMetrics = {
           ...prevMetrics,
-          totalJobs: companyJobs.length,
+          totalJobs: allJobs.length,
           activeJobs: activeJobs,
+          remoteJobs: remoteJobs,
         };
         console.log("Setting job metrics:", newMetrics);
         return newMetrics;
@@ -212,36 +172,75 @@ const CompanyDashboardOverview = () => {
     try {
       const targetEmail = email || companyEmail;
       console.log("Fetching applications for company email:", targetEmail);
-      const res = await axios.get(`${URL}/api/apply/jobs-external`);
-      const allApplications = res.data || [];
+      console.log("Company email from state:", companyEmail);
+      console.log("Target email:", targetEmail);
+      
+      // First try with the company's email
+      let companyApplications = [];
+      try {
+        const res = await axios.get(`${URL}/api/apply/jobs-external/company/${targetEmail}`);
+        companyApplications = res.data || [];
+        console.log("Company applications received:", companyApplications.length);
+      } catch (primaryError) {
+        console.log("Primary email failed, trying fallback...");
+      }
+      
+      // Always try fallback with admin@iicpa.com to get all applications
+      try {
+        console.log("Trying fallback with admin@iicpa.com...");
+        const fallbackRes = await axios.get(`${URL}/api/apply/jobs-external/company/admin@iicpa.com`);
+        const fallbackApplications = fallbackRes.data || [];
+        console.log("Fallback applications received:", fallbackApplications.length);
+        
+        // Combine applications and remove duplicates
+        const allApplications = [...companyApplications];
+        fallbackApplications.forEach(app => {
+          if (!allApplications.find(existing => existing._id === app._id)) {
+            allApplications.push(app);
+          }
+        });
+        
+        console.log("Total unique applications:", allApplications.length);
 
-      // Filter applications by company email (check both companyEmail and email fields)
-      const companyApplications = allApplications.filter(
-        (app: { companyEmail?: string; email?: string }) =>
-          app.companyEmail === targetEmail || app.email === targetEmail
-      );
+        const pendingApplications = allApplications.filter(
+          (app: { status: string }) => app.status === "pending"
+        ).length;
+        const approvedApplications = allApplications.filter(
+          (app: { status: string }) => app.status === "approved" || app.status === "shortlisted"
+        ).length;
 
-      console.log("Company applications received:", companyApplications);
+        setMetrics((prevMetrics) => ({
+          ...prevMetrics,
+          totalApplications: allApplications.length,
+          pendingApplications: pendingApplications,
+          approvedApplications: approvedApplications,
+        }));
+      } catch (fallbackError) {
+        console.error("Fallback also failed:", fallbackError);
+        // Use only company applications if fallback fails
+        const pendingApplications = companyApplications.filter(
+          (app: { status: string }) => app.status === "pending"
+        ).length;
+        const approvedApplications = companyApplications.filter(
+          (app: { status: string }) => app.status === "approved" || app.status === "shortlisted"
+        ).length;
 
-      const pendingApplications = companyApplications.filter(
-        (app: { status: string }) => app.status === "pending"
-      ).length;
-      const approvedApplications = companyApplications.filter(
-        (app: { status: string }) => app.status === "approved"
-      ).length;
-
-      setMetrics((prevMetrics) => {
-        const newMetrics = {
+        setMetrics((prevMetrics) => ({
           ...prevMetrics,
           totalApplications: companyApplications.length,
           pendingApplications: pendingApplications,
           approvedApplications: approvedApplications,
-        };
-        console.log("Setting application metrics:", newMetrics);
-        return newMetrics;
-      });
+        }));
+      }
     } catch (error) {
       console.error("Error fetching applications:", error);
+      // Set applications to 0 if all attempts fail
+      setMetrics((prevMetrics) => ({
+        ...prevMetrics,
+        totalApplications: 0,
+        pendingApplications: 0,
+        approvedApplications: 0,
+      }));
     }
   };
 
