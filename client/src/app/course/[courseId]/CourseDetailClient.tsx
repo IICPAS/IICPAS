@@ -245,7 +245,7 @@ const dummyCourses = {
   },
 };
 
-export default function CourseDetailPage({
+export default function CourseDetailClient({
   params,
 }: {
   params: Promise<{ courseId: string }>;
