@@ -1,44 +1,7 @@
 "use client";
 
 import React from "react";
-import { Metadata } from "next";
 import Link from "next/link";
-
-export const metadata: Metadata = {
-  title: "GST Simulations - IICPA Institute",
-  description:
-    "Master GST compliance through interactive simulations. Practice return filing, e-invoice generation, and GST procedures with hands-on learning.",
-  keywords:
-    "GST simulations, GST training, GST return filing, e-invoice, GST compliance, GST portal simulation",
-  openGraph: {
-    title: "GST Simulations - IICPA Institute",
-    description:
-      "Master GST compliance through interactive simulations. Practice return filing, e-invoice generation, and GST procedures with hands-on learning.",
-    url: "https://iicpa.in/gst-simulations",
-    siteName: "IICPA Institute",
-    images: [
-      {
-        url: "https://iicpa.in/images/og-default.jpg",
-        width: 1200,
-        height: 630,
-        alt: "GST Simulations - IICPA Institute",
-      },
-    ],
-    locale: "en_IN",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "GST Simulations - IICPA Institute",
-    description:
-      "Master GST compliance through interactive simulations. Practice return filing, e-invoice generation, and GST procedures with hands-on learning.",
-    images: ["https://iicpa.in/images/og-default.jpg"],
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
-};
 import {
   FaFileInvoice,
   FaPlay,
