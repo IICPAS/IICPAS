@@ -42,13 +42,10 @@ export default function EditCourse({ courseId, onBack }) {
     showXPathInStatusbar: false,
   };
 
-  // Debounced change handler to prevent typing interruption
-  const debouncedJoditChange = useCallback(
-    (field) => (value) => {
-      setForm((f) => ({ ...f, [field]: value }));
-    },
-    []
-  );
+  // Simple handler without debouncing - works reliably with JoditEditor
+  const handleJoditChange = (field) => (value) => {
+    setForm((prevForm) => ({ ...prevForm, [field]: value }));
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -112,10 +109,6 @@ export default function EditCourse({ courseId, onBack }) {
     } else {
       setForm((f) => ({ ...f, [name]: val }));
     }
-  };
-
-  const handleJoditChange = (field) => (value) => {
-    setForm((f) => ({ ...f, [field]: value }));
   };
 
   const handleCategoryChange = (option) =>
@@ -609,8 +602,7 @@ export default function EditCourse({ courseId, onBack }) {
           <JoditEditor
             value={form.description}
             config={joditConfig}
-            onChange={debouncedJoditChange("description")}
-            onBlur={handleJoditChange("description")}
+            onChange={handleJoditChange("description")}
           />
         </div>
         <div>
@@ -620,8 +612,7 @@ export default function EditCourse({ courseId, onBack }) {
           <JoditEditor
             value={form.examCert}
             config={joditConfig}
-            onChange={debouncedJoditChange("examCert")}
-            onBlur={handleJoditChange("examCert")}
+            onChange={handleJoditChange("examCert")}
           />
         </div>
         <div>
@@ -629,8 +620,7 @@ export default function EditCourse({ courseId, onBack }) {
           <JoditEditor
             value={form.caseStudy}
             config={joditConfig}
-            onChange={debouncedJoditChange("caseStudy")}
-            onBlur={handleJoditChange("caseStudy")}
+            onChange={handleJoditChange("caseStudy")}
           />
         </div>
 
@@ -639,8 +629,7 @@ export default function EditCourse({ courseId, onBack }) {
           <JoditEditor
             value={form.assignment}
             config={joditConfig}
-            onChange={debouncedJoditChange("assignment")}
-            onBlur={handleJoditChange("assignment")}
+            onChange={handleJoditChange("assignment")}
           />
         </div>
 
@@ -725,8 +714,7 @@ export default function EditCourse({ courseId, onBack }) {
           <JoditEditor
             value={form.seoDescription}
             config={joditConfig}
-            onChange={debouncedJoditChange("seoDescription")}
-            onBlur={handleJoditChange("seoDescription")}
+            onChange={handleJoditChange("seoDescription")}
           />
           <label>SEO Keywords</label>
           <textarea
@@ -749,11 +737,229 @@ export default function EditCourse({ courseId, onBack }) {
             placeholder="Enter meta title for additional SEO"
           />
           <label>Meta Description</label>
-          <JoditEditor
-            value={form.metaDescription}
-            config={joditConfig}
-            onChange={debouncedJoditChange("metaDescription")}
-          />
+          <div className="jodit-style-editor">
+            <div className="jodit-toolbar">
+              <div className="jodit-toolbar-editor-collection">
+                <div className="jodit-toolbar-group">
+                  <button
+                    type="button"
+                    className="jodit-toolbar-button"
+                    disabled
+                  >
+                    <span className="jodit-icon jodit-icon-bold"></span>
+                  </button>
+                  <button
+                    type="button"
+                    className="jodit-toolbar-button"
+                    disabled
+                  >
+                    <span className="jodit-icon jodit-icon-italic"></span>
+                  </button>
+                  <button
+                    type="button"
+                    className="jodit-toolbar-button"
+                    disabled
+                  >
+                    <span className="jodit-icon jodit-icon-underline"></span>
+                  </button>
+                  <button
+                    type="button"
+                    className="jodit-toolbar-button"
+                    disabled
+                  >
+                    <span className="jodit-icon jodit-icon-strikethrough"></span>
+                  </button>
+                </div>
+                <div className="jodit-toolbar-group">
+                  <button
+                    type="button"
+                    className="jodit-toolbar-button"
+                    disabled
+                  >
+                    <span className="jodit-icon jodit-icon-ul"></span>
+                  </button>
+                  <button
+                    type="button"
+                    className="jodit-toolbar-button"
+                    disabled
+                  >
+                    <span className="jodit-icon jodit-icon-ol"></span>
+                  </button>
+                  <button
+                    type="button"
+                    className="jodit-toolbar-button"
+                    disabled
+                  >
+                    <span className="jodit-icon jodit-icon-outdent"></span>
+                  </button>
+                  <button
+                    type="button"
+                    className="jodit-toolbar-button"
+                    disabled
+                  >
+                    <span className="jodit-icon jodit-icon-indent"></span>
+                  </button>
+                </div>
+                <div className="jodit-toolbar-group">
+                  <button
+                    type="button"
+                    className="jodit-toolbar-button"
+                    disabled
+                  >
+                    <span className="jodit-icon jodit-icon-align-left"></span>
+                  </button>
+                  <button
+                    type="button"
+                    className="jodit-toolbar-button"
+                    disabled
+                  >
+                    <span className="jodit-icon jodit-icon-align-center"></span>
+                  </button>
+                  <button
+                    type="button"
+                    className="jodit-toolbar-button"
+                    disabled
+                  >
+                    <span className="jodit-icon jodit-icon-align-right"></span>
+                  </button>
+                  <button
+                    type="button"
+                    className="jodit-toolbar-button"
+                    disabled
+                  >
+                    <span className="jodit-icon jodit-icon-justify"></span>
+                  </button>
+                </div>
+                <div className="jodit-toolbar-group">
+                  <button
+                    type="button"
+                    className="jodit-toolbar-button"
+                    disabled
+                  >
+                    <span className="jodit-icon jodit-icon-font"></span>
+                  </button>
+                  <button
+                    type="button"
+                    className="jodit-toolbar-button"
+                    disabled
+                  >
+                    <span className="jodit-icon jodit-icon-brush"></span>
+                  </button>
+                </div>
+                <div className="jodit-toolbar-group">
+                  <button
+                    type="button"
+                    className="jodit-toolbar-button"
+                    disabled
+                  >
+                    <span className="jodit-icon jodit-icon-sup"></span>
+                  </button>
+                  <button
+                    type="button"
+                    className="jodit-toolbar-button"
+                    disabled
+                  >
+                    <span className="jodit-icon jodit-icon-sub"></span>
+                  </button>
+                </div>
+              </div>
+              <div className="jodit-toolbar-editor-collection">
+                <div className="jodit-toolbar-group">
+                  <button
+                    type="button"
+                    className="jodit-toolbar-button"
+                    disabled
+                  >
+                    <span className="jodit-icon jodit-icon-undo"></span>
+                  </button>
+                  <button
+                    type="button"
+                    className="jodit-toolbar-button"
+                    disabled
+                  >
+                    <span className="jodit-icon jodit-icon-redo"></span>
+                  </button>
+                </div>
+                <div className="jodit-toolbar-group">
+                  <button
+                    type="button"
+                    className="jodit-toolbar-button"
+                    disabled
+                  >
+                    <span className="jodit-icon jodit-icon-image"></span>
+                  </button>
+                  <button
+                    type="button"
+                    className="jodit-toolbar-button"
+                    disabled
+                  >
+                    <span className="jodit-icon jodit-icon-video"></span>
+                  </button>
+                  <button
+                    type="button"
+                    className="jodit-toolbar-button"
+                    disabled
+                  >
+                    <span className="jodit-icon jodit-icon-table"></span>
+                  </button>
+                  <button
+                    type="button"
+                    className="jodit-toolbar-button"
+                    disabled
+                  >
+                    <span className="jodit-icon jodit-icon-link"></span>
+                  </button>
+                </div>
+                <div className="jodit-toolbar-group">
+                  <button
+                    type="button"
+                    className="jodit-toolbar-button"
+                    disabled
+                  >
+                    <span className="jodit-icon jodit-icon-code"></span>
+                  </button>
+                  <button
+                    type="button"
+                    className="jodit-toolbar-button"
+                    disabled
+                  >
+                    <span className="jodit-icon jodit-icon-hr"></span>
+                  </button>
+                  <button
+                    type="button"
+                    className="jodit-toolbar-button"
+                    disabled
+                  >
+                    <span className="jodit-icon jodit-icon-omega"></span>
+                  </button>
+                </div>
+                <div className="jodit-toolbar-group">
+                  <button
+                    type="button"
+                    className="jodit-toolbar-button"
+                    disabled
+                  >
+                    <span className="jodit-icon jodit-icon-search"></span>
+                  </button>
+                  <button
+                    type="button"
+                    className="jodit-toolbar-button"
+                    disabled
+                  >
+                    <span className="jodit-icon jodit-icon-source"></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <textarea
+              name="metaDescription"
+              value={form.metaDescription}
+              onChange={handleInputChange}
+              className="jodit-editor-textarea"
+              rows={8}
+              placeholder="Enter meta description..."
+            />
+          </div>
           <label>Meta Keywords</label>
           <textarea
             name="metaKeywords"
