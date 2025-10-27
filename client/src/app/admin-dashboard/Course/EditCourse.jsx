@@ -958,7 +958,30 @@ export default function EditCourse({ courseId, onBack }) {
               className="jodit-editor-textarea"
               rows={8}
               placeholder="Enter meta description..."
+              maxLength={160}
             />
+            <div className="jodit-status-bar">
+              <div
+                className={`jodit-character-count ${
+                  (form.metaDescription?.length || 0) > 160
+                    ? "error"
+                    : (form.metaDescription?.length || 0) > 140
+                    ? "warning"
+                    : ""
+                }`}
+              >
+                {form.metaDescription?.length || 0}/160 characters
+              </div>
+              <div className="jodit-status-text">
+                {(form.metaDescription?.length || 0) > 160
+                  ? "⚠️ Too long for SEO"
+                  : (form.metaDescription?.length || 0) > 140
+                  ? "⚠️ Getting long"
+                  : (form.metaDescription?.length || 0) > 0
+                  ? "✅ Good length"
+                  : "💡 Enter description"}
+              </div>
+            </div>
           </div>
           <label>Meta Keywords</label>
           <textarea

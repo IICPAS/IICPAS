@@ -712,37 +712,71 @@ body::-webkit-scrollbar-thumb:hover {
   }
 }
 
-/* Jodit-style Editor CSS */
+/* Enhanced Jodit-style Editor CSS */
 .jodit-style-editor {
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
   background: #ffffff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
   overflow: hidden;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.jodit-style-editor:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.jodit-style-editor:focus-within {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1),
+    0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
 .jodit-toolbar {
-  background: #f8fafc;
-  border-bottom: 1px solid #e5e7eb;
-  padding: 8px 12px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-bottom: 1px solid #e2e8f0;
+  padding: 12px 16px;
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
-  min-height: 40px;
+  gap: 6px;
+  min-height: 48px;
+  position: relative;
+}
+
+.jodit-toolbar::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #3b82f6, transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.jodit-style-editor:focus-within .jodit-toolbar::before {
+  opacity: 1;
 }
 
 .jodit-toolbar-editor-collection {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 6px;
+  align-items: center;
 }
 
 .jodit-toolbar-group {
   display: flex;
-  gap: 2px;
-  margin-right: 8px;
-  padding-right: 8px;
-  border-right: 1px solid #e5e7eb;
+  gap: 3px;
+  margin-right: 12px;
+  padding-right: 12px;
+  border-right: 1px solid #d1d5db;
+  position: relative;
 }
 
 .jodit-toolbar-group:last-child {
@@ -751,232 +785,412 @@ body::-webkit-scrollbar-thumb:hover {
   padding-right: 0;
 }
 
+.jodit-toolbar-group::after {
+  content: "";
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 20px;
+  background: #d1d5db;
+  opacity: 0.5;
+}
+
+.jodit-toolbar-group:last-child::after {
+  display: none;
+}
+
 .jodit-toolbar-button {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border: none;
   background: transparent;
-  border-radius: 4px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
-  opacity: 0.6;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0.7;
+  position: relative;
+  overflow: hidden;
+}
+
+.jodit-toolbar-button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  border-radius: 8px;
 }
 
 .jodit-toolbar-button:hover {
-  background: #e5e7eb;
+  background: rgba(59, 130, 246, 0.1);
   opacity: 1;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.2);
+}
+
+.jodit-toolbar-button:hover::before {
+  opacity: 0.1;
+}
+
+.jodit-toolbar-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
 }
 
 .jodit-toolbar-button:disabled {
   cursor: not-allowed;
-  opacity: 0.4;
+  opacity: 0.3;
 }
 
 .jodit-toolbar-button:disabled:hover {
   background: transparent;
-  opacity: 0.4;
+  opacity: 0.3;
+  transform: none;
+  box-shadow: none;
+}
+
+.jodit-toolbar-button:disabled::before {
+  display: none;
 }
 
 .jodit-icon {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   display: inline-block;
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
+  position: relative;
+  z-index: 1;
+  transition: all 0.2s ease;
 }
 
-/* Icon styles using Unicode symbols and CSS */
+.jodit-toolbar-button:hover .jodit-icon {
+  transform: scale(1.1);
+}
+
+/* Enhanced Icon styles */
 .jodit-icon-bold::before {
   content: "B";
-  font-weight: bold;
-  font-size: 14px;
-  color: #374151;
+  font-weight: 900;
+  font-size: 16px;
+  color: #1f2937;
+  font-family: "Inter", sans-serif;
 }
 
 .jodit-icon-italic::before {
   content: "I";
   font-style: italic;
-  font-size: 14px;
-  color: #374151;
+  font-weight: 600;
+  font-size: 16px;
+  color: #1f2937;
+  font-family: "Inter", sans-serif;
 }
 
 .jodit-icon-underline::before {
   content: "U";
   text-decoration: underline;
-  font-size: 14px;
-  color: #374151;
+  font-weight: 600;
+  font-size: 16px;
+  color: #1f2937;
+  font-family: "Inter", sans-serif;
 }
 
 .jodit-icon-strikethrough::before {
   content: "S";
   text-decoration: line-through;
-  font-size: 14px;
-  color: #374151;
+  font-weight: 600;
+  font-size: 16px;
+  color: #1f2937;
+  font-family: "Inter", sans-serif;
 }
 
 .jodit-icon-ul::before {
   content: "•";
-  font-size: 16px;
-  color: #374151;
+  font-size: 18px;
+  color: #1f2937;
+  font-weight: bold;
 }
 
 .jodit-icon-ol::before {
   content: "1.";
-  font-size: 12px;
-  color: #374151;
+  font-size: 14px;
+  color: #1f2937;
+  font-weight: 600;
 }
 
 .jodit-icon-outdent::before {
   content: "◀";
-  font-size: 12px;
-  color: #374151;
+  font-size: 14px;
+  color: #1f2937;
+  font-weight: bold;
 }
 
 .jodit-icon-indent::before {
   content: "▶";
-  font-size: 12px;
-  color: #374151;
+  font-size: 14px;
+  color: #1f2937;
+  font-weight: bold;
 }
 
 .jodit-icon-align-left::before {
   content: "≡";
-  font-size: 14px;
-  color: #374151;
+  font-size: 16px;
+  color: #1f2937;
+  font-weight: bold;
 }
 
 .jodit-icon-align-center::before {
   content: "≡";
-  font-size: 14px;
-  color: #374151;
+  font-size: 16px;
+  color: #1f2937;
+  font-weight: bold;
 }
 
 .jodit-icon-align-right::before {
   content: "≡";
-  font-size: 14px;
-  color: #374151;
+  font-size: 16px;
+  color: #1f2937;
+  font-weight: bold;
 }
 
 .jodit-icon-justify::before {
   content: "≡";
-  font-size: 14px;
-  color: #374151;
+  font-size: 16px;
+  color: #1f2937;
+  font-weight: bold;
 }
 
 .jodit-icon-font::before {
   content: "A";
-  font-size: 14px;
-  color: #374151;
+  font-size: 16px;
+  color: #1f2937;
+  font-weight: 600;
+  font-family: "Inter", sans-serif;
 }
 
 .jodit-icon-brush::before {
   content: "🎨";
-  font-size: 12px;
+  font-size: 14px;
+  filter: grayscale(0.3);
 }
 
 .jodit-icon-sup::before {
   content: "x²";
-  font-size: 12px;
-  color: #374151;
+  font-size: 14px;
+  color: #1f2937;
+  font-weight: 600;
 }
 
 .jodit-icon-sub::before {
   content: "x₂";
-  font-size: 12px;
-  color: #374151;
+  font-size: 14px;
+  color: #1f2937;
+  font-weight: 600;
 }
 
 .jodit-icon-undo::before {
   content: "↶";
-  font-size: 14px;
-  color: #374151;
+  font-size: 16px;
+  color: #1f2937;
+  font-weight: bold;
 }
 
 .jodit-icon-redo::before {
   content: "↷";
-  font-size: 14px;
-  color: #374151;
+  font-size: 16px;
+  color: #1f2937;
+  font-weight: bold;
 }
 
 .jodit-icon-image::before {
   content: "🖼";
-  font-size: 12px;
+  font-size: 14px;
+  filter: grayscale(0.3);
 }
 
 .jodit-icon-video::before {
   content: "🎥";
-  font-size: 12px;
+  font-size: 14px;
+  filter: grayscale(0.3);
 }
 
 .jodit-icon-table::before {
   content: "⊞";
-  font-size: 14px;
-  color: #374151;
+  font-size: 16px;
+  color: #1f2937;
+  font-weight: bold;
 }
 
 .jodit-icon-link::before {
   content: "🔗";
-  font-size: 12px;
+  font-size: 14px;
+  filter: grayscale(0.3);
 }
 
 .jodit-icon-code::before {
   content: "</>";
-  font-size: 12px;
-  color: #374151;
-  font-family: monospace;
+  font-size: 14px;
+  color: #1f2937;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-weight: 600;
 }
 
 .jodit-icon-hr::before {
   content: "—";
-  font-size: 14px;
-  color: #374151;
+  font-size: 16px;
+  color: #1f2937;
+  font-weight: bold;
 }
 
 .jodit-icon-omega::before {
   content: "Ω";
-  font-size: 14px;
-  color: #374151;
+  font-size: 16px;
+  color: #1f2937;
+  font-weight: bold;
 }
 
 .jodit-icon-search::before {
   content: "🔍";
-  font-size: 12px;
+  font-size: 14px;
+  filter: grayscale(0.3);
 }
 
 .jodit-icon-source::before {
   content: "</>";
-  font-size: 12px;
-  color: #374151;
-  font-family: monospace;
+  font-size: 14px;
+  color: #1f2937;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-weight: 600;
 }
 
 .jodit-editor-textarea {
   width: 100%;
   border: none;
   outline: none;
-  padding: 12px;
-  font-family: inherit;
-  font-size: 14px;
-  line-height: 1.5;
+  padding: 16px 20px;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
   resize: vertical;
   min-height: 200px;
   background: #ffffff;
-  color: #374151;
+  color: #1f2937;
+  transition: all 0.2s ease;
 }
 
 .jodit-editor-textarea::placeholder {
   color: #9ca3af;
+  font-style: italic;
 }
 
 .jodit-editor-textarea:focus {
   outline: none;
+  background: #fefefe;
 }
 
-/* Responsive adjustments */
+/* Character count and status bar */
+.jodit-status-bar {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-top: 1px solid #e2e8f0;
+  padding: 8px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: #6b7280;
+  min-height: 36px;
+  transition: all 0.2s ease;
+}
+
+.jodit-character-count {
+  font-weight: 600;
+  color: #374151;
+  transition: all 0.2s ease;
+  font-family: "Inter", sans-serif;
+}
+
+.jodit-character-count.warning {
+  color: #f59e0b;
+  animation: pulse-warning 2s infinite;
+}
+
+.jodit-character-count.error {
+  color: #ef4444;
+  animation: pulse-error 1s infinite;
+}
+
+.jodit-status-text {
+  font-style: italic;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+@keyframes pulse-warning {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes pulse-error {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Enhanced responsive design */
 @media (max-width: 768px) {
+  .jodit-toolbar {
+    padding: 8px 12px;
+    gap: 4px;
+    min-height: 44px;
+  }
+
+  .jodit-toolbar-group {
+    margin-right: 8px;
+    padding-right: 8px;
+  }
+
+  .jodit-toolbar-button {
+    width: 28px;
+    height: 28px;
+  }
+
+  .jodit-icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  .jodit-editor-textarea {
+    padding: 12px 16px;
+    font-size: 14px;
+    min-height: 180px;
+  }
+
+  .jodit-status-bar {
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
   .jodit-toolbar {
     padding: 6px 8px;
     gap: 2px;
@@ -995,5 +1209,11 @@ body::-webkit-scrollbar-thumb:hover {
   .jodit-icon {
     width: 14px;
     height: 14px;
+  }
+
+  .jodit-editor-textarea {
+    padding: 10px 12px;
+    font-size: 13px;
+    min-height: 160px;
   }
 }
