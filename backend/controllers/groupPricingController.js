@@ -17,8 +17,18 @@ export const getAllGroupPricing = async (req, res) => {
       })
       .sort({ level: 1, createdAt: -1 });
 
-    // Ensure center pricing structures exist for all records
+    // Ensure center pricing structures exist for all records and generate slugs if missing
     const groupPricingWithDefaults = groupPricing.map((pricing) => {
+      // Generate slug if missing
+      if (!pricing.slug && pricing.groupName) {
+        pricing.slug = pricing.groupName
+          .toLowerCase()
+          .replace(/[^a-z0-9\s-]/g, "") // Remove special characters
+          .replace(/\s+/g, "-") // Replace spaces with hyphens
+          .replace(/-+/g, "-") // Replace multiple hyphens with single hyphen
+          .trim("-"); // Remove leading/trailing hyphens
+      }
+
       if (!pricing.pricing.recordedSessionCenter) {
         pricing.pricing.recordedSessionCenter = {
           title: "DIGITAL HUB+ RECORDED SESSION+ CENTER",
