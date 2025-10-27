@@ -753,7 +753,6 @@ export default function EditCourse({ courseId, onBack }) {
             value={form.metaDescription}
             config={joditConfig}
             onChange={debouncedJoditChange("metaDescription")}
-            onBlur={handleJoditChange("metaDescription")}
           />
           <label>Meta Keywords</label>
           <textarea

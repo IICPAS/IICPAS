@@ -81,18 +81,21 @@ export async function generateMetadata({
       : `https://iicpa.in${course.image}`
     : "https://iicpa.in/images/og-default.jpg";
 
-  const metaTitle = `${courseTitle} - IICPA Institute`;
-  const metaDescription = courseDescription;
+  // Use admin meta fields with fallbacks
+  const metaTitle = course.metaTitle || `${courseTitle} - IICPA Institute`;
+  const metaDescription = course.metaDescription || courseDescription;
   const courseUrl = `https://iicpa.in/course/${resolvedParams.courseId}`;
 
   return {
     title: metaTitle,
     description: metaDescription,
-    keywords: `${courseTitle.toLowerCase()}, ${
-      course.category || "accounting"
-    } course, finance training, ${
-      course.level || "professional"
-    } level, course syllabus, course pricing, course enrollment, IICPA Institute`,
+    keywords:
+      course.seoKeywords ||
+      `${courseTitle.toLowerCase()}, ${
+        course.category || "accounting"
+      } course, finance training, ${
+        course.level || "professional"
+      } level, course syllabus, course pricing, course enrollment, IICPA Institute`,
     openGraph: {
       title: metaTitle,
       description: metaDescription,
