@@ -98,9 +98,20 @@ export default function GroupPackagePage({
     const fetchGroup = async () => {
       try {
         setLoading(true);
-        const { data } = await axios.get<GroupPricingResponse>(
-          `${API_BASE}/group-pricing/slug/${slug}`
-        );
+        let data;
+        try {
+          // Try fetching by slug first
+          const response = await axios.get<GroupPricingResponse>(
+            `${API_BASE}/group-pricing/slug/${slug}`
+          );
+          data = response.data;
+        } catch {
+          // If slug fails, try by ID as fallback
+          const response = await axios.get<GroupPricingResponse>(
+            `${API_BASE}/group-pricing/${slug}`
+          );
+          data = response.data;
+        }
         setPkg(data);
       } catch (e: any) {
         setErr(e?.response?.data?.message || "Failed to load package.");
