@@ -32,10 +32,13 @@ const navLinks = [
   { name: "Home", href: "/" },
   { name: "Courses", href: "/course" },
   {
-    name: "Admission Course",
+    name: "Admission Open",
     children: [
       { name: "UG Programs", isHeader: true },
-      { name: "B.Tech (All Specializations)", course: "B.Tech (All Specializations)" },
+      {
+        name: "B.Tech (All Specializations)",
+        course: "B.Tech (All Specializations)",
+      },
       { name: "BBA", course: "BBA" },
       { name: "BCA", course: "BCA" },
       { name: "B.Pharm", course: "B.Pharm" },
@@ -48,7 +51,10 @@ const navLinks = [
       { name: "MBA", course: "MBA" },
       { name: "LLM", course: "LLM" },
       { name: "Ph.D Programs", isHeader: true },
-      { name: "Ph.D (All Specializations)", course: "Ph.D (All Specializations)" },
+      {
+        name: "Ph.D (All Specializations)",
+        course: "Ph.D (All Specializations)",
+      },
     ],
   },
   {
@@ -444,7 +450,7 @@ export default function Header() {
                     </svg>
                   </button>
                   <div className="absolute left-0 mt-2 w-48 bg-white shadow-xl rounded-lg opacity-0 group-hover:opacity-100 transform -translate-y-2 group-hover:translate-y-0 transition-all">
-                    {item.children.map((child) => 
+                    {item.children.map((child) =>
                       child.isHeader ? (
                         <div
                           key={child.name}
@@ -605,7 +611,7 @@ export default function Header() {
                     {item.name}
                   </div>
                   <div className="ml-4 space-y-1">
-                    {item.children.map((child) => 
+                    {item.children.map((child) =>
                       child.isHeader ? (
                         <div
                           key={child.name}
