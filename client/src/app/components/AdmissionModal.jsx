@@ -150,7 +150,7 @@ const AdmissionModal = ({ isOpen, onClose, selectedCourse = "" }) => {
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b">
           <h2 className="text-xl font-semibold text-gray-800">
-            Admission Course
+            Admission Open
           </h2>
           <button
             onClick={handleClose}
