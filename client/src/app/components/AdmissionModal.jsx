@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaTimes, FaCheck, FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import axios from "axios";
@@ -15,20 +15,42 @@ const COURSE_OPTIONS = [
   "GST",
   "Income Tax",
   "TDS",
+  "B.Tech (All Specializations)",
+  "BBA",
+  "BCA",
+  "B.Pharm",
+  "D.Pharm",
+  "LLB",
+  "BA LLB",
+  "BBA LLB",
+  "B.Ed",
+  "MBA",
+  "LLM",
+  "Ph.D (All Specializations)",
   "Other",
 ];
 
-const AdmissionModal = ({ isOpen, onClose }) => {
+const AdmissionModal = ({ isOpen, onClose, selectedCourse = "" }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     phone: "",
     name: "",
     email: "",
-    course: "",
+    course: selectedCourse,
   });
 
   const API = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+
+  // Update course when selectedCourse prop changes
+  useEffect(() => {
+    if (selectedCourse) {
+      setFormData((prev) => ({
+        ...prev,
+        course: selectedCourse,
+      }));
+    }
+  }, [selectedCourse]);
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({
@@ -123,7 +145,7 @@ const AdmissionModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-transparent backdrop-blur-lg bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg w-full max-w-md mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b">
