@@ -31,7 +31,26 @@ const MySwal = withReactContent(Swal);
 const navLinks = [
   { name: "Home", href: "/" },
   { name: "Courses", href: "/course" },
-  { name: "Admission Course", href: "#", isModal: true },
+  {
+    name: "Admission Course",
+    children: [
+      { name: "UG Programs", isHeader: true },
+      { name: "B.Tech (All Specializations)", course: "B.Tech (All Specializations)" },
+      { name: "BBA", course: "BBA" },
+      { name: "BCA", course: "BCA" },
+      { name: "B.Pharm", course: "B.Pharm" },
+      { name: "D.Pharm", course: "D.Pharm" },
+      { name: "LLB", course: "LLB" },
+      { name: "BA LLB", course: "BA LLB" },
+      { name: "BBA LLB", course: "BBA LLB" },
+      { name: "B.Ed", course: "B.Ed" },
+      { name: "PG Programs", isHeader: true },
+      { name: "MBA", course: "MBA" },
+      { name: "LLM", course: "LLM" },
+      { name: "Ph.D Programs", isHeader: true },
+      { name: "Ph.D (All Specializations)", course: "Ph.D (All Specializations)" },
+    ],
+  },
   {
     name: "Placement",
     children: [
@@ -73,6 +92,7 @@ export default function Header() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [showAdmissionModal, setShowAdmissionModal] = useState(false);
+  const [selectedAdmissionCourse, setSelectedAdmissionCourse] = useState("");
 
   const API = process.env.NEXT_PUBLIC_API_URL;
   console.log("API URL:", API);
@@ -381,6 +401,11 @@ export default function Header() {
     setShowCheckoutModal(true);
   };
 
+  const handleAdmissionClick = (course) => {
+    setSelectedAdmissionCourse(course);
+    setShowAdmissionModal(true);
+  };
+
   return (
     <>
       <AlertMarquee />
@@ -418,26 +443,35 @@ export default function Header() {
                       />
                     </svg>
                   </button>
-                  <div className="absolute left-0 mt-2 w-40 bg-white shadow-xl rounded-lg opacity-0 group-hover:opacity-100 transform -translate-y-2 group-hover:translate-y-0 transition-all">
-                    {item.children.map((child) => (
-                      <Link
-                        key={child.name}
-                        href={child.href}
-                        className="block px-3 py-2 text-xs hover:bg-green-50"
-                      >
-                        {child.name}
-                      </Link>
-                    ))}
+                  <div className="absolute left-0 mt-2 w-48 bg-white shadow-xl rounded-lg opacity-0 group-hover:opacity-100 transform -translate-y-2 group-hover:translate-y-0 transition-all">
+                    {item.children.map((child) => 
+                      child.isHeader ? (
+                        <div
+                          key={child.name}
+                          className="px-3 py-2 text-xs font-bold text-gray-700 bg-gray-50 cursor-default"
+                        >
+                          {child.name}
+                        </div>
+                      ) : child.course ? (
+                        <button
+                          key={child.name}
+                          onClick={() => handleAdmissionClick(child.course)}
+                          className="block w-full text-left px-3 py-2 text-xs hover:bg-green-50"
+                        >
+                          {child.name}
+                        </button>
+                      ) : (
+                        <Link
+                          key={child.name}
+                          href={child.href}
+                          className="block px-3 py-2 text-xs hover:bg-green-50"
+                        >
+                          {child.name}
+                        </Link>
+                      )
+                    )}
                   </div>
                 </div>
-              ) : item.isModal ? (
-                <button
-                  key={item.name}
-                  onClick={() => setShowAdmissionModal(true)}
-                  className="py-1.5 px-2 hover:text-green-600 hover:bg-green-50 rounded-md text-sm"
-                >
-                  {item.name}
-                </button>
               ) : (
                 <Link
                   key={item.name}
@@ -571,29 +605,38 @@ export default function Header() {
                     {item.name}
                   </div>
                   <div className="ml-4 space-y-1">
-                    {item.children.map((child) => (
-                      <Link
-                        key={child.name}
-                        href={child.href}
-                        onClick={() => setDrawerOpen(false)}
-                        className="mobile-nav-item block text-xs text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-md"
-                      >
-                        {child.name}
-                      </Link>
-                    ))}
+                    {item.children.map((child) => 
+                      child.isHeader ? (
+                        <div
+                          key={child.name}
+                          className="px-3 py-2 text-xs font-bold text-gray-700 bg-gray-50 cursor-default rounded-md"
+                        >
+                          {child.name}
+                        </div>
+                      ) : child.course ? (
+                        <button
+                          key={child.name}
+                          onClick={() => {
+                            setDrawerOpen(false);
+                            handleAdmissionClick(child.course);
+                          }}
+                          className="mobile-nav-item block text-xs text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-md py-2 px-3 w-full text-left"
+                        >
+                          {child.name}
+                        </button>
+                      ) : (
+                        <Link
+                          key={child.name}
+                          href={child.href}
+                          onClick={() => setDrawerOpen(false)}
+                          className="mobile-nav-item block text-xs text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-md"
+                        >
+                          {child.name}
+                        </Link>
+                      )
+                    )}
                   </div>
                 </div>
-              ) : item.isModal ? (
-                <button
-                  key={item.name}
-                  onClick={() => {
-                    setDrawerOpen(false);
-                    setShowAdmissionModal(true);
-                  }}
-                  className="mobile-nav-item block text-xs text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-md py-2 px-3 mb-1 w-full text-left"
-                >
-                  {item.name}
-                </button>
               ) : (
                 <Link
                   key={item.name}
@@ -782,7 +825,11 @@ export default function Header() {
       {/* Admission Modal */}
       <AdmissionModal
         isOpen={showAdmissionModal}
-        onClose={() => setShowAdmissionModal(false)}
+        onClose={() => {
+          setShowAdmissionModal(false);
+          setSelectedAdmissionCourse("");
+        }}
+        selectedCourse={selectedAdmissionCourse}
       />
     </>
   );
