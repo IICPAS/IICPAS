@@ -6,7 +6,8 @@ const LeadSchema = new mongoose.Schema(
     name: { type: String, required: true },
     email: { type: String, required: true },
     phone: { type: String, required: true },
-    message: { type: String, required: true },
+    message: { type: String, required: false }, // Made optional for admission course
+    course: { type: String, required: false }, // Added course field for admission leads
     type: { type: String, required: true }, // string field for category
     assignedTo: { type: String, default: null }, // assigned staff member
     scheduledDate: { type: Date, default: null }, // scheduled follow-up date
