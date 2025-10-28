@@ -69,6 +69,7 @@ import {
   FaUser,
   FaRobot,
   FaChevronLeft,
+  FaClipboardList,
 } from "react-icons/fa";
 import CompanyTab from "./CompanyTab";
 import CourseArea from "./CourseBuilder";
@@ -106,6 +107,7 @@ import EditDisclaimerPolicyTab from "./EditDisclaimerPolicyTab";
 import EditIICPAReviewTab from "./EditIICPAReviewTab";
 import TransactionsTab from "./TransactionsTab";
 import IndividualRequestsTab from "./IndividualRequestsTab";
+import AdmissionManagementTab from "./AdmissionManagementTab";
 
 // All available modules with their permissions (unused - replaced by NAVIGATION_GROUPS)
 /*
@@ -357,6 +359,18 @@ const NAVIGATION_GROUPS = [
       { id: "support", label: "Support Requests", icon: <FaEnvelope /> },
     ],
   },
+  {
+    id: "admission-management",
+    label: "Admission Management",
+    icon: <FaUserGraduate />,
+    items: [
+      {
+        id: "admission-leads",
+        label: "Admission Leads",
+        icon: <FaClipboardList />,
+      },
+    ],
+  },
 ];
 
 function AdminDashboardContent() {
@@ -373,6 +387,7 @@ function AdminDashboardContent() {
       "website-settings": false,
       communication: false,
       "system-management": false,
+      "admission-management": false,
     }
   );
   const router = useRouter();
@@ -859,6 +874,8 @@ function AdminDashboardContent() {
           <AdminProfileTab />
         ) : activeTab === "individual-requests" ? (
           <IndividualRequestsTab />
+        ) : activeTab === "admission-leads" ? (
+          <AdmissionManagementTab />
         ) : activeTab === "" ? (
           <div>
             {/* Welcome Message */}

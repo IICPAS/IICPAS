@@ -24,12 +24,14 @@ import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import AlertMarquee from "./AlertMarquee";
 import CheckoutModal from "./CheckoutModal";
+import AdmissionModal from "./AdmissionModal";
 
 const MySwal = withReactContent(Swal);
 
 const navLinks = [
   { name: "Home", href: "/" },
   { name: "Courses", href: "/course" },
+  { name: "Admission Course", href: "#", isModal: true },
   {
     name: "Placement",
     children: [
@@ -70,6 +72,7 @@ export default function Header() {
   const [isClient, setIsClient] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [showAdmissionModal, setShowAdmissionModal] = useState(false);
 
   const API = process.env.NEXT_PUBLIC_API_URL;
   console.log("API URL:", API);
@@ -427,6 +430,14 @@ export default function Header() {
                     ))}
                   </div>
                 </div>
+              ) : item.isModal ? (
+                <button
+                  key={item.name}
+                  onClick={() => setShowAdmissionModal(true)}
+                  className="py-1.5 px-2 hover:text-green-600 hover:bg-green-50 rounded-md text-sm"
+                >
+                  {item.name}
+                </button>
               ) : (
                 <Link
                   key={item.name}
@@ -572,6 +583,17 @@ export default function Header() {
                     ))}
                   </div>
                 </div>
+              ) : item.isModal ? (
+                <button
+                  key={item.name}
+                  onClick={() => {
+                    setDrawerOpen(false);
+                    setShowAdmissionModal(true);
+                  }}
+                  className="mobile-nav-item block text-xs text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-md py-2 px-3 mb-1 w-full text-left"
+                >
+                  {item.name}
+                </button>
               ) : (
                 <Link
                   key={item.name}
@@ -756,6 +778,12 @@ export default function Header() {
           onCartUpdate={fetchStudentAndCart}
         />
       )}
+
+      {/* Admission Modal */}
+      <AdmissionModal
+        isOpen={showAdmissionModal}
+        onClose={() => setShowAdmissionModal(false)}
+      />
     </>
   );
 }
