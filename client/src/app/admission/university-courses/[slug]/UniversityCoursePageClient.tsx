@@ -6,6 +6,7 @@ import CourseAboutSection from "../../../components/UniversityCourse/CourseAbout
 import CourseEligibilitySection from "../../../components/UniversityCourse/CourseEligibilitySection";
 import CourseDescriptionSection from "../../../components/UniversityCourse/CourseDescriptionSection";
 import CourseContactSection from "../../../components/UniversityCourse/CourseContactSection";
+import InlineAdmissionForm from "../../../components/InlineAdmissionForm";
 import AdmissionModal from "../../../components/AdmissionModal";
 import { UniversityCourse } from "../../../../data/universityCourses";
 
@@ -18,14 +19,14 @@ export default function UniversityCoursePageClient({
 }: UniversityCoursePageClientProps) {
   const [showAdmissionModal, setShowAdmissionModal] = useState(false);
 
-  // Auto-open admission modal on page load
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowAdmissionModal(true);
-    }, 1000); // Small delay to ensure page is loaded
+  // Modal disabled - using inline form instead
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     setShowAdmissionModal(true);
+  //   }, 1000); // Small delay to ensure page is loaded
 
-    return () => clearTimeout(timer);
-  }, []);
+  //   return () => clearTimeout(timer);
+  // }, []);
 
   const handleCloseModal = () => {
     setShowAdmissionModal(false);
@@ -59,6 +60,13 @@ export default function UniversityCoursePageClient({
         careerProspects={course.careerProspects}
         highlights={course.highlights}
       />
+
+      {/* Inline Admission Form */}
+      <div className="bg-gray-50 py-12">
+        <div className="container mx-auto px-4">
+          <InlineAdmissionForm selectedCourse={course.name} />
+        </div>
+      </div>
 
       {/* Contact Section */}
       <CourseContactSection courseName={course.name} />
