@@ -5,6 +5,17 @@ import toast from "react-hot-toast";
 
 export default function CopyProtection() {
   useEffect(() => {
+    // Check if we're on an admin dashboard page
+    const isAdminDashboard = () => {
+      if (typeof window === "undefined") return false;
+      return window.location.pathname.includes("/admin-dashboard");
+    };
+
+    // Skip protection if on admin dashboard
+    if (isAdminDashboard()) {
+      return;
+    }
+
     // Function to show protection message
     const showProtectionMessage = () => {
       toast.error("Content is protected and cannot be copied.", {
