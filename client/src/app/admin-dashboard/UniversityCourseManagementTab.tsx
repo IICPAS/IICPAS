@@ -5,6 +5,7 @@ import axios from "axios";
 import { showSuccess, showError } from "@/utils/sweetAlert";
 import QuillEditor from "@/app/components/QuillEditor";
 import { FaSave, FaPlus, FaTrash, FaArrowLeft } from "react-icons/fa";
+import { universityCourses, getCourseBySlug } from "@/data/universityCourses";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 
@@ -80,13 +81,68 @@ export default function UniversityCourseManagementTab() {
     try {
       setLoading(true);
       const res = await axios.get(`${API_BASE}/university-courses`);
-      setCourses(res.data);
-      if (res.data.length > 0 && !selectedCourseSlug) {
-        setSelectedCourseSlug(res.data[0].slug);
+      const dbCourses = res.data || [];
+
+      // Create a map of database courses by slug for quick lookup
+      const dbCoursesMap = new Map(
+        dbCourses.map((c: UniversityCourse) => [c.slug, c])
+      );
+
+      // Merge default courses with database courses
+      // If a course exists in database, use database version; otherwise use default
+      const mergedCourses = universityCourses.map((defaultCourse) => {
+        const dbCourse = dbCoursesMap.get(defaultCourse.slug);
+        if (dbCourse) {
+          // Use database course (has _id, may have been modified)
+          return dbCourse;
+        }
+        // Use default course (no _id, from static data)
+        return {
+          ...defaultCourse,
+          contactSection: {
+            phone: "",
+            email: "",
+            address: "",
+            showForm: true,
+          },
+          isActive: true,
+        } as UniversityCourse;
+      });
+
+      // Add any database courses that aren't in defaults (for custom courses)
+      dbCourses.forEach((dbCourse: UniversityCourse) => {
+        const defaultCourseExists = universityCourses.some(
+          (c) => c.slug === dbCourse.slug
+        );
+        if (
+          !defaultCourseExists &&
+          !mergedCourses.find((c) => c.slug === dbCourse.slug)
+        ) {
+          mergedCourses.push(dbCourse);
+        }
+      });
+
+      setCourses(mergedCourses);
+      if (mergedCourses.length > 0 && !selectedCourseSlug) {
+        setSelectedCourseSlug(mergedCourses[0].slug);
       }
     } catch (error) {
       console.error("Error fetching courses:", error);
-      showError("Error!", "Failed to fetch university courses");
+      // On error, use default courses as fallback
+      const fallbackCourses = universityCourses.map((course) => ({
+        ...course,
+        contactSection: {
+          phone: "",
+          email: "",
+          address: "",
+          showForm: true,
+        },
+        isActive: true,
+      })) as UniversityCourse[];
+      setCourses(fallbackCourses);
+      if (fallbackCourses.length > 0 && !selectedCourseSlug) {
+        setSelectedCourseSlug(fallbackCourses[0].slug);
+      }
     } finally {
       setLoading(false);
     }
@@ -96,32 +152,83 @@ export default function UniversityCourseManagementTab() {
   const fetchCourse = async (slug: string) => {
     try {
       setLoading(true);
-      const res = await axios.get(`${API_BASE}/university-courses/${slug}`);
-      const course = res.data;
-      setSelectedCourse(course);
-      setFormData({
-        slug: course.slug || "",
-        name: course.name || "",
-        category: course.category || "UG Programs",
-        about: course.about || "",
-        eligibility: course.eligibility || [],
-        highlights: course.highlights || [],
-        description: course.description || "",
-        careerProspects: course.careerProspects || [],
-        duration: course.duration || "",
-        contactSection: {
-          phone: course.contactSection?.phone || "",
-          email: course.contactSection?.email || "",
-          address: course.contactSection?.address || "",
-          showForm: course.contactSection?.showForm !== false,
-        },
-        seo: {
-          title: course.seo?.title || "",
-          description: course.seo?.description || "",
-          keywords: course.seo?.keywords || "",
-        },
-        isActive: course.isActive !== false,
-      });
+
+      // Try to fetch from database first
+      try {
+        const res = await axios.get(`${API_BASE}/university-courses/${slug}`);
+        const course = res.data;
+        setSelectedCourse(course);
+        setFormData({
+          slug: course.slug || "",
+          name: course.name || "",
+          category: course.category || "UG Programs",
+          about: course.about || "",
+          eligibility: course.eligibility || [],
+          highlights: course.highlights || [],
+          description: course.description || "",
+          careerProspects: course.careerProspects || [],
+          duration: course.duration || "",
+          contactSection: {
+            phone: course.contactSection?.phone || "",
+            email: course.contactSection?.email || "",
+            address: course.contactSection?.address || "",
+            showForm: course.contactSection?.showForm !== false,
+          },
+          seo: {
+            title: course.seo?.title || "",
+            description: course.seo?.description || "",
+            keywords: course.seo?.keywords || "",
+          },
+          isActive: course.isActive !== false,
+        });
+        return;
+      } catch (apiError: any) {
+        // If course not found in database (404), try to load from default courses
+        if (apiError.response?.status === 404) {
+          const defaultCourse = getCourseBySlug(slug);
+          if (defaultCourse) {
+            // Use default course data
+            const course = {
+              ...defaultCourse,
+              contactSection: {
+                phone: "",
+                email: "",
+                address: "",
+                showForm: true,
+              },
+              isActive: true,
+            } as UniversityCourse;
+
+            setSelectedCourse(course);
+            setFormData({
+              slug: course.slug || "",
+              name: course.name || "",
+              category: course.category || "UG Programs",
+              about: course.about || "",
+              eligibility: course.eligibility || [],
+              highlights: course.highlights || [],
+              description: course.description || "",
+              careerProspects: course.careerProspects || [],
+              duration: course.duration || "",
+              contactSection: {
+                phone: course.contactSection?.phone || "",
+                email: course.contactSection?.email || "",
+                address: course.contactSection?.address || "",
+                showForm: course.contactSection?.showForm !== false,
+              },
+              seo: {
+                title: course.seo?.title || "",
+                description: course.seo?.description || "",
+                keywords: course.seo?.keywords || "",
+              },
+              isActive: course.isActive !== false,
+            });
+            return;
+          }
+        }
+        // Re-throw if it's not a 404 or course not found in defaults
+        throw apiError;
+      }
     } catch (error) {
       console.error("Error fetching course:", error);
       showError("Error!", "Failed to fetch course details");
