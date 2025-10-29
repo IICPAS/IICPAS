@@ -82,6 +82,9 @@ import contactInfoRoutes from "./routes/contactInfoRoutes.js";
 //Contact Form Routes
 import contactFormRoutes from "./routes/contactFormRoutes.js";
 
+//University Course Routes
+import universityCourseRoutes from "./routes/universityCourseRoutes.js";
+
 //App Configuration
 dotenv.config();
 connectDB();
@@ -272,6 +275,9 @@ app.use("/api/v1/course-ratings", courseRatingRoutes);
 app.use("/api/course-levels", courseLevelsRoutes);
 app.use("/api/group-pricing", groupPricingRoutes);
 app.use("/api/special-offers", specialOfferRoutes);
+
+//University Course Routes
+app.use("/api/university-courses", universityCourseRoutes);
 
 // Create HTTP server and Socket.io
 const server = createServer(app);
