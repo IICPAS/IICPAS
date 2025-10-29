@@ -615,7 +615,7 @@ function AdminDashboardContent() {
   );
 
   return (
-    <div className="bg-gray-50">
+    <div className="bg-gray-50 admin-dashboard" data-admin-dashboard>
       {/* Sidebar - Desktop: fixed position, scrollable, hidden scrollbar */}
       <aside
         className={`hidden lg:block ${
