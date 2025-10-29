@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { showSuccess, showError } from "@/utils/sweetAlert";
-import QuillEditor from "@/app/components/QuillEditor";
 import { FaSave, FaPlus, FaTrash, FaArrowLeft } from "react-icons/fa";
 import { universityCourses, getCourseBySlug } from "@/data/universityCourses";
 
@@ -433,13 +432,14 @@ export default function UniversityCourseManagementTab() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   About Content:
                 </label>
-                <QuillEditor
+                <textarea
                   value={formData.about}
-                  onChange={(value) =>
-                    setFormData((prev) => ({ ...prev, about: value }))
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, about: e.target.value }))
                   }
+                  rows={8}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Enter about content for the course..."
-                  height={250}
                 />
               </div>
               <div className="mt-4">
@@ -628,13 +628,17 @@ export default function UniversityCourseManagementTab() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Course Description:
                 </label>
-                <QuillEditor
+                <textarea
                   value={formData.description}
-                  onChange={(value) =>
-                    setFormData((prev) => ({ ...prev, description: value }))
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
                   }
+                  rows={8}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Enter course description..."
-                  height={250}
                 />
               </div>
 
