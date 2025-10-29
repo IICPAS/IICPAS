@@ -32,28 +32,28 @@ const navLinks = [
   { name: "Home", href: "/" },
   { name: "Courses", href: "/course" },
   {
-    name: "Admission Open",
+    name: "University Courses",
     children: [
       { name: "UG Programs", isHeader: true },
       {
         name: "B.Tech (All Specializations)",
-        course: "B.Tech (All Specializations)",
+        href: "/admission/university-courses/b-tech-all-specializations",
       },
-      { name: "BBA", course: "BBA" },
-      { name: "BCA", course: "BCA" },
-      { name: "B.Pharm", course: "B.Pharm" },
-      { name: "D.Pharm", course: "D.Pharm" },
-      { name: "LLB", course: "LLB" },
-      { name: "BA LLB", course: "BA LLB" },
-      { name: "BBA LLB", course: "BBA LLB" },
-      { name: "B.Ed", course: "B.Ed" },
+      { name: "BBA", href: "/admission/university-courses/bba" },
+      { name: "BCA", href: "/admission/university-courses/bca" },
+      { name: "B.Pharm", href: "/admission/university-courses/b-pharm" },
+      { name: "D.Pharm", href: "/admission/university-courses/d-pharm" },
+      { name: "LLB", href: "/admission/university-courses/llb" },
+      { name: "BA LLB", href: "/admission/university-courses/ba-llb" },
+      { name: "BBA LLB", href: "/admission/university-courses/bba-llb" },
+      { name: "B.Ed", href: "/admission/university-courses/b-ed" },
       { name: "PG Programs", isHeader: true },
-      { name: "MBA", course: "MBA" },
-      { name: "LLM", course: "LLM" },
+      { name: "MBA", href: "/admission/university-courses/mba" },
+      { name: "LLM", href: "/admission/university-courses/llm" },
       { name: "Ph.D Programs", isHeader: true },
       {
         name: "Ph.D (All Specializations)",
-        course: "Ph.D (All Specializations)",
+        href: "/admission/university-courses/phd-all-specializations",
       },
     ],
   },
@@ -458,14 +458,14 @@ export default function Header() {
                         >
                           {child.name}
                         </div>
-                      ) : child.course ? (
-                        <button
+                      ) : child.href ? (
+                        <Link
                           key={child.name}
-                          onClick={() => handleAdmissionClick(child.course)}
-                          className="block w-full text-left px-3 py-2 text-xs hover:bg-green-50"
+                          href={child.href}
+                          className="block px-3 py-2 text-xs hover:bg-green-50"
                         >
                           {child.name}
-                        </button>
+                        </Link>
                       ) : (
                         <Link
                           key={child.name}
@@ -619,17 +619,15 @@ export default function Header() {
                         >
                           {child.name}
                         </div>
-                      ) : child.course ? (
-                        <button
+                      ) : child.href ? (
+                        <Link
                           key={child.name}
-                          onClick={() => {
-                            setDrawerOpen(false);
-                            handleAdmissionClick(child.course);
-                          }}
+                          href={child.href}
+                          onClick={() => setDrawerOpen(false)}
                           className="mobile-nav-item block text-xs text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-md py-2 px-3 w-full text-left"
                         >
                           {child.name}
-                        </button>
+                        </Link>
                       ) : (
                         <Link
                           key={child.name}
