@@ -9,6 +9,16 @@ import { universityCourses, getCourseBySlug } from "@/data/universityCourses";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 
+// Helper function to get auth headers
+const getAuthHeaders = () => {
+  const token = localStorage.getItem("adminToken");
+  return {
+    headers: {
+      Authorization: token ? `Bearer ${token}` : "",
+    },
+  };
+};
+
 interface UniversityCourse {
   _id?: string;
   slug: string;
@@ -254,12 +264,17 @@ export default function UniversityCourseManagementTab() {
         // Update existing course
         await axios.put(
           `${API_BASE}/university-courses/${selectedCourseSlug}`,
-          formData
+          formData,
+          getAuthHeaders()
         );
         showSuccess("Updated!", "Course updated successfully");
       } else {
         // Create new course
-        await axios.post(`${API_BASE}/university-courses`, formData);
+        await axios.post(
+          `${API_BASE}/university-courses`,
+          formData,
+          getAuthHeaders()
+        );
         showSuccess("Created!", "Course created successfully");
       }
       await fetchCourses();
