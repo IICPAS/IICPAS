@@ -4,10 +4,13 @@ import Header from "../../../components/Header";
 import Footer from "../../../components/Footer";
 import UniversityCoursePageClient from "./UniversityCoursePageClient";
 import {
-  universityCourses,
   getCourseBySlug,
   getAllCourseSlugs,
 } from "../../../../data/universityCourses";
+import {
+  getUniversityCourseBySlug,
+  getAllCourseSlugs as getApiCourseSlugs,
+} from "../../../../services/universityCourses";
 
 interface UniversityCoursePageProps {
   params: {
@@ -19,7 +22,18 @@ interface UniversityCoursePageProps {
 export async function generateMetadata({
   params,
 }: UniversityCoursePageProps): Promise<Metadata> {
-  const course = getCourseBySlug(params.slug);
+  // Try to fetch from API first, fallback to static data
+  let course = null;
+  try {
+    course = await getUniversityCourseBySlug(params.slug);
+  } catch (error) {
+    console.error("Error fetching course from API:", error);
+  }
+
+  // Fallback to static data if API fails
+  if (!course) {
+    course = getCourseBySlug(params.slug);
+  }
 
   if (!course) {
     return {
@@ -62,7 +76,18 @@ export async function generateMetadata({
 
 // Generate static params for all courses
 export async function generateStaticParams() {
-  const slugs = getAllCourseSlugs();
+  // Try to fetch from API first, fallback to static data
+  let slugs: string[] = [];
+  try {
+    slugs = await getApiCourseSlugs();
+  } catch (error) {
+    console.error("Error fetching course slugs from API:", error);
+  }
+
+  // Fallback to static data if API fails or returns empty
+  if (slugs.length === 0) {
+    slugs = getAllCourseSlugs();
+  }
 
   return slugs.map((slug) => ({
     slug: slug,
@@ -70,10 +95,21 @@ export async function generateStaticParams() {
 }
 
 // Main page component
-export default function UniversityCoursePage({
+export default async function UniversityCoursePage({
   params,
 }: UniversityCoursePageProps) {
-  const course = getCourseBySlug(params.slug);
+  // Try to fetch from API first, fallback to static data
+  let course = null;
+  try {
+    course = await getUniversityCourseBySlug(params.slug);
+  } catch (error) {
+    console.error("Error fetching course from API:", error);
+  }
+
+  // Fallback to static data if API fails
+  if (!course) {
+    course = getCourseBySlug(params.slug);
+  }
 
   if (!course) {
     notFound();

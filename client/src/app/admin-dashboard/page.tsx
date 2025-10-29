@@ -70,6 +70,7 @@ import {
   FaRobot,
   FaChevronLeft,
   FaClipboardList,
+  FaGraduationCap,
 } from "react-icons/fa";
 import CompanyTab from "./CompanyTab";
 import CourseArea from "./CourseBuilder";
@@ -108,6 +109,7 @@ import EditIICPAReviewTab from "./EditIICPAReviewTab";
 import TransactionsTab from "./TransactionsTab";
 import IndividualRequestsTab from "./IndividualRequestsTab";
 import AdmissionManagementTab from "./AdmissionManagementTab";
+import UniversityCourseManagementTab from "./UniversityCourseManagementTab";
 
 // All available modules with their permissions (unused - replaced by NAVIGATION_GROUPS)
 /*
@@ -368,6 +370,11 @@ const NAVIGATION_GROUPS = [
         id: "admission-leads",
         label: "Admission Leads",
         icon: <FaClipboardList />,
+      },
+      {
+        id: "university-course-management",
+        label: "University Course Management",
+        icon: <FaGraduationCap />,
       },
     ],
   },
@@ -876,6 +883,8 @@ function AdminDashboardContent() {
           <IndividualRequestsTab />
         ) : activeTab === "admission-leads" ? (
           <AdmissionManagementTab />
+        ) : activeTab === "university-course-management" ? (
+          <UniversityCourseManagementTab />
         ) : activeTab === "" ? (
           <div>
             {/* Welcome Message */}
