@@ -11,7 +11,8 @@
     "create-admin-direct": "node scripts/createAdminDirect.js",
     "create-admin-db": "node scripts/createAdminDatabase.js",
     "admin-setup": "node scripts/adminSetup.js",
-    "test-admin-endpoint": "node scripts/testAdminEndpoint.js"
+    "test-admin-endpoint": "node scripts/testAdminEndpoint.js",
+    "seed-university-courses": "node scripts/seed-university-courses.js"
   },
   "keywords": [],
   "author": "",
