@@ -48,6 +48,7 @@ export async function generateMetadata({
     keywords: course.seo.keywords,
     openGraph: {
       title: course.seo.title,
+
       description: course.seo.description,
       url: `https://iicpa.in/admission/university-courses/${params.slug}`,
       siteName: "IICPA Institute",
