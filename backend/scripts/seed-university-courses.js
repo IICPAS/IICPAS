@@ -150,12 +150,12 @@ const universityCoursesData = [
   },
   {
     slug: "b-pharm",
-    name: "B.Pharm",
+    name: "B.Pharma",
     category: "UG Programs",
     about:
-      "Bachelor of Pharmacy (B.Pharm) is a professional undergraduate program that prepares students for careers in pharmaceutical sciences, drug development, and healthcare. Our B.Pharm program combines theoretical knowledge with practical training in pharmaceutical sciences.",
+      "Bachelor of Pharmacy (B.Pharma) is a professional undergraduate program that prepares students for careers in pharmaceutical sciences, drug development, and healthcare. Our B.Pharma program combines theoretical knowledge with practical training in pharmaceutical sciences.",
     description:
-      "The B.Pharm curriculum covers pharmaceutical chemistry, pharmacology, pharmaceutics, pharmacognosy, and pharmaceutical analysis. Students gain hands-on experience in drug formulation, quality control, and regulatory affairs.",
+      "The B.Pharma curriculum covers pharmaceutical chemistry, pharmacology, pharmaceutics, pharmacognosy, and pharmaceutical analysis. Students gain hands-on experience in drug formulation, quality control, and regulatory affairs.",
     eligibility: [
       "10+2 with Physics, Chemistry, and Biology/Mathematics",
       "Minimum 50% aggregate marks",
@@ -187,22 +187,22 @@ const universityCoursesData = [
       showForm: true,
     },
     seo: {
-      title: "B.Pharm - Bachelor of Pharmacy | IICPA Institute",
+      title: "B.Pharma - Bachelor of Pharmacy | IICPA Institute",
       description:
-        "Pursue B.Pharm degree with comprehensive pharmaceutical education, laboratory training, and industry exposure. Prepare for pharmacy and healthcare careers.",
+        "Pursue B.Pharma degree with comprehensive pharmaceutical education, laboratory training, and industry exposure. Prepare for pharmacy and healthcare careers.",
       keywords:
-        "B.Pharm, pharmacy course, pharmaceutical sciences, drug development, healthcare education",
+        "B.Pharma, pharmacy course, pharmaceutical sciences, drug development, healthcare education",
     },
     isActive: true,
   },
   {
     slug: "d-pharm",
-    name: "D.Pharm",
+    name: "D.Pharma",
     category: "UG Programs",
     about:
-      "Diploma in Pharmacy (D.Pharm) is a two-year diploma program that provides foundational knowledge in pharmaceutical sciences and prepares students for entry-level positions in the pharmaceutical industry and healthcare sector.",
+      "Diploma in Pharmacy (D.Pharma) is a two-year diploma program that provides foundational knowledge in pharmaceutical sciences and prepares students for entry-level positions in the pharmaceutical industry and healthcare sector.",
     description:
-      "The D.Pharm program covers basic pharmaceutical subjects including pharmaceutical chemistry, pharmacology, pharmaceutics, and pharmacy practice. Students learn about drug dispensing, patient counseling, and pharmacy management.",
+      "The D.Pharma program covers basic pharmaceutical subjects including pharmaceutical chemistry, pharmacology, pharmaceutics, and pharmacy practice. Students learn about drug dispensing, patient counseling, and pharmacy management.",
     eligibility: [
       "10+2 with Physics, Chemistry, and Biology/Mathematics",
       "Minimum 50% aggregate marks",
@@ -233,11 +233,11 @@ const universityCoursesData = [
       showForm: true,
     },
     seo: {
-      title: "D.Pharm - Diploma in Pharmacy | IICPA Institute",
+      title: "D.Pharma - Diploma in Pharmacy | IICPA Institute",
       description:
-        "Enroll in D.Pharm diploma program for foundational pharmaceutical education. Learn drug dispensing, patient care, and pharmacy management skills.",
+        "Enroll in D.Pharma diploma program for foundational pharmaceutical education. Learn drug dispensing, patient care, and pharmacy management skills.",
       keywords:
-        "D.Pharm, diploma pharmacy, pharmaceutical diploma, pharmacy technician, drug dispensing",
+        "D.Pharma, diploma pharmacy, pharmaceutical diploma, pharmacy technician, drug dispensing",
     },
     isActive: true,
   },
