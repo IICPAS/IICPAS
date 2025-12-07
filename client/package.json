@@ -24,7 +24,7 @@
     "jspdf": "^3.0.3",
     "lightningcss": "^1.30.1",
     "lucide-react": "^0.525.0",
-    "next": "15.4.1",
+    "next": "^15.4.8",
     "pg-sdk-node": "https://phonepe.mycloudrepo.io/public/repositories/phonepe-pg-sdk-node/releases/v2/phonepe-pg-sdk-node.tgz",
     "react": "19.1.0",
     "react-calendar": "^6.0.0",
