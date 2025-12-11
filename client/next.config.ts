@@ -1,17 +1,32 @@
 // next.config.js
 const nextConfig = {
   images: {
-    domains: [
-      "randomuser.me",
-      "localhost",
-      "iicpa.in",
-      "api.iicpa.in",
-      "media.istockphoto.com",
-      "images.unsplash.com",
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "randomuser.me",
+      },
+      {
+        protocol: "http",
+        hostname: "localhost",
+      },
+      {
+        protocol: "https",
+        hostname: "iicpa.in",
+      },
+      {
+        protocol: "https",
+        hostname: "api.iicpa.in",
+      },
+      {
+        protocol: "https",
+        hostname: "media.istockphoto.com",
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
     ],
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
   },
   typescript: {
     ignoreBuildErrors: true,

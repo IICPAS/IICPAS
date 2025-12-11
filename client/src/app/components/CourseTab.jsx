@@ -7,7 +7,6 @@ import {
   PlayArrow,
   Visibility,
   Edit,
-  Continue,
   Book,
   Assignment,
   Science,
