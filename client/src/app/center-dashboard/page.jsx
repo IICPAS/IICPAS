@@ -122,7 +122,6 @@ export default function CenterDashboard() {
     const checkAuth = async () => {
       try {
         console.log("Checking authentication...");
-        console.log("API URL:", process.env.NEXT_PUBLIC_API_URL);
 
         if (!process.env.NEXT_PUBLIC_API_URL) {
           console.error("API URL not configured");

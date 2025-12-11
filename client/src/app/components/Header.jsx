@@ -101,7 +101,6 @@ export default function Header() {
   const [selectedAdmissionCourse, setSelectedAdmissionCourse] = useState("");
 
   const API = process.env.NEXT_PUBLIC_API_URL;
-  console.log("API URL:", API);
 
   const isDashboardPage =
     pathname.includes("-dashboard") || pathname.includes("/dashboard");

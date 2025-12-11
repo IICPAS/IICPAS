@@ -517,6 +517,9 @@ export default function SearchCenter() {
                         src={center.image}
                         alt={center.name}
                         className="w-full h-48 object-cover rounded-xl"
+                        onError={(e) => {
+                          e.target.src = "/images/college.jpg";
+                        }}
                       />
                       <div className="absolute top-4 right-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
                         {center.rating} ⭐

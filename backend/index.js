@@ -7,6 +7,7 @@ import collegeRoutes from "./routes/collegeRoutes.js";
 import cookieParser from "cookie-parser";
 import companyRoutes from "./routes/CompanyRoutes.js";
 import cors from "cors";
+import rateLimit from "express-rate-limit";
 import contactRoutesOld from "./routes/contactRoutes.js";
 import connectDB from "./config/db.js";
 import studentRoutes from "./routes/studentRoutes.js";
@@ -128,6 +129,18 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+// Rate limiting: 10 requests per minute
+const limiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 10, // limit each IP to 10 requests per windowMs
+  message: "Too many requests from this IP, please try again later.",
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+
+// Apply rate limiting to all routes
+app.use(limiter);
 
 // Routes
 app.use("/api/college", collegeRoutes);

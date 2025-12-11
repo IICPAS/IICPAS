@@ -27,7 +27,6 @@ export default function CoursePage() {
   // Define API_BASE at component level
   const API_BASE =
     process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
-  console.log("API_BASE", process.env.NEXT_PUBLIC_API_URL);
   // Fetch data
   useEffect(() => {
     const fetchData = async () => {

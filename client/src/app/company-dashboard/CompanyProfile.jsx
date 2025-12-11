@@ -462,6 +462,9 @@ const CompanyProfile = () => {
                   src={imagePreview}
                   alt="Company Profile Preview"
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.target.src = "/images/placeholder.jpg";
+                  }}
                 />
               ) : profile.image ? (
                 <img

@@ -95,7 +95,6 @@ export default function ProfileTab() {
       formData.append("profileImage", profileImage);
 
       const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/students/profile`;
-      console.log("Uploading to:", apiUrl);
       console.log("FormData:", formData);
       console.log("Profile image file:", profileImage);
 

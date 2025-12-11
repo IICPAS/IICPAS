@@ -20,7 +20,7 @@ import { useAuth } from "@/contexts/AuthContext";
 export default function ContactInfoTab() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("contact-info"); // "contact-info" or "contact-form"
-  
+
   // Contact Info states
   const [contactInfo, setContactInfo] = useState([]);
   const [contactInfoLoading, setContactInfoLoading] = useState(true);
@@ -146,7 +146,7 @@ export default function ContactInfoTab() {
   // Ensure image data is always properly initialized
   useEffect(() => {
     if (!contactFormData.image) {
-      setContactFormData(prev => ({
+      setContactFormData((prev) => ({
         ...prev,
         image: {
           url: "/images/contact-section.jpg",
@@ -256,7 +256,11 @@ export default function ContactInfoTab() {
   };
 
   const handleContactInfoDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this contact information?"))
+    if (
+      !window.confirm(
+        "Are you sure you want to delete this contact information?"
+      )
+    )
       return;
 
     try {
@@ -300,7 +304,11 @@ export default function ContactInfoTab() {
       });
 
       if (response.ok) {
-        toast.success(`Contact information ${!currentStatus ? 'activated' : 'deactivated'} successfully!`);
+        toast.success(
+          `Contact information ${
+            !currentStatus ? "activated" : "deactivated"
+          } successfully!`
+        );
         fetchContactInfo();
       } else {
         toast.error("Failed to update contact information status");
@@ -399,7 +407,7 @@ export default function ContactInfoTab() {
     if (!file) return null;
 
     // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif"];
     if (!allowedTypes.includes(file.type)) {
       toast.error("Please select a valid image file (JPG, PNG, GIF)");
       return null;
@@ -413,9 +421,10 @@ export default function ContactInfoTab() {
 
     try {
       const formData = new FormData();
-      formData.append('image', file);
+      formData.append("image", file);
 
-      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+      const API_BASE =
+        process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
       const token = localStorage.getItem("adminToken");
 
       if (!token) {
@@ -435,12 +444,12 @@ export default function ContactInfoTab() {
       if (response.ok) {
         const data = await response.json();
         const imageUrl = data.imageUrl || data.url;
-        
+
         if (!imageUrl) {
           toast.error("No image URL returned from server");
           return null;
         }
-        
+
         setContactFormData((prev) => ({
           ...prev,
           image: {
@@ -448,12 +457,13 @@ export default function ContactInfoTab() {
             url: imageUrl,
           },
         }));
-        
+
         toast.success("Image uploaded successfully!");
         return imageUrl;
       } else {
         const errorData = await response.json().catch(() => ({}));
-        const errorMessage = errorData.error || errorData.message || "Failed to upload image";
+        const errorMessage =
+          errorData.error || errorData.message || "Failed to upload image";
         toast.error(errorMessage);
         console.error("Upload failed:", response.status, errorMessage);
         return null;
@@ -467,25 +477,30 @@ export default function ContactInfoTab() {
 
   const handleImageFileChange = async (e) => {
     const file = e.target.files[0];
-    
+
     if (file) {
       // Validate file type
-      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+      const allowedTypes = [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/gif",
+      ];
       if (!allowedTypes.includes(file.type)) {
         toast.error("Please select a valid image file (JPG, PNG, GIF)");
-        e.target.value = ''; // Clear the input
+        e.target.value = ""; // Clear the input
         return;
       }
 
       // Validate file size (5MB limit)
       if (file.size > 5 * 1024 * 1024) {
         toast.error("Image file size must be less than 5MB");
-        e.target.value = ''; // Clear the input
+        e.target.value = ""; // Clear the input
         return;
       }
 
       setImageFile(file);
-      
+
       // Create preview
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -497,12 +512,12 @@ export default function ContactInfoTab() {
       setImageUploading(true);
       const uploadedUrl = await handleImageUpload(file);
       setImageUploading(false);
-      
+
       if (!uploadedUrl) {
         // If upload failed, clear the file selection
         setImageFile(null);
         setImagePreview(null);
-        e.target.value = '';
+        e.target.value = "";
       }
     } else {
       // Clear preview if no file selected
@@ -544,7 +559,10 @@ export default function ContactInfoTab() {
         setImagePreview(null);
       } else {
         const errorData = await response.json().catch(() => ({}));
-        const errorMessage = errorData.error || errorData.message || "Failed to create contact form configuration";
+        const errorMessage =
+          errorData.error ||
+          errorData.message ||
+          "Failed to create contact form configuration";
         toast.error(errorMessage);
       }
     } catch (error) {
@@ -586,7 +604,10 @@ export default function ContactInfoTab() {
         setImagePreview(null);
       } else {
         const errorData = await response.json().catch(() => ({}));
-        const errorMessage = errorData.error || errorData.message || "Failed to update contact form configuration";
+        const errorMessage =
+          errorData.error ||
+          errorData.message ||
+          "Failed to update contact form configuration";
         toast.error(errorMessage);
       }
     } catch (error) {
@@ -596,7 +617,11 @@ export default function ContactInfoTab() {
   };
 
   const handleContactFormDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this contact form configuration?"))
+    if (
+      !window.confirm(
+        "Are you sure you want to delete this contact form configuration?"
+      )
+    )
       return;
 
     try {
@@ -640,7 +665,11 @@ export default function ContactInfoTab() {
       });
 
       if (response.ok) {
-        toast.success(`Contact form ${!currentStatus ? 'activated' : 'deactivated'} successfully!`);
+        toast.success(
+          `Contact form ${
+            !currentStatus ? "activated" : "deactivated"
+          } successfully!`
+        );
         fetchContactForms();
       } else {
         toast.error("Failed to update contact form status");
@@ -710,7 +739,7 @@ export default function ContactInfoTab() {
     setImageFile(null);
     setImagePreview(null);
     setImageUploading(false);
-    setFileInputKey(prev => prev + 1);
+    setFileInputKey((prev) => prev + 1);
   };
 
   if (contactInfoLoading || contactFormLoading) {
@@ -728,7 +757,8 @@ export default function ContactInfoTab() {
           Contact Management
         </h1>
         <p className="text-gray-600">
-          Manage your website's contact information and contact form configuration
+          Manage your website's contact information and contact form
+          configuration
         </p>
       </div>
 
@@ -764,7 +794,9 @@ export default function ContactInfoTab() {
           {/* Create New Contact Info Form */}
           <div className="bg-white rounded-lg shadow-md p-6 mb-8">
             <h2 className="text-xl font-semibold mb-4">
-              {editingContactInfoId ? "Edit Contact Information" : "Add New Contact Information"}
+              {editingContactInfoId
+                ? "Edit Contact Information"
+                : "Add New Contact Information"}
             </h2>
 
             <form onSubmit={handleContactInfoSubmit} className="space-y-6">
@@ -777,7 +809,9 @@ export default function ContactInfoTab() {
                   <input
                     type="text"
                     value={contactInfoFormData.title}
-                    onChange={(e) => handleContactInfoInputChange("title", e.target.value)}
+                    onChange={(e) =>
+                      handleContactInfoInputChange("title", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter title"
                     required
@@ -791,7 +825,9 @@ export default function ContactInfoTab() {
                   </label>
                   <select
                     value={contactInfoFormData.icon}
-                    onChange={(e) => handleContactInfoInputChange("icon", e.target.value)}
+                    onChange={(e) =>
+                      handleContactInfoInputChange("icon", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     {iconOptions.map((option) => (
@@ -810,7 +846,9 @@ export default function ContactInfoTab() {
                 </label>
                 <textarea
                   value={contactInfoFormData.content}
-                  onChange={(e) => handleContactInfoInputChange("content", e.target.value)}
+                  onChange={(e) =>
+                    handleContactInfoInputChange("content", e.target.value)
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   rows="3"
                   placeholder="Enter content (e.g., 3149 New Creek Road, &lt;br /&gt;Huntsville, Alabama, USA)"
@@ -828,7 +866,9 @@ export default function ContactInfoTab() {
                 </label>
                 <select
                   value={contactInfoFormData.bg}
-                  onChange={(e) => handleContactInfoInputChange("bg", e.target.value)}
+                  onChange={(e) =>
+                    handleContactInfoInputChange("bg", e.target.value)
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   {backgroundOptions.map((option) => (
@@ -845,7 +885,9 @@ export default function ContactInfoTab() {
                   <input
                     type="checkbox"
                     checked={contactInfoFormData.isActive}
-                    onChange={(e) => handleContactInfoInputChange("isActive", e.target.checked)}
+                    onChange={(e) =>
+                      handleContactInfoInputChange("isActive", e.target.checked)
+                    }
                     className="mr-2"
                   />
                   <span className="text-sm font-medium text-gray-700">
@@ -868,11 +910,16 @@ export default function ContactInfoTab() {
                 )}
                 <button
                   type={editingContactInfoId ? "button" : "submit"}
-                  onClick={editingContactInfoId ? () => handleContactInfoUpdate(editingContactInfoId) : undefined}
+                  onClick={
+                    editingContactInfoId
+                      ? () => handleContactInfoUpdate(editingContactInfoId)
+                      : undefined
+                  }
                   className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                 >
                   <FaSave className="inline mr-2" />
-                  {editingContactInfoId ? "Update" : "Create"} Contact Information
+                  {editingContactInfoId ? "Update" : "Create"} Contact
+                  Information
                 </button>
               </div>
             </form>
@@ -881,7 +928,9 @@ export default function ContactInfoTab() {
           {/* Existing Contact Information */}
           <div className="bg-white rounded-lg shadow-md">
             <div className="p-6 border-b border-gray-200">
-              <h2 className="text-xl font-semibold">Existing Contact Information</h2>
+              <h2 className="text-xl font-semibold">
+                Existing Contact Information
+              </h2>
             </div>
 
             <div className="divide-y divide-gray-200">
@@ -893,7 +942,9 @@ export default function ContactInfoTab() {
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
                           <div className="flex items-center space-x-4 mb-4">
-                            <div className={`bg-gradient-to-br ${contact.bg} rounded-lg p-3 shadow-sm`}>
+                            <div
+                              className={`bg-gradient-to-br ${contact.bg} rounded-lg p-3 shadow-sm`}
+                            >
                               <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white shadow">
                                 <IconComponent className="text-lg text-gray-600" />
                               </div>
@@ -912,12 +963,18 @@ export default function ContactInfoTab() {
 
                           <div className="text-gray-600 mb-2">
                             <span className="font-medium">Content: </span>
-                            <span dangerouslySetInnerHTML={{ __html: contact.content }} />
+                            <span
+                              dangerouslySetInnerHTML={{
+                                __html: contact.content,
+                              }}
+                            />
                           </div>
 
                           <div className="text-gray-600">
                             <span className="font-medium">Background: </span>
-                            <span className="capitalize">{contact.bg.split('-')[1]}</span>
+                            <span className="capitalize">
+                              {contact.bg.split("-")[1]}
+                            </span>
                           </div>
                         </div>
 
@@ -931,7 +988,12 @@ export default function ContactInfoTab() {
                           </button>
 
                           <button
-                            onClick={() => handleContactInfoToggleActive(contact._id, contact.isActive)}
+                            onClick={() =>
+                              handleContactInfoToggleActive(
+                                contact._id,
+                                contact.isActive
+                              )
+                            }
                             className={`p-2 rounded-md transition-colors ${
                               contact.isActive
                                 ? "text-yellow-600 hover:bg-yellow-100"
@@ -965,7 +1027,9 @@ export default function ContactInfoTab() {
           {/* Create New Contact Form Configuration */}
           <div className="bg-white rounded-lg shadow-md p-6 mb-8">
             <h2 className="text-xl font-semibold mb-4">
-              {editingContactFormId ? "Edit Contact Form Configuration" : "Add New Contact Form Configuration"}
+              {editingContactFormId
+                ? "Edit Contact Form Configuration"
+                : "Add New Contact Form Configuration"}
             </h2>
 
             <form onSubmit={handleContactFormSubmit} className="space-y-6">
@@ -978,7 +1042,9 @@ export default function ContactInfoTab() {
                   <input
                     type="text"
                     value={contactFormData.smallText}
-                    onChange={(e) => handleContactFormInputChange("smallText", e.target.value)}
+                    onChange={(e) =>
+                      handleContactFormInputChange("smallText", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter small text"
                     required
@@ -992,7 +1058,12 @@ export default function ContactInfoTab() {
                   <input
                     type="text"
                     value={contactFormData.mainHeading}
-                    onChange={(e) => handleContactFormInputChange("mainHeading", e.target.value)}
+                    onChange={(e) =>
+                      handleContactFormInputChange(
+                        "mainHeading",
+                        e.target.value
+                      )
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter main heading"
                     required
@@ -1002,16 +1073,25 @@ export default function ContactInfoTab() {
 
               {/* Form Fields Configuration */}
               <div>
-                <h3 className="text-lg font-medium text-gray-700 mb-4">Form Fields Configuration</h3>
+                <h3 className="text-lg font-medium text-gray-700 mb-4">
+                  Form Fields Configuration
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Name Field */}
                   <div className="border border-gray-200 rounded-lg p-4">
-                    <h4 className="font-medium text-gray-700 mb-3">Name Field</h4>
+                    <h4 className="font-medium text-gray-700 mb-3">
+                      Name Field
+                    </h4>
                     <div className="space-y-3">
                       <input
                         type="text"
                         value={contactFormData.formFields.nameField.placeholder}
-                        onChange={(e) => handleContactFormInputChange("formFields.nameField.placeholder", e.target.value)}
+                        onChange={(e) =>
+                          handleContactFormInputChange(
+                            "formFields.nameField.placeholder",
+                            e.target.value
+                          )
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="Field placeholder"
                       />
@@ -1019,8 +1099,15 @@ export default function ContactInfoTab() {
                         <label className="flex items-center">
                           <input
                             type="checkbox"
-                            checked={contactFormData.formFields.nameField.required}
-                            onChange={(e) => handleContactFormInputChange("formFields.nameField.required", e.target.checked)}
+                            checked={
+                              contactFormData.formFields.nameField.required
+                            }
+                            onChange={(e) =>
+                              handleContactFormInputChange(
+                                "formFields.nameField.required",
+                                e.target.checked
+                              )
+                            }
                             className="mr-2"
                           />
                           Required
@@ -1028,8 +1115,15 @@ export default function ContactInfoTab() {
                         <label className="flex items-center">
                           <input
                             type="checkbox"
-                            checked={contactFormData.formFields.nameField.visible}
-                            onChange={(e) => handleContactFormInputChange("formFields.nameField.visible", e.target.checked)}
+                            checked={
+                              contactFormData.formFields.nameField.visible
+                            }
+                            onChange={(e) =>
+                              handleContactFormInputChange(
+                                "formFields.nameField.visible",
+                                e.target.checked
+                              )
+                            }
                             className="mr-2"
                           />
                           Visible
@@ -1040,12 +1134,21 @@ export default function ContactInfoTab() {
 
                   {/* Email Field */}
                   <div className="border border-gray-200 rounded-lg p-4">
-                    <h4 className="font-medium text-gray-700 mb-3">Email Field</h4>
+                    <h4 className="font-medium text-gray-700 mb-3">
+                      Email Field
+                    </h4>
                     <div className="space-y-3">
                       <input
                         type="text"
-                        value={contactFormData.formFields.emailField.placeholder}
-                        onChange={(e) => handleContactFormInputChange("formFields.emailField.placeholder", e.target.value)}
+                        value={
+                          contactFormData.formFields.emailField.placeholder
+                        }
+                        onChange={(e) =>
+                          handleContactFormInputChange(
+                            "formFields.emailField.placeholder",
+                            e.target.value
+                          )
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="Field placeholder"
                       />
@@ -1053,8 +1156,15 @@ export default function ContactInfoTab() {
                         <label className="flex items-center">
                           <input
                             type="checkbox"
-                            checked={contactFormData.formFields.emailField.required}
-                            onChange={(e) => handleContactFormInputChange("formFields.emailField.required", e.target.checked)}
+                            checked={
+                              contactFormData.formFields.emailField.required
+                            }
+                            onChange={(e) =>
+                              handleContactFormInputChange(
+                                "formFields.emailField.required",
+                                e.target.checked
+                              )
+                            }
                             className="mr-2"
                           />
                           Required
@@ -1062,8 +1172,15 @@ export default function ContactInfoTab() {
                         <label className="flex items-center">
                           <input
                             type="checkbox"
-                            checked={contactFormData.formFields.emailField.visible}
-                            onChange={(e) => handleContactFormInputChange("formFields.emailField.visible", e.target.checked)}
+                            checked={
+                              contactFormData.formFields.emailField.visible
+                            }
+                            onChange={(e) =>
+                              handleContactFormInputChange(
+                                "formFields.emailField.visible",
+                                e.target.checked
+                              )
+                            }
                             className="mr-2"
                           />
                           Visible
@@ -1074,12 +1191,21 @@ export default function ContactInfoTab() {
 
                   {/* Phone Field */}
                   <div className="border border-gray-200 rounded-lg p-4">
-                    <h4 className="font-medium text-gray-700 mb-3">Phone Field</h4>
+                    <h4 className="font-medium text-gray-700 mb-3">
+                      Phone Field
+                    </h4>
                     <div className="space-y-3">
                       <input
                         type="text"
-                        value={contactFormData.formFields.phoneField.placeholder}
-                        onChange={(e) => handleContactFormInputChange("formFields.phoneField.placeholder", e.target.value)}
+                        value={
+                          contactFormData.formFields.phoneField.placeholder
+                        }
+                        onChange={(e) =>
+                          handleContactFormInputChange(
+                            "formFields.phoneField.placeholder",
+                            e.target.value
+                          )
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="Field placeholder"
                       />
@@ -1087,8 +1213,15 @@ export default function ContactInfoTab() {
                         <label className="flex items-center">
                           <input
                             type="checkbox"
-                            checked={contactFormData.formFields.phoneField.required}
-                            onChange={(e) => handleContactFormInputChange("formFields.phoneField.required", e.target.checked)}
+                            checked={
+                              contactFormData.formFields.phoneField.required
+                            }
+                            onChange={(e) =>
+                              handleContactFormInputChange(
+                                "formFields.phoneField.required",
+                                e.target.checked
+                              )
+                            }
                             className="mr-2"
                           />
                           Required
@@ -1096,8 +1229,15 @@ export default function ContactInfoTab() {
                         <label className="flex items-center">
                           <input
                             type="checkbox"
-                            checked={contactFormData.formFields.phoneField.visible}
-                            onChange={(e) => handleContactFormInputChange("formFields.phoneField.visible", e.target.checked)}
+                            checked={
+                              contactFormData.formFields.phoneField.visible
+                            }
+                            onChange={(e) =>
+                              handleContactFormInputChange(
+                                "formFields.phoneField.visible",
+                                e.target.checked
+                              )
+                            }
                             className="mr-2"
                           />
                           Visible
@@ -1108,19 +1248,33 @@ export default function ContactInfoTab() {
 
                   {/* Message Field */}
                   <div className="border border-gray-200 rounded-lg p-4">
-                    <h4 className="font-medium text-gray-700 mb-3">Message Field</h4>
+                    <h4 className="font-medium text-gray-700 mb-3">
+                      Message Field
+                    </h4>
                     <div className="space-y-3">
                       <input
                         type="text"
-                        value={contactFormData.formFields.messageField.placeholder}
-                        onChange={(e) => handleContactFormInputChange("formFields.messageField.placeholder", e.target.value)}
+                        value={
+                          contactFormData.formFields.messageField.placeholder
+                        }
+                        onChange={(e) =>
+                          handleContactFormInputChange(
+                            "formFields.messageField.placeholder",
+                            e.target.value
+                          )
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="Field placeholder"
                       />
                       <input
                         type="number"
                         value={contactFormData.formFields.messageField.rows}
-                        onChange={(e) => handleContactFormInputChange("formFields.messageField.rows", parseInt(e.target.value))}
+                        onChange={(e) =>
+                          handleContactFormInputChange(
+                            "formFields.messageField.rows",
+                            parseInt(e.target.value)
+                          )
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="Number of rows"
                         min="1"
@@ -1130,8 +1284,15 @@ export default function ContactInfoTab() {
                         <label className="flex items-center">
                           <input
                             type="checkbox"
-                            checked={contactFormData.formFields.messageField.required}
-                            onChange={(e) => handleContactFormInputChange("formFields.messageField.required", e.target.checked)}
+                            checked={
+                              contactFormData.formFields.messageField.required
+                            }
+                            onChange={(e) =>
+                              handleContactFormInputChange(
+                                "formFields.messageField.required",
+                                e.target.checked
+                              )
+                            }
                             className="mr-2"
                           />
                           Required
@@ -1139,8 +1300,15 @@ export default function ContactInfoTab() {
                         <label className="flex items-center">
                           <input
                             type="checkbox"
-                            checked={contactFormData.formFields.messageField.visible}
-                            onChange={(e) => handleContactFormInputChange("formFields.messageField.visible", e.target.checked)}
+                            checked={
+                              contactFormData.formFields.messageField.visible
+                            }
+                            onChange={(e) =>
+                              handleContactFormInputChange(
+                                "formFields.messageField.visible",
+                                e.target.checked
+                              )
+                            }
                             className="mr-2"
                           />
                           Visible
@@ -1153,7 +1321,9 @@ export default function ContactInfoTab() {
 
               {/* Submit Button Configuration */}
               <div>
-                <h3 className="text-lg font-medium text-gray-700 mb-4">Submit Button Configuration</h3>
+                <h3 className="text-lg font-medium text-gray-700 mb-4">
+                  Submit Button Configuration
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1162,7 +1332,12 @@ export default function ContactInfoTab() {
                     <input
                       type="text"
                       value={contactFormData.submitButton.text}
-                      onChange={(e) => handleContactFormInputChange("submitButton.text", e.target.value)}
+                      onChange={(e) =>
+                        handleContactFormInputChange(
+                          "submitButton.text",
+                          e.target.value
+                        )
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="Submit"
                     />
@@ -1173,7 +1348,12 @@ export default function ContactInfoTab() {
                     </label>
                     <select
                       value={contactFormData.submitButton.color}
-                      onChange={(e) => handleContactFormInputChange("submitButton.color", e.target.value)}
+                      onChange={(e) =>
+                        handleContactFormInputChange(
+                          "submitButton.color",
+                          e.target.value
+                        )
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       {buttonColorOptions.map((option) => (
@@ -1188,7 +1368,9 @@ export default function ContactInfoTab() {
 
               {/* Messages Configuration */}
               <div>
-                <h3 className="text-lg font-medium text-gray-700 mb-4">Messages Configuration</h3>
+                <h3 className="text-lg font-medium text-gray-700 mb-4">
+                  Messages Configuration
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1197,7 +1379,12 @@ export default function ContactInfoTab() {
                     <input
                       type="text"
                       value={contactFormData.messages.successMessage}
-                      onChange={(e) => handleContactFormInputChange("messages.successMessage", e.target.value)}
+                      onChange={(e) =>
+                        handleContactFormInputChange(
+                          "messages.successMessage",
+                          e.target.value
+                        )
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="Message sent successfully!"
                     />
@@ -1209,7 +1396,12 @@ export default function ContactInfoTab() {
                     <input
                       type="text"
                       value={contactFormData.messages.errorMessage}
-                      onChange={(e) => handleContactFormInputChange("messages.errorMessage", e.target.value)}
+                      onChange={(e) =>
+                        handleContactFormInputChange(
+                          "messages.errorMessage",
+                          e.target.value
+                        )
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="Submission failed"
                     />
@@ -1219,7 +1411,9 @@ export default function ContactInfoTab() {
 
               {/* Color Settings */}
               <div>
-                <h3 className="text-lg font-medium text-gray-700 mb-4">Color Settings</h3>
+                <h3 className="text-lg font-medium text-gray-700 mb-4">
+                  Color Settings
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1227,7 +1421,12 @@ export default function ContactInfoTab() {
                     </label>
                     <select
                       value={contactFormData.colors.smallText}
-                      onChange={(e) => handleContactFormInputChange("colors.smallText", e.target.value)}
+                      onChange={(e) =>
+                        handleContactFormInputChange(
+                          "colors.smallText",
+                          e.target.value
+                        )
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       {textColorOptions.map((option) => (
@@ -1243,7 +1442,12 @@ export default function ContactInfoTab() {
                     </label>
                     <select
                       value={contactFormData.colors.mainHeading}
-                      onChange={(e) => handleContactFormInputChange("colors.mainHeading", e.target.value)}
+                      onChange={(e) =>
+                        handleContactFormInputChange(
+                          "colors.mainHeading",
+                          e.target.value
+                        )
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       {textColorOptions.map((option) => (
@@ -1258,7 +1462,9 @@ export default function ContactInfoTab() {
 
               {/* Image Upload */}
               <div>
-                <h3 className="text-lg font-medium text-gray-700 mb-4">Contact Page Image</h3>
+                <h3 className="text-lg font-medium text-gray-700 mb-4">
+                  Contact Page Image
+                </h3>
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1267,12 +1473,17 @@ export default function ContactInfoTab() {
                     <input
                       type="text"
                       value={contactFormData.image?.alt || ""}
-                      onChange={(e) => handleContactFormInputChange("image.alt", e.target.value)}
+                      onChange={(e) =>
+                        handleContactFormInputChange(
+                          "image.alt",
+                          e.target.value
+                        )
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="Contact Support"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Upload New Image
@@ -1285,7 +1496,7 @@ export default function ContactInfoTab() {
                         onChange={handleImageFileChange}
                         disabled={imageUploading}
                         className={`flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                          imageUploading ? 'opacity-50 cursor-not-allowed' : ''
+                          imageUploading ? "opacity-50 cursor-not-allowed" : ""
                         }`}
                       />
                       {imageFile && !imageUploading && (
@@ -1294,7 +1505,7 @@ export default function ContactInfoTab() {
                           onClick={() => {
                             setImageFile(null);
                             setImagePreview(null);
-                            setFileInputKey(prev => prev + 1); // Force re-render of file input
+                            setFileInputKey((prev) => prev + 1); // Force re-render of file input
                           }}
                           className="px-3 py-2 text-red-600 bg-red-100 rounded-md hover:bg-red-200 transition-colors"
                         >
@@ -1321,17 +1532,26 @@ export default function ContactInfoTab() {
                       </label>
                       <div className="border border-gray-300 rounded-lg p-4">
                         <img
-                          src={imagePreview || contactFormData.image?.url || "/images/contact-section.jpg"}
+                          src={
+                            imagePreview ||
+                            contactFormData.image?.url ||
+                            "/images/contact-section.jpg"
+                          }
                           alt={contactFormData.image?.alt || "Contact Support"}
                           className="max-w-full h-48 object-cover rounded-lg"
                           onError={(e) => {
-                            console.error("Image failed to load:", e.target.src);
-                            e.target.src = "/images/placeholder-image.jpg";
+                            console.error(
+                              "Image failed to load:",
+                              e.target.src
+                            );
+                            e.target.src = "/images/placeholder.jpg";
                           }}
                         />
                         <div className="flex items-center justify-between mt-2">
                           <p className="text-sm text-gray-600">
-                            {imagePreview ? "New upload preview" : "Current image"}
+                            {imagePreview
+                              ? "New upload preview"
+                              : "Current image"}
                           </p>
                           {imagePreview && (
                             <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
@@ -1341,7 +1561,8 @@ export default function ContactInfoTab() {
                         </div>
                         {imageFile && (
                           <p className="text-xs text-blue-600 mt-1">
-                            File: {imageFile.name} ({(imageFile.size / 1024 / 1024).toFixed(2)} MB)
+                            File: {imageFile.name} (
+                            {(imageFile.size / 1024 / 1024).toFixed(2)} MB)
                           </p>
                         )}
                       </div>
@@ -1356,7 +1577,9 @@ export default function ContactInfoTab() {
                   <input
                     type="checkbox"
                     checked={contactFormData.isActive}
-                    onChange={(e) => handleContactFormInputChange("isActive", e.target.checked)}
+                    onChange={(e) =>
+                      handleContactFormInputChange("isActive", e.target.checked)
+                    }
                     className="mr-2"
                   />
                   <span className="text-sm font-medium text-gray-700">
@@ -1379,11 +1602,16 @@ export default function ContactInfoTab() {
                 )}
                 <button
                   type={editingContactFormId ? "button" : "submit"}
-                  onClick={editingContactFormId ? () => handleContactFormUpdate(editingContactFormId) : undefined}
+                  onClick={
+                    editingContactFormId
+                      ? () => handleContactFormUpdate(editingContactFormId)
+                      : undefined
+                  }
                   className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                 >
                   <FaSave className="inline mr-2" />
-                  {editingContactFormId ? "Update" : "Create"} Contact Form Configuration
+                  {editingContactFormId ? "Update" : "Create"} Contact Form
+                  Configuration
                 </button>
               </div>
             </form>
@@ -1392,7 +1620,9 @@ export default function ContactInfoTab() {
           {/* Existing Contact Form Configurations */}
           <div className="bg-white rounded-lg shadow-md">
             <div className="p-6 border-b border-gray-200">
-              <h2 className="text-xl font-semibold">Existing Contact Form Configurations</h2>
+              <h2 className="text-xl font-semibold">
+                Existing Contact Form Configurations
+              </h2>
             </div>
 
             <div className="divide-y divide-gray-200">
@@ -1406,7 +1636,9 @@ export default function ContactInfoTab() {
                             <h3 className="text-lg font-medium text-gray-900">
                               {contactForm.smallText}
                             </h3>
-                            <p className="text-sm text-gray-600">{contactForm.mainHeading}</p>
+                            <p className="text-sm text-gray-600">
+                              {contactForm.mainHeading}
+                            </p>
                           </div>
                           {contactForm.isActive && (
                             <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
@@ -1440,19 +1672,28 @@ export default function ContactInfoTab() {
                         </button>
 
                         <button
-                          onClick={() => handleContactFormToggleActive(contactForm._id, contactForm.isActive)}
+                          onClick={() =>
+                            handleContactFormToggleActive(
+                              contactForm._id,
+                              contactForm.isActive
+                            )
+                          }
                           className={`p-2 rounded-md transition-colors ${
                             contactForm.isActive
                               ? "text-yellow-600 hover:bg-yellow-100"
                               : "text-green-600 hover:bg-green-100"
                           }`}
-                          title={contactForm.isActive ? "Deactivate" : "Activate"}
+                          title={
+                            contactForm.isActive ? "Deactivate" : "Activate"
+                          }
                         >
                           <FaCheck />
                         </button>
 
                         <button
-                          onClick={() => handleContactFormDelete(contactForm._id)}
+                          onClick={() =>
+                            handleContactFormDelete(contactForm._id)
+                          }
                           className="p-2 text-red-600 hover:bg-red-100 rounded-md transition-colors"
                           title="Delete"
                         >

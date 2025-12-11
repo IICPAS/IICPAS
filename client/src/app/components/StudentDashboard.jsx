@@ -57,10 +57,6 @@ export default function StudentDashboard() {
 
   const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
-  // Debug environment variable
-  console.log("NEXT_PUBLIC_API_URL:", process.env.NEXT_PUBLIC_API_URL);
-  console.log("API variable:", API);
-
   // Sidebar tabs
   const tabs = [
     { id: "buy-courses", icon: <FaShoppingCart />, label: "Buy Courses" },
@@ -152,7 +148,6 @@ export default function StudentDashboard() {
 
     setSubmitting(true);
     try {
-      console.log("API URL:", `${process.env.NEXT_PUBLIC_API_URL}/api/tickets`);
       console.log("Ticket data:", { name, email, phone, message });
 
       await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/tickets`, {
