@@ -92,6 +92,8 @@ connectDB();
 
 const app = express();
 
+app.set("trust proxy", true);
+
 // CORS configuration
 
 app.use(
