@@ -27,7 +27,6 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const MySwal = withReactContent(Swal);
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
-console.log("API_BASE:", API_BASE);
 
 const ChapterList = forwardRef(
   (
@@ -96,7 +95,7 @@ const ChapterList = forwardRef(
     const filteredChapters = chapters.filter((ch) =>
       ch.title.toLowerCase().includes(search.toLowerCase())
     );
-    
+
     console.log("Chapters state:", chapters);
     console.log("Filtered chapters:", filteredChapters);
 
@@ -184,7 +183,7 @@ const ChapterList = forwardRef(
           seoDescription: "",
           metaTitle: "",
           metaKeywords: "",
-          metaDescription: ""
+          metaDescription: "",
         });
         setNewTitle("");
         setAddingChapter(false);
