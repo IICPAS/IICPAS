@@ -235,38 +235,7 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
             <span className="line-clamp-1 text-gray-600">{safeTitle}</span>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-[260px,1fr,280px] gap-6">
-            {/* TOC */}
-            <div className="hidden lg:block">
-              <div className="sticky top-28 bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-                <div className="flex items-center gap-2 text-purple-700 font-semibold mb-4">
-                  <span className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-purple-300 text-[10px]">
-                    ☰
-                  </span>
-                  Table of Contents
-                </div>
-                <div className="flex flex-col gap-3 text-sm">
-                  {(tocItems.length ? tocItems : [{ id: "top", text: safeTitle, level: "h2" }]).map(
-                    (item) => (
-                      <a
-                        key={item.id}
-                        href={`#${item.id}`}
-                        className={clsx(
-                          "pl-2 py-1 rounded-md border-l-2 transition",
-                          item.level === "h2"
-                            ? "border-purple-300 text-gray-800 hover:text-purple-700"
-                            : "border-purple-100 text-gray-500 hover:text-purple-600"
-                        )}
-                      >
-                        {item.text}
-                      </a>
-                    )
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Main content */}
+          <div className="grid grid-cols-1 gap-6">
             <div>
               <div className="bg-white rounded-3xl shadow-md border border-gray-100 p-6 sm:p-8">
                 <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm text-gray-600 mb-4">
