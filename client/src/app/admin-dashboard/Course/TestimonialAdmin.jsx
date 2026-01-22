@@ -26,7 +26,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import Swal from "sweetalert2";
 import * as XLSX from "xlsx";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
 
 export default function TestimonialAdmin() {
   const [testimonials, setTestimonials] = useState([]);
@@ -48,14 +49,11 @@ export default function TestimonialAdmin() {
 
   const fetchTestimonials = async () => {
     const token = localStorage.getItem("adminToken");
-    const res = await axios.get(
-      `${API_BASE}/testimonials`,
-      { 
-        headers: {
-          Authorization: `Bearer ${token}`,
-        }
-      }
-    );
+    const res = await axios.get(`${API_BASE}/testimonials`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     setTestimonials(res.data);
   };
 
@@ -72,14 +70,11 @@ export default function TestimonialAdmin() {
 
     if (result.isConfirmed) {
       const token = localStorage.getItem("adminToken");
-      await axios.delete(
-        `${API_BASE}/testimonials/${id}`,
-        { 
-          headers: {
-            Authorization: `Bearer ${token}`,
-          }
-        }
-      );
+      await axios.delete(`${API_BASE}/testimonials/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       fetchTestimonials();
       Swal.fire("Deleted!", "Testimonial has been deleted.", "success");
     }
@@ -88,11 +83,15 @@ export default function TestimonialAdmin() {
   const handleApprove = async (id) => {
     try {
       const token = localStorage.getItem("adminToken");
-      await axios.patch(`${API_BASE}/testimonials/approve/${id}`, {}, {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      await axios.patch(
+        `${API_BASE}/testimonials/approve/${id}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      });
+      );
       fetchTestimonials();
       Swal.fire("Approved!", "Testimonial has been approved.", "success");
     } catch (error) {
@@ -104,11 +103,15 @@ export default function TestimonialAdmin() {
   const handleReject = async (id) => {
     try {
       const token = localStorage.getItem("adminToken");
-      await axios.patch(`${API_BASE}/testimonials/reject/${id}`, {}, {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      await axios.patch(
+        `${API_BASE}/testimonials/reject/${id}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      });
+      );
       fetchTestimonials();
       Swal.fire("Rejected!", "Testimonial has been rejected.", "success");
     } catch (error) {
@@ -119,16 +122,16 @@ export default function TestimonialAdmin() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     try {
       const formData = new FormData();
-      formData.append('name', form.name);
-      formData.append('designation', form.designation);
-      formData.append('message', form.message);
-      formData.append('rating', form.rating);
-      
+      formData.append("name", form.name);
+      formData.append("designation", form.designation);
+      formData.append("message", form.message);
+      formData.append("rating", form.rating);
+
       if (form.image) {
-        formData.append('image', form.image);
+        formData.append("image", form.image);
       }
 
       console.log("Form data entries:");
@@ -137,33 +140,29 @@ export default function TestimonialAdmin() {
       }
 
       const token = localStorage.getItem("adminToken");
-      
+
       if (editingTestimonial) {
         await axios.put(
           `${API_BASE}/testimonials/${editingTestimonial}`,
           formData,
           {
             headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'multipart/form-data',
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "multipart/form-data",
             },
           }
         );
       } else {
         console.log("API_BASE:", API_BASE);
         console.log("Full URL:", `${API_BASE}/testimonials`);
-        await axios.post(
-          `${API_BASE}/testimonials`,
-          formData,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'multipart/form-data',
-            },
-          }
-        );
+        await axios.post(`${API_BASE}/testimonials`, formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        });
       }
-      
+
       resetForm();
       fetchTestimonials();
       setMode("list");
@@ -182,7 +181,9 @@ export default function TestimonialAdmin() {
       rating: data.rating || 5,
       image: null, // Don't pre-populate image for editing
     });
-    setImagePreview(data.image ? `${API_BASE.replace('/api', '')}/${data.image}` : null);
+    setImagePreview(
+      data.image ? `${API_BASE.replace("/api", "")}/${data.image}` : null
+    );
     setEditingTestimonial(data._id);
     setMode("edit");
   };
@@ -197,7 +198,7 @@ export default function TestimonialAdmin() {
     const file = e.target.files[0];
     if (file) {
       setForm({ ...form, image: file });
-      
+
       // Create preview
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -222,16 +223,22 @@ export default function TestimonialAdmin() {
     try {
       // Prepare data for Excel export
       const excelData = testimonials.map((testimonial, index) => ({
-        'S.No': index + 1,
-        'Name': testimonial.name || '',
-        'Designation': testimonial.designation || '',
-        'Message': testimonial.message || '',
-        'Rating': testimonial.rating || 5,
-        'Status': testimonial.status ? 'Approved' : 'Pending',
-        'Featured': testimonial.featured ? 'Yes' : 'No',
-        'Submitted Date': testimonial.createdAt ? new Date(testimonial.createdAt).toLocaleDateString() : '',
-        'Submitted Time': testimonial.createdAt ? new Date(testimonial.createdAt).toLocaleTimeString() : '',
-        'Updated Date': testimonial.updatedAt ? new Date(testimonial.updatedAt).toLocaleDateString() : '',
+        "S.No": index + 1,
+        Name: testimonial.name || "",
+        Designation: testimonial.designation || "",
+        Message: testimonial.message || "",
+        Rating: testimonial.rating || 5,
+        Status: testimonial.status ? "Approved" : "Pending",
+        Featured: testimonial.featured ? "Yes" : "No",
+        "Submitted Date": testimonial.createdAt
+          ? new Date(testimonial.createdAt).toLocaleDateString()
+          : "",
+        "Submitted Time": testimonial.createdAt
+          ? new Date(testimonial.createdAt).toLocaleTimeString()
+          : "",
+        "Updated Date": testimonial.updatedAt
+          ? new Date(testimonial.updatedAt).toLocaleDateString()
+          : "",
       }));
 
       // Create workbook and worksheet
@@ -240,30 +247,34 @@ export default function TestimonialAdmin() {
 
       // Set column widths
       const colWidths = [
-        { wch: 8 },   // S.No
-        { wch: 20 },  // Name
-        { wch: 25 },  // Designation
-        { wch: 50 },  // Message
-        { wch: 10 },  // Rating
-        { wch: 12 },  // Status
-        { wch: 10 },  // Featured
-        { wch: 15 },  // Submitted Date
-        { wch: 15 },  // Submitted Time
-        { wch: 15 },  // Updated Date
+        { wch: 8 }, // S.No
+        { wch: 20 }, // Name
+        { wch: 25 }, // Designation
+        { wch: 50 }, // Message
+        { wch: 10 }, // Rating
+        { wch: 12 }, // Status
+        { wch: 10 }, // Featured
+        { wch: 15 }, // Submitted Date
+        { wch: 15 }, // Submitted Time
+        { wch: 15 }, // Updated Date
       ];
-      ws['!cols'] = colWidths;
+      ws["!cols"] = colWidths;
 
       // Add worksheet to workbook
-      XLSX.utils.book_append_sheet(wb, ws, 'Testimonials');
+      XLSX.utils.book_append_sheet(wb, ws, "Testimonials");
 
       // Generate filename with current date
-      const currentDate = new Date().toISOString().split('T')[0];
+      const currentDate = new Date().toISOString().split("T")[0];
       const filename = `testimonials_export_${currentDate}.xlsx`;
 
       // Save file
       XLSX.writeFile(wb, filename);
 
-      Swal.fire("Success!", `${testimonials.length} testimonials exported to Excel successfully!`, "success");
+      Swal.fire(
+        "Success!",
+        `${testimonials.length} testimonials exported to Excel successfully!`,
+        "success"
+      );
     } catch (error) {
       console.error("Error exporting to Excel:", error);
       Swal.fire("Error!", "Failed to export testimonials to Excel", "error");
@@ -277,16 +288,16 @@ export default function TestimonialAdmin() {
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold">Testimonials</h2>
             <div className="flex gap-3">
-              <Button 
-                variant="contained" 
+              <Button
+                variant="contained"
                 onClick={exportToExcel}
                 startIcon={<DownloadIcon />}
-                sx={{ 
-                  backgroundColor: '#10b981', 
-                  color: 'white',
-                  '&:hover': {
-                    backgroundColor: '#059669'
-                  }
+                sx={{
+                  backgroundColor: "#10b981",
+                  color: "white",
+                  "&:hover": {
+                    backgroundColor: "#059669",
+                  },
                 }}
               >
                 Export Excel
@@ -317,11 +328,11 @@ export default function TestimonialAdmin() {
                   <TableCell>
                     {item.image ? (
                       <img
-                        src={`${API_BASE.replace('/api', '')}/${item.image}`}
+                        src={`${API_BASE.replace("/api", "")}/${item.image}`}
                         alt={item.name}
                         className="w-12 h-12 object-cover rounded-full"
                         onError={(e) => {
-                          e.target.style.display = 'none';
+                          e.target.src = "/images/placeholder.jpg";
                         }}
                       />
                     ) : (
@@ -334,7 +345,9 @@ export default function TestimonialAdmin() {
                   </TableCell>
                   <TableCell>{item.name}</TableCell>
                   <TableCell>{item.designation}</TableCell>
-                  <TableCell className="max-w-xs truncate">{item.message}</TableCell>
+                  <TableCell className="max-w-xs truncate">
+                    {item.message}
+                  </TableCell>
                   <TableCell>
                     {item.status ? (
                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -349,7 +362,8 @@ export default function TestimonialAdmin() {
                     )}
                   </TableCell>
                   <TableCell>
-                    {new Date(item.createdAt).toLocaleDateString()} at {new Date(item.createdAt).toLocaleTimeString()}
+                    {new Date(item.createdAt).toLocaleDateString()} at{" "}
+                    {new Date(item.createdAt).toLocaleTimeString()}
                   </TableCell>
                   <TableCell align="center">
                     <div className="flex items-center justify-center space-x-1">
@@ -405,9 +419,7 @@ export default function TestimonialAdmin() {
               required
               fullWidth
               value={form.name}
-              onChange={(e) =>
-                setForm({ ...form, name: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
             />
             <TextField
               label="Designation"
@@ -428,9 +440,7 @@ export default function TestimonialAdmin() {
               required
               fullWidth
               value={form.message}
-              onChange={(e) =>
-                setForm({ ...form, message: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, message: e.target.value })}
             />
           </div>
 
@@ -456,7 +466,7 @@ export default function TestimonialAdmin() {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Profile Image (Optional)
             </label>
-            
+
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
               <input
                 type="file"
@@ -475,6 +485,9 @@ export default function TestimonialAdmin() {
                       src={imagePreview}
                       alt="Preview"
                       className="w-32 h-32 object-cover rounded-full mb-4"
+                      onError={(e) => {
+                        e.target.src = "/images/placeholder.jpg";
+                      }}
                     />
                     <button
                       type="button"
@@ -503,7 +516,9 @@ export default function TestimonialAdmin() {
                       />
                     </svg>
                     <p className="text-gray-600 mb-2">Click to upload image</p>
-                    <p className="text-sm text-gray-500">PNG, JPG, JPEG up to 5MB</p>
+                    <p className="text-sm text-gray-500">
+                      PNG, JPG, JPEG up to 5MB
+                    </p>
                   </div>
                 )}
               </label>

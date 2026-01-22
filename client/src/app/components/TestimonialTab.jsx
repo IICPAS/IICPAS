@@ -3,7 +3,15 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { FaQuoteLeft, FaUser, FaBriefcase, FaImage, FaCheck, FaTimes, FaStar } from "react-icons/fa";
+import {
+  FaQuoteLeft,
+  FaUser,
+  FaBriefcase,
+  FaImage,
+  FaCheck,
+  FaTimes,
+  FaStar,
+} from "react-icons/fa";
 import StarRating from "./StarRating";
 
 export default function TestimonialTab({ student }) {
@@ -20,7 +28,8 @@ export default function TestimonialTab({ student }) {
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+  const API_BASE =
+    process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
 
   useEffect(() => {
     fetchTestimonials();
@@ -42,16 +51,16 @@ export default function TestimonialTab({ student }) {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleRatingChange = (rating) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      rating: rating
+      rating: rating,
     }));
   };
 
@@ -65,14 +74,14 @@ export default function TestimonialTab({ student }) {
       }
 
       // Validate file type
-      if (!file.type.startsWith('image/')) {
+      if (!file.type.startsWith("image/")) {
         toast.error("Please select a valid image file");
         return;
       }
 
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        image: file
+        image: file,
       }));
 
       // Create preview
@@ -85,17 +94,21 @@ export default function TestimonialTab({ student }) {
   };
 
   const removeImage = () => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      image: null
+      image: null,
     }));
     setImagePreview(null);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!formData.name.trim() || !formData.designation.trim() || !formData.message.trim()) {
+
+    if (
+      !formData.name.trim() ||
+      !formData.designation.trim() ||
+      !formData.message.trim()
+    ) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -103,23 +116,25 @@ export default function TestimonialTab({ student }) {
     setSubmitting(true);
     try {
       const submitData = new FormData();
-      submitData.append('name', formData.name);
-      submitData.append('designation', formData.designation);
-      submitData.append('message', formData.message);
-      submitData.append('rating', formData.rating);
-      
+      submitData.append("name", formData.name);
+      submitData.append("designation", formData.designation);
+      submitData.append("message", formData.message);
+      submitData.append("rating", formData.rating);
+
       if (formData.image) {
-        submitData.append('image', formData.image);
+        submitData.append("image", formData.image);
       }
 
       await axios.post(`${API_BASE}/testimonials/submit`, submitData, {
         withCredentials: true,
         headers: {
-          'Content-Type': 'multipart/form-data',
+          "Content-Type": "multipart/form-data",
         },
       });
 
-      toast.success("Testimonial submitted successfully! It will be reviewed by admin.");
+      toast.success(
+        "Testimonial submitted successfully! It will be reviewed by admin."
+      );
       setFormData({
         name: student?.name || "",
         designation: "",
@@ -171,7 +186,9 @@ export default function TestimonialTab({ student }) {
               <FaQuoteLeft className="text-2xl" />
               <div>
                 <h2 className="text-2xl font-bold">Share Your Experience</h2>
-                <p className="text-blue-100">Help others by sharing your learning journey</p>
+                <p className="text-blue-100">
+                  Help others by sharing your learning journey
+                </p>
               </div>
             </div>
             <button
@@ -242,8 +259,8 @@ export default function TestimonialTab({ student }) {
                   Rate Your Experience *
                 </label>
                 <div className="flex items-center space-x-2">
-                  <StarRating 
-                    rating={formData.rating} 
+                  <StarRating
+                    rating={formData.rating}
                     onRatingChange={handleRatingChange}
                     interactive={true}
                     size="text-xl"
@@ -278,6 +295,9 @@ export default function TestimonialTab({ student }) {
                           src={imagePreview}
                           alt="Preview"
                           className="w-24 h-24 object-cover rounded-full mb-4"
+                          onError={(e) => {
+                            e.target.src = "/images/placeholder.jpg";
+                          }}
                         />
                         <button
                           type="button"
@@ -292,8 +312,12 @@ export default function TestimonialTab({ student }) {
                         <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                           <FaImage className="text-2xl text-gray-400" />
                         </div>
-                        <p className="text-gray-600 mb-2">Click to upload photo</p>
-                        <p className="text-sm text-gray-500">PNG, JPG, JPEG up to 5MB</p>
+                        <p className="text-gray-600 mb-2">
+                          Click to upload photo
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          PNG, JPG, JPEG up to 5MB
+                        </p>
                       </div>
                     )}
                   </label>
@@ -332,13 +356,19 @@ export default function TestimonialTab({ student }) {
 
         {/* My Testimonials */}
         <div className="p-6">
-          <h3 className="text-xl font-semibold text-gray-800 mb-4">My Testimonials</h3>
-          
+          <h3 className="text-xl font-semibold text-gray-800 mb-4">
+            My Testimonials
+          </h3>
+
           {testimonials.length === 0 ? (
             <div className="text-center py-12">
               <FaQuoteLeft className="text-4xl text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500 text-lg">No testimonials submitted yet</p>
-              <p className="text-gray-400 text-sm">Share your experience to help others!</p>
+              <p className="text-gray-500 text-lg">
+                No testimonials submitted yet
+              </p>
+              <p className="text-gray-400 text-sm">
+                Share your experience to help others!
+              </p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -346,20 +376,22 @@ export default function TestimonialTab({ student }) {
                 <div
                   key={testimonial._id}
                   className={`border rounded-lg p-4 ${
-                    testimonial.status 
-                      ? 'border-green-200 bg-green-50' 
-                      : 'border-yellow-200 bg-yellow-50'
+                    testimonial.status
+                      ? "border-green-200 bg-green-50"
+                      : "border-yellow-200 bg-yellow-50"
                   }`}
                 >
                   <div className="flex items-start space-x-4">
                     <div className="flex-shrink-0">
                       {testimonial.image ? (
                         <img
-                          src={`${API_BASE.replace('/api', '')}/${testimonial.image}`}
+                          src={`${API_BASE.replace("/api", "")}/${
+                            testimonial.image
+                          }`}
                           alt={testimonial.name}
                           className="w-12 h-12 object-cover rounded-full"
                           onError={(e) => {
-                            e.target.style.display = 'none';
+                            e.target.src = "/images/placeholder.jpg";
                           }}
                         />
                       ) : (
@@ -373,12 +405,16 @@ export default function TestimonialTab({ student }) {
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-2">
                         <div>
-                          <h4 className="font-semibold text-gray-800">{testimonial.name}</h4>
-                          <p className="text-sm text-gray-600">{testimonial.designation}</p>
+                          <h4 className="font-semibold text-gray-800">
+                            {testimonial.name}
+                          </h4>
+                          <p className="text-sm text-gray-600">
+                            {testimonial.designation}
+                          </p>
                           {/* Star Rating Display */}
                           <div className="mt-1">
-                            <StarRating 
-                              rating={testimonial.rating || 5} 
+                            <StarRating
+                              rating={testimonial.rating || 5}
                               interactive={false}
                               size="text-sm"
                             />
@@ -398,9 +434,14 @@ export default function TestimonialTab({ student }) {
                           )}
                         </div>
                       </div>
-                      <p className="text-gray-700 italic">"{testimonial.message}"</p>
+                      <p className="text-gray-700 italic">
+                        "{testimonial.message}"
+                      </p>
                       <p className="text-xs text-gray-500 mt-2">
-                        Submitted on {new Date(testimonial.createdAt).toLocaleDateString()} at {new Date(testimonial.createdAt).toLocaleTimeString()}
+                        Submitted on{" "}
+                        {new Date(testimonial.createdAt).toLocaleDateString()}{" "}
+                        at{" "}
+                        {new Date(testimonial.createdAt).toLocaleTimeString()}
                       </p>
                     </div>
                   </div>
@@ -423,7 +464,9 @@ export default function TestimonialTab({ student }) {
               <ul className="text-sm text-blue-700 space-y-1">
                 <li>• Submit your testimonial using the form above</li>
                 <li>• Our admin team will review your submission</li>
-                <li>• Once approved, your testimonial will appear on our website</li>
+                <li>
+                  • Once approved, your testimonial will appear on our website
+                </li>
                 <li>• You can track the status of your submissions here</li>
               </ul>
             </div>

@@ -26,7 +26,6 @@ import {
   PlayArrow,
   Visibility,
   Edit,
-  Continue,
   Book,
   Assignment,
   Science,
@@ -495,7 +494,8 @@ const CourseDisplayTab = () => {
                       borderRadius: "4px",
                     },
                     "&::-webkit-scrollbar-thumb": {
-                      background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
+                      background:
+                        "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
                       borderRadius: "4px",
                       "&:hover": {
                         background: "#94a3b8",

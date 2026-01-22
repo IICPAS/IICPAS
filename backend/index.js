@@ -7,6 +7,7 @@ import collegeRoutes from "./routes/collegeRoutes.js";
 import cookieParser from "cookie-parser";
 import companyRoutes from "./routes/CompanyRoutes.js";
 import cors from "cors";
+import rateLimit from "express-rate-limit";
 import contactRoutesOld from "./routes/contactRoutes.js";
 import connectDB from "./config/db.js";
 import studentRoutes from "./routes/studentRoutes.js";
@@ -91,6 +92,8 @@ connectDB();
 
 const app = express();
 
+app.set("trust proxy", 1);
+
 // CORS configuration
 
 app.use(
@@ -129,10 +132,20 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// Rate limiting for contact routes only (to prevent spam/abuse)
+const contactLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 10, // limit each IP to 10 requests per windowMs
+  message: "Too many requests from this IP, please try again later.",
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+
 // Routes
 app.use("/api/college", collegeRoutes);
 app.use("/api/admin", authRoutes);
-app.use("/api/contact-old", contactRoutesOld);
+// Apply rate limiting to contact routes only
+app.use("/api/contact-old", contactLimiter, contactRoutesOld);
 app.use("/api/companies", companyRoutes);
 app.use("/api/blogs", blogRoutes);
 app.use("/api", alertRoutes);
@@ -183,7 +196,7 @@ app.use("/api/why-iicpa", whyIICPARoutes);
 
 //Contact Routes
 import contactRoutes from "./routes/WebsiteRoutes/contactRoutes.js";
-app.use("/api/contact", contactRoutes);
+app.use("/api/contact", contactLimiter, contactRoutes);
 
 //Footer Routes
 import footerRoutes from "./routes/WebsiteRoutes/footerRoutes.js";
@@ -312,10 +325,10 @@ io.on("connection", (socket) => {
 // Make io available globally for use in controllers
 global.io = io;
 //Contact Info Routes
-app.use("/api/contact-info", contactInfoRoutes);
+app.use("/api/contact-info", contactLimiter, contactInfoRoutes);
 
 //Contact Form Routes
-app.use("/api/contact-form", contactFormRoutes);
+app.use("/api/contact-form", contactLimiter, contactFormRoutes);
 
 //Chat Routes
 import chatRoutes from "./routes/chatRoutes.js";

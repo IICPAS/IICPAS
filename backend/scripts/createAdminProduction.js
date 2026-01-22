@@ -174,7 +174,6 @@ const adminData = {
 async function createAdminProduction() {
   try {
     console.log("🚀 Creating admin user on production API...");
-    console.log("📡 API URL:", `${API_BASE}/employees`);
 
     // First, try to login to see if admin already exists
     try {

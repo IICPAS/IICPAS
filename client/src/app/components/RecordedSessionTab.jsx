@@ -2,7 +2,12 @@
 
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { PlayCircleIcon, ClockIcon, CalendarIcon, UserIcon } from "lucide-react";
+import {
+  PlayCircleIcon,
+  ClockIcon,
+  CalendarIcon,
+  UserIcon,
+} from "lucide-react";
 
 export default function RecordedSessionTab() {
   const [recordedSessions, setRecordedSessions] = useState([]);
@@ -11,36 +16,36 @@ export default function RecordedSessionTab() {
   const [student, setStudent] = useState(null);
 
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
-  
-  // Debug logging
-  console.log("API_BASE:", API_BASE);
-  console.log("NEXT_PUBLIC_API_URL:", process.env.NEXT_PUBLIC_API_URL);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        
+
         // First, get the authenticated student
         const studentResponse = await axios.get(
           `${API_BASE}/api/v1/students/isstudent`,
           { withCredentials: true }
         );
-        
+
         if (studentResponse.data.student) {
           setStudent(studentResponse.data.student);
-          
+
           // Fetch enrolled recorded sessions for this student
           const enrolledUrl = `${API_BASE}/api/v1/students/enrolled-recorded-sessions/${studentResponse.data.student._id}`;
-          console.log("Fetching enrolled recorded sessions with URL:", enrolledUrl);
-          console.log("Student ID:", studentResponse.data.student._id);
-          
-          const enrolledSessionsResponse = await axios.get(
-            enrolledUrl,
-            { withCredentials: true }
+          console.log(
+            "Fetching enrolled recorded sessions with URL:",
+            enrolledUrl
           );
-          
-          setRecordedSessions(enrolledSessionsResponse.data.enrolledRecordedSessions || []);
+          console.log("Student ID:", studentResponse.data.student._id);
+
+          const enrolledSessionsResponse = await axios.get(enrolledUrl, {
+            withCredentials: true,
+          });
+
+          setRecordedSessions(
+            enrolledSessionsResponse.data.enrolledRecordedSessions || []
+          );
         } else {
           // If not logged in, show empty state
           setRecordedSessions([]);
@@ -69,7 +74,7 @@ export default function RecordedSessionTab() {
 
   const handleWatchSession = (courseId) => {
     // Navigate to digital hub with course ID
-    window.open(`/digital-hub?courseId=${courseId}`, '_blank');
+    window.open(`/digital-hub?courseId=${courseId}`, "_blank");
   };
 
   if (loading) {
@@ -77,7 +82,9 @@ export default function RecordedSessionTab() {
       <div className="min-h-[calc(100vh-80px)] px-6 py-8 bg-white text-black overflow-y-auto">
         <h1 className="text-2xl font-semibold mb-8">Recorded Sessions</h1>
         <div className="flex items-center justify-center py-12">
-          <div className="text-gray-500 text-lg">Loading recorded sessions...</div>
+          <div className="text-gray-500 text-lg">
+            Loading recorded sessions...
+          </div>
         </div>
       </div>
     );
@@ -106,7 +113,8 @@ export default function RecordedSessionTab() {
                 You haven't enrolled in any recorded sessions yet.
               </p>
               <p className="text-gray-400">
-                Purchase a course with Digital Hub to get access to recorded sessions.
+                Purchase a course with Digital Hub to get access to recorded
+                sessions.
               </p>
             </div>
           ) : (
@@ -130,11 +138,11 @@ export default function RecordedSessionTab() {
                       {course.title}
                     </h3>
                   </div>
-                  
+
                   <p className="text-sm text-gray-600 mb-3">
                     {course.description || "Recorded course content"}
                   </p>
-                  
+
                   <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
                     <div className="flex items-center gap-1">
                       <CalendarIcon className="w-4 h-4" />
@@ -142,7 +150,9 @@ export default function RecordedSessionTab() {
                     </div>
                     <div className="flex items-center gap-1">
                       <ClockIcon className="w-4 h-4" />
-                      <span>{course.chapters ? course.chapters.length : 0} Lessons</span>
+                      <span>
+                        {course.chapters ? course.chapters.length : 0} Lessons
+                      </span>
                     </div>
                     <div className="flex items-center gap-1">
                       <UserIcon className="w-4 h-4" />
