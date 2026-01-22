@@ -16,31 +16,115 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useEffect, useMemo, useState } from "react";
+
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
+
+const slugify = (value = "") =>
+  decodeURIComponent(value)
+    .trim()
+    .toLowerCase()
+    .replace(/[–—−]/g, "-")
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+const toCandidateSlugs = (item = {}) => {
+  const rawSlug = (item.slug || "").toString();
+  const rawTitle = (item.title || "").toString();
+  const candidates = [
+    slugify(rawSlug),
+    slugify(rawTitle),
+    rawSlug.trim().toLowerCase(),
+    rawTitle.trim().toLowerCase().replace(/\s+/g, "-"),
+  ].filter(Boolean);
+  return Array.from(new Set(candidates));
+};
+
+const extractBlogs = (payload) => {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.blogs)) return payload.blogs;
+  return [];
+};
 
 export default function BlogDetailClient({ blog, allBlogs, slug }) {
+  const [resolvedBlog, setResolvedBlog] = useState(blog);
+  const [resolvedAllBlogs, setResolvedAllBlogs] = useState(allBlogs || []);
+  const [loadingFallback, setLoadingFallback] = useState(false);
+
+  const isValid =
+    resolvedBlog && resolvedBlog.status && resolvedBlog.status.toLowerCase() === "active";
+
+  // Client-side fallback: if the server didn't find the blog, fetch on the client and match again
+  useEffect(() => {
+    if (isValid) return;
+    let cancelled = false;
+    const fetchBlogs = async () => {
+      try {
+        setLoadingFallback(true);
+        const res = await fetch(`${API_BASE}/blogs`, { cache: "no-store" });
+        const data = await res.json();
+        const blogs = extractBlogs(data);
+        const found = blogs.find((b) => toCandidateSlugs(b).includes(slug));
+        if (!cancelled) {
+          setResolvedBlog(found || null);
+          setResolvedAllBlogs(blogs.filter((b) => b.status?.toLowerCase() === "active"));
+        }
+      } catch (err) {
+        console.error("Client fallback fetch failed:", err);
+        if (!cancelled) {
+          setResolvedBlog(null);
+        }
+      } finally {
+        if (!cancelled) setLoadingFallback(false);
+      }
+    };
+    fetchBlogs();
+    return () => {
+      cancelled = true;
+    };
+  }, [isValid, slug]);
+
+  const blogToRender = useMemo(() => {
+    if (isValid) return resolvedBlog;
+    if (resolvedBlog && resolvedBlog.status?.toLowerCase() === "active")
+      return resolvedBlog;
+    return null;
+  }, [isValid, resolvedBlog]);
+
   // Show 'not found' if blog does not exist or is not active
-  if (!blog || blog.status !== "active") {
+  if (!blogToRender) {
     return (
       <>
         <Header />
         <div className="min-h-screen bg-white flex items-center justify-center">
-          <div className="text-center">
-            <div className="text-6xl mb-6">📝</div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">
-              Article Not Found
-            </h1>
-            <p className="text-gray-600 mb-8">
-              The blog post you're looking for doesn't exist or has been
-              removed.
-            </p>
-            <Link
-              href="/blogs"
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              Back to Blogs
-            </Link>
-          </div>
+          {loadingFallback ? (
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading article...</p>
+            </div>
+          ) : (
+            <div className="text-center">
+              <div className="text-6xl mb-6">📝</div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-4">
+                Article Not Found
+              </h1>
+              <p className="text-gray-600 mb-8">
+                The blog post you're looking for doesn't exist or has been
+                removed.
+              </p>
+              <Link
+                href="/blogs"
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+              >
+                <ArrowLeft className="w-5 h-5" />
+                Back to Blogs
+              </Link>
+            </div>
+          )}
         </div>
         <Footer />
       </>
@@ -64,22 +148,24 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
     return images[Math.abs(hash) % images.length];
   };
 
-  const imageUrl = blog.imageUrl?.startsWith("http")
-    ? blog.imageUrl
-    : blog.imageUrl
+  const imageUrl = blogToRender.imageUrl?.startsWith("http")
+    ? blogToRender.imageUrl
+    : blogToRender.imageUrl
     ? `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}${
-        blog.imageUrl.startsWith("/") ? blog.imageUrl : "/" + blog.imageUrl
+        blogToRender.imageUrl.startsWith("/")
+          ? blogToRender.imageUrl
+          : "/" + blogToRender.imageUrl
       }`
-    : getFallbackImage(blog.title);
+    : getFallbackImage(blogToRender.title);
 
   // Get related articles (exclude current blog)
   const getRelatedArticles = () => {
-    const currentBlogId = blog._id;
-    const sameCategoryBlogs = allBlogs.filter(
-      (b) => b._id !== currentBlogId && b.category === blog.category
+    const currentBlogId = blogToRender._id;
+    const sameCategoryBlogs = resolvedAllBlogs.filter(
+      (b) => b._id !== currentBlogId && b.category === blogToRender.category
     );
-    const otherBlogs = allBlogs.filter(
-      (b) => b._id !== currentBlogId && b.category !== blog.category
+    const otherBlogs = resolvedAllBlogs.filter(
+      (b) => b._id !== currentBlogId && b.category !== blogToRender.category
     );
 
     // Return up to 5 related articles: prioritize same category, then others
@@ -117,7 +203,7 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
                 Blogs
               </Link>
               <span>/</span>
-              <span>{blog.title}</span>
+              <span>{blogToRender.title}</span>
             </nav>
           </motion.div>
 
@@ -138,13 +224,13 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
               >
                 <div className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 px-4 py-2 rounded-full border border-green-200">
                   <Tag className="w-3 h-3" />
-                  <span>{blog.category || "General"}</span>
+                  <span>{blogToRender.category || "General"}</span>
                 </div>
                 <div className="inline-flex items-center gap-1.5">
                   <Calendar className="w-3 h-3 text-gray-400" />
                   <span>
-                    {blog.createdAt
-                      ? new Date(blog.createdAt).toLocaleDateString("en-GB", {
+                {blogToRender.createdAt
+                      ? new Date(blogToRender.createdAt).toLocaleDateString("en-GB", {
                           day: "2-digit",
                           month: "short",
                           year: "numeric",
@@ -154,7 +240,7 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
                 </div>
                 <div className="inline-flex items-center gap-1.5">
                   <Clock className="w-3 h-3 text-gray-400" />
-                  <span>{Math.ceil(blog.content.length / 500)} min read</span>
+                  <span>{Math.ceil(blogToRender.content.length / 500)} min read</span>
                 </div>
               </motion.div>
 
@@ -165,7 +251,7 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.4 }}
               >
-                {blog.title}
+                {blogToRender.title}
               </motion.h1>
             </div>
 
@@ -178,7 +264,7 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
             >
               <img
                 src={imageUrl}
-                alt={blog.title}
+                alt={blogToRender.title}
                 className="w-full h-48 sm:h-56 md:h-64 object-cover"
                 loading="eager"
               />
@@ -192,7 +278,7 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.6 }}
-                dangerouslySetInnerHTML={{ __html: blog.content }}
+                dangerouslySetInnerHTML={{ __html: blogToRender.content }}
               />
 
               {/* Article Actions */}
