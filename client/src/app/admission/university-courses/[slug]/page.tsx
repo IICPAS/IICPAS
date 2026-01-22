@@ -18,6 +18,9 @@ interface UniversityCoursePageProps {
   };
 }
 
+// Always allow rendering unknown slugs at runtime (fallback to static data)
+export const dynamicParams = true;
+
 // Generate metadata for SEO
 export async function generateMetadata({
   params,
@@ -77,18 +80,17 @@ export async function generateMetadata({
 
 // Generate static params for all courses
 export async function generateStaticParams() {
-  // Try to fetch from API first, fallback to static data
-  let slugs: string[] = [];
+  // Try to fetch from API first, then merge with static data so we don't miss pages
+  let apiSlugs: string[] = [];
   try {
-    slugs = await getApiCourseSlugs();
+    apiSlugs = await getApiCourseSlugs();
   } catch (error) {
     console.error("Error fetching course slugs from API:", error);
   }
 
-  // Fallback to static data if API fails or returns empty
-  if (slugs.length === 0) {
-    slugs = getAllCourseSlugs();
-  }
+  // Always include static slugs to cover cases where the API is missing entries
+  const staticSlugs = getAllCourseSlugs();
+  const slugs = Array.from(new Set([...apiSlugs, ...staticSlugs]));
 
   return slugs.map((slug) => ({
     slug: slug,
