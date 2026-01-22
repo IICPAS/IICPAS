@@ -160,8 +160,7 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
       }`
     : "/images/blog-default.jpg";
 
-  const safeContent =
-    typeof blogToRender.content === "string" ? blogToRender.content : "";
+  // NOTE: safeContent defined below with rawContent normalization
 
   const tags = useMemo(() => {
     const raw =
