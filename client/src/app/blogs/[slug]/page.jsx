@@ -14,13 +14,19 @@ const API_BASE =
 // Render blog pages dynamically so new posts start working immediately
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+export const fetchCache = "force-no-store";
+export const runtime = "nodejs";
 
-const slugify = (title = "") =>
-  title
+// Normalize titles and incoming slugs consistently
+const slugify = (value = "") =>
+  decodeURIComponent(value)
     .trim()
     .toLowerCase()
+    .replace(/[–—−]/g, "-") // normalize fancy dashes
     .replace(/\s+/g, "-")
-    .replace(/[^\w-]/g, "");
+    .replace(/[^a-z0-9-]/g, "")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
 
 // Generate static params for pre-render (when available)
 export async function generateStaticParams() {
@@ -28,7 +34,7 @@ export async function generateStaticParams() {
     const res = await axios.get(`${API_BASE}/blogs`);
     if (Array.isArray(res.data)) {
       const slugs = res.data
-        .map((b) => b.slug || slugify(b.title || ""))
+        .map((b) => slugify(b.slug || b.title || ""))
         .filter(Boolean);
       return slugs.map((slug) => ({ slug }));
     }
@@ -40,13 +46,13 @@ export async function generateStaticParams() {
 
 // Generate dynamic metadata for SEO
 export async function generateMetadata({ params }) {
-  const slug = decodeURIComponent(params.slug || "");
+  const slug = slugify(params.slug || "");
 
   try {
-    const res = await axios.get(`${API_BASE}/blogs`);
+    const res = await axios.get(`${API_BASE}/blogs`, { timeout: 8000 });
     const foundBlog = res.data.find((b) => {
-      const blogSlug = b.slug || slugify(b.title);
-      return blogSlug === slug.toLowerCase();
+      const blogSlug = slugify(b.slug || b.title);
+      return blogSlug === slug;
     });
 
     if (!foundBlog || foundBlog.status !== "active") {
@@ -118,13 +124,13 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function BlogDetail({ params }) {
-  const slug = decodeURIComponent(params.slug || "");
+  const slug = slugify(params.slug || "");
 
   try {
     const res = await axios.get(`${API_BASE}/blogs`);
     const foundBlog = res.data.find((b) => {
-      const blogSlug = b.slug || slugify(b.title);
-      return blogSlug === slug.toLowerCase();
+      const blogSlug = slugify(b.slug || b.title);
+      return blogSlug === slug;
     });
 
     // Store all active blogs for related articles
