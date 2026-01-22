@@ -18,27 +18,6 @@ interface UniversityCoursePageProps {
   };
 }
 
-const normalizeSlug = (value: string) =>
-  decodeURIComponent(value || "")
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9-]/g, "")
-    .replace(/-+/g, "-")
-    .replace(/^-+|-+$/g, "");
-
-const normalizeCourse = (maybeCourse: any) => {
-  if (!maybeCourse) return null;
-  // Unwrap common API envelopes
-  const course =
-    maybeCourse.course ||
-    maybeCourse.data ||
-    maybeCourse.payload ||
-    maybeCourse;
-  if (!course || !course.name) return null;
-  return course;
-};
-
 // Always allow rendering unknown slugs at runtime (fallback to static data)
 export const dynamicParams = true;
 
@@ -46,18 +25,17 @@ export const dynamicParams = true;
 export async function generateMetadata({
   params,
 }: UniversityCoursePageProps): Promise<Metadata> {
-  const slug = normalizeSlug(params.slug);
   // Try to fetch from API first, fallback to static data
   let course = null;
   try {
-    course = normalizeCourse(await getUniversityCourseBySlug(slug));
+    course = await getUniversityCourseBySlug(params.slug);
   } catch (error) {
     console.error("Error fetching course from API:", error);
   }
 
   // Fallback to static data if API fails
-  if (!course || !course.seo?.title) {
-    course = getCourseBySlug(slug);
+  if (!course) {
+    course = getCourseBySlug(params.slug);
   }
 
   if (!course) {
@@ -75,7 +53,7 @@ export async function generateMetadata({
       title: course.seo.title,
 
       description: course.seo.description,
-      url: `https://iicpa.in/admission/university-courses/${slug}`,
+      url: `https://iicpa.in/admission/university-courses/${params.slug}`,
       siteName: "IICPA Institute",
       images: [
         {
@@ -95,7 +73,7 @@ export async function generateMetadata({
       images: ["https://iicpa.in/images/og-course-default.jpg"],
     },
     alternates: {
-      canonical: `https://iicpa.in/admission/university-courses/${slug}`,
+      canonical: `https://iicpa.in/admission/university-courses/${params.slug}`,
     },
   };
 }
@@ -123,18 +101,17 @@ export async function generateStaticParams() {
 export default async function UniversityCoursePage({
   params,
 }: UniversityCoursePageProps) {
-  const slug = normalizeSlug(params.slug);
   // Try to fetch from API first, fallback to static data
   let course = null;
   try {
-    course = normalizeCourse(await getUniversityCourseBySlug(slug));
+    course = await getUniversityCourseBySlug(params.slug);
   } catch (error) {
     console.error("Error fetching course from API:", error);
   }
 
   // Fallback to static data if API fails
-  if (!course || !course.seo?.title) {
-    course = getCourseBySlug(slug);
+  if (!course) {
+    course = getCourseBySlug(params.slug);
   }
 
   if (!course) {
