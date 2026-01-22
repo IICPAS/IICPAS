@@ -140,8 +140,18 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
   }
 
   // Helper data with defensive coercion
-  const safeTitle = blogToRender.title || "Untitled Article";
-  const safeAuthor = blogToRender.author || "";
+  const safeTitle =
+    typeof blogToRender.title === "string"
+      ? blogToRender.title
+      : blogToRender.title
+      ? String(blogToRender.title)
+      : "Untitled Article";
+  const safeAuthor =
+    typeof blogToRender.author === "string"
+      ? blogToRender.author
+      : blogToRender.author
+      ? String(blogToRender.author)
+      : "";
   const rawContent = blogToRender.content;
   const safeContent =
     typeof rawContent === "string"
@@ -222,7 +232,7 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
               Blogs
             </Link>
             <span>›</span>
-            <span className="line-clamp-1 text-gray-600">{blogToRender.title}</span>
+            <span className="line-clamp-1 text-gray-600">{safeTitle}</span>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-[260px,1fr,280px] gap-6">
@@ -236,7 +246,7 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
                   Table of Contents
                 </div>
                 <div className="flex flex-col gap-3 text-sm">
-                  {(tocItems.length ? tocItems : [{ id: "top", text: blogToRender.title, level: "h2" }]).map(
+                  {(tocItems.length ? tocItems : [{ id: "top", text: safeTitle, level: "h2" }]).map(
                     (item) => (
                       <a
                         key={item.id}
@@ -278,17 +288,17 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
                     <Clock className="w-4 h-4 text-gray-400" />
                     {Math.ceil((safeContent.length || 1) / 500)} min read
                   </span>
-                  {blogToRender.author && (
+                  {safeAuthor && (
                     <span className="inline-flex items-center gap-1">
                       <User className="w-4 h-4 text-gray-400" />
-                      {blogToRender.author}
+                      {safeAuthor}
                     </span>
                   )}
                 </div>
 
                 <div className="flex items-start justify-between gap-3 mb-6">
                   <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight">
-                    {blogToRender.title}
+                    {safeTitle}
                   </h1>
                   <button className="p-3 rounded-full border border-purple-100 text-purple-600 hover:bg-purple-50 transition">
                     <Share2 className="w-5 h-5" />
@@ -312,7 +322,7 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
                 <div className="rounded-2xl overflow-hidden mb-8 border border-gray-100">
                   <img
                     src={imageUrl}
-                    alt={blogToRender.title}
+                    alt={safeTitle}
                     className="w-full max-h-[520px] object-cover"
                     loading="eager"
                   />
