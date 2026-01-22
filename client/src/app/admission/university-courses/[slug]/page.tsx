@@ -27,6 +27,18 @@ const normalizeSlug = (value: string) =>
     .replace(/-+/g, "-")
     .replace(/^-+|-+$/g, "");
 
+const normalizeCourse = (maybeCourse: any) => {
+  if (!maybeCourse) return null;
+  // Unwrap common API envelopes
+  const course =
+    maybeCourse.course ||
+    maybeCourse.data ||
+    maybeCourse.payload ||
+    maybeCourse;
+  if (!course || !course.name) return null;
+  return course;
+};
+
 // Always allow rendering unknown slugs at runtime (fallback to static data)
 export const dynamicParams = true;
 
@@ -38,13 +50,13 @@ export async function generateMetadata({
   // Try to fetch from API first, fallback to static data
   let course = null;
   try {
-    course = await getUniversityCourseBySlug(slug);
+    course = normalizeCourse(await getUniversityCourseBySlug(slug));
   } catch (error) {
     console.error("Error fetching course from API:", error);
   }
 
   // Fallback to static data if API fails
-  if (!course) {
+  if (!course || !course.seo?.title) {
     course = getCourseBySlug(slug);
   }
 
@@ -115,13 +127,13 @@ export default async function UniversityCoursePage({
   // Try to fetch from API first, fallback to static data
   let course = null;
   try {
-    course = await getUniversityCourseBySlug(slug);
+    course = normalizeCourse(await getUniversityCourseBySlug(slug));
   } catch (error) {
     console.error("Error fetching course from API:", error);
   }
 
   // Fallback to static data if API fails
-  if (!course) {
+  if (!course || !course.seo?.title) {
     course = getCourseBySlug(slug);
   }
 
