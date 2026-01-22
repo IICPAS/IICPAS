@@ -28,6 +28,18 @@ const slugify = (value = "") =>
     .replace(/-+/g, "-")
     .replace(/^-+|-+$/g, "");
 
+const toCandidateSlugs = (blog = {}) => {
+  const rawSlug = (blog.slug || "").toString();
+  const rawTitle = (blog.title || "").toString();
+  const candidates = [
+    slugify(rawSlug),
+    slugify(rawTitle),
+    rawSlug.trim().toLowerCase(),
+    rawTitle.trim().toLowerCase().replace(/\s+/g, "-"),
+  ].filter(Boolean);
+  return Array.from(new Set(candidates));
+};
+
 // Generate static params for pre-render (when available)
 export async function generateStaticParams() {
   try {
@@ -51,8 +63,8 @@ export async function generateMetadata({ params }) {
   try {
     const res = await axios.get(`${API_BASE}/blogs`, { timeout: 8000 });
     const foundBlog = res.data.find((b) => {
-      const blogSlug = slugify(b.slug || b.title);
-      return blogSlug === slug;
+      const candidates = toCandidateSlugs(b);
+      return candidates.includes(slug);
     });
 
     if (!foundBlog || foundBlog.status !== "active") {
@@ -127,10 +139,10 @@ export default async function BlogDetail({ params }) {
   const slug = slugify(params.slug || "");
 
   try {
-    const res = await axios.get(`${API_BASE}/blogs`);
+    const res = await axios.get(`${API_BASE}/blogs`, { timeout: 8000 });
     const foundBlog = res.data.find((b) => {
-      const blogSlug = slugify(b.slug || b.title);
-      return blogSlug === slug;
+      const candidates = toCandidateSlugs(b);
+      return candidates.includes(slug);
     });
 
     // Store all active blogs for related articles
