@@ -68,10 +68,24 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
         const res = await fetch(`${API_BASE}/blogs`, { cache: "no-store" });
         const data = await res.json();
         const blogs = extractBlogs(data);
-        const found = blogs.find((b) => toCandidateSlugs(b).includes(slug));
+        const found = blogs.find((b) => {
+          const candidates = toCandidateSlugs(b);
+          return candidates.some(
+            (c) =>
+              c === slug ||
+              c.replace(/-+/g, "-") === slug ||
+              slug.replace(/-+/g, "-") === c ||
+              c.includes(slug) ||
+              slug.includes(c)
+          );
+        });
         if (!cancelled) {
           setResolvedBlog(found || null);
-          setResolvedAllBlogs(blogs.filter((b) => b.status?.toLowerCase() === "active"));
+          setResolvedAllBlogs(
+            blogs.filter(
+              (b) => b.status && b.status.toString().trim().toLowerCase() === "active"
+            )
+          );
         }
       } catch (err) {
         console.error("Client fallback fetch failed:", err);
