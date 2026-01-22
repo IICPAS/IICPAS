@@ -140,18 +140,8 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
   }
 
   // Helper data with defensive coercion
-  const safeTitle =
-    typeof blogToRender.title === "string"
-      ? blogToRender.title
-      : blogToRender.title
-      ? String(blogToRender.title)
-      : "Untitled Article";
-  const safeAuthor =
-    typeof blogToRender.author === "string"
-      ? blogToRender.author
-      : blogToRender.author
-      ? String(blogToRender.author)
-      : "";
+  const safeTitle = blogToRender.title || "Untitled Article";
+  const safeAuthor = blogToRender.author || "";
   const rawContent = blogToRender.content;
   const safeContent =
     typeof rawContent === "string"
@@ -169,8 +159,6 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
         rawImage.startsWith("/") ? rawImage : "/" + rawImage
       }`
     : "/images/blog-default.jpg";
-
-  // NOTE: safeContent defined below with rawContent normalization
 
   const tags = useMemo(() => {
     const raw =
@@ -191,7 +179,7 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
   // TOC generation
   const { tocItems, contentWithAnchors } = useMemo(() => {
     const headings = [];
-    let content = safeContent;
+    let content = blogToRender.content || "";
     const headingRegex = /<(h2|h3)>(.*?)<\/\1>/gi;
     let match;
     while ((match = headingRegex.exec(content)) !== null) {
@@ -207,7 +195,7 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
       });
     }
     return { tocItems: headings, contentWithAnchors: content };
-  }, [safeContent]);
+  }, [blogToRender.content]);
 
   const categoriesList = useMemo(
     () =>
@@ -232,10 +220,41 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
               Blogs
             </Link>
             <span>›</span>
-            <span className="line-clamp-1 text-gray-600">{safeTitle}</span>
+            <span className="line-clamp-1 text-gray-600">{blogToRender.title}</span>
           </div>
 
-          <div className="grid grid-cols-1 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-[260px,1fr,280px] gap-6">
+            {/* TOC */}
+            <div className="hidden lg:block">
+              <div className="sticky top-28 bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                <div className="flex items-center gap-2 text-purple-700 font-semibold mb-4">
+                  <span className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-purple-300 text-[10px]">
+                    ☰
+                  </span>
+                  Table of Contents
+                </div>
+                <div className="flex flex-col gap-3 text-sm">
+                  {(tocItems.length ? tocItems : [{ id: "top", text: blogToRender.title, level: "h2" }]).map(
+                    (item) => (
+                      <a
+                        key={item.id}
+                        href={`#${item.id}`}
+                        className={clsx(
+                          "pl-2 py-1 rounded-md border-l-2 transition",
+                          item.level === "h2"
+                            ? "border-purple-300 text-gray-800 hover:text-purple-700"
+                            : "border-purple-100 text-gray-500 hover:text-purple-600"
+                        )}
+                      >
+                        {item.text}
+                      </a>
+                    )
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Main content */}
             <div>
               <div className="bg-white rounded-3xl shadow-md border border-gray-100 p-6 sm:p-8">
                 <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm text-gray-600 mb-4">
@@ -255,19 +274,19 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
                   </span>
                   <span className="inline-flex items-center gap-1">
                     <Clock className="w-4 h-4 text-gray-400" />
-                    {Math.ceil((safeContent.length || 1) / 500)} min read
+                    {Math.ceil(blogToRender.content.length / 500)} min read
                   </span>
-                  {safeAuthor && (
+                  {blogToRender.author && (
                     <span className="inline-flex items-center gap-1">
                       <User className="w-4 h-4 text-gray-400" />
-                      {safeAuthor}
+                      {blogToRender.author}
                     </span>
                   )}
                 </div>
 
                 <div className="flex items-start justify-between gap-3 mb-6">
                   <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight">
-                    {safeTitle}
+                    {blogToRender.title}
                   </h1>
                   <button className="p-3 rounded-full border border-purple-100 text-purple-600 hover:bg-purple-50 transition">
                     <Share2 className="w-5 h-5" />
@@ -291,7 +310,7 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
                 <div className="rounded-2xl overflow-hidden mb-8 border border-gray-100">
                   <img
                     src={imageUrl}
-                    alt={safeTitle}
+                    alt={blogToRender.title}
                     className="w-full max-h-[520px] object-cover"
                     loading="eager"
                   />
@@ -300,7 +319,7 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
                 <div
                   className="prose prose-lg max-w-none text-gray-800 prose-img:rounded-2xl prose-img:border prose-img:border-gray-100 prose-headings:scroll-mt-32"
                   dangerouslySetInnerHTML={{
-                    __html: contentWithAnchors || safeContent,
+                    __html: contentWithAnchors || blogToRender.content,
                   }}
                 />
               </div>

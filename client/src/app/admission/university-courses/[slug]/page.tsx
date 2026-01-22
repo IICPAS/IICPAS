@@ -18,6 +18,7 @@ interface UniversityCoursePageProps {
   };
 }
 
+<<<<<<< ours
 const normalizeSlug = (value: string) =>
   decodeURIComponent(value || "")
     .trim()
@@ -39,6 +40,8 @@ const normalizeCourse = (maybeCourse: any) => {
   return course;
 };
 
+=======
+>>>>>>> theirs
 // Always allow rendering unknown slugs at runtime (fallback to static data)
 export const dynamicParams = true;
 
@@ -46,18 +49,26 @@ export const dynamicParams = true;
 export async function generateMetadata({
   params,
 }: UniversityCoursePageProps): Promise<Metadata> {
-  const slug = normalizeSlug(params.slug);
   // Try to fetch from API first, fallback to static data
   let course = null;
   try {
+<<<<<<< ours
     course = normalizeCourse(await getUniversityCourseBySlug(slug));
+=======
+    course = await getUniversityCourseBySlug(params.slug);
+>>>>>>> theirs
   } catch (error) {
     console.error("Error fetching course from API:", error);
   }
 
   // Fallback to static data if API fails
+<<<<<<< ours
   if (!course || !course.seo?.title) {
     course = getCourseBySlug(slug);
+=======
+  if (!course) {
+    course = getCourseBySlug(params.slug);
+>>>>>>> theirs
   }
 
   if (!course) {
@@ -75,7 +86,7 @@ export async function generateMetadata({
       title: course.seo.title,
 
       description: course.seo.description,
-      url: `https://iicpa.in/admission/university-courses/${slug}`,
+      url: `https://iicpa.in/admission/university-courses/${params.slug}`,
       siteName: "IICPA Institute",
       images: [
         {
@@ -95,7 +106,7 @@ export async function generateMetadata({
       images: ["https://iicpa.in/images/og-course-default.jpg"],
     },
     alternates: {
-      canonical: `https://iicpa.in/admission/university-courses/${slug}`,
+      canonical: `https://iicpa.in/admission/university-courses/${params.slug}`,
     },
   };
 }
@@ -123,18 +134,26 @@ export async function generateStaticParams() {
 export default async function UniversityCoursePage({
   params,
 }: UniversityCoursePageProps) {
-  const slug = normalizeSlug(params.slug);
   // Try to fetch from API first, fallback to static data
   let course = null;
   try {
+<<<<<<< ours
     course = normalizeCourse(await getUniversityCourseBySlug(slug));
+=======
+    course = await getUniversityCourseBySlug(params.slug);
+>>>>>>> theirs
   } catch (error) {
     console.error("Error fetching course from API:", error);
   }
 
   // Fallback to static data if API fails
+<<<<<<< ours
   if (!course || !course.seo?.title) {
     course = getCourseBySlug(slug);
+=======
+  if (!course) {
+    course = getCourseBySlug(params.slug);
+>>>>>>> theirs
   }
 
   if (!course) {
