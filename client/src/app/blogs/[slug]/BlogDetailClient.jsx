@@ -150,6 +150,9 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
       }`
     : "/images/blog-default.jpg";
 
+  const safeContent =
+    typeof blogToRender.content === "string" ? blogToRender.content : "";
+
   const tags = useMemo(() => {
     const raw =
       blogToRender.tags ||
@@ -169,7 +172,7 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
   // TOC generation
   const { tocItems, contentWithAnchors } = useMemo(() => {
     const headings = [];
-    let content = blogToRender.content || "";
+    let content = safeContent;
     const headingRegex = /<(h2|h3)>(.*?)<\/\1>/gi;
     let match;
     while ((match = headingRegex.exec(content)) !== null) {
@@ -185,7 +188,7 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
       });
     }
     return { tocItems: headings, contentWithAnchors: content };
-  }, [blogToRender.content]);
+  }, [safeContent]);
 
   const categoriesList = useMemo(
     () =>
@@ -264,7 +267,7 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
                   </span>
                   <span className="inline-flex items-center gap-1">
                     <Clock className="w-4 h-4 text-gray-400" />
-                    {Math.ceil(blogToRender.content.length / 500)} min read
+                    {Math.ceil((safeContent.length || 1) / 500)} min read
                   </span>
                   {blogToRender.author && (
                     <span className="inline-flex items-center gap-1">
@@ -309,7 +312,7 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
                 <div
                   className="prose prose-lg max-w-none text-gray-800 prose-img:rounded-2xl prose-img:border prose-img:border-gray-100 prose-headings:scroll-mt-32"
                   dangerouslySetInnerHTML={{
-                    __html: contentWithAnchors || blogToRender.content,
+                    __html: contentWithAnchors || safeContent,
                   }}
                 />
               </div>
