@@ -18,30 +18,6 @@ interface UniversityCoursePageProps {
   };
 }
 
-<<<<<<< ours
-const normalizeSlug = (value: string) =>
-  decodeURIComponent(value || "")
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9-]/g, "")
-    .replace(/-+/g, "-")
-    .replace(/^-+|-+$/g, "");
-
-const normalizeCourse = (maybeCourse: any) => {
-  if (!maybeCourse) return null;
-  // Unwrap common API envelopes
-  const course =
-    maybeCourse.course ||
-    maybeCourse.data ||
-    maybeCourse.payload ||
-    maybeCourse;
-  if (!course || !course.name) return null;
-  return course;
-};
-
-=======
->>>>>>> theirs
 // Always allow rendering unknown slugs at runtime (fallback to static data)
 export const dynamicParams = true;
 
@@ -52,23 +28,14 @@ export async function generateMetadata({
   // Try to fetch from API first, fallback to static data
   let course = null;
   try {
-<<<<<<< ours
-    course = normalizeCourse(await getUniversityCourseBySlug(slug));
-=======
     course = await getUniversityCourseBySlug(params.slug);
->>>>>>> theirs
   } catch (error) {
     console.error("Error fetching course from API:", error);
   }
 
   // Fallback to static data if API fails
-<<<<<<< ours
-  if (!course || !course.seo?.title) {
-    course = getCourseBySlug(slug);
-=======
   if (!course) {
     course = getCourseBySlug(params.slug);
->>>>>>> theirs
   }
 
   if (!course) {
@@ -137,23 +104,14 @@ export default async function UniversityCoursePage({
   // Try to fetch from API first, fallback to static data
   let course = null;
   try {
-<<<<<<< ours
-    course = normalizeCourse(await getUniversityCourseBySlug(slug));
-=======
     course = await getUniversityCourseBySlug(params.slug);
->>>>>>> theirs
   } catch (error) {
     console.error("Error fetching course from API:", error);
   }
 
   // Fallback to static data if API fails
-<<<<<<< ours
-  if (!course || !course.seo?.title) {
-    course = getCourseBySlug(slug);
-=======
   if (!course) {
     course = getCourseBySlug(params.slug);
->>>>>>> theirs
   }
 
   if (!course) {
