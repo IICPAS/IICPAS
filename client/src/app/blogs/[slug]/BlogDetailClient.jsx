@@ -139,14 +139,24 @@ export default function BlogDetailClient({ blog, allBlogs, slug }) {
     );
   }
 
-  // Helper data
-  const imageUrl = blogToRender.imageUrl?.startsWith("http")
-    ? blogToRender.imageUrl
-    : blogToRender.imageUrl
+  // Helper data with defensive coercion
+  const safeTitle = blogToRender.title || "Untitled Article";
+  const safeAuthor = blogToRender.author || "";
+  const rawContent = blogToRender.content;
+  const safeContent =
+    typeof rawContent === "string"
+      ? rawContent
+      : rawContent != null
+      ? String(rawContent)
+      : "";
+  const rawImage = blogToRender.imageUrl
+    ? String(blogToRender.imageUrl)
+    : "";
+  const imageUrl = rawImage.startsWith("http")
+    ? rawImage
+    : rawImage
     ? `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}${
-        blogToRender.imageUrl.startsWith("/")
-          ? blogToRender.imageUrl
-          : "/" + blogToRender.imageUrl
+        rawImage.startsWith("/") ? rawImage : "/" + rawImage
       }`
     : "/images/blog-default.jpg";
 
