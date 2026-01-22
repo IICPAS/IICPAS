@@ -11,17 +11,43 @@ import { Metadata } from "next";
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080/api";
 
+// Render blog pages dynamically so new posts start working immediately
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+const slugify = (title = "") =>
+  title
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^\w-]/g, "");
+
+// Generate static params for pre-render (when available)
+export async function generateStaticParams() {
+  try {
+    const res = await axios.get(`${API_BASE}/blogs`);
+    if (Array.isArray(res.data)) {
+      const slugs = res.data
+        .map((b) => b.slug || slugify(b.title || ""))
+        .filter(Boolean);
+      return slugs.map((slug) => ({ slug }));
+    }
+  } catch (error) {
+    console.error("Error fetching blog slugs for SSG:", error);
+  }
+  return [];
+}
+
 // Generate dynamic metadata for SEO
 export async function generateMetadata({ params }) {
-  const slug = params.slug;
+  const slug = decodeURIComponent(params.slug || "");
 
   try {
     const res = await axios.get(`${API_BASE}/blogs`);
-    const foundBlog = res.data.find(
-      (b) =>
-        b.title &&
-        b.title.replace(/\s+/g, "-").toLowerCase() === slug.toLowerCase()
-    );
+    const foundBlog = res.data.find((b) => {
+      const blogSlug = b.slug || slugify(b.title);
+      return blogSlug === slug.toLowerCase();
+    });
 
     if (!foundBlog || foundBlog.status !== "active") {
       return {
@@ -92,15 +118,14 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function BlogDetail({ params }) {
-  const slug = params.slug;
+  const slug = decodeURIComponent(params.slug || "");
 
   try {
     const res = await axios.get(`${API_BASE}/blogs`);
-    const foundBlog = res.data.find(
-      (b) =>
-        b.title &&
-        b.title.replace(/\s+/g, "-").toLowerCase() === slug.toLowerCase()
-    );
+    const foundBlog = res.data.find((b) => {
+      const blogSlug = b.slug || slugify(b.title);
+      return blogSlug === slug.toLowerCase();
+    });
 
     // Store all active blogs for related articles
     const activeBlogs = (res.data || []).filter((b) => b.status === "active");
