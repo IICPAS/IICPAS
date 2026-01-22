@@ -40,16 +40,22 @@ const toCandidateSlugs = (blog = {}) => {
   return Array.from(new Set(candidates));
 };
 
+const extractBlogs = (payload) => {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.blogs)) return payload.blogs;
+  return [];
+};
+
 // Generate static params for pre-render (when available)
 export async function generateStaticParams() {
   try {
     const res = await axios.get(`${API_BASE}/blogs`);
-    if (Array.isArray(res.data)) {
-      const slugs = res.data
-        .map((b) => slugify(b.slug || b.title || ""))
-        .filter(Boolean);
-      return slugs.map((slug) => ({ slug }));
-    }
+    const blogs = extractBlogs(res.data);
+    const slugs = blogs
+      .map((b) => slugify(b.slug || b.title || ""))
+      .filter(Boolean);
+    return slugs.map((slug) => ({ slug }));
   } catch (error) {
     console.error("Error fetching blog slugs for SSG:", error);
   }
@@ -62,7 +68,8 @@ export async function generateMetadata({ params }) {
 
   try {
     const res = await axios.get(`${API_BASE}/blogs`, { timeout: 8000 });
-    const foundBlog = res.data.find((b) => {
+    const blogs = extractBlogs(res.data);
+    const foundBlog = blogs.find((b) => {
       const candidates = toCandidateSlugs(b);
       return candidates.includes(slug);
     });
@@ -140,13 +147,14 @@ export default async function BlogDetail({ params }) {
 
   try {
     const res = await axios.get(`${API_BASE}/blogs`, { timeout: 8000 });
-    const foundBlog = res.data.find((b) => {
+    const blogs = extractBlogs(res.data);
+    const foundBlog = blogs.find((b) => {
       const candidates = toCandidateSlugs(b);
       return candidates.includes(slug);
     });
 
     // Store all active blogs for related articles
-    const activeBlogs = (res.data || []).filter((b) => b.status === "active");
+    const activeBlogs = blogs.filter((b) => b.status === "active");
 
     return (
       <BlogDetailClient blog={foundBlog} allBlogs={activeBlogs} slug={slug} />
